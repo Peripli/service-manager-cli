@@ -2,9 +2,10 @@
 package smclientfakes
 
 import (
-	"smctl/pkg/smclient"
-	"smctl/pkg/types"
 	"sync"
+
+	"github.com/Peripli/service-manager-cli/pkg/smclient"
+	"github.com/Peripli/service-manager-cli/pkg/types"
 )
 
 type FakeClient struct {

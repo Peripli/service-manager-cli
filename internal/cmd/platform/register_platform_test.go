@@ -43,7 +43,7 @@ var _ = Describe("Register Platform Command test", func() {
 			ID:   "1234",
 			Name: args[0],
 			Type: args[1],
-			Credentials: types.Credentials{
+			Credentials: &types.Credentials{
 				Basic: types.Basic{
 					User:     "admin",
 					Password: "admin",

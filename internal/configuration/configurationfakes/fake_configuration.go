@@ -2,9 +2,10 @@
 package configurationfakes
 
 import (
-	"smctl/internal/configuration"
-	"smctl/pkg/smclient"
 	"sync"
+
+	"github.com/Peripli/service-manager-cli/internal/configuration"
+	"github.com/Peripli/service-manager-cli/pkg/smclient"
 )
 
 type FakeConfiguration struct {

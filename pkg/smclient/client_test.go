@@ -34,7 +34,7 @@ var _ = Describe("Service Manager Client test", func() {
 	broker := &types.Broker{
 		Name:        "test broker",
 		URL:         "http://test-url.com",
-		Credentials: types.Credentials{Basic: types.Basic{User: "test user", Password: "test password"}},
+		Credentials: &types.Credentials{Basic: types.Basic{User: "test user", Password: "test password"}},
 	}
 
 	createSMHandler := func() http.HandlerFunc {
