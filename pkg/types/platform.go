@@ -22,11 +22,11 @@ import (
 
 // Platform defines the data of a platform.
 type Platform struct {
-	ID          string      `json:"id,omitempty" yaml:"id,omitempty"`
-	Name        string      `json:"name" yaml:"name"`
-	Description string      `json:"description,omitempty" yaml:"description,omitempty"`
-	Type        string      `json:"type" yaml:"type"`
-	Credentials Credentials `json:"credentials,omitempty" yaml:"credentials,omitempty"`
+	ID          string       `json:"id,omitempty" yaml:"id,omitempty"`
+	Name        string       `json:"name" yaml:"name"`
+	Description string       `json:"description,omitempty" yaml:"description,omitempty"`
+	Type        string       `json:"type" yaml:"type"`
+	Credentials *Credentials `json:"credentials,omitempty" yaml:"credentials,omitempty"`
 }
 
 func (p *Platform) Message() string {
@@ -48,22 +48,22 @@ func (p *Platform) TableData() *TableData {
 }
 
 type Platforms struct {
-	platforms []Platform `json:"platforms"`
+	Platforms []Platform `json:"platforms"`
 }
 
 func (p *Platforms) IsEmpty() bool {
-	return len(p.platforms) == 0
+	return len(p.Platforms) == 0
 }
 
 func (p *Platforms) Message() string {
 	var msg string
 
-	if len(p.platforms) == 0 {
+	if len(p.Platforms) == 0 {
 		msg = "No platform registered."
-	} else if len(p.platforms) == 1 {
+	} else if len(p.Platforms) == 1 {
 		msg = "One platform registered."
 	} else {
-		msg = fmt.Sprintf("%d platforms registered.", len(p.platforms))
+		msg = fmt.Sprintf("%d platforms registered.", len(p.Platforms))
 	}
 
 	return msg
@@ -73,7 +73,7 @@ func (p *Platforms) TableData() *TableData {
 	result := &TableData{}
 	result.Headers = []string{"ID", "Name", "Type", "Description"}
 
-	for _, platform := range p.platforms {
+	for _, platform := range p.Platforms {
 		row := []string{platform.ID, platform.Name, platform.Type, platform.Description}
 		result.Data = append(result.Data, row)
 	}
