@@ -89,7 +89,7 @@ func (rbc *RegisterBrokerCmd) Validate(args []string) error {
 	}
 
 	if rbc.credentialsJson != "" {
-		credentials := types.Credentials{}
+		credentials := &types.Credentials{}
 		if err := json.Unmarshal([]byte(rbc.credentialsJson), &credentials); err != nil {
 			return errors.New("credentials string is invalid")
 		}
@@ -104,7 +104,7 @@ func (rbc *RegisterBrokerCmd) Validate(args []string) error {
 		user := splitBasicString[0]
 		password := splitBasicString[1]
 		basic := types.Basic{User: user, Password: password}
-		rbc.broker.Credentials = types.Credentials{Basic: basic}
+		rbc.broker.Credentials = &types.Credentials{Basic: basic}
 	}
 
 	return nil
