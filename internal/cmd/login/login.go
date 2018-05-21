@@ -17,6 +17,7 @@
 package login
 
 import (
+	"bufio"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -114,13 +115,16 @@ func (lc *LoginCmd) Run() error {
 func (lc *LoginCmd) readUser() error {
 	if lc.user == "" {
 		print.PrintMessage(lc.Output, "User: ")
-		readUser := make([]byte, 256)
-		n, err := lc.input.Read(readUser)
+		bufReader := bufio.NewReader(lc.input)
+		readUser, isPrefix, err := bufReader.ReadLine()
+		if isPrefix {
+			return errors.New("username too long")
+		}
 		if err != nil {
 			return err
 		}
 
-		lc.user = (string)(readUser[:n-1])
+		lc.user = (string)(readUser)
 	}
 	return nil
 }
