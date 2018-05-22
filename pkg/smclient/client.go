@@ -30,9 +30,10 @@ import (
 // Client should be implemented by SM clients
 //go:generate counterfeiter . Client
 type Client interface {
-	RegisterPlatform(platform *types.Platform) (*types.Platform, error)
-	RegisterBroker(broker *types.Broker) (*types.Broker, error)
+	RegisterPlatform(*types.Platform) (*types.Platform, error)
+	RegisterBroker(*types.Broker) (*types.Broker, error)
 	ListBrokers() (*types.Brokers, error)
+	DeleteBroker(string) error
 }
 
 type serviceManagerClient struct {
@@ -123,6 +124,19 @@ func (client *serviceManagerClient) ListBrokers() (*types.Brokers, error) {
 	}
 
 	return brokers, nil
+}
+
+func (client *serviceManagerClient) DeleteBroker(id string) error {
+	resp, err := client.call(http.MethodDelete, "/v1/service_brokers/"+id, nil)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != 200 {
+		return errors.ResponseError{StatusCode: resp.StatusCode}
+	}
+
+	return nil
 }
 
 func (client *serviceManagerClient) call(method string, smpath string, body io.Reader) (*http.Response, error) {

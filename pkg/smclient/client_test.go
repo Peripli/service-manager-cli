@@ -261,4 +261,38 @@ var _ = Describe("Service Manager Client test", func() {
 			})
 		})
 	})
+
+	Describe("Delete brokers", func() {
+		Context("when an existing broker is being deleted", func() {
+			It("should be successfully removed", func() {
+				responseStatusCode = http.StatusOK
+				responseBody = []byte("{}")
+
+				err := client.DeleteBroker("id")
+				Expect(err).ShouldNot(HaveOccurred())
+			})
+		})
+
+		Context("when service manager returns a non-expected status code", func() {
+			It("should handle error", func() {
+				responseStatusCode = http.StatusCreated
+				responseBody = []byte("{}")
+
+				err := client.DeleteBroker("id")
+				Expect(err).Should(HaveOccurred())
+				Expect(err).Should(MatchError(errors.ResponseError{StatusCode: http.StatusCreated}))
+			})
+		})
+
+		Context("when service manager returns a status code not found", func() {
+			It("should handle error", func() {
+				responseStatusCode = http.StatusNotFound
+				responseBody = []byte(`{ "description": "Broker not found" }`)
+
+				err := client.DeleteBroker("id")
+				Expect(err).Should(HaveOccurred())
+				Expect(err).Should(MatchError(errors.ResponseError{Description: "Broker not found", URL: smServer.URL + "/v1/service_brokers/id", StatusCode: http.StatusNotFound}))
+			})
+		})
+	})
 })
