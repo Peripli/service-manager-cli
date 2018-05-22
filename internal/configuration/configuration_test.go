@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestInfoCmd(t *testing.T) {
+func TestConfiguration(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "")
 }

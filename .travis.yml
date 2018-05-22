@@ -29,7 +29,7 @@ script:
   #To see locally coverage in html execute: go tool cover -html=profile.cov
 
   #Execute security scan
-  - gas ./...
+  # - gas ./...
 
 notifications:
   slack: openservicebrokerapi:KQo2QAC6LXeEeXPOemOXja48
