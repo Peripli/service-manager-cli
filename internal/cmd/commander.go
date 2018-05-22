@@ -121,6 +121,6 @@ func getOutputFormat(flags *pflag.FlagSet) (int, error) {
 	} else if outputFormat == "raw" {
 		return output.FormatRaw, nil
 	} else {
-		return 0, errors.New("Unknown format: " + outputFormat)
+		return 0, errors.New("unknown format: " + outputFormat)
 	}
 }

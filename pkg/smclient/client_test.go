@@ -244,16 +244,20 @@ var _ = Describe("Service Manager Client test", func() {
 		})
 
 		Context("when invalid status code is returned", func() {
-			It("should return an error", func() {
-				responseStatusCode = http.StatusBadRequest
-				brokersArray := []types.Broker{}
-				brokers := types.Brokers{Brokers: brokersArray}
-				responseBody, _ = json.Marshal(brokers)
+			It("should handle status code != 200", func() {
+				responseStatusCode = http.StatusCreated
 
-				result, err := client.ListBrokers()
+				_, err := client.ListBrokers()
+				Expect(err).Should(HaveOccurred())
+				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusCreated}))
+			})
+
+			It("should handle status code > 299", func() {
+				responseStatusCode = http.StatusBadRequest
+
+				_, err := client.ListBrokers()
 				Expect(err).Should(HaveOccurred())
 				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: smServer.URL + "/v1/service_brokers"}))
-				Expect(result).To(BeNil())
 			})
 		})
 	})

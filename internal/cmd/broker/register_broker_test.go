@@ -195,7 +195,7 @@ var _ = Describe("Register Broker Command test", func() {
 				err := invalidRegisterBrokerCommandExecution([]string{"validName", "validUrl", "--basic", "user:password", "--format", invFormat})
 
 				Expect(err).Should(HaveOccurred())
-				Expect(err.Error()).To(Equal("Unknown format: " + invFormat))
+				Expect(err.Error()).To(Equal("unknown format: " + invFormat))
 			})
 		})
 	})

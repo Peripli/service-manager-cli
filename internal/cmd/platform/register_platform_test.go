@@ -151,7 +151,7 @@ var _ = Describe("Register Platform Command test", func() {
 				err := invalidRegisterPlatformCommandExecution([]string{"validName", "validUrl", "--format", invFormat})
 
 				Expect(err).Should(HaveOccurred())
-				Expect(err.Error()).To(Equal("Unknown format: " + invFormat))
+				Expect(err.Error()).To(Equal("unknown format: " + invFormat))
 			})
 		})
 	})
