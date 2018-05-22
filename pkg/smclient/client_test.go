@@ -212,4 +212,49 @@ var _ = Describe("Service Manager Client test", func() {
 			})
 		})
 	})
+
+	Describe("List brokers", func() {
+		Context("when there are brokers registered", func() {
+			It("should return all", func() {
+				responseStatusCode = http.StatusOK
+
+				brokersArray := []types.Broker{*broker}
+				brokers := types.Brokers{Brokers: brokersArray}
+				responseBody, _ = json.Marshal(brokers)
+
+				result, err := client.ListBrokers()
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(result.Brokers).To(HaveLen(1))
+				Expect(result.Brokers[0]).To(Equal(*broker))
+			})
+		})
+
+		Context("when there are no brokers registered", func() {
+			It("should return empty array", func() {
+				responseStatusCode = http.StatusOK
+
+				brokersArray := []types.Broker{}
+				brokers := types.Brokers{Brokers: brokersArray}
+				responseBody, _ = json.Marshal(brokers)
+
+				result, err := client.ListBrokers()
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(result.Brokers).To(HaveLen(0))
+			})
+		})
+
+		Context("when invalid status code is returned", func() {
+			It("should return an error", func() {
+				responseStatusCode = http.StatusBadRequest
+				brokersArray := []types.Broker{}
+				brokers := types.Brokers{Brokers: brokersArray}
+				responseBody, _ = json.Marshal(brokers)
+
+				result, err := client.ListBrokers()
+				Expect(err).Should(HaveOccurred())
+				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: smServer.URL + "/v1/service_brokers"}))
+				Expect(result).To(BeNil())
+			})
+		})
+	})
 })
