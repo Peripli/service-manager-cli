@@ -32,11 +32,7 @@ func UnmarshalResponse(response *http.Response, jsonResult interface{}) error {
 		}
 	}()
 
-	if err := json.NewDecoder(response.Body).Decode(&jsonResult); err != nil {
-		return err
-	}
-
-	return nil
+	return json.NewDecoder(response.Body).Decode(&jsonResult)
 }
 
 // NormalizeURL removes trailing slashesh in url

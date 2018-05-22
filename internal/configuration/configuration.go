@@ -34,44 +34,40 @@ type Configuration interface {
 }
 
 type smConfiguration struct {
-	viper *viper.Viper
+	viperEnv *viper.Viper
 }
 
 // NewSMConfiguration returns implementation of Configuration interface
 func NewSMConfiguration(cfgFile string) (Configuration, error) {
-	viper := viper.New()
+	viperEnv := viper.New()
 
 	absCfgFilePath, err := getConfigFileAbsPath(cfgFile)
 	if err != nil {
 		return nil, err
 	}
-	viper.SetConfigFile(absCfgFilePath)
+	viperEnv.SetConfigFile(absCfgFilePath)
 
-	return &smConfiguration{viper: viper}, nil
+	return &smConfiguration{viperEnv}, nil
 }
 
 // Save implements configuration save
 func (smCfg *smConfiguration) Save(clientCfg *smclient.ClientConfig) error {
-	smCfg.viper.Set("url", clientCfg.URL)
-	smCfg.viper.Set("user", clientCfg.User)
-	smCfg.viper.Set("token", clientCfg.Token)
+	smCfg.viperEnv.Set("url", clientCfg.URL)
+	smCfg.viperEnv.Set("user", clientCfg.User)
+	smCfg.viperEnv.Set("token", clientCfg.Token)
 
-	if err := smCfg.viper.WriteConfig(); err != nil {
-		return err
-	}
-
-	return nil
+	return smCfg.viperEnv.WriteConfig()
 }
 
 // Load implements configuration load
 func (smCfg *smConfiguration) Load() (*smclient.ClientConfig, error) {
-	if err := smCfg.viper.ReadInConfig(); err != nil {
+	if err := smCfg.viperEnv.ReadInConfig(); err != nil {
 		return nil, err
 	}
 
 	clientConfig := &smclient.ClientConfig{}
 
-	if err := smCfg.viper.Unmarshal(clientConfig); err != nil {
+	if err := smCfg.viperEnv.Unmarshal(clientConfig); err != nil {
 		return nil, err
 	}
 
