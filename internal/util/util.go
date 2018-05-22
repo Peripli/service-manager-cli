@@ -18,23 +18,23 @@ package util
 
 import (
 	"errors"
-	"net/url"
 	"fmt"
+	"net/url"
 )
 
-// Validates a URL
+// ValidateURL validates a URL
 func ValidateURL(URL string) error {
 	if URL == "" {
-		return errors.New("URL not provided!")
+		return errors.New("url not provided")
 	}
 
 	parsedURL, err := url.Parse(URL)
 	if err != nil {
-		return fmt.Errorf("URL cannot be parsed: %s", err)
+		return fmt.Errorf("url cannot be parsed: %s", err)
 	}
 
 	if !parsedURL.IsAbs() || (parsedURL.Scheme != "http" && parsedURL.Scheme != "https") {
-		return fmt.Errorf("URL is not an HTTP URL: %s\n", URL)
+		return fmt.Errorf("url is not an HTTP URL: %s", URL)
 	}
 
 	return nil

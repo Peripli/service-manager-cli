@@ -29,6 +29,7 @@ type ClientConfig struct {
 	Token string `json:"token,omitempty"`
 }
 
+// Validate validates client config
 func (clientCfg ClientConfig) Validate() error {
 	if err := util.ValidateURL(clientCfg.URL); err != nil {
 		return err

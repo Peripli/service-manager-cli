@@ -25,15 +25,15 @@ import (
 	"syscall"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
-	"github.com/Peripli/service-manager-cli/internal/print"
+	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/internal/util"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-// Wraps the smctl login command
-type LoginCmd struct {
+// Cmd wraps the smctl login command
+type Cmd struct {
 	*cmd.Context
 
 	input io.ReadWriter
@@ -43,22 +43,25 @@ type LoginCmd struct {
 	password          string
 }
 
-func NewLoginCmd(context *cmd.Context, input io.ReadWriter) *LoginCmd {
-	return &LoginCmd{Context: context, input: input}
+// NewLoginCmd return new login command with context and input reader
+func NewLoginCmd(context *cmd.Context, input io.ReadWriter) *Cmd {
+	return &Cmd{Context: context, input: input}
 }
 
-func (rpc *LoginCmd) HideUsage() bool {
+// HideUsage hides the command's usage
+func (lc *Cmd) HideUsage() bool {
 	return true
 }
 
-func (lc *LoginCmd) Command() *cobra.Command {
+// Command returns cobra command
+func (lc *Cmd) Command() *cobra.Command {
 	result := lc.buildCommand()
 	result = lc.addFlags(result)
 
 	return result
 }
 
-func (lc *LoginCmd) buildCommand() *cobra.Command {
+func (lc *Cmd) buildCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:     "login",
 		Aliases: []string{"l"},
@@ -70,7 +73,7 @@ func (lc *LoginCmd) buildCommand() *cobra.Command {
 	}
 }
 
-func (lc *LoginCmd) addFlags(command *cobra.Command) *cobra.Command {
+func (lc *Cmd) addFlags(command *cobra.Command) *cobra.Command {
 	command.PersistentFlags().StringVarP(&lc.serviceManagerURL, "url", "a", "", "Base URL of the Service Manager")
 	command.PersistentFlags().StringVarP(&lc.user, "user", "u", "", "User ID")
 	command.PersistentFlags().StringVarP(&lc.password, "password", "p", "", "Password")
@@ -78,14 +81,16 @@ func (lc *LoginCmd) addFlags(command *cobra.Command) *cobra.Command {
 	return command
 }
 
-func (lc *LoginCmd) Validate(args []string) error {
+// Validate valides the command's arguments
+func (lc *Cmd) Validate(args []string) error {
 	if lc.serviceManagerURL == "" {
 		return errors.New("URL flag must be provided")
 	}
 	return nil
 }
 
-func (lc *LoginCmd) Run() error {
+// Run runs the logic of the command
+func (lc *Cmd) Run() error {
 	if err := util.ValidateURL(lc.serviceManagerURL); err != nil {
 		return fmt.Errorf("service manager URL is invalid: %v", err)
 	}
@@ -99,22 +104,22 @@ func (lc *LoginCmd) Run() error {
 	}
 
 	if lc.Verbose {
-		print.PrintMessage(lc.Output, "Connecting to Service Manager: %s\n", lc.serviceManagerURL)
+		output.PrintMessage(lc.Output, "Connecting to Service Manager: %s\n", lc.serviceManagerURL)
 	}
 
 	token := "basic " + base64.StdEncoding.EncodeToString([]byte(lc.user+":"+lc.password))
-	err := lc.Configuration.Save(&smclient.ClientConfig{lc.serviceManagerURL, lc.user, token})
+	err := lc.Configuration.Save(&smclient.ClientConfig{URL: lc.serviceManagerURL, User: lc.user, Token: token})
 	if err != nil {
 		return err
 	}
 
-	print.PrintMessage(lc.Output, "Logged in successfully.\n")
+	output.PrintMessage(lc.Output, "Logged in successfully.\n")
 	return nil
 }
 
-func (lc *LoginCmd) readUser() error {
+func (lc *Cmd) readUser() error {
 	if lc.user == "" {
-		print.PrintMessage(lc.Output, "User: ")
+		output.PrintMessage(lc.Output, "User: ")
 		bufReader := bufio.NewReader(lc.input)
 		readUser, isPrefix, err := bufReader.ReadLine()
 		if isPrefix {
@@ -129,11 +134,11 @@ func (lc *LoginCmd) readUser() error {
 	return nil
 }
 
-func (lc *LoginCmd) readPassword() error {
+func (lc *Cmd) readPassword() error {
 	if lc.password == "" {
-		print.PrintMessage(lc.Output, "Password: ")
+		output.PrintMessage(lc.Output, "Password: ")
 		password, err := terminal.ReadPassword((int)(syscall.Stdin))
-		print.Println(lc.Output)
+		output.Println(lc.Output)
 		if err != nil {
 			return err
 		}

@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package print
+package output
 
 import (
 	"bytes"
@@ -28,9 +28,13 @@ import (
 )
 
 const (
+	// FormatText const for text format
 	FormatText = iota
+	// FormatJSON const for json format
 	FormatJSON
+	// FormatYAML const for yaml format
 	FormatYAML
+	// FormatRaw const for raw format
 	FormatRaw
 )
 
@@ -44,22 +48,27 @@ func PrintMessage(wr io.Writer, format string, a ...interface{}) {
 	fmt.Fprintf(wr, format, a...)
 }
 
-// PrintMessage prints a message.
+// Println prints a new line.
 func Println(wr io.Writer) {
 	fmt.Fprintln(wr)
 }
 
+// PrintJSON prints in json format
 func PrintJSON(wr io.Writer, v interface{}) {
 	b, err := json.Marshal(v)
 	if err != nil {
 		PrintError(wr, err)
 	} else {
 		var out bytes.Buffer
-		json.Indent(&out, b, "", "  ")
+		err := json.Indent(&out, b, "", "  ")
+		if err != nil {
+			PrintError(wr, err)
+		}
 		PrintMessage(wr, out.String())
 	}
 }
 
+// PrintYAML prints in yaml format
 func PrintYAML(wr io.Writer, v interface{}) {
 	b, err := yaml.Marshal(v)
 	if err != nil {
@@ -69,10 +78,12 @@ func PrintYAML(wr io.Writer, v interface{}) {
 	}
 }
 
+// PrintTable prints in table format
 func PrintTable(wr io.Writer, data *types.TableData) {
 	fmt.Fprint(wr, data)
 }
 
+// PrintServiceManagerObject should be used for printing SM objects in different formats
 func PrintServiceManagerObject(wr io.Writer, outputFormat int, object types.ServiceManagerObject) {
 	tableDataPrinter, isTableDataPrinter := object.(types.TableDataPrinter)
 	if isTableDataPrinter && outputFormat == FormatText {

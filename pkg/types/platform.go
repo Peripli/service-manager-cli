@@ -29,14 +29,17 @@ type Platform struct {
 	Credentials *Credentials `json:"credentials,omitempty" yaml:"credentials,omitempty"`
 }
 
+// Message title of the table
 func (p *Platform) Message() string {
 	return ""
 }
 
+// IsEmpty whether the structure is empty
 func (p *Platform) IsEmpty() bool {
 	return false
 }
 
+// TableData returns the data to populate a table
 func (p *Platform) TableData() *TableData {
 	result := &TableData{}
 	result.Headers = []string{"ID", "Name", "Type", "Description", "Username", "Password"}
@@ -47,14 +50,17 @@ func (p *Platform) TableData() *TableData {
 	return result
 }
 
+// Platforms wraps an array of platforms
 type Platforms struct {
 	Platforms []Platform `json:"platforms"`
 }
 
+// IsEmpty whether the structure is empty
 func (p *Platforms) IsEmpty() bool {
 	return len(p.Platforms) == 0
 }
 
+// Message title of the table
 func (p *Platforms) Message() string {
 	var msg string
 
@@ -69,6 +75,7 @@ func (p *Platforms) Message() string {
 	return msg
 }
 
+// TableData returns the data to populate a table
 func (p *Platforms) TableData() *TableData {
 	result := &TableData{}
 	result.Headers = []string{"ID", "Name", "Type", "Description"}

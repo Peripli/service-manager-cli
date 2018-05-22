@@ -25,7 +25,12 @@ import (
 // UnmarshalResponse reads the response body and tries to parse it.
 func UnmarshalResponse(response *http.Response, jsonResult interface{}) error {
 
-	defer response.Body.Close()
+	defer func() {
+		err := response.Body.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
 
 	if err := json.NewDecoder(response.Body).Decode(&jsonResult); err != nil {
 		return err
@@ -34,6 +39,7 @@ func UnmarshalResponse(response *http.Response, jsonResult interface{}) error {
 	return nil
 }
 
+// NormalizeURL removes trailing slashesh in url
 func NormalizeURL(url string) string {
 	for strings.HasSuffix(url, "/") {
 		url = url[:len(url)-1]

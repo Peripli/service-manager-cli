@@ -23,42 +23,45 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
-	"github.com/Peripli/service-manager-cli/internal/print"
+	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
 )
 
+// CommandWrapper used to wrap CLI commands
 type CommandWrapper interface {
 	Command() *cobra.Command
 }
 
+// Command provides common logic for SM commands
 type Command interface {
 	Run() error
 }
 
-// Implement if you want validation
+// ValidatedCommand should be implemented if the command will have validation
 type ValidatedCommand interface {
 	// Validate command usage in the implementation of this method
 	Validate([]string) error
 }
 
-// Implement if you want to omit usage printing on errors except on validation
+// HiddenUsageCommand should be implemented if the command should not print its usage
 type HiddenUsageCommand interface {
-	// Return false in the implementation of this method
+	// HideUsage returns true when usage should be hidden and false otherwise
 	HideUsage() bool
 }
 
-// Implement if you want to support different output formatting through a --format or -f flag
+// FormattedCommand should be implemented if the command supports different output formatting through a --format or -f flag
 type FormattedCommand interface {
-	// Set the command's `outputFormat` field in the implementation of this method
+	// SetOutputFormat sets the command's output format
 	SetOutputFormat(int)
 }
 
-// Implement if command needs to use the SM Client
+// SvcManagerCommand should be implemented if the command needs to use the SM Client
 type SvcManagerCommand interface {
-	// Set the command's `Client` field in the implementation of this method
+	// SetSMClient sets the command's Service Manager client
 	SetSMClient(smclient.Client)
 }
 
+// PreRunE provides common pre-run logic for SM commands
 func PreRunE(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 	return func(c *cobra.Command, args []string) error {
 
@@ -93,13 +96,14 @@ func PreRunE(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 	}
 }
 
+// RunE provides common run logic for SM commands
 func RunE(cmd Command) func(*cobra.Command, []string) error {
 	return func(c *cobra.Command, args []string) error {
 		return cmd.Run()
 	}
 }
 
-// Adds the --format (-f) flag. Use this method when building a command if it implements the FormattedCommand interface
+// AddFormatFlag adds the --format (-f) flag.
 func AddFormatFlag(flags *pflag.FlagSet) {
 	flags.StringP("format", "f", "", "output format")
 }
@@ -109,13 +113,13 @@ func getOutputFormat(flags *pflag.FlagSet) (int, error) {
 	outputFormat = strings.ToLower(outputFormat)
 
 	if outputFormat == "" || outputFormat == "text" {
-		return print.FormatText, nil
+		return output.FormatText, nil
 	} else if outputFormat == "json" {
-		return print.FormatJSON, nil
+		return output.FormatJSON, nil
 	} else if outputFormat == "yaml" {
-		return print.FormatYAML, nil
+		return output.FormatYAML, nil
 	} else if outputFormat == "raw" {
-		return print.FormatRaw, nil
+		return output.FormatRaw, nil
 	} else {
 		return 0, errors.New("Unknown format: " + outputFormat)
 	}

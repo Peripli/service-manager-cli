@@ -21,7 +21,7 @@ func TestInfoCmd(t *testing.T) {
 
 var _ = Describe("Login Command test", func() {
 
-	var command *InfoCmd
+	var command *Cmd
 	var buffer *bytes.Buffer
 	var config *configurationfakes.FakeConfiguration
 

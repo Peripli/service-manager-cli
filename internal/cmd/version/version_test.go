@@ -18,7 +18,7 @@ func TestVersionCmd(t *testing.T) {
 
 var _ = Describe("Login Command test", func() {
 
-	var command *VersionCmd
+	var command *Cmd
 	var buffer *bytes.Buffer
 	var clientVersion string
 

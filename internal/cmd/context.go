@@ -23,6 +23,7 @@ import (
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
 )
 
+// Context is used as a context for the commands
 type Context struct {
 	// Output should be used when printing in commands, instead of directly writing to stdout/stderr, to enable unit testing.
 	Output io.Writer

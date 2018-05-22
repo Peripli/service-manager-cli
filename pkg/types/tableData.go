@@ -16,44 +16,33 @@
 
 package types
 
+// TableData holds data for table header and content
 type TableData struct {
 	Headers []string
 	Data    [][]string
 }
 
-func (data *TableData) String() string {
+// String implements Stringer interface
+func (table *TableData) String() string {
 	output := ""
-	if len(data.Data) == 0 {
+	if len(table.Data) == 0 {
 		return output
 	}
 
 	// get fields lengths
-	fieldLen := make([]int, len(data.Headers))
-	for i, header := range data.Headers {
-		if fieldLen[i] < len(header)+2 {
-			fieldLen[i] = len(header) + 2
-		}
-	}
+	fieldLen := table.fieldsLen()
 
-	for _, row := range data.Data {
-		for i, cell := range row {
-			if fieldLen[i] < len(cell)+2 {
-				fieldLen[i] = len(cell) + 2
-			}
-		}
-	}
-
-	for i, header := range data.Headers {
+	for i, header := range table.Headers {
 		output += pad(header, fieldLen[i])
 	}
 	output += "\n"
 
-	for i := range data.Headers {
+	for i := range table.Headers {
 		output += line(fieldLen[i]-2) + "  "
 	}
 	output += "\n"
 
-	for _, row := range data.Data {
+	for _, row := range table.Data {
 		for i, cell := range row {
 			output += pad(cell, fieldLen[i])
 		}
@@ -61,6 +50,25 @@ func (data *TableData) String() string {
 	}
 
 	return output
+}
+
+func (table *TableData) fieldsLen() []int {
+	fieldLen := make([]int, len(table.Headers))
+	for i, header := range table.Headers {
+		if fieldLen[i] < len(header)+2 {
+			fieldLen[i] = len(header) + 2
+		}
+	}
+
+	for _, row := range table.Data {
+		for i, cell := range row {
+			if fieldLen[i] < len(cell)+2 {
+				fieldLen[i] = len(cell) + 2
+			}
+		}
+	}
+
+	return fieldLen
 }
 
 func pad(s string, p int) string {

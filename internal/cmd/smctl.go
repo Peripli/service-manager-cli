@@ -24,14 +24,14 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/configuration"
 )
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the RootCmd.
+// Execute executes the root command
 func Execute(cmd *cobra.Command) {
 	if err := cmd.Execute(); err != nil {
 		os.Exit(1)
 	}
 }
 
+// BuildRootCommand builds a new SM root command with context
 func BuildRootCommand(ctx *Context) *cobra.Command {
 	var cfgFile string
 

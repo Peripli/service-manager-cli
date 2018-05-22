@@ -20,27 +20,29 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
-	"github.com/Peripli/service-manager-cli/internal/print"
+	"github.com/Peripli/service-manager-cli/internal/output"
 )
 
-// Wraps the smctl version command
-type VersionCmd struct {
+// Cmd wraps the smctl version command
+type Cmd struct {
 	*cmd.Context
 
 	clientVersion string
 }
 
-func NewVersionCmd(context *cmd.Context, clientVersion string) *VersionCmd {
-	return &VersionCmd{context, clientVersion}
+// NewVersionCmd returns new version command with context and client version
+func NewVersionCmd(context *cmd.Context, clientVersion string) *Cmd {
+	return &Cmd{context, clientVersion}
 }
 
-func (vc *VersionCmd) Command() *cobra.Command {
+// Command returns cobra command
+func (vc *Cmd) Command() *cobra.Command {
 	result := vc.buildCommand()
 
 	return result
 }
 
-func (vc *VersionCmd) buildCommand() *cobra.Command {
+func (vc *Cmd) buildCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:     "version",
 		Aliases: []string{"v"},
@@ -52,8 +54,9 @@ func (vc *VersionCmd) buildCommand() *cobra.Command {
 	}
 }
 
-func (vc *VersionCmd) Run() error {
-	print.PrintMessage(vc.Output, "Service Manager Client %s\n", vc.clientVersion)
+// Run runs command's logic
+func (vc *Cmd) Run() error {
+	output.PrintMessage(vc.Output, "Service Manager Client %s\n", vc.clientVersion)
 
 	return nil
 }

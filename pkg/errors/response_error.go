@@ -18,6 +18,7 @@ package errors
 
 import "fmt"
 
+// ResponseError custom error
 type ResponseError struct {
 	URL          string
 	StatusCode   int
@@ -25,6 +26,7 @@ type ResponseError struct {
 	Description  string
 }
 
+// Error implementation of Error interface
 func (e ResponseError) Error() string {
 	errorMessage := "<nil>"
 	description := "<nil>"

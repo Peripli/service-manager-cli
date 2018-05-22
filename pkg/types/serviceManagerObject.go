@@ -16,11 +16,13 @@
 
 package types
 
+// ServiceManagerObject defines interface for printable SM object
 type ServiceManagerObject interface {
 	IsEmpty() bool
 	Message() string
 }
 
+// TableDataPrinter defines interface for table printing
 type TableDataPrinter interface {
 	TableData() *TableData
 }

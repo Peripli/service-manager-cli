@@ -20,25 +20,27 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
-	"github.com/Peripli/service-manager-cli/internal/print"
+	"github.com/Peripli/service-manager-cli/internal/output"
 )
 
-// Wraps the smctl info command
-type InfoCmd struct {
+// Cmd wraps the smctl info command
+type Cmd struct {
 	*cmd.Context
 }
 
-func NewInfoCmd(context *cmd.Context) *InfoCmd {
-	return &InfoCmd{context}
+// NewInfoCmd returns new info command with context
+func NewInfoCmd(context *cmd.Context) *Cmd {
+	return &Cmd{context}
 }
 
-func (ic *InfoCmd) Command() *cobra.Command {
+// Command returns the cobra command
+func (ic *Cmd) Command() *cobra.Command {
 	result := ic.buildCommand()
 
 	return result
 }
 
-func (ic *InfoCmd) buildCommand() *cobra.Command {
+func (ic *Cmd) buildCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:     "info",
 		Aliases: []string{"i"},
@@ -50,13 +52,14 @@ func (ic *InfoCmd) buildCommand() *cobra.Command {
 	}
 }
 
-func (ic *InfoCmd) Run() error {
+// Run runs the command's logic
+func (ic *Cmd) Run() error {
 	clientConfig, err := ic.Configuration.Load()
 	if err != nil {
-		print.PrintMessage(ic.Output, "There is no logged user. Use \"smctl login\" to log in.\n")
+		output.PrintMessage(ic.Output, "There is no logged user. Use \"smctl login\" to log in.\n")
 	} else {
-		print.PrintMessage(ic.Output, "Service Manager URL: %s\n", clientConfig.URL)
-		print.PrintMessage(ic.Output, "Logged user: %s\n", clientConfig.User)
+		output.PrintMessage(ic.Output, "Service Manager URL: %s\n", clientConfig.URL)
+		output.PrintMessage(ic.Output, "Logged user: %s\n", clientConfig.User)
 	}
 
 	return nil

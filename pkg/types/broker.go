@@ -29,14 +29,17 @@ type Broker struct {
 	Credentials *Credentials `json:"credentials,omitempty" yaml:"credentials,omitempty"`
 }
 
+// Message title of the table
 func (b *Broker) Message() string {
 	return ""
 }
 
+// IsEmpty whether the structure is empty
 func (b *Broker) IsEmpty() bool {
 	return false
 }
 
+// TableData returns the data to populate a table
 func (b *Broker) TableData() *TableData {
 	result := &TableData{}
 	result.Headers = []string{"ID", "Name", "URL", "Description", "Created", "Updated"}
@@ -47,14 +50,17 @@ func (b *Broker) TableData() *TableData {
 	return result
 }
 
+// Brokers wraps an array of brokers
 type Brokers struct {
 	Brokers []Broker `json:"brokers"`
 }
 
+// IsEmpty whether the structure is empty
 func (b *Brokers) IsEmpty() bool {
 	return len(b.Brokers) == 0
 }
 
+// Message title of the table
 func (b *Brokers) Message() string {
 	var msg string
 
@@ -69,6 +75,7 @@ func (b *Brokers) Message() string {
 	return msg
 }
 
+// TableData returns the data to populate a table
 func (b *Brokers) TableData() *TableData {
 	result := &TableData{}
 	result.Headers = []string{"ID", "Name", "URL", "Description", "Created", "Updated"}

@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
-	"github.com/Peripli/service-manager-cli/internal/print"
+	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
@@ -28,7 +28,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Wraps the smctl register-platform command
+// RegisterPlatformCmd wraps the smctl register-platform command
 type RegisterPlatformCmd struct {
 	*cmd.Context
 
@@ -37,22 +37,27 @@ type RegisterPlatformCmd struct {
 	outputFormat int
 }
 
+// NewRegisterPlatformCmd returns new register-platform command with context
 func NewRegisterPlatformCmd(context *cmd.Context) *RegisterPlatformCmd {
 	return &RegisterPlatformCmd{Context: context, platform: types.Platform{}}
 }
 
+// SetSMClient set SM client
 func (rpc *RegisterPlatformCmd) SetSMClient(client smclient.Client) {
 	rpc.Client = client
 }
 
+// SetOutputFormat set command's output format
 func (rpc *RegisterPlatformCmd) SetOutputFormat(format int) {
 	rpc.outputFormat = format
 }
 
+// HideUsage hide command's usage
 func (rpc *RegisterPlatformCmd) HideUsage() bool {
 	return true
 }
 
+// Command returns cobra command
 func (rpc *RegisterPlatformCmd) Command() *cobra.Command {
 	result := rpc.buildCommand()
 	result = rpc.addFlags(result)
@@ -79,6 +84,7 @@ func (rpc *RegisterPlatformCmd) addFlags(command *cobra.Command) *cobra.Command 
 	return command
 }
 
+// Validate validates command's arguments
 func (rpc *RegisterPlatformCmd) Validate(args []string) error {
 	if len(args) < 2 {
 		return fmt.Errorf("requires at least 2 args")
@@ -94,12 +100,13 @@ func (rpc *RegisterPlatformCmd) Validate(args []string) error {
 	return nil
 }
 
+// Run runs command's logic
 func (rpc *RegisterPlatformCmd) Run() error {
 	resultPlatform, err := rpc.Client.RegisterPlatform(&rpc.platform)
 	if err != nil {
 		return err
 	}
-	print.PrintServiceManagerObject(rpc.Output, rpc.outputFormat, resultPlatform)
-	print.Println(rpc.Output)
+	output.PrintServiceManagerObject(rpc.Output, rpc.outputFormat, resultPlatform)
+	output.Println(rpc.Output)
 	return nil
 }

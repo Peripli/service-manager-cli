@@ -24,18 +24,20 @@ import (
 	"github.com/spf13/viper"
 )
 
-const DefaultConfigFileName = ".servicemanager.json"
+const defaultConfigFileName = ".servicemanager.json"
 
-//go:generate counterfeiter . Configuration
+// Configuration should be implemented for load and save of SM client config
+// go:generate counterfeiter . Configuration
 type Configuration interface {
 	Save(*smclient.ClientConfig) error
 	Load() (*smclient.ClientConfig, error)
 }
 
-type SMConfiguration struct {
+type smConfiguration struct {
 	viper *viper.Viper
 }
 
+// NewSMConfiguration returns implementation of Configuration interface
 func NewSMConfiguration(cfgFile string) (Configuration, error) {
 	viper := viper.New()
 
@@ -45,10 +47,11 @@ func NewSMConfiguration(cfgFile string) (Configuration, error) {
 	}
 	viper.SetConfigFile(absCfgFilePath)
 
-	return &SMConfiguration{viper: viper}, nil
+	return &smConfiguration{viper: viper}, nil
 }
 
-func (smCfg *SMConfiguration) Save(clientCfg *smclient.ClientConfig) error {
+// Save implements configuration save
+func (smCfg *smConfiguration) Save(clientCfg *smclient.ClientConfig) error {
 	smCfg.viper.Set("url", clientCfg.URL)
 	smCfg.viper.Set("user", clientCfg.User)
 	smCfg.viper.Set("token", clientCfg.Token)
@@ -60,7 +63,8 @@ func (smCfg *SMConfiguration) Save(clientCfg *smclient.ClientConfig) error {
 	return nil
 }
 
-func (smCfg *SMConfiguration) Load() (*smclient.ClientConfig, error) {
+// Load implements configuration load
+func (smCfg *smConfiguration) Load() (*smclient.ClientConfig, error) {
 	if err := smCfg.viper.ReadInConfig(); err != nil {
 		return nil, err
 	}
@@ -84,7 +88,7 @@ func getConfigFileAbsPath(cfgFile string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		cfgFile = filepath.Join(home, DefaultConfigFileName)
+		cfgFile = filepath.Join(home, defaultConfigFileName)
 	}
 
 	filename, err := filepath.Abs(cfgFile)

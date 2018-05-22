@@ -27,6 +27,7 @@ import (
 	"github.com/Peripli/service-manager-cli/pkg/types"
 )
 
+// Client should be implemented by SM clients
 //go:generate counterfeiter . Client
 type Client interface {
 	RegisterPlatform(platform *types.Platform) (*types.Platform, error)
@@ -34,14 +35,15 @@ type Client interface {
 	ListBrokers() (*types.Brokers, error)
 }
 
-type ServiceManagerClient struct {
+type serviceManagerClient struct {
 	config     *ClientConfig
 	httpClient *http.Client
 	headers    *http.Header
 }
 
+// NewClient returns new SM client
 func NewClient(config *ClientConfig) Client {
-	client := &ServiceManagerClient{config: config, httpClient: &http.Client{}}
+	client := &serviceManagerClient{config: config, httpClient: &http.Client{}}
 	client.headers = &http.Header{}
 	client.headers.Add("Content-Type", "application/json")
 	if len(client.config.Token) > 0 {
@@ -51,8 +53,8 @@ func NewClient(config *ClientConfig) Client {
 	return client
 }
 
-// Registers a platform in the service manager
-func (client *ServiceManagerClient) RegisterPlatform(platform *types.Platform) (*types.Platform, error) {
+// RegisterPlatform registers a platform in the service manager
+func (client *serviceManagerClient) RegisterPlatform(platform *types.Platform) (*types.Platform, error) {
 	requestBody, err := json.Marshal(platform)
 	if err != nil {
 		return nil, err
@@ -77,8 +79,8 @@ func (client *ServiceManagerClient) RegisterPlatform(platform *types.Platform) (
 	return newPlatform, nil
 }
 
-// Registers a broker in the service manager
-func (client *ServiceManagerClient) RegisterBroker(broker *types.Broker) (*types.Broker, error) {
+// RegisterBroker registers a broker in the service manager
+func (client *serviceManagerClient) RegisterBroker(broker *types.Broker) (*types.Broker, error) {
 	requestBody, err := json.Marshal(broker)
 	if err != nil {
 		return nil, err
@@ -103,7 +105,8 @@ func (client *ServiceManagerClient) RegisterBroker(broker *types.Broker) (*types
 	return newBroker, nil
 }
 
-func (client *ServiceManagerClient) ListBrokers() (*types.Brokers, error) {
+// ListBrokers lists brokers registered in the Service Manager
+func (client *serviceManagerClient) ListBrokers() (*types.Brokers, error) {
 	resp, err := client.call(http.MethodGet, "/v1/service_brokers", nil)
 	if err != nil {
 		return nil, err
@@ -113,7 +116,7 @@ func (client *ServiceManagerClient) ListBrokers() (*types.Brokers, error) {
 		return nil, errors.ResponseError{StatusCode: resp.StatusCode}
 	}
 
-	var brokers *types.Brokers = &types.Brokers{}
+	brokers := &types.Brokers{}
 	err = httputil.UnmarshalResponse(resp, &brokers)
 	if err != nil {
 		return nil, err
@@ -122,7 +125,7 @@ func (client *ServiceManagerClient) ListBrokers() (*types.Brokers, error) {
 	return brokers, nil
 }
 
-func (client *ServiceManagerClient) call(method string, smpath string, body io.Reader) (*http.Response, error) {
+func (client *serviceManagerClient) call(method string, smpath string, body io.Reader) (*http.Response, error) {
 	fullURL := httputil.NormalizeURL(client.config.URL)
 	fullURL = fullURL + smpath
 

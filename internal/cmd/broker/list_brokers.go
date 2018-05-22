@@ -17,7 +17,7 @@
 package broker
 
 import (
-	"github.com/Peripli/service-manager-cli/internal/print"
+	"github.com/Peripli/service-manager-cli/internal/output"
 
 	"github.com/spf13/cobra"
 
@@ -26,7 +26,7 @@ import (
 	"github.com/Peripli/service-manager-cli/pkg/types"
 )
 
-// Wraps the smctl list-brokers command
+// ListBrokersCmd wraps the smctl list-brokers command
 type ListBrokersCmd struct {
 	*cmd.Context
 
@@ -35,6 +35,7 @@ type ListBrokersCmd struct {
 	outputFormat int
 }
 
+// NewListBrokersCmd returns new list-brokers command with context
 func NewListBrokersCmd(context *cmd.Context) *ListBrokersCmd {
 	return &ListBrokersCmd{Context: context, broker: types.Broker{}}
 }
@@ -50,35 +51,40 @@ func (lb *ListBrokersCmd) buildCommand() *cobra.Command {
 	}
 }
 
+// Run runs the command's logic
 func (lb *ListBrokersCmd) Run() error {
 	brokers, err := lb.Client.ListBrokers()
 	if err != nil {
 		return err
 	}
 
-	print.PrintServiceManagerObject(lb.Output, lb.outputFormat, brokers)
-	print.Println(lb.Output)
+	output.PrintServiceManagerObject(lb.Output, lb.outputFormat, brokers)
+	output.Println(lb.Output)
 
 	return nil
 }
 
-func (lp *ListBrokersCmd) addFlags(command *cobra.Command) *cobra.Command {
+func (lb *ListBrokersCmd) addFlags(command *cobra.Command) *cobra.Command {
 	cmd.AddFormatFlag(command.Flags())
 	return command
 }
 
-func (rpc *ListBrokersCmd) SetSMClient(client smclient.Client) {
-	rpc.Client = client
+// SetSMClient set the SM client
+func (lb *ListBrokersCmd) SetSMClient(client smclient.Client) {
+	lb.Client = client
 }
 
-func (rpc *ListBrokersCmd) SetOutputFormat(format int) {
-	rpc.outputFormat = format
+// SetOutputFormat set output format
+func (lb *ListBrokersCmd) SetOutputFormat(format int) {
+	lb.outputFormat = format
 }
 
-func (rpc *ListBrokersCmd) HideUsage() bool {
+// HideUsage hide command's usage
+func (lb *ListBrokersCmd) HideUsage() bool {
 	return true
 }
 
+// Command returns cobra command
 func (lb *ListBrokersCmd) Command() *cobra.Command {
 	result := lb.buildCommand()
 	result = lb.addFlags(result)
