@@ -23,21 +23,18 @@ import (
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
-	"github.com/Peripli/service-manager-cli/pkg/types"
 )
 
 // ListBrokersCmd wraps the smctl list-brokers command
 type ListBrokersCmd struct {
 	*cmd.Context
 
-	broker types.Broker
-
 	outputFormat int
 }
 
 // NewListBrokersCmd returns new list-brokers command with context
 func NewListBrokersCmd(context *cmd.Context) *ListBrokersCmd {
-	return &ListBrokersCmd{Context: context, broker: types.Broker{}}
+	return &ListBrokersCmd{Context: context}
 }
 
 func (lb *ListBrokersCmd) buildCommand() *cobra.Command {

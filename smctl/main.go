@@ -40,6 +40,7 @@ func main() {
 		version.NewVersionCmd(context, clientVersion),
 		info.NewInfoCmd(context),
 		broker.NewListBrokersCmd(context),
+		broker.NewDeleteBrokerCmd(context),
 		//platform.NewListPlatformCmd(client),
 		//platform.NewDeregisterPlatformCmd(client),
 	}
