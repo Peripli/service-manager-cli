@@ -33,7 +33,7 @@ var _ = Describe("List brokers command test", func() {
 		command = NewDeleteBrokerCmd(context)
 
 		var brokers *types.Brokers = &types.Brokers{}
-		brokers.Brokers = []types.Broker{{ID: "1234", Name: "broker-name"}}
+		brokers.Brokers = []types.Broker{{ID: "1234", Name: "broker-name"}, {ID: "456", Name: "broker2"}}
 		client.ListBrokersReturns(brokers, nil)
 	})
 
@@ -54,6 +54,28 @@ var _ = Describe("List brokers command test", func() {
 		})
 	})
 
+	Context("when 2 brokers are being deleted", func() {
+		It("should print required arguments", func() {
+			client.DeleteBrokerReturns(nil)
+			err := executeWithArgs([]string{"broker-name", "broker2"})
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(buffer.String()).To(ContainSubstring("Broker with name: broker-name successfully deleted"))
+			Expect(buffer.String()).To(ContainSubstring("Broker with name: broker2 successfully deleted"))
+		})
+	})
+
+	Context("when 2 brokers are being deleted and one is not found", func() {
+		It("should print required arguments", func() {
+			client.DeleteBrokerReturns(nil)
+			err := executeWithArgs([]string{"broker-name", "broker"})
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(buffer.String()).To(ContainSubstring("Broker with name: broker-name successfully deleted"))
+			Expect(buffer.String()).To(ContainSubstring("1 names were not found"))
+		})
+	})
+
 	Context("when non-existing broker is being deleted", func() {
 		It("should return error message", func() {
 			expectedError := errors.ResponseError{StatusCode: http.StatusNotFound}
@@ -61,7 +83,7 @@ var _ = Describe("List brokers command test", func() {
 			err := executeWithArgs([]string{"non-existing-name"})
 
 			Expect(err).Should(HaveOccurred())
-			Expect(err).To(MatchError("Broker with name: non-existing-name not found"))
+			Expect(err).To(MatchError("No brokers are found"))
 		})
 	})
 

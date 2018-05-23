@@ -32,7 +32,7 @@ import (
 type DeleteBrokerCmd struct {
 	*cmd.Context
 
-	name string
+	names []string
 }
 
 // NewDeleteBrokerCmd returns new list-brokers command with context
@@ -42,7 +42,7 @@ func NewDeleteBrokerCmd(context *cmd.Context) *DeleteBrokerCmd {
 
 func (dbc *DeleteBrokerCmd) buildCommand() *cobra.Command {
 	return &cobra.Command{
-		Use:     "delete-broker [name]",
+		Use:     "delete-broker [name] <name2 <name3> ... <nameN>>",
 		Aliases: []string{"db"},
 		Short:   "Deletes broker",
 		Long:    `Delete broker with id.`,
@@ -57,38 +57,47 @@ func (dbc *DeleteBrokerCmd) Validate(args []string) error {
 		return fmt.Errorf("[name] is required")
 	}
 
-	dbc.name = args[0]
+	dbc.names = args
 
 	return nil
 }
 
 // Run runs the command's logic
 func (dbc *DeleteBrokerCmd) Run() error {
-	brokers, err := dbc.Client.ListBrokers()
+	allBrokers, err := dbc.Client.ListBrokers()
 	if err != nil {
 		return err
 	}
 
-	broker := getBrokerByName(brokers, dbc.name)
-	if broker == nil {
-		return fmt.Errorf("Broker with name: %s not found", dbc.name)
+	toDeleteBrokers := getBrokerByName(allBrokers, dbc.names)
+	if len(toDeleteBrokers) < 1 {
+		return fmt.Errorf("No brokers are found")
 	}
 
-	if err := dbc.Client.DeleteBroker(broker.ID); err != nil {
-		return err
+	for _, toDelete := range toDeleteBrokers {
+		if err := dbc.Client.DeleteBroker(toDelete.ID); err != nil {
+			return err
+		}
+		output.PrintMessage(dbc.Output, "Broker with name: %s successfully deleted\n", toDelete.Name)
 	}
 
-	output.PrintMessage(dbc.Output, "Broker with name: %s successfully deleted", dbc.name)
+	if len(toDeleteBrokers) < len(dbc.names) {
+		output.PrintError(dbc.Output, fmt.Errorf("%d names were not found", len(dbc.names)-len(toDeleteBrokers)))
+	}
+
 	return nil
 }
 
-func getBrokerByName(brokers *types.Brokers, name string) *types.Broker {
+func getBrokerByName(brokers *types.Brokers, names []string) []types.Broker {
+	result := make([]types.Broker, 0)
 	for _, broker := range brokers.Brokers {
-		if broker.Name == name {
-			return &broker
+		for _, name := range names {
+			if broker.Name == name {
+				result = append(result, broker)
+			}
 		}
 	}
-	return nil
+	return result
 }
 
 // SetSMClient set the SM client
