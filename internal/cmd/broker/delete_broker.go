@@ -25,14 +25,14 @@ import (
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
+	"github.com/Peripli/service-manager-cli/pkg/types"
 )
 
 // DeleteBrokerCmd wraps the smctl list-brokers command
 type DeleteBrokerCmd struct {
 	*cmd.Context
 
-	id           string
-	outputFormat int
+	name string
 }
 
 // NewDeleteBrokerCmd returns new list-brokers command with context
@@ -42,7 +42,7 @@ func NewDeleteBrokerCmd(context *cmd.Context) *DeleteBrokerCmd {
 
 func (dbc *DeleteBrokerCmd) buildCommand() *cobra.Command {
 	return &cobra.Command{
-		Use:     "delete-broker [id]",
+		Use:     "delete-broker [name]",
 		Aliases: []string{"db"},
 		Short:   "Deletes broker",
 		Long:    `Delete broker with id.`,
@@ -54,21 +54,40 @@ func (dbc *DeleteBrokerCmd) buildCommand() *cobra.Command {
 // Validate validates command's arguments
 func (dbc *DeleteBrokerCmd) Validate(args []string) error {
 	if len(args) < 1 {
-		return fmt.Errorf("[id] is required")
+		return fmt.Errorf("[name] is required")
 	}
 
-	dbc.id = args[0]
+	dbc.name = args[0]
 
 	return nil
 }
 
 // Run runs the command's logic
 func (dbc *DeleteBrokerCmd) Run() error {
-	if err := dbc.Client.DeleteBroker(dbc.id); err != nil {
+	brokers, err := dbc.Client.ListBrokers()
+	if err != nil {
 		return err
 	}
 
-	output.PrintMessage(dbc.Output, "Broker with id: %s successfully deleted", dbc.id)
+	broker := getBrokerByName(brokers, dbc.name)
+	if broker == nil {
+		return fmt.Errorf("Broker with name: %s not found", dbc.name)
+	}
+
+	if err := dbc.Client.DeleteBroker(broker.ID); err != nil {
+		return err
+	}
+
+	output.PrintMessage(dbc.Output, "Broker with name: %s successfully deleted", dbc.name)
+	return nil
+}
+
+func getBrokerByName(brokers *types.Brokers, name string) *types.Broker {
+	for _, broker := range brokers.Brokers {
+		if broker.Name == name {
+			return &broker
+		}
+	}
 	return nil
 }
 
