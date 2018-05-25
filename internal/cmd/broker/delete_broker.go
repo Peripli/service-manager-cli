@@ -25,7 +25,6 @@ import (
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
-	"github.com/Peripli/service-manager-cli/pkg/types"
 )
 
 // DeleteBrokerCmd wraps the smctl list-brokers command
@@ -44,8 +43,8 @@ func (dbc *DeleteBrokerCmd) buildCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:     "delete-broker [name] <name2 <name3> ... <nameN>>",
 		Aliases: []string{"db"},
-		Short:   "Deletes broker",
-		Long:    `Delete broker with id.`,
+		Short:   "Deletes brokers",
+		Long:    `Delete one or more brokers with name.`,
 		PreRunE: cmd.PreRunE(dbc, dbc.Context),
 		RunE:    cmd.RunE(dbc),
 	}
@@ -86,18 +85,6 @@ func (dbc *DeleteBrokerCmd) Run() error {
 	}
 
 	return nil
-}
-
-func getBrokerByName(brokers *types.Brokers, names []string) []types.Broker {
-	result := make([]types.Broker, 0)
-	for _, broker := range brokers.Brokers {
-		for _, name := range names {
-			if broker.Name == name {
-				result = append(result, broker)
-			}
-		}
-	}
-	return result
 }
 
 // SetSMClient set the SM client

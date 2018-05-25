@@ -41,6 +41,7 @@ func main() {
 		info.NewInfoCmd(context),
 		broker.NewListBrokersCmd(context),
 		broker.NewDeleteBrokerCmd(context),
+		broker.NewUpdateBrokerCmd(context),
 		//platform.NewListPlatformCmd(client),
 		//platform.NewDeregisterPlatformCmd(client),
 	}
