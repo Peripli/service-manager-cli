@@ -33,6 +33,7 @@ type Client interface {
 	RegisterPlatform(*types.Platform) (*types.Platform, error)
 	RegisterBroker(*types.Broker) (*types.Broker, error)
 	ListBrokers() (*types.Brokers, error)
+	ListPlatforms() (*types.Platforms, error)
 	DeleteBroker(string) error
 	UpdateBroker(string, *types.Broker) (*types.Broker, error)
 }
@@ -107,24 +108,32 @@ func (client *serviceManagerClient) RegisterBroker(broker *types.Broker) (*types
 	return newBroker, nil
 }
 
-// ListBrokers lists brokers registered in the Service Manager
 func (client *serviceManagerClient) ListBrokers() (*types.Brokers, error) {
-	resp, err := client.call(http.MethodGet, "/v1/service_brokers", nil)
+	brokers := &types.Brokers{}
+	err := client.list(brokers, "/v1/service_brokers")
+
+	return brokers, err
+}
+
+// ListPlatforms lists platforms registered in the Service Manager
+func (client *serviceManagerClient) ListPlatforms() (*types.Platforms, error) {
+	platforms := &types.Platforms{}
+	err := client.list(platforms, "/v1/platforms")
+
+	return platforms, err
+}
+
+func (client *serviceManagerClient) list(result interface{}, path string) error {
+	resp, err := client.call(http.MethodGet, path, nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.ResponseError{StatusCode: resp.StatusCode}
+		return errors.ResponseError{StatusCode: resp.StatusCode}
 	}
 
-	brokers := &types.Brokers{}
-	err = httputil.UnmarshalResponse(resp, &brokers)
-	if err != nil {
-		return nil, err
-	}
-
-	return brokers, nil
+	return httputil.UnmarshalResponse(resp, &result)
 }
 
 func (client *serviceManagerClient) DeleteBroker(id string) error {

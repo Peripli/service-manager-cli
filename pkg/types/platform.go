@@ -26,6 +26,8 @@ type Platform struct {
 	Name        string       `json:"name" yaml:"name"`
 	Description string       `json:"description,omitempty" yaml:"description,omitempty"`
 	Type        string       `json:"type" yaml:"type"`
+	Created     string       `json:"created_at,omitempty" yaml:"created_at,omitempty"`
+	Updated     string       `json:"updated_at,omitempty" yaml:"updated_at,omitempty"`
 	Credentials *Credentials `json:"credentials,omitempty" yaml:"credentials,omitempty"`
 }
 
@@ -65,7 +67,7 @@ func (p *Platforms) Message() string {
 	var msg string
 
 	if len(p.Platforms) == 0 {
-		msg = "No platform registered."
+		msg = "No platforms registered."
 	} else if len(p.Platforms) == 1 {
 		msg = "One platform registered."
 	} else {
@@ -78,10 +80,10 @@ func (p *Platforms) Message() string {
 // TableData returns the data to populate a table
 func (p *Platforms) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"ID", "Name", "Type", "Description"}
+	result.Headers = []string{"ID", "Name", "Type", "Description", "Created", "Updated"}
 
 	for _, platform := range p.Platforms {
-		row := []string{platform.ID, platform.Name, platform.Type, platform.Description}
+		row := []string{platform.ID, platform.Name, platform.Type, platform.Description, platform.Created, platform.Updated}
 		result.Data = append(result.Data, row)
 	}
 

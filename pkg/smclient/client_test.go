@@ -262,6 +262,55 @@ var _ = Describe("Service Manager Client test", func() {
 		})
 	})
 
+	Describe("List platforms", func() {
+		Context("when there are platforms registered", func() {
+			It("should return all", func() {
+				responseStatusCode = http.StatusOK
+
+				platformsArray := []types.Platform{*platform}
+				platforms := types.Platforms{Platforms: platformsArray}
+				responseBody, _ = json.Marshal(platforms)
+
+				result, err := client.ListPlatforms()
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(result.Platforms).To(HaveLen(1))
+				Expect(result.Platforms[0]).To(Equal(*platform))
+			})
+		})
+
+		Context("when there are no platforms registered", func() {
+			It("should return empty array", func() {
+				responseStatusCode = http.StatusOK
+
+				platformsArray := []types.Platform{}
+				platforms := types.Platforms{Platforms: platformsArray}
+				responseBody, _ = json.Marshal(platforms)
+
+				result, err := client.ListPlatforms()
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(result.Platforms).To(HaveLen(0))
+			})
+		})
+
+		Context("when invalid status code is returned", func() {
+			It("should handle status code != 200", func() {
+				responseStatusCode = http.StatusCreated
+
+				_, err := client.ListPlatforms()
+				Expect(err).Should(HaveOccurred())
+				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusCreated}))
+			})
+
+			It("should handle status code > 299", func() {
+				responseStatusCode = http.StatusBadRequest
+
+				_, err := client.ListPlatforms()
+				Expect(err).Should(HaveOccurred())
+				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: smServer.URL + "/v1/platforms"}))
+			})
+		})
+	})
+
 	Describe("Delete brokers", func() {
 		Context("when an existing broker is being deleted", func() {
 			It("should be successfully removed", func() {

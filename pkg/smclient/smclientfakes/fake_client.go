@@ -46,6 +46,17 @@ type FakeClient struct {
 		result1 *types.Brokers
 		result2 error
 	}
+	ListPlatformsStub        func() (*types.Platforms, error)
+	listPlatformsMutex       sync.RWMutex
+	listPlatformsArgsForCall []struct{}
+	listPlatformsReturns     struct {
+		result1 *types.Platforms
+		result2 error
+	}
+	listPlatformsReturnsOnCall map[int]struct {
+		result1 *types.Platforms
+		result2 error
+	}
 	DeleteBrokerStub        func(string) error
 	deleteBrokerMutex       sync.RWMutex
 	deleteBrokerArgsForCall []struct {
@@ -220,6 +231,49 @@ func (fake *FakeClient) ListBrokersReturnsOnCall(i int, result1 *types.Brokers, 
 	}{result1, result2}
 }
 
+func (fake *FakeClient) ListPlatforms() (*types.Platforms, error) {
+	fake.listPlatformsMutex.Lock()
+	ret, specificReturn := fake.listPlatformsReturnsOnCall[len(fake.listPlatformsArgsForCall)]
+	fake.listPlatformsArgsForCall = append(fake.listPlatformsArgsForCall, struct{}{})
+	fake.recordInvocation("ListPlatforms", []interface{}{})
+	fake.listPlatformsMutex.Unlock()
+	if fake.ListPlatformsStub != nil {
+		return fake.ListPlatformsStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.listPlatformsReturns.result1, fake.listPlatformsReturns.result2
+}
+
+func (fake *FakeClient) ListPlatformsCallCount() int {
+	fake.listPlatformsMutex.RLock()
+	defer fake.listPlatformsMutex.RUnlock()
+	return len(fake.listPlatformsArgsForCall)
+}
+
+func (fake *FakeClient) ListPlatformsReturns(result1 *types.Platforms, result2 error) {
+	fake.ListPlatformsStub = nil
+	fake.listPlatformsReturns = struct {
+		result1 *types.Platforms
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) ListPlatformsReturnsOnCall(i int, result1 *types.Platforms, result2 error) {
+	fake.ListPlatformsStub = nil
+	if fake.listPlatformsReturnsOnCall == nil {
+		fake.listPlatformsReturnsOnCall = make(map[int]struct {
+			result1 *types.Platforms
+			result2 error
+		})
+	}
+	fake.listPlatformsReturnsOnCall[i] = struct {
+		result1 *types.Platforms
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeClient) DeleteBroker(arg1 string) error {
 	fake.deleteBrokerMutex.Lock()
 	ret, specificReturn := fake.deleteBrokerReturnsOnCall[len(fake.deleteBrokerArgsForCall)]
@@ -329,6 +383,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.registerBrokerMutex.RUnlock()
 	fake.listBrokersMutex.RLock()
 	defer fake.listBrokersMutex.RUnlock()
+	fake.listPlatformsMutex.RLock()
+	defer fake.listPlatformsMutex.RUnlock()
 	fake.deleteBrokerMutex.RLock()
 	defer fake.deleteBrokerMutex.RUnlock()
 	fake.updateBrokerMutex.RLock()
