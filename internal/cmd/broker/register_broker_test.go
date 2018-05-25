@@ -80,11 +80,11 @@ var _ = Describe("Register Broker Command test", func() {
 
 		Context("With necessary arguments provided and credentials flag", func() {
 			credentials := types.Credentials{types.Basic{User: "user", Password: "password"}}
-			credentialsJsonByte, _ := json.Marshal(credentials)
-			credentialsJsonString := (string)(credentialsJsonByte)
+			credentialsJSONByte, _ := json.Marshal(credentials)
+			credentialsJSONString := (string)(credentialsJSONByte)
 
 			It("should be registered", func() {
-				validRegisterBrokerExecution([]string{"broker-name", "http://broker.com", "--credentials", credentialsJsonString})
+				validRegisterBrokerExecution([]string{"broker-name", "http://broker.com", "--credentials", credentialsJSONString})
 
 				tableOutputExpected := broker.TableData().String()
 
@@ -92,7 +92,7 @@ var _ = Describe("Register Broker Command test", func() {
 			})
 
 			It("Argument values should be as expected", func() {
-				validRegisterBrokerExecution([]string{"broker-name", "http://broker.com", "--credentials", credentialsJsonString})
+				validRegisterBrokerExecution([]string{"broker-name", "http://broker.com", "--credentials", credentialsJSONString})
 
 				Expect(command.broker.Name).To(Equal("broker-name"))
 				Expect(command.broker.URL).To(Equal("http://broker.com"))
@@ -160,10 +160,10 @@ var _ = Describe("Register Broker Command test", func() {
 		Context("With invalid credentials flag provided", func() {
 			It("should be registered", func() {
 				credentials := types.Credentials{types.Basic{User: "user", Password: "password"}}
-				credentialsJsonByte, _ := json.Marshal(credentials)
-				credentialsJsonString := (string)(credentialsJsonByte)
+				credentialsJSONByte, _ := json.Marshal(credentials)
+				credentialsJSONString := (string)(credentialsJSONByte)
 
-				err := invalidRegisterBrokerCommandExecution([]string{"broker-name", "http://broker.com", "--credentials", "{" + credentialsJsonString})
+				err := invalidRegisterBrokerCommandExecution([]string{"broker-name", "http://broker.com", "--credentials", "{" + credentialsJSONString})
 
 				Expect(err).Should(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("credentials string is invalid"))
