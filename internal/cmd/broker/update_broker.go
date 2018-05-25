@@ -111,6 +111,7 @@ func (ubc *UpdateBrokerCmd) HideUsage() bool {
 // Command returns cobra command
 func (ubc *UpdateBrokerCmd) Command() *cobra.Command {
 	result := ubc.buildCommand()
+	result = ubc.addFlags(result)
 
 	return result
 }
