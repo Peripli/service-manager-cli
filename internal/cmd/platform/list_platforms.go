@@ -37,54 +37,54 @@ func NewListPlatformsCmd(context *cmd.Context) *ListPlatformsCmd {
 	return &ListPlatformsCmd{Context: context}
 }
 
-func (lb *ListPlatformsCmd) buildCommand() *cobra.Command {
+func (lp *ListPlatformsCmd) buildCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:     "list-platforms",
 		Aliases: []string{"lp"},
 		Short:   "List platforms",
 		Long:    `List all platforms.`,
-		PreRunE: cmd.PreRunE(lb, lb.Context),
-		RunE:    cmd.RunE(lb),
+		PreRunE: cmd.PreRunE(lp, lp.Context),
+		RunE:    cmd.RunE(lp),
 	}
 }
 
 // Run runs the command's logic
-func (lb *ListPlatformsCmd) Run() error {
-	platforms, err := lb.Client.ListPlatforms()
+func (lp *ListPlatformsCmd) Run() error {
+	platforms, err := lp.Client.ListPlatforms()
 	if err != nil {
 		return err
 	}
 
-	output.PrintServiceManagerObject(lb.Output, lb.outputFormat, platforms)
-	output.Println(lb.Output)
+	output.PrintServiceManagerObject(lp.Output, lp.outputFormat, platforms)
+	output.Println(lp.Output)
 
 	return nil
 }
 
-func (lb *ListPlatformsCmd) addFlags(command *cobra.Command) *cobra.Command {
+func (lp *ListPlatformsCmd) addFlags(command *cobra.Command) *cobra.Command {
 	cmd.AddFormatFlag(command.Flags())
 	return command
 }
 
 // SetSMClient set the SM client
-func (lb *ListPlatformsCmd) SetSMClient(client smclient.Client) {
-	lb.Client = client
+func (lp *ListPlatformsCmd) SetSMClient(client smclient.Client) {
+	lp.Client = client
 }
 
 // SetOutputFormat set output format
-func (lb *ListPlatformsCmd) SetOutputFormat(format int) {
-	lb.outputFormat = format
+func (lp *ListPlatformsCmd) SetOutputFormat(format int) {
+	lp.outputFormat = format
 }
 
 // HideUsage hide command's usage
-func (lb *ListPlatformsCmd) HideUsage() bool {
+func (lp *ListPlatformsCmd) HideUsage() bool {
 	return true
 }
 
 // Command returns cobra command
-func (lb *ListPlatformsCmd) Command() *cobra.Command {
-	result := lb.buildCommand()
-	result = lb.addFlags(result)
+func (lp *ListPlatformsCmd) Command() *cobra.Command {
+	result := lp.buildCommand()
+	result = lp.addFlags(result)
 
 	return result
 }

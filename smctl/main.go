@@ -34,15 +34,16 @@ func main() {
 	rootCmd := cmd.BuildRootCommand(context)
 
 	commands := []cmd.CommandWrapper{
-		platform.NewRegisterPlatformCmd(context),
-		broker.NewRegisterBrokerCmd(context),
 		login.NewLoginCmd(context, os.Stdin),
 		version.NewVersionCmd(context, clientVersion),
 		info.NewInfoCmd(context),
+		broker.NewRegisterBrokerCmd(context),
 		broker.NewListBrokersCmd(context),
 		broker.NewDeleteBrokerCmd(context),
 		broker.NewUpdateBrokerCmd(context),
+		platform.NewRegisterPlatformCmd(context),
 		platform.NewListPlatformsCmd(context),
+		platform.NewDeletePlatformCmd(context),
 	}
 
 	for _, command := range commands {

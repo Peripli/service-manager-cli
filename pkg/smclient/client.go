@@ -35,6 +35,7 @@ type Client interface {
 	ListBrokers() (*types.Brokers, error)
 	ListPlatforms() (*types.Platforms, error)
 	DeleteBroker(string) error
+	DeletePlatform(string) error
 	UpdateBroker(string, *types.Broker) (*types.Broker, error)
 }
 
@@ -137,7 +138,15 @@ func (client *serviceManagerClient) list(result interface{}, path string) error 
 }
 
 func (client *serviceManagerClient) DeleteBroker(id string) error {
-	resp, err := client.call(http.MethodDelete, "/v1/service_brokers/"+id, nil)
+	return client.delete(id, "/v1/service_brokers/")
+}
+
+func (client *serviceManagerClient) DeletePlatform(id string) error {
+	return client.delete(id, "/v1/platforms/")
+}
+
+func (client *serviceManagerClient) delete(id, path string) error {
+	resp, err := client.call(http.MethodDelete, path+id, nil)
 	if err != nil {
 		return err
 	}

@@ -20,6 +20,8 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+
+	"github.com/Peripli/service-manager-cli/pkg/types"
 )
 
 // ValidateURL validates a URL
@@ -38,4 +40,30 @@ func ValidateURL(URL string) error {
 	}
 
 	return nil
+}
+
+// GetBrokerByName returns array of brokers with the searched names
+func GetBrokerByName(brokers *types.Brokers, names []string) []types.Broker {
+	result := make([]types.Broker, 0)
+	for _, broker := range brokers.Brokers {
+		for _, name := range names {
+			if broker.Name == name {
+				result = append(result, broker)
+			}
+		}
+	}
+	return result
+}
+
+// GetPlatformByName returns array of platforms with the searched names
+func GetPlatformByName(platforms *types.Platforms, names []string) []types.Platform {
+	result := make([]types.Platform, 0)
+	for _, platform := range platforms.Platforms {
+		for _, name := range names {
+			if platform.Name == name {
+				result = append(result, platform)
+			}
+		}
+	}
+	return result
 }

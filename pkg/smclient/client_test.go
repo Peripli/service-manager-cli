@@ -345,6 +345,40 @@ var _ = Describe("Service Manager Client test", func() {
 		})
 	})
 
+	Describe("Delete platforms", func() {
+		Context("when an existing platform is being deleted", func() {
+			It("should be successfully removed", func() {
+				responseStatusCode = http.StatusOK
+				responseBody = []byte("{}")
+
+				err := client.DeletePlatform("id")
+				Expect(err).ShouldNot(HaveOccurred())
+			})
+		})
+
+		Context("when service manager returns a non-expected status code", func() {
+			It("should handle error", func() {
+				responseStatusCode = http.StatusCreated
+				responseBody = []byte("{}")
+
+				err := client.DeletePlatform("id")
+				Expect(err).Should(HaveOccurred())
+				Expect(err).Should(MatchError(errors.ResponseError{StatusCode: http.StatusCreated}))
+			})
+		})
+
+		Context("when service manager returns a status code not found", func() {
+			It("should handle error", func() {
+				responseStatusCode = http.StatusNotFound
+				responseBody = []byte(`{ "description": "Platform not found" }`)
+
+				err := client.DeletePlatform("id")
+				Expect(err).Should(HaveOccurred())
+				Expect(err).Should(MatchError(errors.ResponseError{Description: "Platform not found", URL: smServer.URL + "/v1/platforms/id", StatusCode: http.StatusNotFound}))
+			})
+		})
+	})
+
 	Describe("Update brokers", func() {
 		Context("when an existing broker is being updated", func() {
 			It("should be successfully removed", func() {

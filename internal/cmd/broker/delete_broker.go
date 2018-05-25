@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"github.com/Peripli/service-manager-cli/internal/output"
+	"github.com/Peripli/service-manager-cli/internal/util"
 
 	"github.com/spf13/cobra"
 
@@ -68,7 +69,7 @@ func (dbc *DeleteBrokerCmd) Run() error {
 		return err
 	}
 
-	toDeleteBrokers := getBrokerByName(allBrokers, dbc.names)
+	toDeleteBrokers := util.GetBrokerByName(allBrokers, dbc.names)
 	if len(toDeleteBrokers) < 1 {
 		return fmt.Errorf("No brokers are found")
 	}
