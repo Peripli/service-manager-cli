@@ -21,8 +21,8 @@ import "fmt"
 // Broker defines the data of a service broker.
 type Broker struct {
 	ID          string       `json:"id,omitempty" yaml:"id,omitempty"`
-	Name        string       `json:"name" yaml:"name"`
-	URL         string       `json:"broker_url" yaml:"broker_url"`
+	Name        string       `json:"name,omitempty" yaml:"name,omitempty"`
+	URL         string       `json:"broker_url,omitempty" yaml:"broker_url,omitempty"`
 	Description string       `json:"description,omitempty" yaml:"description,omitempty"`
 	Created     string       `json:"created_at,omitempty" yaml:"created_at,omitempty"`
 	Updated     string       `json:"updated_at,omitempty" yaml:"updated_at,omitempty"`

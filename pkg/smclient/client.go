@@ -34,6 +34,7 @@ type Client interface {
 	RegisterBroker(*types.Broker) (*types.Broker, error)
 	ListBrokers() (*types.Brokers, error)
 	DeleteBroker(string) error
+	UpdateBroker(string, *types.Broker) (*types.Broker, error)
 }
 
 type serviceManagerClient struct {
@@ -67,7 +68,7 @@ func (client *serviceManagerClient) RegisterPlatform(platform *types.Platform) (
 		return nil, err
 	}
 
-	if response.StatusCode != 201 {
+	if response.StatusCode != http.StatusCreated {
 		return nil, errors.ResponseError{StatusCode: response.StatusCode}
 	}
 
@@ -93,7 +94,7 @@ func (client *serviceManagerClient) RegisterBroker(broker *types.Broker) (*types
 		return nil, err
 	}
 
-	if response.StatusCode != 201 {
+	if response.StatusCode != http.StatusCreated {
 		return nil, errors.ResponseError{StatusCode: response.StatusCode}
 	}
 
@@ -113,7 +114,7 @@ func (client *serviceManagerClient) ListBrokers() (*types.Brokers, error) {
 		return nil, err
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return nil, errors.ResponseError{StatusCode: resp.StatusCode}
 	}
 
@@ -132,11 +133,36 @@ func (client *serviceManagerClient) DeleteBroker(id string) error {
 		return err
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return errors.ResponseError{StatusCode: resp.StatusCode}
 	}
 
 	return nil
+}
+
+func (client *serviceManagerClient) UpdateBroker(id string, updatedBroker *types.Broker) (*types.Broker, error) {
+	requestBody, err := json.Marshal(updatedBroker)
+	if err != nil {
+		return nil, err
+	}
+
+	buffer := bytes.NewBuffer(requestBody)
+	resp, err := client.call(http.MethodPatch, "/v1/service_brokers/"+id, buffer)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.ResponseError{StatusCode: resp.StatusCode}
+	}
+
+	var newBroker *types.Broker
+	err = httputil.UnmarshalResponse(resp, &newBroker)
+	if err != nil {
+		return nil, err
+	}
+
+	return newBroker, nil
 }
 
 func (client *serviceManagerClient) call(method string, smpath string, body io.Reader) (*http.Response, error) {

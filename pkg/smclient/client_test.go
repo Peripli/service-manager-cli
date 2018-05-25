@@ -295,4 +295,31 @@ var _ = Describe("Service Manager Client test", func() {
 			})
 		})
 	})
+
+	Describe("Update brokers", func() {
+		Context("when an existing broker is being updated", func() {
+			It("should be successfully removed", func() {
+				responseStatusCode = http.StatusOK
+				responseBody = []byte(`{
+					"id": "1234",
+					"name": "broker",
+					"broker_url": "http://broker.com"
+				}`)
+
+				updatedBroker, err := client.UpdateBroker("1234", &types.Broker{Name: "broker"})
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(updatedBroker.Name).To(Equal("broker"))
+			})
+		})
+
+		Context("when a non-existing broker is being updated", func() {
+			It("should handle error", func() {
+				responseStatusCode = http.StatusNotFound
+				responseBody = []byte(`{}`)
+
+				_, err := client.UpdateBroker("1234", &types.Broker{Name: "broker"})
+				Expect(err).Should(HaveOccurred())
+			})
+		})
+	})
 })

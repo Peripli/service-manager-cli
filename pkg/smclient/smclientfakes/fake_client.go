@@ -57,6 +57,20 @@ type FakeClient struct {
 	deleteBrokerReturnsOnCall map[int]struct {
 		result1 error
 	}
+	UpdateBrokerStub        func(string, *types.Broker) (*types.Broker, error)
+	updateBrokerMutex       sync.RWMutex
+	updateBrokerArgsForCall []struct {
+		arg1 string
+		arg2 *types.Broker
+	}
+	updateBrokerReturns struct {
+		result1 *types.Broker
+		result2 error
+	}
+	updateBrokerReturnsOnCall map[int]struct {
+		result1 *types.Broker
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -254,6 +268,58 @@ func (fake *FakeClient) DeleteBrokerReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeClient) UpdateBroker(arg1 string, arg2 *types.Broker) (*types.Broker, error) {
+	fake.updateBrokerMutex.Lock()
+	ret, specificReturn := fake.updateBrokerReturnsOnCall[len(fake.updateBrokerArgsForCall)]
+	fake.updateBrokerArgsForCall = append(fake.updateBrokerArgsForCall, struct {
+		arg1 string
+		arg2 *types.Broker
+	}{arg1, arg2})
+	fake.recordInvocation("UpdateBroker", []interface{}{arg1, arg2})
+	fake.updateBrokerMutex.Unlock()
+	if fake.UpdateBrokerStub != nil {
+		return fake.UpdateBrokerStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.updateBrokerReturns.result1, fake.updateBrokerReturns.result2
+}
+
+func (fake *FakeClient) UpdateBrokerCallCount() int {
+	fake.updateBrokerMutex.RLock()
+	defer fake.updateBrokerMutex.RUnlock()
+	return len(fake.updateBrokerArgsForCall)
+}
+
+func (fake *FakeClient) UpdateBrokerArgsForCall(i int) (string, *types.Broker) {
+	fake.updateBrokerMutex.RLock()
+	defer fake.updateBrokerMutex.RUnlock()
+	return fake.updateBrokerArgsForCall[i].arg1, fake.updateBrokerArgsForCall[i].arg2
+}
+
+func (fake *FakeClient) UpdateBrokerReturns(result1 *types.Broker, result2 error) {
+	fake.UpdateBrokerStub = nil
+	fake.updateBrokerReturns = struct {
+		result1 *types.Broker
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) UpdateBrokerReturnsOnCall(i int, result1 *types.Broker, result2 error) {
+	fake.UpdateBrokerStub = nil
+	if fake.updateBrokerReturnsOnCall == nil {
+		fake.updateBrokerReturnsOnCall = make(map[int]struct {
+			result1 *types.Broker
+			result2 error
+		})
+	}
+	fake.updateBrokerReturnsOnCall[i] = struct {
+		result1 *types.Broker
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -265,6 +331,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.listBrokersMutex.RUnlock()
 	fake.deleteBrokerMutex.RLock()
 	defer fake.deleteBrokerMutex.RUnlock()
+	fake.updateBrokerMutex.RLock()
+	defer fake.updateBrokerMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
