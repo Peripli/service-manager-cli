@@ -30,7 +30,7 @@ import (
 	"github.com/Peripli/service-manager-cli/pkg/types"
 )
 
-// UpdateBrokerCmd wraps the smctl list-brokers command
+// UpdateBrokerCmd wraps the smctl update-broker command
 type UpdateBrokerCmd struct {
 	*cmd.Context
 
@@ -39,7 +39,7 @@ type UpdateBrokerCmd struct {
 	updatedBroker *types.Broker
 }
 
-// NewUpdateBrokerCmd returns new list-brokers command with context
+// NewUpdateBrokerCmd returns new update-broker command with context
 func NewUpdateBrokerCmd(context *cmd.Context) *UpdateBrokerCmd {
 	return &UpdateBrokerCmd{Context: context}
 }

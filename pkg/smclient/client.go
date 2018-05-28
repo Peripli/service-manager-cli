@@ -37,6 +37,7 @@ type Client interface {
 	DeleteBroker(string) error
 	DeletePlatform(string) error
 	UpdateBroker(string, *types.Broker) (*types.Broker, error)
+	UpdatePlatform(string, *types.Platform) (*types.Platform, error)
 }
 
 type serviceManagerClient struct {
@@ -164,23 +165,31 @@ func (client *serviceManagerClient) UpdateBroker(id string, updatedBroker *types
 		return nil, err
 	}
 
-	buffer := bytes.NewBuffer(requestBody)
-	resp, err := client.call(http.MethodPatch, "/v1/service_brokers/"+id, buffer)
+	result := &types.Broker{}
+	return result, client.update(result, requestBody, id, "/v1/service_brokers/")
+}
+
+func (client *serviceManagerClient) UpdatePlatform(id string, updatedPlatform *types.Platform) (*types.Platform, error) {
+	requestBody, err := json.Marshal(updatedPlatform)
 	if err != nil {
 		return nil, err
+	}
+	result := &types.Platform{}
+	return result, client.update(result, requestBody, id, "/v1/platforms/")
+}
+
+func (client *serviceManagerClient) update(result interface{}, body []byte, id, path string) error {
+	buffer := bytes.NewBuffer(body)
+	resp, err := client.call(http.MethodPatch, path+id, buffer)
+	if err != nil {
+		return err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.ResponseError{StatusCode: resp.StatusCode}
+		return errors.ResponseError{StatusCode: resp.StatusCode}
 	}
 
-	var newBroker *types.Broker
-	err = httputil.UnmarshalResponse(resp, &newBroker)
-	if err != nil {
-		return nil, err
-	}
-
-	return newBroker, nil
+	return httputil.UnmarshalResponse(resp, &result)
 }
 
 func (client *serviceManagerClient) call(method string, smpath string, body io.Reader) (*http.Response, error) {

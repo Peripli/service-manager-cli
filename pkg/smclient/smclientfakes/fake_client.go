@@ -93,6 +93,20 @@ type FakeClient struct {
 		result1 *types.Broker
 		result2 error
 	}
+	UpdatePlatformStub        func(string, *types.Platform) (*types.Platform, error)
+	updatePlatformMutex       sync.RWMutex
+	updatePlatformArgsForCall []struct {
+		arg1 string
+		arg2 *types.Platform
+	}
+	updatePlatformReturns struct {
+		result1 *types.Platform
+		result2 error
+	}
+	updatePlatformReturnsOnCall map[int]struct {
+		result1 *types.Platform
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -433,6 +447,58 @@ func (fake *FakeClient) UpdateBrokerReturnsOnCall(i int, result1 *types.Broker, 
 	}{result1, result2}
 }
 
+func (fake *FakeClient) UpdatePlatform(arg1 string, arg2 *types.Platform) (*types.Platform, error) {
+	fake.updatePlatformMutex.Lock()
+	ret, specificReturn := fake.updatePlatformReturnsOnCall[len(fake.updatePlatformArgsForCall)]
+	fake.updatePlatformArgsForCall = append(fake.updatePlatformArgsForCall, struct {
+		arg1 string
+		arg2 *types.Platform
+	}{arg1, arg2})
+	fake.recordInvocation("UpdatePlatform", []interface{}{arg1, arg2})
+	fake.updatePlatformMutex.Unlock()
+	if fake.UpdatePlatformStub != nil {
+		return fake.UpdatePlatformStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.updatePlatformReturns.result1, fake.updatePlatformReturns.result2
+}
+
+func (fake *FakeClient) UpdatePlatformCallCount() int {
+	fake.updatePlatformMutex.RLock()
+	defer fake.updatePlatformMutex.RUnlock()
+	return len(fake.updatePlatformArgsForCall)
+}
+
+func (fake *FakeClient) UpdatePlatformArgsForCall(i int) (string, *types.Platform) {
+	fake.updatePlatformMutex.RLock()
+	defer fake.updatePlatformMutex.RUnlock()
+	return fake.updatePlatformArgsForCall[i].arg1, fake.updatePlatformArgsForCall[i].arg2
+}
+
+func (fake *FakeClient) UpdatePlatformReturns(result1 *types.Platform, result2 error) {
+	fake.UpdatePlatformStub = nil
+	fake.updatePlatformReturns = struct {
+		result1 *types.Platform
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) UpdatePlatformReturnsOnCall(i int, result1 *types.Platform, result2 error) {
+	fake.UpdatePlatformStub = nil
+	if fake.updatePlatformReturnsOnCall == nil {
+		fake.updatePlatformReturnsOnCall = make(map[int]struct {
+			result1 *types.Platform
+			result2 error
+		})
+	}
+	fake.updatePlatformReturnsOnCall[i] = struct {
+		result1 *types.Platform
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -450,6 +516,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.deletePlatformMutex.RUnlock()
 	fake.updateBrokerMutex.RLock()
 	defer fake.updateBrokerMutex.RUnlock()
+	fake.updatePlatformMutex.RLock()
+	defer fake.updatePlatformMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

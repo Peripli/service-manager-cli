@@ -44,6 +44,7 @@ func main() {
 		platform.NewRegisterPlatformCmd(context),
 		platform.NewListPlatformsCmd(context),
 		platform.NewDeletePlatformCmd(context),
+		platform.NewUpdatePlatformCmd(context),
 	}
 
 	for _, command := range commands {

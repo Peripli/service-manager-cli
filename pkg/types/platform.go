@@ -44,9 +44,15 @@ func (p *Platform) IsEmpty() bool {
 // TableData returns the data to populate a table
 func (p *Platform) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"ID", "Name", "Type", "Description", "Username", "Password"}
 
-	row := []string{p.ID, p.Name, p.Type, p.Description, p.Credentials.Basic.User, p.Credentials.Basic.Password}
+	result.Headers = []string{"ID", "Name", "Type", "Description", "Created", "Updated"}
+	row := []string{p.ID, p.Name, p.Type, p.Description, p.Created, p.Updated}
+
+	if p.Credentials != nil {
+		result.Headers = append(result.Headers, "Username", "Password")
+		row = append(row, p.Credentials.Basic.User, p.Credentials.Basic.Password)
+	}
+
 	result.Data = append(result.Data, row)
 
 	return result
