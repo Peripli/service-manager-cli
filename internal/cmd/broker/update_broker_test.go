@@ -61,7 +61,7 @@ var _ = Describe("Update broker command test", func() {
 
 	Context("when non-existing broker is being updated", func() {
 		It("should throw error", func() {
-			client.ListBrokersReturns(&types.Brokers{Brokers: []types.Broker{broker}}, nil)
+			client.ListBrokersReturns(&types.Brokers{Brokers: []types.Broker{}}, nil)
 			err := executeWithArgs([]string{"non-existing", "{}"})
 
 			Expect(err).Should(HaveOccurred())

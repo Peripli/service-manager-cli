@@ -20,7 +20,7 @@ func TestDeleteBrokerCmd(t *testing.T) {
 	RunSpecs(t, "")
 }
 
-var _ = Describe("List brokers command test", func() {
+var _ = Describe("Delete brokers command test", func() {
 
 	var client *smclientfakes.FakeClient
 	var command *DeleteBrokerCmd
@@ -67,6 +67,10 @@ var _ = Describe("List brokers command test", func() {
 
 	Context("when 2 brokers are being deleted and one is not found", func() {
 		It("should print required arguments", func() {
+			var brokers *types.Brokers = &types.Brokers{}
+			brokers.Brokers = []types.Broker{{ID: "1234", Name: "broker-name"}}
+			client.ListBrokersReturns(brokers, nil)
+
 			client.DeleteBrokerReturns(nil)
 			err := executeWithArgs([]string{"broker-name", "broker"})
 
@@ -78,6 +82,10 @@ var _ = Describe("List brokers command test", func() {
 
 	Context("when non-existing broker is being deleted", func() {
 		It("should return error message", func() {
+			var brokers *types.Brokers = &types.Brokers{}
+			brokers.Brokers = []types.Broker{}
+			client.ListBrokersReturns(brokers, nil)
+
 			expectedError := errors.ResponseError{StatusCode: http.StatusNotFound}
 			client.DeleteBrokerReturns(expectedError)
 			err := executeWithArgs([]string{"non-existing-name"})

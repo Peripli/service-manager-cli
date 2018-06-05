@@ -222,7 +222,7 @@ var _ = Describe("Service Manager Client test", func() {
 				brokers := types.Brokers{Brokers: brokersArray}
 				responseBody, _ = json.Marshal(brokers)
 
-				result, err := client.ListBrokers()
+				result, err := client.ListBrokers([]string{})
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result.Brokers).To(HaveLen(1))
 				Expect(result.Brokers[0]).To(Equal(*broker))
@@ -237,7 +237,7 @@ var _ = Describe("Service Manager Client test", func() {
 				brokers := types.Brokers{Brokers: brokersArray}
 				responseBody, _ = json.Marshal(brokers)
 
-				result, err := client.ListBrokers()
+				result, err := client.ListBrokers([]string{})
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result.Brokers).To(HaveLen(0))
 			})
@@ -247,7 +247,7 @@ var _ = Describe("Service Manager Client test", func() {
 			It("should handle status code != 200", func() {
 				responseStatusCode = http.StatusCreated
 
-				_, err := client.ListBrokers()
+				_, err := client.ListBrokers([]string{})
 				Expect(err).Should(HaveOccurred())
 				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusCreated}))
 			})
@@ -255,7 +255,7 @@ var _ = Describe("Service Manager Client test", func() {
 			It("should handle status code > 299", func() {
 				responseStatusCode = http.StatusBadRequest
 
-				_, err := client.ListBrokers()
+				_, err := client.ListBrokers([]string{})
 				Expect(err).Should(HaveOccurred())
 				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: smServer.URL + "/v1/service_brokers"}))
 			})

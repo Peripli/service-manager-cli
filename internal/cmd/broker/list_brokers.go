@@ -30,6 +30,7 @@ type ListBrokersCmd struct {
 	*cmd.Context
 
 	outputFormat int
+	names        []string
 }
 
 // NewListBrokersCmd returns new list-brokers command with context
@@ -39,7 +40,7 @@ func NewListBrokersCmd(context *cmd.Context) *ListBrokersCmd {
 
 func (lb *ListBrokersCmd) buildCommand() *cobra.Command {
 	return &cobra.Command{
-		Use:     "list-brokers",
+		Use:     "list-brokers <name1 <name2> ... <nameN>>",
 		Aliases: []string{"lb"},
 		Short:   "List brokers",
 		Long:    `List all brokers.`,
@@ -48,9 +49,18 @@ func (lb *ListBrokersCmd) buildCommand() *cobra.Command {
 	}
 }
 
+// Validate validates command's arguments
+func (lb *ListBrokersCmd) Validate(args []string) error {
+	if len(args) > 0 {
+		lb.names = args
+	}
+
+	return nil
+}
+
 // Run runs the command's logic
 func (lb *ListBrokersCmd) Run() error {
-	brokers, err := lb.Client.ListBrokers()
+	brokers, err := lb.Client.ListBrokers(lb.names)
 	if err != nil {
 		return err
 	}
@@ -71,10 +81,10 @@ func (lb *ListBrokersCmd) SetSMClient(client smclient.Client) {
 	lb.Client = client
 }
 
-	// SetOutputFormat set output format
-	func (lb *ListBrokersCmd) SetOutputFormat(format int) {
-		lb.outputFormat = format
-	}
+// SetOutputFormat set output format
+func (lb *ListBrokersCmd) SetOutputFormat(format int) {
+	lb.outputFormat = format
+}
 
 // HideUsage hide command's usage
 func (lb *ListBrokersCmd) HideUsage() bool {

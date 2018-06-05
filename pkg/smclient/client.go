@@ -32,7 +32,7 @@ import (
 type Client interface {
 	RegisterPlatform(*types.Platform) (*types.Platform, error)
 	RegisterBroker(*types.Broker) (*types.Broker, error)
-	ListBrokers() (*types.Brokers, error)
+	ListBrokers([]string) (*types.Brokers, error)
 	ListPlatforms() (*types.Platforms, error)
 	DeleteBroker(string) error
 	DeletePlatform(string) error
@@ -66,7 +66,7 @@ func (client *serviceManagerClient) RegisterPlatform(platform *types.Platform) (
 	}
 
 	buffer := bytes.NewBuffer(requestBody)
-	response, err := client.call(http.MethodPost, "/v1/platforms", buffer)
+	response, err := client.call(http.MethodPost, "/v1/platforms", buffer, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func (client *serviceManagerClient) RegisterBroker(broker *types.Broker) (*types
 	}
 
 	buffer := bytes.NewBuffer(requestBody)
-	response, err := client.call(http.MethodPost, "/v1/service_brokers", buffer)
+	response, err := client.call(http.MethodPost, "/v1/service_brokers", buffer, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -110,9 +110,9 @@ func (client *serviceManagerClient) RegisterBroker(broker *types.Broker) (*types
 	return newBroker, nil
 }
 
-func (client *serviceManagerClient) ListBrokers() (*types.Brokers, error) {
+func (client *serviceManagerClient) ListBrokers(names []string) (*types.Brokers, error) {
 	brokers := &types.Brokers{}
-	err := client.list(brokers, "/v1/service_brokers")
+	err := client.list(brokers, "/v1/service_brokers", names)
 
 	return brokers, err
 }
@@ -120,13 +120,17 @@ func (client *serviceManagerClient) ListBrokers() (*types.Brokers, error) {
 // ListPlatforms lists platforms registered in the Service Manager
 func (client *serviceManagerClient) ListPlatforms() (*types.Platforms, error) {
 	platforms := &types.Platforms{}
-	err := client.list(platforms, "/v1/platforms")
+	err := client.list(platforms, "/v1/platforms", []string{})
 
 	return platforms, err
 }
 
-func (client *serviceManagerClient) list(result interface{}, path string) error {
-	resp, err := client.call(http.MethodGet, path, nil)
+func (client *serviceManagerClient) list(result interface{}, path string, names []string) error {
+	queryParams := make(map[string][]string)
+	for _, name := range names {
+		queryParams["name"] = append(queryParams["name"], name)
+	}
+	resp, err := client.call(http.MethodGet, path, nil, queryParams)
 	if err != nil {
 		return err
 	}
@@ -147,7 +151,7 @@ func (client *serviceManagerClient) DeletePlatform(id string) error {
 }
 
 func (client *serviceManagerClient) delete(id, path string) error {
-	resp, err := client.call(http.MethodDelete, path+id, nil)
+	resp, err := client.call(http.MethodDelete, path+id, nil, nil)
 	if err != nil {
 		return err
 	}
@@ -180,7 +184,7 @@ func (client *serviceManagerClient) UpdatePlatform(id string, updatedPlatform *t
 
 func (client *serviceManagerClient) update(result interface{}, body []byte, id, path string) error {
 	buffer := bytes.NewBuffer(body)
-	resp, err := client.call(http.MethodPatch, path+id, buffer)
+	resp, err := client.call(http.MethodPatch, path+id, buffer, nil)
 	if err != nil {
 		return err
 	}
@@ -192,7 +196,7 @@ func (client *serviceManagerClient) update(result interface{}, body []byte, id, 
 	return httputil.UnmarshalResponse(resp, &result)
 }
 
-func (client *serviceManagerClient) call(method string, smpath string, body io.Reader) (*http.Response, error) {
+func (client *serviceManagerClient) call(method string, smpath string, body io.Reader, queryParams map[string][]string) (*http.Response, error) {
 	fullURL := httputil.NormalizeURL(client.config.URL)
 	fullURL = fullURL + smpath
 
@@ -201,6 +205,16 @@ func (client *serviceManagerClient) call(method string, smpath string, body io.R
 		return nil, err
 	}
 	req.Header = *client.headers
+
+	if queryParams != nil {
+		query := req.URL.Query()
+		for key, values := range queryParams {
+			for _, value := range values {
+				query.Add(key, value)
+			}
+		}
+		req.URL.RawQuery = query.Encode()
+	}
 
 	resp, err := client.httpClient.Do(req)
 	if err != nil {

@@ -21,7 +21,6 @@ import (
 	"fmt"
 
 	"github.com/Peripli/service-manager-cli/internal/output"
-	"github.com/Peripli/service-manager-cli/internal/util"
 
 	"github.com/spf13/cobra"
 
@@ -78,16 +77,16 @@ func (ubc *UpdateBrokerCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (ubc *UpdateBrokerCmd) Run() error {
-	allBrokers, err := ubc.Client.ListBrokers()
+	brokers, err := ubc.Client.ListBrokers([]string{ubc.name})
 	if err != nil {
 		return err
 	}
 
-	brokerWithName := util.GetBrokerByName(allBrokers, []string{ubc.name})
-	if len(brokerWithName) < 1 {
+	if len(brokers.Brokers) < 1 {
 		return fmt.Errorf("broker with name %s not found", ubc.name)
 	}
-	toUpdateBroker := brokerWithName[0]
+
+	toUpdateBroker := brokers.Brokers[0]
 	result, err := ubc.Client.UpdateBroker(toUpdateBroker.ID, ubc.updatedBroker)
 	if err != nil {
 		return err
