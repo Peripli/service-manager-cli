@@ -30,6 +30,7 @@ import (
 // Client should be implemented by SM clients
 //go:generate counterfeiter . Client
 type Client interface {
+	GetInfo() (*types.Info, error)
 	RegisterPlatform(*types.Platform) (*types.Platform, error)
 	RegisterBroker(*types.Broker) (*types.Broker, error)
 	ListBrokers() (*types.Brokers, error)
@@ -51,10 +52,30 @@ func NewClient(config *ClientConfig) Client {
 	client := &serviceManagerClient{config: config, httpClient: &http.Client{}, headers: &http.Header{}}
 	client.headers.Add("Content-Type", "application/json")
 	if len(client.config.Token) > 0 {
-		client.headers.Add("Authorization", client.config.Token)
+		client.headers.Add("Authorization", "Bearer: "+client.config.Token)
 	}
 
 	return client
+}
+
+func (client *serviceManagerClient) GetInfo() (*types.Info, error) {
+	response, err := client.call(http.MethodGet, "/v1/info", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return nil, errors.ResponseError{StatusCode: response.StatusCode}
+	}
+
+	var result *types.Info
+
+	err = httputil.UnmarshalResponse(response, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 // RegisterPlatform registers a platform in the service manager

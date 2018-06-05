@@ -17,6 +17,7 @@
 package main
 
 import (
+	"github.com/Peripli/service-manager-cli/internal/auth"
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/cmd/broker"
 	"github.com/Peripli/service-manager-cli/internal/cmd/info"
@@ -33,10 +34,11 @@ func main() {
 
 	context := &cmd.Context{}
 	rootCmd := cmd.BuildRootCommand(context)
+	authStrategy := auth.NewOpenIDStrategy()
 
 	normalCommandsGroup := cmd.Group{
 		Commands: []cmd.CommandPreparator{
-			login.NewLoginCmd(context, os.Stdin),
+			login.NewLoginCmd(context, os.Stdin, authStrategy),
 			version.NewVersionCmd(context, clientVersion),
 			info.NewInfoCmd(context),
 		},

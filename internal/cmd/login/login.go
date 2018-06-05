@@ -18,12 +18,12 @@ package login
 
 import (
 	"bufio"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
 	"syscall"
 
+	"github.com/Peripli/service-manager-cli/internal/auth"
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/internal/util"
@@ -36,7 +36,8 @@ import (
 type Cmd struct {
 	*cmd.Context
 
-	input io.ReadWriter
+	input        io.ReadWriter
+	authStrategy auth.AuthenticationStrategy
 
 	serviceManagerURL string
 	user              string
@@ -44,8 +45,8 @@ type Cmd struct {
 }
 
 // NewLoginCmd return new login command with context and input reader
-func NewLoginCmd(context *cmd.Context, input io.ReadWriter) *Cmd {
-	return &Cmd{Context: context, input: input}
+func NewLoginCmd(context *cmd.Context, input io.ReadWriter, strategy auth.AuthenticationStrategy) *Cmd {
+	return &Cmd{Context: context, input: input, authStrategy: strategy}
 }
 
 // Prepare returns cobra command
@@ -77,13 +78,24 @@ func (lc *Cmd) Validate(args []string) error {
 	if lc.serviceManagerURL == "" {
 		return errors.New("URL flag must be provided")
 	}
+
+	if err := util.ValidateURL(lc.serviceManagerURL); err != nil {
+		return fmt.Errorf("service manager URL is invalid: %v", err)
+	}
+
 	return nil
 }
 
 // Run runs the logic of the command
 func (lc *Cmd) Run() error {
-	if err := util.ValidateURL(lc.serviceManagerURL); err != nil {
-		return fmt.Errorf("service manager URL is invalid: %v", err)
+	if lc.Client == nil {
+		clientConfig := &smclient.ClientConfig{URL: lc.serviceManagerURL}
+		lc.Client = smclient.NewClient(clientConfig)
+	}
+
+	info, err := lc.Client.GetInfo()
+	if err != nil {
+		return err
 	}
 
 	if err := lc.readUser(); err != nil {
@@ -98,8 +110,12 @@ func (lc *Cmd) Run() error {
 		return errors.New("username/password should not be empty")
 	}
 
-	token := "basic " + base64.StdEncoding.EncodeToString([]byte(lc.user+":"+lc.password))
-	err := lc.Configuration.Save(&smclient.ClientConfig{URL: lc.serviceManagerURL, User: lc.user, Token: token})
+	token, err := lc.authStrategy.Authenticate(info.TokenIssuerURL, lc.user, lc.password)
+	if err != nil {
+		return err
+	}
+
+	err = lc.Configuration.Save(&smclient.ClientConfig{URL: lc.serviceManagerURL, User: lc.user, Token: token.AccessToken})
 	if err != nil {
 		return err
 	}
@@ -120,7 +136,7 @@ func (lc *Cmd) readUser() error {
 			return err
 		}
 
-		lc.user = (string)(readUser)
+		lc.user = string(readUser)
 	}
 	return nil
 }
