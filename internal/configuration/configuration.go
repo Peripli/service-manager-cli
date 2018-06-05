@@ -38,9 +38,7 @@ type smConfiguration struct {
 }
 
 // NewSMConfiguration returns implementation of Configuration interface
-func NewSMConfiguration(cfgFile string) (Configuration, error) {
-	viperEnv := viper.New()
-
+func NewSMConfiguration(viperEnv *viper.Viper, cfgFile string) (Configuration, error) {
 	absCfgFilePath, err := getConfigFileAbsPath(cfgFile)
 	if err != nil {
 		return nil, err

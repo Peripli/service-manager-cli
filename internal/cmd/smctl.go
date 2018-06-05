@@ -20,6 +20,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/Peripli/service-manager-cli/internal/configuration"
 )
@@ -34,6 +35,7 @@ func Execute(cmd *cobra.Command) {
 // BuildRootCommand builds a new SM root command with context
 func BuildRootCommand(ctx *Context) *cobra.Command {
 	var cfgFile string
+	viperEnv := viper.New()
 
 	rootCmd := &cobra.Command{
 		Use:   "smctl",
@@ -47,7 +49,7 @@ func BuildRootCommand(ctx *Context) *cobra.Command {
 				ctx.Output = cmd.OutOrStdout()
 			}
 			if ctx.Configuration == nil {
-				configuration, err := configuration.NewSMConfiguration(cfgFile)
+				configuration, err := configuration.NewSMConfiguration(viperEnv, cfgFile)
 				if err != nil {
 					return err
 				}
