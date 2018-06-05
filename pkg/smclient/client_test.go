@@ -22,6 +22,7 @@ var _ = Describe("Service Manager Client test", func() {
 	var client Client
 	var responseStatusCode int
 	var responseBody []byte
+	var validToken = "valid-token"
 	var smServer *httptest.Server
 
 	platform := &types.Platform{
@@ -39,6 +40,12 @@ var _ = Describe("Service Manager Client test", func() {
 
 	createSMHandler := func() http.HandlerFunc {
 		return func(response http.ResponseWriter, req *http.Request) {
+			authorization := req.Header.Get("Authorization")
+			if authorization != "Bearer: "+validToken {
+				response.WriteHeader(http.StatusUnauthorized)
+				response.Write([]byte(""))
+				return
+			}
 			response.WriteHeader(responseStatusCode)
 			response.Write([]byte(responseBody))
 		}
@@ -46,8 +53,21 @@ var _ = Describe("Service Manager Client test", func() {
 
 	BeforeEach(func() {
 		smServer = httptest.NewServer(createSMHandler())
-		clientConfig := &ClientConfig{smServer.URL, "admin", "token"}
+		clientConfig := &ClientConfig{smServer.URL, "admin", "valid-token"}
 		client = NewClient(clientConfig)
+	})
+
+	Describe("Test failing client authentication", func() {
+		Context("When wrong token is used", func() {
+			It("should fail to authentication", func() {
+				clientConfig := &ClientConfig{smServer.URL, "admin", "invalid-token"}
+				client = NewClient(clientConfig)
+				_, err := client.ListBrokers()
+
+				Expect(err).Should(HaveOccurred())
+				Expect(err).To(MatchError(errors.ResponseError{URL: smServer.URL + "/v1/service_brokers", StatusCode: http.StatusUnauthorized}))
+			})
+		})
 	})
 
 	Describe("Register platform", func() {
@@ -401,6 +421,39 @@ var _ = Describe("Service Manager Client test", func() {
 				responseBody = []byte(`{}`)
 
 				_, err := client.UpdateBroker("1234", &types.Broker{Name: "broker"})
+				Expect(err).Should(HaveOccurred())
+			})
+		})
+	})
+
+	Describe("Get info", func() {
+		Context("when token issuer is set", func() {
+			It("should get the right issuer", func() {
+				responseStatusCode = http.StatusOK
+				responseBody = []byte(`{"token_issuer_url": "http://uaa.com"}`)
+
+				info, _ := client.GetInfo()
+				Expect(info.TokenIssuerURL).To(Equal("http://uaa.com"))
+			})
+		})
+
+		Context("when invalid status code is returned", func() {
+			It("should get an error", func() {
+				responseStatusCode = http.StatusNotFound
+				responseBody = []byte(``)
+
+				_, err := client.GetInfo()
+				Expect(err).Should(HaveOccurred())
+				Expect(err).To(MatchError(errors.ResponseError{URL: smServer.URL + "/v1/info", StatusCode: http.StatusNotFound}))
+			})
+		})
+
+		Context("when invalid json is returned", func() {
+			It("should get an error", func() {
+				responseStatusCode = http.StatusOK
+				responseBody = []byte(`{"token_issuer":}`)
+
+				_, err := client.GetInfo()
 				Expect(err).Should(HaveOccurred())
 			})
 		})
