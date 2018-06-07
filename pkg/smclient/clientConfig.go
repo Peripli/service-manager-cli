@@ -24,9 +24,17 @@ import (
 
 // ClientConfig contains the configuration of the CLI.
 type ClientConfig struct {
-	URL   string `json:"url"`
-	User  string `json:"user,omitempty"`
-	Token string `json:"token,omitempty"`
+	AccessToken  string `mapstructure:"access_token"`
+	RefreshToken string `mapstructure:"refresh_token"`
+	Expiry       string `mapstructure:"expiry"`
+
+	ClientID     string `mapstructure:"client_id"`
+	ClientSecret string `mapstructure:"client_secret"`
+	TokenURL     string `mapstructure:"token_url"`
+	AuthURL      string `mapstructure:"auth_url"`
+
+	URL  string
+	User string
 }
 
 // Validate validates client config
@@ -37,7 +45,7 @@ func (clientCfg ClientConfig) Validate() error {
 	if clientCfg.User == "" {
 		return errors.New("User must not be empty")
 	}
-	if clientCfg.Token == "" {
+	if clientCfg.AccessToken == "" {
 		return errors.New("Token must not be empty")
 	}
 	return nil

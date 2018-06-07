@@ -36,13 +36,13 @@ var _ = Describe("Configuration test", func() {
 				viperEnv := viper.New()
 				viperEnv.SetFs(afero.NewMemMapFs())
 				configuration, err := NewSMConfiguration(viperEnv, configPath)
-				configuration.Save(&smclient.ClientConfig{URL: "http://sm.com", User: "admin", Token: "token"})
+				configuration.Save(&smclient.ClientConfig{URL: "http://sm.com", User: "admin", AccessToken: "token"})
 
 				clientConfig, errLoad := configuration.Load()
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(errLoad).ShouldNot(HaveOccurred())
-				Expect(*clientConfig).To(Equal(smclient.ClientConfig{URL: "http://sm.com", User: "admin", Token: "token"}))
+				Expect(*clientConfig).To(Equal(smclient.ClientConfig{URL: "http://sm.com", User: "admin", AccessToken: "token"}))
 			})
 		})
 	})

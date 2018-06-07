@@ -2,6 +2,7 @@ package login
 
 import (
 	"github.com/Peripli/service-manager-cli/pkg/types"
+	"golang.org/x/oauth2"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -10,7 +11,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/Peripli/service-manager-cli/internal/auth"
 	"github.com/Peripli/service-manager-cli/internal/auth/authfakes"
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/configuration/configurationfakes"
@@ -38,7 +38,7 @@ var _ = Describe("Login Command test", func() {
 		authStrategy = authfakes.FakeAuthenticationStrategy{}
 
 		client.GetInfoReturns(&types.Info{TokenIssuerURL: "http://valid-uaa.com"}, nil)
-		authStrategy.AuthenticateReturns(&auth.Token{AccessToken: "access-token"}, nil)
+		authStrategy.AuthenticateReturns(&oauth2.Config{}, &oauth2.Token{AccessToken: "access-token"}, nil)
 
 		context := &cmd.Context{Output: outputBuffer, Configuration: &config, Client: client}
 		command = NewLoginCmd(context, credentialsBuffer, &authStrategy)

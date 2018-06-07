@@ -18,6 +18,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -74,7 +75,7 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 		if ctx.Client == nil {
 			clientConfig, err := ctx.Configuration.Load()
 			if err != nil {
-				return errors.New("no logged user. Use \"smctl login\" to log in")
+				return fmt.Errorf("no logged user. Use \"smctl login\" to log in. Reason: %s", err)
 			}
 			ctx.Client = smclient.NewClient(clientConfig)
 		}

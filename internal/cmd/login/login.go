@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io"
 	"syscall"
+	"time"
 
 	"github.com/Peripli/service-manager-cli/internal/auth"
 	"github.com/Peripli/service-manager-cli/internal/cmd"
@@ -110,12 +111,23 @@ func (lc *Cmd) Run() error {
 		return errors.New("username/password should not be empty")
 	}
 
-	token, err := lc.authStrategy.Authenticate(info.TokenIssuerURL, lc.user, lc.password)
+	config, token, err := lc.authStrategy.Authenticate(info.TokenIssuerURL, lc.user, lc.password)
 	if err != nil {
 		return err
 	}
 
-	err = lc.Configuration.Save(&smclient.ClientConfig{URL: lc.serviceManagerURL, User: lc.user, Token: token.AccessToken})
+	err = lc.Configuration.Save(&smclient.ClientConfig{
+		URL:          lc.serviceManagerURL,
+		User:         lc.user,
+		AccessToken:  token.AccessToken,
+		RefreshToken: token.RefreshToken,
+		Expiry:       token.Expiry.Format(time.RFC3339),
+		ClientID:     config.ClientID,
+		ClientSecret: config.ClientSecret,
+		TokenURL:     config.Endpoint.TokenURL,
+		AuthURL:      config.Endpoint.AuthURL,
+	})
+
 	if err != nil {
 		return err
 	}

@@ -54,7 +54,15 @@ func NewSMConfiguration(viperEnv *viper.Viper, cfgFile string) (Configuration, e
 func (smCfg *smConfiguration) Save(clientCfg *smclient.ClientConfig) error {
 	smCfg.viperEnv.Set("url", clientCfg.URL)
 	smCfg.viperEnv.Set("user", clientCfg.User)
-	smCfg.viperEnv.Set("token", clientCfg.Token)
+
+	smCfg.viperEnv.Set("access_token", clientCfg.AccessToken)
+	smCfg.viperEnv.Set("refresh_token", clientCfg.RefreshToken)
+	smCfg.viperEnv.Set("expiry", clientCfg.Expiry)
+
+	smCfg.viperEnv.Set("client_id", clientCfg.ClientID)
+	smCfg.viperEnv.Set("client_secret", clientCfg.ClientSecret)
+	smCfg.viperEnv.Set("token_url", clientCfg.TokenURL)
+	smCfg.viperEnv.Set("auth_url", clientCfg.AuthURL)
 
 	return smCfg.viperEnv.WriteConfig()
 }
@@ -67,7 +75,8 @@ func (smCfg *smConfiguration) Load() (*smclient.ClientConfig, error) {
 
 	clientConfig := &smclient.ClientConfig{}
 
-	if err := smCfg.viperEnv.Unmarshal(clientConfig); err != nil {
+	// fmt.Println(">>>>>", smCfg.viperEnv.AllSettings())
+	if err := smCfg.viperEnv.Unmarshal(&clientConfig); err != nil {
 		return nil, err
 	}
 

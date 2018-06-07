@@ -2,6 +2,7 @@ package smclient
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -41,7 +42,8 @@ var _ = Describe("Service Manager Client test", func() {
 	createSMHandler := func() http.HandlerFunc {
 		return func(response http.ResponseWriter, req *http.Request) {
 			authorization := req.Header.Get("Authorization")
-			if authorization != "Bearer: "+validToken {
+			fmt.Println(">>>>>>", authorization)
+			if authorization != "Bearer "+validToken {
 				response.WriteHeader(http.StatusUnauthorized)
 				response.Write([]byte(""))
 				return
@@ -53,14 +55,14 @@ var _ = Describe("Service Manager Client test", func() {
 
 	BeforeEach(func() {
 		smServer = httptest.NewServer(createSMHandler())
-		clientConfig := &ClientConfig{smServer.URL, "admin", "valid-token"}
+		clientConfig := &ClientConfig{URL: smServer.URL, User: "admin", AccessToken: "valid-token"}
 		client = NewClient(clientConfig)
 	})
 
 	Describe("Test failing client authentication", func() {
 		Context("When wrong token is used", func() {
 			It("should fail to authentication", func() {
-				clientConfig := &ClientConfig{smServer.URL, "admin", "invalid-token"}
+				clientConfig := &ClientConfig{URL: smServer.URL, User: "admin", AccessToken: "invalid-token"}
 				client = NewClient(clientConfig)
 				_, err := client.ListBrokers()
 
@@ -142,7 +144,7 @@ var _ = Describe("Service Manager Client test", func() {
 
 		Context("When invalid config is set", func() {
 			It("should return error", func() {
-				clientConfig := &ClientConfig{"invalidURL", "admin", "token"}
+				clientConfig := &ClientConfig{URL: "invalidURL", User: "admin", AccessToken: "token"}
 				client = NewClient(clientConfig)
 				_, err := client.RegisterPlatform(platform)
 
@@ -224,7 +226,7 @@ var _ = Describe("Service Manager Client test", func() {
 
 		Context("When invalid config is set", func() {
 			It("should return error", func() {
-				clientConfig := &ClientConfig{"invalidURL", "admin", "token"}
+				clientConfig := &ClientConfig{URL: "invalidURL", User: "admin", AccessToken: "token"}
 				client = NewClient(clientConfig)
 				_, err := client.RegisterBroker(broker)
 
