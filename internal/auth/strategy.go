@@ -17,16 +17,17 @@
 package auth
 
 import (
-	"crypto/tls"
-	"encoding/json"
+	"context"
 	"errors"
-	"fmt"
 	"net/http"
-	"net/url"
-	"strings"
 
-	resterror "github.com/Peripli/service-manager-cli/pkg/errors"
 	"github.com/Peripli/service-manager-cli/pkg/httputil"
+	"golang.org/x/oauth2"
+)
+
+const (
+	defaultClientID     = "cf"
+	defaultClientSecret = ""
 )
 
 // Token contains the structure of a typical UAA response token
@@ -36,17 +37,17 @@ type Token struct {
 	RefreshToken string `json:"refresh_token"`
 	ExpiresIn    int64  `json:"expires_in"`
 	Scope        string `json:"scope"`
-	JTI          string `json:"jti"`
 }
 
 type openIDConfiguration struct {
-	TokenEndpoint string `json:"token_endpoint"`
+	TokenEndpoint         string `json:"token_endpoint"`
+	AuthorizationEndpoint string `json:"authorization_endpoint"`
 }
 
 // AuthenticationStrategy should be implemented for different authentication strategies
 //go:generate counterfeiter . AuthenticationStrategy
 type AuthenticationStrategy interface {
-	Authenticate(issuerURL, user, password string) (*Token, error)
+	Authenticate(issuerURL, user, password string) (*oauth2.Config, *oauth2.Token, error)
 }
 
 // NewOpenIDStrategy returns OpenId auth strategy
@@ -58,85 +59,45 @@ func NewOpenIDStrategy() AuthenticationStrategy {
 type OpenIDStrategy struct{}
 
 // Authenticate is used to perform authentication action for OpenID strategy
-func (s *OpenIDStrategy) Authenticate(issuerURL, user, password string) (*Token, error) {
-	tokenEndpoint, err := s.getTokenEndpoint(issuerURL)
+func (s *OpenIDStrategy) Authenticate(issuerURL, user, password string) (*oauth2.Config, *oauth2.Token, error) {
+	endpoints, err := s.getTokenEndpoint(issuerURL)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	token, err := s.getAccessToken(tokenEndpoint, user, password)
-	if err != nil {
-		return nil, err
+	oauth2Config := &oauth2.Config{
+		ClientID:     defaultClientID,
+		ClientSecret: defaultClientSecret,
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  endpoints.AuthorizationEndpoint,
+			TokenURL: endpoints.TokenEndpoint,
+		},
 	}
 
-	return token, nil
+	token, err := oauth2Config.PasswordCredentialsToken(context.Background(), user, password)
+	return oauth2Config, token, err
 }
 
-func (s *OpenIDStrategy) getAccessToken(tokenEndpoint, user, password string) (*Token, error) {
-	form := url.Values{}
-	form.Add("grant_type", "password")
-	form.Add("response_type", "token")
-	form.Add("username", user)
-	form.Add("password", password)
-
-	req, err := http.NewRequest(http.MethodPost, tokenEndpoint, strings.NewReader(form.Encode()))
-	if err != nil {
-		return nil, err
-	}
-	req.SetBasicAuth("cf", "")
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-
-	httpClient := getInsecureClient()
-	response, err := httpClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	if response.StatusCode != http.StatusOK {
-		respContent := make(map[string]interface{})
-		if err := httputil.UnmarshalResponse(response, &respContent); err != nil {
-			return nil, err
-		}
-		responseString, err := json.Marshal(respContent)
-		if err != nil {
-			return nil, err
-		}
-
-		return nil, resterror.ResponseError{StatusCode: response.StatusCode, URL: req.URL.String(), Description: fmt.Sprintf("Could not get access token.\nReason:\n%s", responseString)}
-	}
-
-	var token *Token
-	return token, httputil.UnmarshalResponse(response, &token)
-}
-
-func (s *OpenIDStrategy) getTokenEndpoint(issuerURL string) (string, error) {
+func (s *OpenIDStrategy) getTokenEndpoint(issuerURL string) (*openIDConfiguration, error) {
 	req, err := http.NewRequest(http.MethodGet, issuerURL+"/.well-known/openid-configuration", nil)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	httpClient := getInsecureClient()
+	httpClient := http.DefaultClient
 	response, err := httpClient.Do(req)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return "", errors.New("Error getting OpenID configuration")
+		return nil, errors.New("Error getting OpenID configuration")
 	}
 
 	var configuration *openIDConfiguration
 	if err = httputil.UnmarshalResponse(response, &configuration); err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return configuration.TokenEndpoint, nil
-}
-
-func getInsecureClient() *http.Client {
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-
-	return &http.Client{Transport: tr}
+	return configuration, nil
 }

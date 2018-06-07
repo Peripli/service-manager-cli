@@ -18,13 +18,16 @@ package smclient
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/Peripli/service-manager-cli/pkg/errors"
 	"github.com/Peripli/service-manager-cli/pkg/httputil"
 	"github.com/Peripli/service-manager-cli/pkg/types"
+	"golang.org/x/oauth2"
 )
 
 // Client should be implemented by SM clients
@@ -43,17 +46,33 @@ type Client interface {
 
 type serviceManagerClient struct {
 	config     *ClientConfig
-	httpClient *http.Client
-	headers    *http.Header
+	httpClient *http.Client ``
 }
 
 // NewClient returns new SM client
 func NewClient(config *ClientConfig) Client {
-	client := &serviceManagerClient{config: config, httpClient: &http.Client{}, headers: &http.Header{}}
-	client.headers.Add("Content-Type", "application/json")
-	if len(client.config.Token) > 0 {
-		client.headers.Add("Authorization", "Bearer: "+client.config.Token)
+	var httpClient *http.Client
+	if config.AccessToken != "" {
+		ouath2Config := &oauth2.Config{
+			ClientID:     config.ClientID,
+			ClientSecret: config.ClientSecret,
+			Endpoint: oauth2.Endpoint{
+				TokenURL: config.TokenURL,
+				AuthURL:  config.AuthURL,
+			},
+		}
+		expires, _ := time.Parse(time.RFC3339, config.Expiry)
+		token := &oauth2.Token{
+			AccessToken:  config.AccessToken,
+			RefreshToken: config.RefreshToken,
+			Expiry:       expires,
+		}
+		httpClient = ouath2Config.Client(context.Background(), token)
+	} else {
+		httpClient = http.DefaultClient
 	}
+
+	client := &serviceManagerClient{config: config, httpClient: httpClient}
 
 	return client
 }
@@ -220,7 +239,7 @@ func (client *serviceManagerClient) call(method string, smpath string, body io.R
 	if err != nil {
 		return nil, err
 	}
-	req.Header = *client.headers
+	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := client.httpClient.Do(req)
 	if err != nil {

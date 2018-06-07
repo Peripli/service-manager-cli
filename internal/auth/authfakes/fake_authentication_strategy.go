@@ -5,10 +5,11 @@ import (
 	"sync"
 
 	"github.com/Peripli/service-manager-cli/internal/auth"
+	"golang.org/x/oauth2"
 )
 
 type FakeAuthenticationStrategy struct {
-	AuthenticateStub        func(issuerURL, user, password string) (*auth.Token, error)
+	AuthenticateStub        func(issuerURL, user, password string) (*oauth2.Config, *oauth2.Token, error)
 	authenticateMutex       sync.RWMutex
 	authenticateArgsForCall []struct {
 		issuerURL string
@@ -16,18 +17,20 @@ type FakeAuthenticationStrategy struct {
 		password  string
 	}
 	authenticateReturns struct {
-		result1 *auth.Token
-		result2 error
+		result1 *oauth2.Config
+		result2 *oauth2.Token
+		result3 error
 	}
 	authenticateReturnsOnCall map[int]struct {
-		result1 *auth.Token
-		result2 error
+		result1 *oauth2.Config
+		result2 *oauth2.Token
+		result3 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeAuthenticationStrategy) Authenticate(issuerURL string, user string, password string) (*auth.Token, error) {
+func (fake *FakeAuthenticationStrategy) Authenticate(issuerURL string, user string, password string) (*oauth2.Config, *oauth2.Token, error) {
 	fake.authenticateMutex.Lock()
 	ret, specificReturn := fake.authenticateReturnsOnCall[len(fake.authenticateArgsForCall)]
 	fake.authenticateArgsForCall = append(fake.authenticateArgsForCall, struct {
@@ -41,9 +44,9 @@ func (fake *FakeAuthenticationStrategy) Authenticate(issuerURL string, user stri
 		return fake.AuthenticateStub(issuerURL, user, password)
 	}
 	if specificReturn {
-		return ret.result1, ret.result2
+		return ret.result1, ret.result2, ret.result3
 	}
-	return fake.authenticateReturns.result1, fake.authenticateReturns.result2
+	return fake.authenticateReturns.result1, fake.authenticateReturns.result2, fake.authenticateReturns.result3
 }
 
 func (fake *FakeAuthenticationStrategy) AuthenticateCallCount() int {
@@ -58,26 +61,29 @@ func (fake *FakeAuthenticationStrategy) AuthenticateArgsForCall(i int) (string, 
 	return fake.authenticateArgsForCall[i].issuerURL, fake.authenticateArgsForCall[i].user, fake.authenticateArgsForCall[i].password
 }
 
-func (fake *FakeAuthenticationStrategy) AuthenticateReturns(result1 *auth.Token, result2 error) {
+func (fake *FakeAuthenticationStrategy) AuthenticateReturns(result1 *oauth2.Config, result2 *oauth2.Token, result3 error) {
 	fake.AuthenticateStub = nil
 	fake.authenticateReturns = struct {
-		result1 *auth.Token
-		result2 error
-	}{result1, result2}
+		result1 *oauth2.Config
+		result2 *oauth2.Token
+		result3 error
+	}{result1, result2, result3}
 }
 
-func (fake *FakeAuthenticationStrategy) AuthenticateReturnsOnCall(i int, result1 *auth.Token, result2 error) {
+func (fake *FakeAuthenticationStrategy) AuthenticateReturnsOnCall(i int, result1 *oauth2.Config, result2 *oauth2.Token, result3 error) {
 	fake.AuthenticateStub = nil
 	if fake.authenticateReturnsOnCall == nil {
 		fake.authenticateReturnsOnCall = make(map[int]struct {
-			result1 *auth.Token
-			result2 error
+			result1 *oauth2.Config
+			result2 *oauth2.Token
+			result3 error
 		})
 	}
 	fake.authenticateReturnsOnCall[i] = struct {
-		result1 *auth.Token
-		result2 error
-	}{result1, result2}
+		result1 *oauth2.Config
+		result2 *oauth2.Token
+		result3 error
+	}{result1, result2, result3}
 }
 
 func (fake *FakeAuthenticationStrategy) Invocations() map[string][][]interface{} {

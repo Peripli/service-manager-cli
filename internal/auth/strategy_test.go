@@ -8,8 +8,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
-	resterror "github.com/Peripli/service-manager-cli/pkg/errors"
+	"golang.org/x/oauth2"
 )
 
 func TestAuthStrategy(t *testing.T) {
@@ -27,6 +26,7 @@ var _ = Describe("Service Manager Auth strategy test", func() {
 
 	createUAAHandler := func() http.HandlerFunc {
 		return func(response http.ResponseWriter, req *http.Request) {
+			response.Header().Add("Content-Type", "application/json")
 			if strings.Contains(req.URL.String(), ".well-known/openid-configuration") {
 				response.WriteHeader(configurationResponseCode)
 				response.Write(configurationResponseBody)
@@ -58,9 +58,11 @@ var _ = Describe("Service Manager Auth strategy test", func() {
 					"jti": "35ac46ddb4644c128050b508f9877c91"
 				}`)
 
-				token, err := authStrategy.Authenticate(uaaServer.URL, "admin", "admin")
+				config, token, err := authStrategy.Authenticate(uaaServer.URL, "admin", "admin")
 
 				Expect(err).ShouldNot(HaveOccurred())
+				Expect(config.ClientID).To(Equal("cf"))
+				Expect(config.ClientSecret).To(Equal(""))
 				Expect(token.AccessToken).To(Equal("eyJhbGciOiJSUzI1NiIsImtpZCI6ImtleS0xIiwidHlwIjoiSldUIn0.eyJqdGkiOiIzNWFjNDZkZGI0NjQ0YzEyODA1MGI1MDhmOTg3N2M5MSIsInN1YiI6ImYwYmYzNzA1LWMxNWMtNDYxOS1iMzkyLTg2YWYzODRlODkxNiIsInNjb3BlIjpbIm5ldHdvcmsud3JpdGUiLCJjbG91ZF9jb250cm9sbGVyLmFkbWluIiwicm91dGluZy5yb3V0ZXJfZ3JvdXBzLnJlYWQiLCJjbG91ZF9jb250cm9sbGVyLndyaXRlIiwibmV0d29yay5hZG1pbiIsImRvcHBsZXIuZmlyZWhvc2UiLCJvcGVuaWQiLCJyb3V0aW5nLnJvdXRlcl9ncm91cHMud3JpdGUiLCJzY2ltLnJlYWQiLCJ1YWEudXNlciIsImNsb3VkX2NvbnRyb2xsZXIucmVhZCIsInBhc3N3b3JkLndyaXRlIiwic2NpbS53cml0ZSJdLCJjbGllbnRfaWQiOiJjZiIsImNpZCI6ImNmIiwiYXpwIjoiY2YiLCJncmFudF90eXBlIjoicGFzc3dvcmQiLCJ1c2VyX2lkIjoiZjBiZjM3MDUtYzE1Yy00NjE5LWIzOTItODZhZjM4NGU4OTE2Iiwib3JpZ2luIjoidWFhIiwidXNlcl9uYW1lIjoiYWRtaW4iLCJlbWFpbCI6ImFkbWluIiwiYXV0aF90aW1lIjoxNTI3NzU3MjMzLCJyZXZfc2lnIjoiYTRiYWI4MTQiLCJpYXQiOjE1Mjc3NTcyMzMsImV4cCI6MTUyNzc1NzgzMywiaXNzIjoiaHR0cHM6Ly91YWEubG9jYWwucGNmZGV2LmlvL29hdXRoL3Rva2VuIiwiemlkIjoidWFhIiwiYXVkIjpbImNsb3VkX2NvbnRyb2xsZXIiLCJzY2ltIiwicGFzc3dvcmQiLCJjZiIsInVhYSIsIm9wZW5pZCIsImRvcHBsZXIiLCJuZXR3b3JrIiwicm91dGluZy5yb3V0ZXJfZ3JvdXBzIl19.Srd_204A3KyHAQ2QibxwxhRm6mwVRRdkJLluiOua6KHmj_x8LLLu6XA9G1e5LNzW_hNqmwxi1fUeFU7NsfUudo46r6pcdfMT0yl7x0qUdizKKZNSkRsoB3BBn1aTBMAgAtc_VBRC8KWCL6Sdy2V0zJ4C-D2nqnYu9vmsK1_tSao"))
 			})
 		})
@@ -68,7 +70,7 @@ var _ = Describe("Service Manager Auth strategy test", func() {
 		Context("when configuration response is invalid", func() {
 			It("should handle wrong response code", func() {
 				configurationResponseCode = http.StatusNotFound
-				_, err := authStrategy.Authenticate(uaaServer.URL, "admin", "admin")
+				_, _, err := authStrategy.Authenticate(uaaServer.URL, "admin", "admin")
 
 				Expect(err).Should(HaveOccurred())
 				Expect(err).To(MatchError("Error getting OpenID configuration"))
@@ -77,7 +79,7 @@ var _ = Describe("Service Manager Auth strategy test", func() {
 			It("should handle wrong JSON body", func() {
 				configurationResponseCode = http.StatusOK
 				configurationResponseBody = []byte(`{"}`)
-				_, err := authStrategy.Authenticate(uaaServer.URL, "admin", "admin")
+				_, _, err := authStrategy.Authenticate(uaaServer.URL, "admin", "admin")
 
 				Expect(err).Should(HaveOccurred())
 			})
@@ -88,16 +90,16 @@ var _ = Describe("Service Manager Auth strategy test", func() {
 				errorMsg := `{"error":"missing client_id or client_secret"}`
 				responseStatusCode = http.StatusBadRequest
 				responseBody = []byte(errorMsg)
-				_, err := authStrategy.Authenticate(uaaServer.URL, "admin", "admin")
+				_, _, err := authStrategy.Authenticate(uaaServer.URL, "admin", "admin")
 
 				Expect(err).Should(HaveOccurred())
-				Expect(err.(resterror.ResponseError).Description).To(ContainSubstring(errorMsg))
+				Expect(err.(*oauth2.RetrieveError).Error()).To(ContainSubstring(errorMsg))
 			})
 
 			It("should handle wrong JSON body", func() {
 				responseStatusCode = http.StatusOK
 				responseBody = []byte(`{"json":}`)
-				_, err := authStrategy.Authenticate(uaaServer.URL, "admin", "admin")
+				_, _, err := authStrategy.Authenticate(uaaServer.URL, "admin", "admin")
 
 				Expect(err).Should(HaveOccurred())
 			})
