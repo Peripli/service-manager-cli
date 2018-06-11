@@ -48,8 +48,7 @@ type serviceManagerClient struct {
 
 // NewClient returns new SM client
 func NewClient(config *ClientConfig) Client {
-	client := &serviceManagerClient{config: config, httpClient: &http.Client{}}
-	client.headers = &http.Header{}
+	client := &serviceManagerClient{config: config, httpClient: &http.Client{}, headers: &http.Header{}}
 	client.headers.Add("Content-Type", "application/json")
 	if len(client.config.Token) > 0 {
 		client.headers.Add("Authorization", client.config.Token)
