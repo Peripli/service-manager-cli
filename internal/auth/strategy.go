@@ -26,8 +26,8 @@ import (
 )
 
 const (
-	defaultClientID     = "cf"
-	defaultClientSecret = ""
+	defaultClientID     = "smctl"
+	defaultClientSecret = "smctl"
 )
 
 // Token contains the structure of a typical UAA response token
@@ -48,6 +48,7 @@ type openIDConfiguration struct {
 //go:generate counterfeiter . AuthenticationStrategy
 type AuthenticationStrategy interface {
 	Authenticate(issuerURL, user, password string) (*oauth2.Config, *oauth2.Token, error)
+	RefreshToken(oauth2.Config, oauth2.Token) (*oauth2.Token, error)
 }
 
 // NewOpenIDStrategy returns OpenId auth strategy
@@ -76,6 +77,11 @@ func (s *OpenIDStrategy) Authenticate(issuerURL, user, password string) (*oauth2
 
 	token, err := oauth2Config.PasswordCredentialsToken(context.Background(), user, password)
 	return oauth2Config, token, err
+}
+
+func (s *OpenIDStrategy) RefreshToken(config oauth2.Config, token oauth2.Token) (*oauth2.Token, error) {
+	refresher := config.TokenSource(context.Background(), &token)
+	return refresher.Token()
 }
 
 func (s *OpenIDStrategy) getTokenEndpoint(issuerURL string) (*openIDConfiguration, error) {

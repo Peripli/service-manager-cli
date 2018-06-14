@@ -19,6 +19,7 @@ package cmd
 import (
 	"io"
 
+	"github.com/Peripli/service-manager-cli/internal/auth"
 	"github.com/Peripli/service-manager-cli/internal/configuration"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
 )
@@ -33,4 +34,6 @@ type Context struct {
 	Verbose bool
 
 	Configuration configuration.Configuration
+
+	AuthStrategy auth.AuthenticationStrategy
 }

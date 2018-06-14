@@ -22,9 +22,7 @@ import (
 	"fmt"
 	"io"
 	"syscall"
-	"time"
 
-	"github.com/Peripli/service-manager-cli/internal/auth"
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/internal/util"
@@ -37,8 +35,7 @@ import (
 type Cmd struct {
 	*cmd.Context
 
-	input        io.ReadWriter
-	authStrategy auth.AuthenticationStrategy
+	input io.ReadWriter
 
 	serviceManagerURL string
 	user              string
@@ -46,8 +43,8 @@ type Cmd struct {
 }
 
 // NewLoginCmd return new login command with context and input reader
-func NewLoginCmd(context *cmd.Context, input io.ReadWriter, strategy auth.AuthenticationStrategy) *Cmd {
-	return &Cmd{Context: context, input: input, authStrategy: strategy}
+func NewLoginCmd(context *cmd.Context, input io.ReadWriter) *Cmd {
+	return &Cmd{Context: context, input: input}
 }
 
 // Prepare returns cobra command
@@ -111,21 +108,16 @@ func (lc *Cmd) Run() error {
 		return errors.New("username/password should not be empty")
 	}
 
-	config, token, err := lc.authStrategy.Authenticate(info.TokenIssuerURL, lc.user, lc.password)
+	config, token, err := lc.AuthStrategy.Authenticate(info.TokenIssuerURL, lc.user, lc.password)
 	if err != nil {
 		return err
 	}
 
 	err = lc.Configuration.Save(&smclient.ClientConfig{
-		URL:          lc.serviceManagerURL,
-		User:         lc.user,
-		AccessToken:  token.AccessToken,
-		RefreshToken: token.RefreshToken,
-		Expiry:       token.Expiry.Format(time.RFC3339),
-		ClientID:     config.ClientID,
-		ClientSecret: config.ClientSecret,
-		TokenURL:     config.Endpoint.TokenURL,
-		AuthURL:      config.Endpoint.AuthURL,
+		URL:    lc.serviceManagerURL,
+		User:   lc.user,
+		Token:  *token,
+		Config: *config,
 	})
 
 	if err != nil {

@@ -22,7 +22,6 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"time"
 
 	"github.com/Peripli/service-manager-cli/pkg/errors"
 	"github.com/Peripli/service-manager-cli/pkg/httputil"
@@ -46,33 +45,24 @@ type Client interface {
 
 type serviceManagerClient struct {
 	config     *ClientConfig
-	httpClient *http.Client ``
+	httpClient *http.Client
+}
+
+type clientConfigurator interface {
+	Client(context.Context, *oauth2.Token) *http.Client
+	GetToken() oauth2.Token
 }
 
 // NewClient returns new SM client
-func NewClient(config *ClientConfig) Client {
+func NewClient(config clientConfigurator) Client {
 	var httpClient *http.Client
-	if config.AccessToken != "" {
-		ouath2Config := &oauth2.Config{
-			ClientID:     config.ClientID,
-			ClientSecret: config.ClientSecret,
-			Endpoint: oauth2.Endpoint{
-				TokenURL: config.TokenURL,
-				AuthURL:  config.AuthURL,
-			},
-		}
-		expires, _ := time.Parse(time.RFC3339, config.Expiry)
-		token := &oauth2.Token{
-			AccessToken:  config.AccessToken,
-			RefreshToken: config.RefreshToken,
-			Expiry:       expires,
-		}
-		httpClient = ouath2Config.Client(context.Background(), token)
+	if config.GetToken().AccessToken != "" {
+		t := config.GetToken()
+		httpClient = config.Client(context.Background(), &t)
 	} else {
 		httpClient = http.DefaultClient
 	}
-
-	client := &serviceManagerClient{config: config, httpClient: httpClient}
+	client := &serviceManagerClient{config: config.(*ClientConfig), httpClient: httpClient}
 
 	return client
 }
