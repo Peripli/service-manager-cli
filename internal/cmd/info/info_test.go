@@ -25,7 +25,7 @@ var _ = Describe("Login Command test", func() {
 	var buffer *bytes.Buffer
 	var config *configurationfakes.FakeConfiguration
 
-	clientConfig := smclient.ClientConfig{URL: "http://test-url.com", User: "test-user", AccessToken: "test-token"}
+	clientConfig := smclient.ClientConfig{URL: "http://test-url.com", User: "test-user"}
 
 	BeforeEach(func() {
 		buffer = &bytes.Buffer{}

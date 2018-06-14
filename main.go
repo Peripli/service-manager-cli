@@ -36,13 +36,13 @@ func main() {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	clientVersion := "0.0.1"
 
-	context := &cmd.Context{}
-	rootCmd := cmd.BuildRootCommand(context)
 	authStrategy := auth.NewOpenIDStrategy()
+	context := &cmd.Context{AuthStrategy: authStrategy}
+	rootCmd := cmd.BuildRootCommand(context)
 
 	normalCommandsGroup := cmd.Group{
 		Commands: []cmd.CommandPreparator{
-			login.NewLoginCmd(context, os.Stdin, authStrategy),
+			login.NewLoginCmd(context, os.Stdin),
 			version.NewVersionCmd(context, clientVersion),
 			info.NewInfoCmd(context),
 		},

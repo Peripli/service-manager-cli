@@ -26,6 +26,20 @@ type FakeAuthenticationStrategy struct {
 		result2 *oauth2.Token
 		result3 error
 	}
+	RefreshTokenStub        func(oauth2.Config, oauth2.Token) (*oauth2.Token, error)
+	refreshTokenMutex       sync.RWMutex
+	refreshTokenArgsForCall []struct {
+		arg1 oauth2.Config
+		arg2 oauth2.Token
+	}
+	refreshTokenReturns struct {
+		result1 *oauth2.Token
+		result2 error
+	}
+	refreshTokenReturnsOnCall map[int]struct {
+		result1 *oauth2.Token
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -86,11 +100,65 @@ func (fake *FakeAuthenticationStrategy) AuthenticateReturnsOnCall(i int, result1
 	}{result1, result2, result3}
 }
 
+func (fake *FakeAuthenticationStrategy) RefreshToken(arg1 oauth2.Config, arg2 oauth2.Token) (*oauth2.Token, error) {
+	fake.refreshTokenMutex.Lock()
+	ret, specificReturn := fake.refreshTokenReturnsOnCall[len(fake.refreshTokenArgsForCall)]
+	fake.refreshTokenArgsForCall = append(fake.refreshTokenArgsForCall, struct {
+		arg1 oauth2.Config
+		arg2 oauth2.Token
+	}{arg1, arg2})
+	fake.recordInvocation("RefreshToken", []interface{}{arg1, arg2})
+	fake.refreshTokenMutex.Unlock()
+	if fake.RefreshTokenStub != nil {
+		return fake.RefreshTokenStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.refreshTokenReturns.result1, fake.refreshTokenReturns.result2
+}
+
+func (fake *FakeAuthenticationStrategy) RefreshTokenCallCount() int {
+	fake.refreshTokenMutex.RLock()
+	defer fake.refreshTokenMutex.RUnlock()
+	return len(fake.refreshTokenArgsForCall)
+}
+
+func (fake *FakeAuthenticationStrategy) RefreshTokenArgsForCall(i int) (oauth2.Config, oauth2.Token) {
+	fake.refreshTokenMutex.RLock()
+	defer fake.refreshTokenMutex.RUnlock()
+	return fake.refreshTokenArgsForCall[i].arg1, fake.refreshTokenArgsForCall[i].arg2
+}
+
+func (fake *FakeAuthenticationStrategy) RefreshTokenReturns(result1 *oauth2.Token, result2 error) {
+	fake.RefreshTokenStub = nil
+	fake.refreshTokenReturns = struct {
+		result1 *oauth2.Token
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeAuthenticationStrategy) RefreshTokenReturnsOnCall(i int, result1 *oauth2.Token, result2 error) {
+	fake.RefreshTokenStub = nil
+	if fake.refreshTokenReturnsOnCall == nil {
+		fake.refreshTokenReturnsOnCall = make(map[int]struct {
+			result1 *oauth2.Token
+			result2 error
+		})
+	}
+	fake.refreshTokenReturnsOnCall[i] = struct {
+		result1 *oauth2.Token
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeAuthenticationStrategy) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.authenticateMutex.RLock()
 	defer fake.authenticateMutex.RUnlock()
+	fake.refreshTokenMutex.RLock()
+	defer fake.refreshTokenMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
