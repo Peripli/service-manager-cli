@@ -35,10 +35,12 @@ type FakeClient struct {
 		result1 *types.Broker
 		result2 error
 	}
-	ListBrokersStub        func() (*types.Brokers, error)
+	ListBrokersStub        func([]string) (*types.Brokers, error)
 	listBrokersMutex       sync.RWMutex
-	listBrokersArgsForCall []struct{}
-	listBrokersReturns     struct {
+	listBrokersArgsForCall []struct {
+		arg1 []string
+	}
+	listBrokersReturns struct {
 		result1 *types.Brokers
 		result2 error
 	}
@@ -213,14 +215,21 @@ func (fake *FakeClient) RegisterBrokerReturnsOnCall(i int, result1 *types.Broker
 	}{result1, result2}
 }
 
-func (fake *FakeClient) ListBrokers() (*types.Brokers, error) {
+func (fake *FakeClient) ListBrokers(arg1 []string) (*types.Brokers, error) {
+	var arg1Copy []string
+	if arg1 != nil {
+		arg1Copy = make([]string, len(arg1))
+		copy(arg1Copy, arg1)
+	}
 	fake.listBrokersMutex.Lock()
 	ret, specificReturn := fake.listBrokersReturnsOnCall[len(fake.listBrokersArgsForCall)]
-	fake.listBrokersArgsForCall = append(fake.listBrokersArgsForCall, struct{}{})
-	fake.recordInvocation("ListBrokers", []interface{}{})
+	fake.listBrokersArgsForCall = append(fake.listBrokersArgsForCall, struct {
+		arg1 []string
+	}{arg1Copy})
+	fake.recordInvocation("ListBrokers", []interface{}{arg1Copy})
 	fake.listBrokersMutex.Unlock()
 	if fake.ListBrokersStub != nil {
-		return fake.ListBrokersStub()
+		return fake.ListBrokersStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -232,6 +241,12 @@ func (fake *FakeClient) ListBrokersCallCount() int {
 	fake.listBrokersMutex.RLock()
 	defer fake.listBrokersMutex.RUnlock()
 	return len(fake.listBrokersArgsForCall)
+}
+
+func (fake *FakeClient) ListBrokersArgsForCall(i int) []string {
+	fake.listBrokersMutex.RLock()
+	defer fake.listBrokersMutex.RUnlock()
+	return fake.listBrokersArgsForCall[i].arg1
 }
 
 func (fake *FakeClient) ListBrokersReturns(result1 *types.Brokers, result2 error) {
