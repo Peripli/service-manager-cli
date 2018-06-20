@@ -55,7 +55,7 @@ var _ = Describe("List brokers command test", func() {
 	})
 
 	Context("when 2 brokers are being deleted", func() {
-		It("should print required arguments", func() {
+		It("should print deleted ones", func() {
 			client.DeleteBrokerReturns(nil)
 			err := executeWithArgs([]string{"broker-name", "broker2"})
 
@@ -66,13 +66,25 @@ var _ = Describe("List brokers command test", func() {
 	})
 
 	Context("when 2 brokers are being deleted and one is not found", func() {
-		It("should print required arguments", func() {
+		It("should print which was not found", func() {
 			client.DeleteBrokerReturns(nil)
 			err := executeWithArgs([]string{"broker-name", "broker"})
 
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring("Broker with name: broker-name successfully deleted"))
-			Expect(buffer.String()).To(ContainSubstring("1 names were not found"))
+			Expect(buffer.String()).To(ContainSubstring("Broker with name: broker was not found"))
+		})
+	})
+
+	Context("when 3 brokers are being deleted and one is not found", func() {
+		It("should print which was not found", func() {
+			client.DeleteBrokerReturns(nil)
+			err := executeWithArgs([]string{"broker-name", "non-existing", "broker2"})
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(buffer.String()).To(ContainSubstring("Broker with name: broker-name successfully deleted"))
+			Expect(buffer.String()).To(ContainSubstring("Broker with name: broker2 successfully deleted"))
+			Expect(buffer.String()).To(ContainSubstring("Broker with name: non-existing was not found"))
 		})
 	})
 
@@ -80,10 +92,9 @@ var _ = Describe("List brokers command test", func() {
 		It("should return error message", func() {
 			expectedError := errors.ResponseError{StatusCode: http.StatusNotFound}
 			client.DeleteBrokerReturns(expectedError)
-			err := executeWithArgs([]string{"non-existing-name"})
+			executeWithArgs([]string{"non-existing-name"})
 
-			Expect(err).Should(HaveOccurred())
-			Expect(err).To(MatchError("No brokers are found"))
+			Expect(buffer.String()).To(ContainSubstring("Service Broker(s) not found"))
 		})
 	})
 

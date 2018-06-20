@@ -28,14 +28,14 @@ import (
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
 )
 
-// DeleteBrokerCmd wraps the smctl list-brokers command
+// DeleteBrokerCmd wraps the smctl delete-broker command
 type DeleteBrokerCmd struct {
 	*cmd.Context
 
 	names []string
 }
 
-// NewDeleteBrokerCmd returns new list-brokers command with context
+// NewDeleteBrokerCmd returns new delete-broker command with context
 func NewDeleteBrokerCmd(context *cmd.Context) *DeleteBrokerCmd {
 	return &DeleteBrokerCmd{Context: context}
 }
@@ -57,7 +57,11 @@ func (dbc *DeleteBrokerCmd) Validate(args []string) error {
 		return fmt.Errorf("[name] is required")
 	}
 
-	dbc.names = args
+	for _, name := range args {
+		if name != "" {
+			dbc.names = append(dbc.names, name)
+		}
+	}
 
 	return nil
 }
@@ -71,18 +75,26 @@ func (dbc *DeleteBrokerCmd) Run() error {
 
 	toDeleteBrokers := util.GetBrokerByName(allBrokers, dbc.names)
 	if len(toDeleteBrokers) < 1 {
-		return fmt.Errorf("No brokers are found")
+		output.PrintMessage(dbc.Output, "Service Broker(s) not found\n")
+		return nil
 	}
+
+	deletedBrokers := make(map[string]bool)
 
 	for _, toDelete := range toDeleteBrokers {
-		if err := dbc.Client.DeleteBroker(toDelete.ID); err != nil {
-			return err
+		err := dbc.Client.DeleteBroker(toDelete.ID)
+		if err != nil {
+			output.PrintMessage(dbc.Output, "Could not delete broker %s\n", toDelete.Name, err)
+		} else {
+			output.PrintMessage(dbc.Output, "Broker with name: %s successfully deleted\n", toDelete.Name)
+			deletedBrokers[toDelete.Name] = true
 		}
-		output.PrintMessage(dbc.Output, "Broker with name: %s successfully deleted\n", toDelete.Name)
 	}
 
-	if len(toDeleteBrokers) < len(dbc.names) {
-		output.PrintError(dbc.Output, fmt.Errorf("%d names were not found", len(dbc.names)-len(toDeleteBrokers)))
+	for _, brokerName := range dbc.names {
+		if _, deleted := deletedBrokers[brokerName]; !deleted {
+			output.PrintError(dbc.Output, fmt.Errorf("Broker with name: %s was not found", brokerName))
+		}
 	}
 
 	return nil

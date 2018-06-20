@@ -71,10 +71,10 @@ func (lb *ListBrokersCmd) SetSMClient(client smclient.Client) {
 	lb.Client = client
 }
 
-	// SetOutputFormat set output format
-	func (lb *ListBrokersCmd) SetOutputFormat(format int) {
-		lb.outputFormat = format
-	}
+// SetOutputFormat set output format
+func (lb *ListBrokersCmd) SetOutputFormat(format int) {
+	lb.outputFormat = format
+}
 
 // HideUsage hide command's usage
 func (lb *ListBrokersCmd) HideUsage() bool {
