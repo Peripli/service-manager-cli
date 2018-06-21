@@ -12,6 +12,7 @@ import (
 	"errors"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
+	resperrors "github.com/Peripli/service-manager-cli/pkg/errors"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 
@@ -133,6 +134,16 @@ var _ = Describe("Register Broker Command test", func() {
 				err := invalidRegisterBrokerCommandExecution([]string{"validName", "validType", "--basic", "user:password"})
 
 				Expect(err).To(MatchError("Http Client Error"))
+			})
+		})
+
+		Context("With http response error from http client", func() {
+			It("should return error's description", func() {
+				client.RegisterBrokerReturns(nil, resperrors.ResponseError{Description: "HTTP response error"})
+
+				err := invalidRegisterBrokerCommandExecution([]string{"validName", "validType", "--basic", "user:password"})
+
+				Expect(err).To(MatchError("HTTP response error"))
 			})
 		})
 
