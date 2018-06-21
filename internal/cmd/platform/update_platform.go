@@ -26,7 +26,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
-	"github.com/Peripli/service-manager-cli/pkg/smclient"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 )
 
@@ -42,19 +41,6 @@ type UpdatePlatformCmd struct {
 // NewUpdatePlatformCmd returns new update-platform command with context
 func NewUpdatePlatformCmd(context *cmd.Context) *UpdatePlatformCmd {
 	return &UpdatePlatformCmd{Context: context}
-}
-
-func (upc *UpdatePlatformCmd) buildCommand() *cobra.Command {
-	return &cobra.Command{
-		Use:     "update-platform [name] <json_platform>",
-		Aliases: []string{"up"},
-		Short:   "Updates platform",
-		Long: `Update platform with name.
-Example:
-smctl update-platform platform '{"name": "new-name", "description": "new-description", "type": "new-type"}'`,
-		PreRunE: cmd.PreRunE(upc, upc.Context),
-		RunE:    cmd.RunE(upc),
-	}
 }
 
 // Validate validates command's arguments
@@ -99,19 +85,23 @@ func (upc *UpdatePlatformCmd) Run() error {
 	return nil
 }
 
-// SetSMClient set the SM client
-func (upc *UpdatePlatformCmd) SetSMClient(client smclient.Client) {
-	upc.Client = client
-}
-
 // HideUsage hide command's usage
 func (upc *UpdatePlatformCmd) HideUsage() bool {
 	return true
 }
 
-// Command returns cobra command
-func (upc *UpdatePlatformCmd) Command() *cobra.Command {
-	result := upc.buildCommand()
+// Prepare returns cobra command
+func (upc *UpdatePlatformCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
+	result := &cobra.Command{
+		Use:     "update-platform [name] <json_platform>",
+		Aliases: []string{"up"},
+		Short:   "Updates platform",
+		Long: `Update platform with name.
+Example:
+smctl update-platform platform '{"name": "new-name", "description": "new-description", "type": "new-type"}'`,
+		PreRunE: prepare(upc, upc.Context),
+		RunE:    cmd.RunE(upc),
+	}
 	result = upc.addFlags(result)
 
 	return result

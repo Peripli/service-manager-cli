@@ -22,7 +22,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
-	"github.com/Peripli/service-manager-cli/pkg/smclient"
 )
 
 // ListPlatformsCmd wraps the smctl list-brokers command
@@ -35,17 +34,6 @@ type ListPlatformsCmd struct {
 // NewListPlatformsCmd returns new list-brokers command with context
 func NewListPlatformsCmd(context *cmd.Context) *ListPlatformsCmd {
 	return &ListPlatformsCmd{Context: context}
-}
-
-func (lp *ListPlatformsCmd) buildCommand() *cobra.Command {
-	return &cobra.Command{
-		Use:     "list-platforms",
-		Aliases: []string{"lp"},
-		Short:   "List platforms",
-		Long:    `List all platforms.`,
-		PreRunE: cmd.PreRunE(lp, lp.Context),
-		RunE:    cmd.RunE(lp),
-	}
 }
 
 // Run runs the command's logic
@@ -66,11 +54,6 @@ func (lp *ListPlatformsCmd) addFlags(command *cobra.Command) *cobra.Command {
 	return command
 }
 
-// SetSMClient set the SM client
-func (lp *ListPlatformsCmd) SetSMClient(client smclient.Client) {
-	lp.Client = client
-}
-
 // SetOutputFormat set output format
 func (lp *ListPlatformsCmd) SetOutputFormat(format int) {
 	lp.outputFormat = format
@@ -81,9 +64,16 @@ func (lp *ListPlatformsCmd) HideUsage() bool {
 	return true
 }
 
-// Command returns cobra command
-func (lp *ListPlatformsCmd) Command() *cobra.Command {
-	result := lp.buildCommand()
+// Prepare returns cobra command
+func (lp *ListPlatformsCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
+	result := &cobra.Command{
+		Use:     "list-platforms",
+		Aliases: []string{"lp"},
+		Short:   "List platforms",
+		Long:    `List all platforms.`,
+		PreRunE: prepare(lp, lp.Context),
+		RunE:    cmd.RunE(lp),
+	}
 	result = lp.addFlags(result)
 
 	return result

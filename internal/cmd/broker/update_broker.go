@@ -26,7 +26,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
-	"github.com/Peripli/service-manager-cli/pkg/smclient"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 )
 
@@ -42,19 +41,6 @@ type UpdateBrokerCmd struct {
 // NewUpdateBrokerCmd returns new update-broker command with context
 func NewUpdateBrokerCmd(context *cmd.Context) *UpdateBrokerCmd {
 	return &UpdateBrokerCmd{Context: context}
-}
-
-func (ubc *UpdateBrokerCmd) buildCommand() *cobra.Command {
-	return &cobra.Command{
-		Use:     "update-broker [name] <json_broker>",
-		Aliases: []string{"ub"},
-		Short:   "Updates broker",
-		Long: `Update broker with name.
-Example:
-smctl update-broker broker '{"name": "new-name", "description": "new-description", "broker-url": "http://broker.com", "credentials": { "basic": { "username": "admin", "password": "admin" } }}'`,
-		PreRunE: cmd.PreRunE(ubc, ubc.Context),
-		RunE:    cmd.RunE(ubc),
-	}
 }
 
 // Validate validates command's arguments
@@ -99,19 +85,23 @@ func (ubc *UpdateBrokerCmd) Run() error {
 	return nil
 }
 
-// SetSMClient set the SM client
-func (ubc *UpdateBrokerCmd) SetSMClient(client smclient.Client) {
-	ubc.Client = client
-}
-
 // HideUsage hide command's usage
 func (ubc *UpdateBrokerCmd) HideUsage() bool {
 	return true
 }
 
-// Command returns cobra command
-func (ubc *UpdateBrokerCmd) Command() *cobra.Command {
-	result := ubc.buildCommand()
+// Prepare returns cobra command
+func (ubc *UpdateBrokerCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
+	result := &cobra.Command{
+		Use:     "update-broker [name] <json_broker>",
+		Aliases: []string{"ub"},
+		Short:   "Updates broker",
+		Long: `Update broker with name.
+Example:
+smctl update-broker broker '{"name": "new-name", "description": "new-description", "broker-url": "http://broker.com", "credentials": { "basic": { "username": "admin", "password": "admin" } }}'`,
+		PreRunE: prepare(ubc, ubc.Context),
+		RunE:    cmd.RunE(ubc),
+	}
 	result = ubc.addFlags(result)
 
 	return result

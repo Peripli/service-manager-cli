@@ -45,7 +45,7 @@ var _ = Describe("Register Broker Command test", func() {
 		}
 		client.RegisterBrokerReturns(broker, nil)
 
-		rbcCmd := command.Command()
+		rbcCmd := command.Prepare(cmd.SmPrepare)
 		rbcCmd.SetArgs(args)
 		rbcCmd.Execute()
 
@@ -53,7 +53,7 @@ var _ = Describe("Register Broker Command test", func() {
 	}
 
 	invalidRegisterBrokerCommandExecution := func(args []string) error {
-		rpcCmd := command.Command()
+		rpcCmd := command.Prepare(cmd.SmPrepare)
 		rpcCmd.SetArgs(args)
 		return rpcCmd.Execute()
 	}
@@ -70,29 +70,6 @@ var _ = Describe("Register Broker Command test", func() {
 
 			It("Argument values should be as expected", func() {
 				validRegisterBrokerExecution([]string{"broker-name", "http://broker.com", "--basic", "user:password"})
-
-				Expect(command.broker.Name).To(Equal("broker-name"))
-				Expect(command.broker.URL).To(Equal("http://broker.com"))
-				Expect(command.broker.Credentials.Basic.User).To(Equal("user"))
-				Expect(command.broker.Credentials.Basic.Password).To(Equal("password"))
-			})
-		})
-
-		Context("With necessary arguments provided and credentials flag", func() {
-			credentials := types.Credentials{types.Basic{User: "user", Password: "password"}}
-			credentialsJSONByte, _ := json.Marshal(credentials)
-			credentialsJSONString := (string)(credentialsJSONByte)
-
-			It("should be registered", func() {
-				validRegisterBrokerExecution([]string{"broker-name", "http://broker.com", "--credentials", credentialsJSONString})
-
-				tableOutputExpected := broker.TableData().String()
-
-				Expect(buffer.String()).To(ContainSubstring(tableOutputExpected))
-			})
-
-			It("Argument values should be as expected", func() {
-				validRegisterBrokerExecution([]string{"broker-name", "http://broker.com", "--credentials", credentialsJSONString})
 
 				Expect(command.broker.Name).To(Equal("broker-name"))
 				Expect(command.broker.URL).To(Equal("http://broker.com"))
@@ -137,15 +114,7 @@ var _ = Describe("Register Broker Command test", func() {
 			It("should return error", func() {
 				err := invalidRegisterBrokerCommandExecution([]string{"validName", "--basic", "user:password"})
 
-				Expect(err.Error()).To(ContainSubstring("requires at least 2 args"))
-			})
-		})
-
-		Context("With neither credentials, nor basic flag provided", func() {
-			It("should return error", func() {
-				err := invalidRegisterBrokerCommandExecution([]string{"validName", "validType"})
-
-				Expect(err.Error()).To(ContainSubstring("requires either --credentials or --basic flag"))
+				Expect(err.Error()).To(ContainSubstring("Name and URL are required"))
 			})
 		})
 
@@ -154,28 +123,6 @@ var _ = Describe("Register Broker Command test", func() {
 				err := invalidRegisterBrokerCommandExecution([]string{"validName", "validType", "--basic", "invalidBasicFlag"})
 
 				Expect(err.Error()).To(ContainSubstring("basic string is invalid"))
-			})
-		})
-
-		Context("With invalid credentials flag provided", func() {
-			It("should be registered", func() {
-				credentials := types.Credentials{types.Basic{User: "user", Password: "password"}}
-				credentialsJSONByte, _ := json.Marshal(credentials)
-				credentialsJSONString := (string)(credentialsJSONByte)
-
-				err := invalidRegisterBrokerCommandExecution([]string{"broker-name", "http://broker.com", "--credentials", "{" + credentialsJSONString})
-
-				Expect(err).Should(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("credentials string is invalid"))
-			})
-		})
-
-		Context("With both credentials and basic flag provided", func() {
-			It("should return error", func() {
-				args := []string{"validName", "validType", "--credentials", "\"{}\"", "--basic", "user:password"}
-				err := invalidRegisterBrokerCommandExecution(args)
-
-				Expect(err.Error()).To(ContainSubstring("duplicate credentials declaration with --credentials and --basic flags"))
 			})
 		})
 

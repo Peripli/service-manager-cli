@@ -22,13 +22,13 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
-	"github.com/Peripli/service-manager-cli/pkg/smclient"
 )
 
 // ListBrokersCmd wraps the smctl list-brokers command
 type ListBrokersCmd struct {
 	*cmd.Context
 
+	prepare      cmd.PrepareFunc
 	outputFormat int
 }
 
@@ -43,7 +43,7 @@ func (lb *ListBrokersCmd) buildCommand() *cobra.Command {
 		Aliases: []string{"lb"},
 		Short:   "List brokers",
 		Long:    `List all brokers.`,
-		PreRunE: cmd.PreRunE(lb, lb.Context),
+		PreRunE: lb.prepare(lb, lb.Context),
 		RunE:    cmd.RunE(lb),
 	}
 }
@@ -66,11 +66,6 @@ func (lb *ListBrokersCmd) addFlags(command *cobra.Command) *cobra.Command {
 	return command
 }
 
-// SetSMClient set the SM client
-func (lb *ListBrokersCmd) SetSMClient(client smclient.Client) {
-	lb.Client = client
-}
-
 // SetOutputFormat set output format
 func (lb *ListBrokersCmd) SetOutputFormat(format int) {
 	lb.outputFormat = format
@@ -81,8 +76,9 @@ func (lb *ListBrokersCmd) HideUsage() bool {
 	return true
 }
 
-// Command returns cobra command
-func (lb *ListBrokersCmd) Command() *cobra.Command {
+// Prepare returns cobra command
+func (lb *ListBrokersCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
+	lb.prepare = prepare
 	result := lb.buildCommand()
 	result = lb.addFlags(result)
 

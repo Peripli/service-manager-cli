@@ -25,7 +25,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
-	"github.com/Peripli/service-manager-cli/pkg/smclient"
 )
 
 // DeletePlatformCmd wraps the smctl list-brokers command
@@ -38,17 +37,6 @@ type DeletePlatformCmd struct {
 // NewDeletePlatformCmd returns new list-brokers command with context
 func NewDeletePlatformCmd(context *cmd.Context) *DeletePlatformCmd {
 	return &DeletePlatformCmd{Context: context}
-}
-
-func (dpc *DeletePlatformCmd) buildCommand() *cobra.Command {
-	return &cobra.Command{
-		Use:     "delete-platform [name] <name2 <name3> ... <nameN>>",
-		Aliases: []string{"dp"},
-		Short:   "Deletes platforms",
-		Long:    `Delete one or more platforms with name.`,
-		PreRunE: cmd.PreRunE(dpc, dpc.Context),
-		RunE:    cmd.RunE(dpc),
-	}
 }
 
 // Validate validates command's arguments
@@ -88,19 +76,21 @@ func (dpc *DeletePlatformCmd) Run() error {
 	return nil
 }
 
-// SetSMClient set the SM client
-func (dpc *DeletePlatformCmd) SetSMClient(client smclient.Client) {
-	dpc.Client = client
-}
-
 // HideUsage hide command's usage
 func (dpc *DeletePlatformCmd) HideUsage() bool {
 	return true
 }
 
-// Command returns cobra command
-func (dpc *DeletePlatformCmd) Command() *cobra.Command {
-	result := dpc.buildCommand()
+// Prepare returns cobra command
+func (dpc *DeletePlatformCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
+	result := &cobra.Command{
+		Use:     "delete-platform [name] <name2 <name3> ... <nameN>>",
+		Aliases: []string{"dp"},
+		Short:   "Deletes platforms",
+		Long:    `Delete one or more platforms with name.`,
+		PreRunE: prepare(dpc, dpc.Context),
+		RunE:    cmd.RunE(dpc),
+	}
 
 	return result
 }

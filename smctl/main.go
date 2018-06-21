@@ -23,6 +23,7 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/cmd/login"
 	"github.com/Peripli/service-manager-cli/internal/cmd/platform"
 	"github.com/Peripli/service-manager-cli/internal/cmd/version"
+	"github.com/spf13/cobra"
 
 	"os"
 )
@@ -33,23 +34,39 @@ func main() {
 	context := &cmd.Context{}
 	rootCmd := cmd.BuildRootCommand(context)
 
-	commands := []cmd.CommandWrapper{
-		login.NewLoginCmd(context, os.Stdin),
-		version.NewVersionCmd(context, clientVersion),
-		info.NewInfoCmd(context),
-		broker.NewRegisterBrokerCmd(context),
-		broker.NewListBrokersCmd(context),
-		broker.NewDeleteBrokerCmd(context),
-		broker.NewUpdateBrokerCmd(context),
-		platform.NewRegisterPlatformCmd(context),
-		platform.NewListPlatformsCmd(context),
-		platform.NewDeletePlatformCmd(context),
-		platform.NewUpdatePlatformCmd(context),
+	normalCommandsGroup := cmd.Group{
+		Commands: []cmd.CommandPreparator{
+			login.NewLoginCmd(context, os.Stdin),
+			version.NewVersionCmd(context, clientVersion),
+			info.NewInfoCmd(context),
+		},
+		PrepareFn: cmd.CommonPrepare,
 	}
 
-	for _, command := range commands {
-		rootCmd.AddCommand(command.Command())
+	smCommandsGroup := cmd.Group{
+		Commands: []cmd.CommandPreparator{
+			broker.NewRegisterBrokerCmd(context),
+			broker.NewListBrokersCmd(context),
+			broker.NewDeleteBrokerCmd(context),
+			broker.NewUpdateBrokerCmd(context),
+			platform.NewRegisterPlatformCmd(context),
+			platform.NewListPlatformsCmd(context),
+			platform.NewDeletePlatformCmd(context),
+			platform.NewUpdatePlatformCmd(context),
+		},
+		PrepareFn: cmd.SmPrepare,
 	}
+
+	registerGroups(rootCmd, normalCommandsGroup, smCommandsGroup)
 
 	cmd.Execute(rootCmd)
+}
+
+func registerGroups(rootCmd *cobra.Command, groups ...cmd.Group) {
+	for _, group := range groups {
+		for _, command := range group.Commands {
+			cobraCmd := command.Prepare(group.PrepareFn)
+			rootCmd.AddCommand(cobraCmd)
+		}
+	}
 }

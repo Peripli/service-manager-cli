@@ -23,8 +23,6 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 
-	"github.com/Peripli/service-manager-cli/pkg/smclient"
-
 	"github.com/spf13/cobra"
 )
 
@@ -42,11 +40,6 @@ func NewRegisterPlatformCmd(context *cmd.Context) *RegisterPlatformCmd {
 	return &RegisterPlatformCmd{Context: context, platform: types.Platform{}}
 }
 
-// SetSMClient set SM client
-func (rpc *RegisterPlatformCmd) SetSMClient(client smclient.Client) {
-	rpc.Client = client
-}
-
 // SetOutputFormat set command's output format
 func (rpc *RegisterPlatformCmd) SetOutputFormat(format int) {
 	rpc.outputFormat = format
@@ -57,24 +50,20 @@ func (rpc *RegisterPlatformCmd) HideUsage() bool {
 	return true
 }
 
-// Command returns cobra command
-func (rpc *RegisterPlatformCmd) Command() *cobra.Command {
-	result := rpc.buildCommand()
-	result = rpc.addFlags(result)
-
-	return result
-}
-
-func (rpc *RegisterPlatformCmd) buildCommand() *cobra.Command {
-	return &cobra.Command{
+// Prepare returns cobra command
+func (rpc *RegisterPlatformCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
+	result := &cobra.Command{
 		Use:     "register-platform [name] [type] <description>",
 		Aliases: []string{"rp"},
 		Short:   "Registers a platform",
 		Long:    `Registers a platform`,
 
-		PreRunE: cmd.PreRunE(rpc, rpc.Context),
+		PreRunE: prepare(rpc, rpc.Context),
 		RunE:    cmd.RunE(rpc),
 	}
+	result = rpc.addFlags(result)
+
+	return result
 }
 
 func (rpc *RegisterPlatformCmd) addFlags(command *cobra.Command) *cobra.Command {

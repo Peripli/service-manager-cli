@@ -36,7 +36,7 @@ var _ = Describe("Login Command test", func() {
 	Describe("Valid request", func() {
 		Context("With password provided through flag", func() {
 			It("should save configuration successfully", func() {
-				lc := command.Command()
+				lc := command.Prepare(cmd.CommonPrepare)
 				lc.SetArgs([]string{"--url=http://valid-url.com", "--password=password"})
 
 				credentialsBuffer.WriteString("user\n")
@@ -50,7 +50,7 @@ var _ = Describe("Login Command test", func() {
 
 		Context("With user and password provided through flag", func() {
 			It("should save configuration successfully", func() {
-				lc := command.Command()
+				lc := command.Prepare(cmd.CommonPrepare)
 				lc.SetArgs([]string{"--url=http://valid-url.com", "--user=user", "--password=password"})
 
 				err := lc.Execute()
@@ -63,7 +63,7 @@ var _ = Describe("Login Command test", func() {
 		Context("With verbose flag provided", func() {
 			It("should print more detailed messages", func() {
 				command.Verbose = true
-				lc := command.Command()
+				lc := command.Prepare(cmd.CommonPrepare)
 				lc.SetArgs([]string{"--url=http://valid-url.com", "--user=user", "--password=password"})
 
 				err := lc.Execute()
@@ -78,7 +78,7 @@ var _ = Describe("Login Command test", func() {
 	Describe("Invalid request", func() {
 		Context("With no URL flag provided", func() {
 			It("should return error", func() {
-				lc := command.Command()
+				lc := command.Prepare(cmd.CommonPrepare)
 				err := lc.Execute()
 
 				Expect(err).Should(HaveOccurred())
@@ -88,7 +88,7 @@ var _ = Describe("Login Command test", func() {
 
 		Context("With invalid URL flag provided", func() {
 			It("should return error", func() {
-				lc := command.Command()
+				lc := command.Prepare(cmd.CommonPrepare)
 				lc.SetArgs([]string{"--url=htp://invalid-url.com"})
 				err := lc.Execute()
 
@@ -99,7 +99,7 @@ var _ = Describe("Login Command test", func() {
 
 		Context("With error while typing user in", func() {
 			It("should save configuration successfully", func() {
-				lc := command.Command()
+				lc := command.Prepare(cmd.CommonPrepare)
 				lc.SetArgs([]string{"--url=http://valid-url.com", "--password=password"})
 
 				err := lc.Execute()
@@ -110,7 +110,7 @@ var _ = Describe("Login Command test", func() {
 
 		Context("With error while saving configuration", func() {
 			It("should return error", func() {
-				lc := command.Command()
+				lc := command.Prepare(cmd.CommonPrepare)
 				lc.SetArgs([]string{"--url=http://valid-url.com", "--user=user", "--password=password"})
 				config.SaveReturns(errors.New("saving configuration error"))
 

@@ -24,9 +24,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Peripli/service-manager-cli/pkg/smclient"
-
-	"encoding/json"
 	"errors"
 
 	"github.com/spf13/cobra"
@@ -38,9 +35,7 @@ type RegisterBrokerCmd struct {
 
 	broker types.Broker
 
-	credentialsJSON string
-	basicString     string
-
+	basicString  string
 	outputFormat int
 }
 
@@ -49,20 +44,23 @@ func NewRegisterBrokerCmd(context *cmd.Context) *RegisterBrokerCmd {
 	return &RegisterBrokerCmd{Context: context, broker: types.Broker{}}
 }
 
-func (rbc *RegisterBrokerCmd) buildCommand() *cobra.Command {
-	return &cobra.Command{
+// Prepare returns cobra command
+func (rbc *RegisterBrokerCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
+	result := &cobra.Command{
 		Use:     "register-broker [name] [url] <description>",
 		Aliases: []string{"rb"},
 		Short:   "Registers a broker",
 		Long:    `Registers a broker`,
 
-		PreRunE: cmd.PreRunE(rbc, rbc.Context),
+		PreRunE: prepare(rbc, rbc.Context),
 		RunE:    cmd.RunE(rbc),
 	}
+	result = rbc.addFlags(result)
+
+	return result
 }
 
 func (rbc *RegisterBrokerCmd) addFlags(command *cobra.Command) *cobra.Command {
-	command.Flags().StringVarP(&rbc.credentialsJSON, "credentials", "c", "", "Sets the authentication type and credentials with a json string. Format is <'json-string'>.")
 	command.Flags().StringVarP(&rbc.basicString, "basic", "b", "", "Sets the username and password for basic authentication. Format is <username:password>.")
 	cmd.AddFormatFlag(command.Flags())
 
@@ -72,15 +70,11 @@ func (rbc *RegisterBrokerCmd) addFlags(command *cobra.Command) *cobra.Command {
 // Validate validates command's arguments
 func (rbc *RegisterBrokerCmd) Validate(args []string) error {
 	if len(args) < 2 {
-		return fmt.Errorf("requires at least 2 args")
+		return fmt.Errorf("Name and URL are required")
 	}
 
-	if rbc.credentialsJSON == "" && rbc.basicString == "" {
-		return fmt.Errorf("requires either --credentials or --basic flag")
-	}
-
-	if rbc.credentialsJSON != "" && rbc.basicString != "" {
-		return fmt.Errorf("duplicate credentials declaration with --credentials and --basic flags")
+	if rbc.basicString == "" {
+		return fmt.Errorf("--basic flag is required")
 	}
 
 	rbc.broker.Name = args[0]
@@ -105,11 +99,6 @@ func (rbc *RegisterBrokerCmd) Run() error {
 	return nil
 }
 
-// SetSMClient set the SM client
-func (rbc *RegisterBrokerCmd) SetSMClient(client smclient.Client) {
-	rbc.Client = client
-}
-
 // SetOutputFormat set output format
 func (rbc *RegisterBrokerCmd) SetOutputFormat(format int) {
 	rbc.outputFormat = format
@@ -120,23 +109,7 @@ func (rbc *RegisterBrokerCmd) HideUsage() bool {
 	return true
 }
 
-// Command returns cobra command
-func (rbc *RegisterBrokerCmd) Command() *cobra.Command {
-	result := rbc.buildCommand()
-	result = rbc.addFlags(result)
-
-	return result
-}
-
 func (rbc *RegisterBrokerCmd) parseCredentials() error {
-	if rbc.credentialsJSON != "" {
-		credentials := &types.Credentials{}
-		if err := json.Unmarshal([]byte(rbc.credentialsJSON), &credentials); err != nil {
-			return errors.New("credentials string is invalid")
-		}
-		rbc.broker.Credentials = credentials
-	}
-
 	if rbc.basicString != "" {
 		splitBasicString := strings.Split(rbc.basicString, ":")
 		if len(splitBasicString) != 2 {

@@ -38,7 +38,7 @@ var _ = Describe("List brokers command test", func() {
 	})
 
 	executeWithArgs := func(args []string) error {
-		commandToRun := command.Command()
+		commandToRun := command.Prepare(cmd.SmPrepare)
 		commandToRun.SetArgs(args)
 
 		return commandToRun.Execute()

@@ -25,12 +25,12 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
-	"github.com/Peripli/service-manager-cli/pkg/smclient"
 )
 
 // DeleteBrokerCmd wraps the smctl delete-broker command
 type DeleteBrokerCmd struct {
 	*cmd.Context
+	prepare cmd.PrepareFunc
 
 	names []string
 }
@@ -46,7 +46,7 @@ func (dbc *DeleteBrokerCmd) buildCommand() *cobra.Command {
 		Aliases: []string{"db"},
 		Short:   "Deletes brokers",
 		Long:    `Delete one or more brokers with name.`,
-		PreRunE: cmd.PreRunE(dbc, dbc.Context),
+		PreRunE: dbc.prepare(dbc, dbc.Context),
 		RunE:    cmd.RunE(dbc),
 	}
 }
@@ -100,18 +100,14 @@ func (dbc *DeleteBrokerCmd) Run() error {
 	return nil
 }
 
-// SetSMClient set the SM client
-func (dbc *DeleteBrokerCmd) SetSMClient(client smclient.Client) {
-	dbc.Client = client
-}
-
 // HideUsage hide command's usage
 func (dbc *DeleteBrokerCmd) HideUsage() bool {
 	return true
 }
 
-// Command returns cobra command
-func (dbc *DeleteBrokerCmd) Command() *cobra.Command {
+// Prepare returns cobra command
+func (dbc *DeleteBrokerCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
+	dbc.prepare = prepare
 	result := dbc.buildCommand()
 
 	return result

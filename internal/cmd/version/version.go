@@ -35,23 +35,19 @@ func NewVersionCmd(context *cmd.Context, clientVersion string) *Cmd {
 	return &Cmd{context, clientVersion}
 }
 
-// Command returns cobra command
-func (vc *Cmd) Command() *cobra.Command {
-	result := vc.buildCommand()
-
-	return result
-}
-
-func (vc *Cmd) buildCommand() *cobra.Command {
-	return &cobra.Command{
+// Prepare returns cobra command
+func (vc *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
+	result := &cobra.Command{
 		Use:     "version",
 		Aliases: []string{"v"},
 		Short:   "Prints smctl version",
 		Long:    `Prints smctl version.`,
 
-		PreRunE: cmd.PreRunE(vc, vc.Context),
+		PreRunE: prepare(vc, vc.Context),
 		RunE:    cmd.RunE(vc),
 	}
+
+	return result
 }
 
 // Run runs command's logic

@@ -52,7 +52,7 @@ var _ = Describe("Register Platform Command test", func() {
 		}
 		client.RegisterPlatformReturns(platform, nil)
 
-		rpcCmd := command.Command()
+		rpcCmd := command.Prepare(cmd.SmPrepare)
 		rpcCmd.SetArgs(args)
 		rpcCmd.Execute()
 
@@ -60,7 +60,7 @@ var _ = Describe("Register Platform Command test", func() {
 	}
 
 	invalidRegisterPlatformCommandExecution := func(args []string) error {
-		rpcCmd := command.Command()
+		rpcCmd := command.Prepare(cmd.SmPrepare)
 		rpcCmd.SetArgs(args)
 		return rpcCmd.Execute()
 	}

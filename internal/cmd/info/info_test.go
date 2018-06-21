@@ -39,7 +39,7 @@ var _ = Describe("Login Command test", func() {
 			It("should print prompt to log in", func() {
 				config.LoadReturns(nil, errors.New("configuration file not found"))
 
-				ic := command.Command()
+				ic := command.Prepare(cmd.CommonPrepare)
 				err := ic.Execute()
 
 				Expect(buffer.String()).To(Equal("There is no logged user. Use \"smctl login\" to log in.\n"))
@@ -51,7 +51,7 @@ var _ = Describe("Login Command test", func() {
 			It("should print URL and logged user", func() {
 				config.LoadReturns(&clientConfig, nil)
 
-				ic := command.Command()
+				ic := command.Prepare(cmd.CommonPrepare)
 				err := ic.Execute()
 
 				Expect(buffer.String()).To(ContainSubstring(fmt.Sprintf("Service Manager URL: %s\n", clientConfig.URL)))

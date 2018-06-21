@@ -48,29 +48,20 @@ func NewLoginCmd(context *cmd.Context, input io.ReadWriter) *Cmd {
 	return &Cmd{Context: context, input: input}
 }
 
-// HideUsage hides the command's usage
-func (lc *Cmd) HideUsage() bool {
-	return true
-}
-
-// Command returns cobra command
-func (lc *Cmd) Command() *cobra.Command {
-	result := lc.buildCommand()
-	result = lc.addFlags(result)
-
-	return result
-}
-
-func (lc *Cmd) buildCommand() *cobra.Command {
-	return &cobra.Command{
+// Prepare returns cobra command
+func (lc *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
+	result := &cobra.Command{
 		Use:     "login",
 		Aliases: []string{"l"},
 		Short:   "Logs user in",
 		Long:    `Connects to a Service Manager and logs user in.`,
 
-		PreRunE: cmd.PreRunE(lc, lc.Context),
+		PreRunE: prepare(lc, lc.Context),
 		RunE:    cmd.RunE(lc),
 	}
+	result = lc.addFlags(result)
+
+	return result
 }
 
 func (lc *Cmd) addFlags(command *cobra.Command) *cobra.Command {
@@ -79,6 +70,11 @@ func (lc *Cmd) addFlags(command *cobra.Command) *cobra.Command {
 	command.PersistentFlags().StringVarP(&lc.password, "password", "p", "", "Password")
 
 	return command
+}
+
+// HideUsage hides the command's usage
+func (lc *Cmd) HideUsage() bool {
+	return true
 }
 
 // Validate valides the command's arguments

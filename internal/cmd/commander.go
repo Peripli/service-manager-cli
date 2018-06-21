@@ -27,9 +27,9 @@ import (
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
 )
 
-// CommandWrapper used to wrap CLI commands
-type CommandWrapper interface {
-	Command() *cobra.Command
+// CommandPreparator used to wrap CLI commands
+type CommandPreparator interface {
+	Prepare(PrepareFunc) *cobra.Command
 }
 
 // Command provides common logic for SM commands
@@ -55,16 +55,31 @@ type FormattedCommand interface {
 	SetOutputFormat(int)
 }
 
-// SvcManagerCommand should be implemented if the command needs to use the SM Client
-type SvcManagerCommand interface {
-	// SetSMClient sets the command's Service Manager client
-	SetSMClient(smclient.Client)
+// PrepareFunc is function type which executes common prepare logic for commands
+type PrepareFunc func(cmd Command, ctx *Context) func(*cobra.Command, []string) error
+
+// SmPrepare creates a SM client for SM commands
+func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
+	return func(c *cobra.Command, args []string) error {
+		if err := CommonPrepare(cmd, ctx)(c, args); err != nil {
+			return err
+		}
+
+		if ctx.Client == nil {
+			clientConfig, err := ctx.Configuration.Load()
+			if err != nil {
+				return errors.New("no logged user. Use \"smctl login\" to log in")
+			}
+			ctx.Client = smclient.NewClient(clientConfig)
+		}
+
+		return nil
+	}
 }
 
-// PreRunE provides common pre-run logic for SM commands
-func PreRunE(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
+// CommonPrepare provides common pre-run logic for SM commands
+func CommonPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 	return func(c *cobra.Command, args []string) error {
-
 		if valCmd, ok := cmd.(ValidatedCommand); ok {
 			if err := valCmd.Validate(args); err != nil {
 				return err
@@ -83,16 +98,7 @@ func PreRunE(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 			c.SilenceUsage = huCmd.HideUsage()
 		}
 
-		if svcCmd, ok := cmd.(SvcManagerCommand); ok && ctx.Client == nil {
-			clientConfig, err := ctx.Configuration.Load()
-			if err != nil {
-				return errors.New("no logged user. Use \"smctl login\" to log in")
-			}
-			svcCmd.SetSMClient(smclient.NewClient(clientConfig))
-		}
-
 		return nil
-
 	}
 }
 

@@ -33,23 +33,19 @@ func NewInfoCmd(context *cmd.Context) *Cmd {
 	return &Cmd{context}
 }
 
-// Command returns the cobra command
-func (ic *Cmd) Command() *cobra.Command {
-	result := ic.buildCommand()
-
-	return result
-}
-
-func (ic *Cmd) buildCommand() *cobra.Command {
-	return &cobra.Command{
+// Prepare returns the cobra command
+func (ic *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
+	result := &cobra.Command{
 		Use:     "info",
 		Aliases: []string{"i"},
 		Short:   "Prints information for logged user",
 		Long:    `Prints information for logged user`,
 
-		PreRunE: cmd.PreRunE(ic, ic.Context),
+		PreRunE: prepare(ic, ic.Context),
 		RunE:    cmd.RunE(ic),
 	}
+
+	return result
 }
 
 // Run runs the command's logic

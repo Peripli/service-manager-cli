@@ -32,7 +32,7 @@ var _ = Describe("Login Command test", func() {
 	Describe("Valid request", func() {
 		Context("Of the version command", func() {
 			It("should print version", func() {
-				vc := command.Command()
+				vc := command.Prepare(cmd.CommonPrepare)
 				err := vc.Execute()
 
 				Expect(buffer.String()).To(Equal(fmt.Sprintf("Service Manager Client %s\n", clientVersion)))
