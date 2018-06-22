@@ -26,7 +26,7 @@ You're done! Now you can use the **smctl** command along with some other subcomm
 
 ```sh
 # We need to connect and authenticate with a running Service Manager instance before doing anythign else  
-smctl login -a localhost:8080 -u admin -p admin
+smctl login -a http://service-manager-url.com -u admin -p admin
 
 # List all brokers
 smctl list-brokers
@@ -42,7 +42,7 @@ a52be735-30e5-4849-af23-83d65d592464  abc   https://demobroker.domain.com/  Serv
 
 
 # Registering another broker
-smctl register-broker def https://demobroker.cfapps.eu10.hana.ondemand.com/ "Another broker" -b admin:admin
+smctl register-broker def https://demobroker.domain.com/ "Another broker" -b admin:admin
 ID                                    Name                 URL                             Description                                      Created               Updated               
 ------------------------------------  -------------------  ------------------------------  -----------------------------------------------  --------------------  -------------------- 
 a52be735-30e5-4849-af23-83d65d592464  abc                  https://demobroker.domain.com/   Service broker providing some valuable services  2018-06-22T13:04:19Z  2018-06-22T13:04:19Z  
