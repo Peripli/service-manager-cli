@@ -17,14 +17,9 @@
 package configuration
 
 import (
-	"path/filepath"
-
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
-	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
-
-const defaultConfigFileName = ".servicemanager.json"
 
 // Configuration should be implemented for load and save of SM client config
 // go:generate counterfeiter . Configuration
@@ -39,11 +34,16 @@ type smConfiguration struct {
 
 // NewSMConfiguration returns implementation of Configuration interface
 func NewSMConfiguration(viperEnv *viper.Viper, cfgFile string) (Configuration, error) {
-	absCfgFilePath, err := getConfigFileAbsPath(cfgFile)
-	if err != nil {
-		return nil, err
+	if cfgFile == "" {
+		var err error
+		cfgFile, err = defaultFilePath()
+		if err != nil {
+			return nil, err
+		}
 	}
-	viperEnv.SetConfigFile(absCfgFilePath)
+	ensureDirExists(cfgFile)
+
+	viperEnv.SetConfigFile(cfgFile)
 
 	return &smConfiguration{viperEnv}, nil
 }
@@ -74,21 +74,4 @@ func (smCfg *smConfiguration) Load() (*smclient.ClientConfig, error) {
 	}
 
 	return clientConfig, nil
-}
-
-func getConfigFileAbsPath(cfgFile string) (string, error) {
-	if cfgFile == "" {
-		home, err := homedir.Dir()
-		if err != nil {
-			return "", err
-		}
-		cfgFile = filepath.Join(home, defaultConfigFileName)
-	}
-
-	filename, err := filepath.Abs(cfgFile)
-	if err != nil {
-		return "", err
-	}
-
-	return filename, nil
 }
