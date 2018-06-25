@@ -69,7 +69,7 @@ func (ubc *UpdateBrokerCmd) Run() error {
 		return err
 	}
 
-	brokerWithName := util.GetBrokerByName(allBrokers, []string{ubc.name})
+	brokerWithName := util.GetBrokersByName(allBrokers, []string{ubc.name})
 	if len(brokerWithName) < 1 {
 		return fmt.Errorf("broker with name %s not found", ubc.name)
 	}

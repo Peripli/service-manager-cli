@@ -69,7 +69,7 @@ func (upc *UpdatePlatformCmd) Run() error {
 		return err
 	}
 
-	platformWithName := util.GetPlatformByName(allPlatforms, []string{upc.name})
+	platformWithName := util.GetPlatformsByName(allPlatforms, []string{upc.name})
 	if len(platformWithName) < 1 {
 		return fmt.Errorf("platform with name %s not found", upc.name)
 	}

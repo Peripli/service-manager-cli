@@ -57,7 +57,7 @@ func (dpc *DeletePlatformCmd) Run() error {
 		return err
 	}
 
-	toDeletePlatforms := util.GetPlatformByName(allPlatforms, dpc.names)
+	toDeletePlatforms := util.GetPlatformsByName(allPlatforms, dpc.names)
 	if len(toDeletePlatforms) < 1 {
 		output.PrintMessage(dpc.Output, "Platform(s) not found\n")
 		return nil

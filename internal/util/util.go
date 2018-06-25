@@ -42,27 +42,32 @@ func ValidateURL(URL string) error {
 	return nil
 }
 
-// GetBrokerByName returns array of brokers with the searched names
-func GetBrokerByName(brokers *types.Brokers, names []string) []types.Broker {
+// GetBrokersByName returns array of brokers with the searched names
+func GetBrokersByName(brokers *types.Brokers, names []string) []types.Broker {
 	result := make([]types.Broker, 0)
+	brokersMap := make(map[string]types.Broker)
 	for _, broker := range brokers.Brokers {
-		for _, name := range names {
-			if broker.Name == name {
-				result = append(result, broker)
-			}
+		brokersMap[broker.Name] = broker
+	}
+
+	for _, name := range names {
+		if _, exists := brokersMap[name]; exists {
+			result = append(result, brokersMap[name])
 		}
 	}
 	return result
 }
 
-// GetPlatformByName returns array of platforms with the searched names
-func GetPlatformByName(platforms *types.Platforms, names []string) []types.Platform {
+// GetPlatformsByName returns array of platforms with the searched names
+func GetPlatformsByName(platforms *types.Platforms, names []string) []types.Platform {
 	result := make([]types.Platform, 0)
+	platformsMap := make(map[string]types.Platform)
 	for _, platform := range platforms.Platforms {
-		for _, name := range names {
-			if platform.Name == name {
-				result = append(result, platform)
-			}
+		platformsMap[platform.Name] = platform
+	}
+	for _, name := range names {
+		if _, exists := platformsMap[name]; exists {
+			result = append(result, platformsMap[name])
 		}
 	}
 	return result

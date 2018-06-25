@@ -62,7 +62,7 @@ func (dbc *DeleteBrokerCmd) Run() error {
 		return err
 	}
 
-	toDeleteBrokers := util.GetBrokerByName(allBrokers, dbc.names)
+	toDeleteBrokers := util.GetBrokersByName(allBrokers, dbc.names)
 	if len(toDeleteBrokers) < 1 {
 		output.PrintMessage(dbc.Output, "Service Broker(s) not found\n")
 		return nil
