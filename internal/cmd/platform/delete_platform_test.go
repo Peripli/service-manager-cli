@@ -66,13 +66,13 @@ var _ = Describe("Delete platforms command test", func() {
 	})
 
 	Context("when 2 platforms are being deleted and one is not found", func() {
-		It("should print required arguments", func() {
+		It("should print the name of the not found", func() {
 			client.DeletePlatformReturns(nil)
 			err := executeWithArgs([]string{"platform-name", "platform"})
 
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring("Platform with name: platform-name successfully deleted"))
-			Expect(buffer.String()).To(ContainSubstring("1 names were not found"))
+			Expect(buffer.String()).To(ContainSubstring("Platform with name: platform was not found"))
 		})
 	})
 
@@ -82,8 +82,8 @@ var _ = Describe("Delete platforms command test", func() {
 			client.DeletePlatformReturns(expectedError)
 			err := executeWithArgs([]string{"non-existing-name"})
 
-			Expect(err).Should(HaveOccurred())
-			Expect(err).To(MatchError("No platforms are found"))
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(buffer.String()).To(ContainSubstring("Platform(s) not found"))
 		})
 	})
 

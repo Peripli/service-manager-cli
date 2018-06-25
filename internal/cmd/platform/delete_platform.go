@@ -59,18 +59,26 @@ func (dpc *DeletePlatformCmd) Run() error {
 
 	toDeletePlatforms := util.GetPlatformByName(allPlatforms, dpc.names)
 	if len(toDeletePlatforms) < 1 {
-		return fmt.Errorf("No platforms are found")
+		output.PrintMessage(dpc.Output, "Platform(s) not found\n")
+		return nil
 	}
+
+	deletedPlatforms := make(map[string]bool)
 
 	for _, toDelete := range toDeletePlatforms {
-		if err := dpc.Client.DeletePlatform(toDelete.ID); err != nil {
-			return err
+		err := dpc.Client.DeletePlatform(toDelete.ID)
+		if err != nil {
+			output.PrintMessage(dpc.Output, "Could not delete platform %s\n", toDelete.Name, err)
+		} else {
+			output.PrintMessage(dpc.Output, "Platform with name: %s successfully deleted\n", toDelete.Name)
+			deletedPlatforms[toDelete.Name] = true
 		}
-		output.PrintMessage(dpc.Output, "Platform with name: %s successfully deleted\n", toDelete.Name)
 	}
 
-	if len(toDeletePlatforms) < len(dpc.names) {
-		output.PrintError(dpc.Output, fmt.Errorf("%d names were not found", len(dpc.names)-len(toDeletePlatforms)))
+	for _, platformName := range dpc.names {
+		if _, deleted := deletedPlatforms[platformName]; !deleted {
+			output.PrintError(dpc.Output, fmt.Errorf("Platform with name: %s was not found", platformName))
+		}
 	}
 
 	return nil
