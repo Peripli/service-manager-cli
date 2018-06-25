@@ -41,7 +41,9 @@ func NewSMConfiguration(viperEnv *viper.Viper, cfgFile string) (Configuration, e
 			return nil, err
 		}
 	}
-	ensureDirExists(cfgFile)
+	if err := ensureDirExists(cfgFile); err != nil {
+		return nil, err
+	}
 
 	viperEnv.SetConfigFile(cfgFile)
 
