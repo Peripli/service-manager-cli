@@ -49,11 +49,6 @@ func (lp *ListPlatformsCmd) Run() error {
 	return nil
 }
 
-func (lp *ListPlatformsCmd) addFlags(command *cobra.Command) *cobra.Command {
-	cmd.AddFormatFlag(command.Flags())
-	return command
-}
-
 // SetOutputFormat set output format
 func (lp *ListPlatformsCmd) SetOutputFormat(format output.Format) {
 	lp.outputFormat = format
@@ -74,7 +69,8 @@ func (lp *ListPlatformsCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		PreRunE: prepare(lp, lp.Context),
 		RunE:    cmd.RunE(lp),
 	}
-	result = lp.addFlags(result)
+
+	cmd.AddFormatFlag(result.Flags())
 
 	return result
 }

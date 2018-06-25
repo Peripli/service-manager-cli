@@ -61,16 +61,11 @@ func (rpc *RegisterPlatformCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command 
 		PreRunE: prepare(rpc, rpc.Context),
 		RunE:    cmd.RunE(rpc),
 	}
-	result = rpc.addFlags(result)
+
+	result.Flags().StringVarP(&rpc.platform.ID, "id", "i", "", "external platform ID")
+	cmd.AddFormatFlag(result.Flags())
 
 	return result
-}
-
-func (rpc *RegisterPlatformCmd) addFlags(command *cobra.Command) *cobra.Command {
-	command.Flags().StringVarP(&rpc.platform.ID, "id", "i", "", "external platform ID")
-	cmd.AddFormatFlag(command.Flags())
-
-	return command
 }
 
 // Validate validates command's arguments

@@ -102,14 +102,10 @@ smctl update-broker broker '{"name": "new-name", "description": "new-description
 		PreRunE: prepare(ubc, ubc.Context),
 		RunE:    cmd.RunE(ubc),
 	}
-	result = ubc.addFlags(result)
+
+	cmd.AddFormatFlag(result.Flags())
 
 	return result
-}
-
-func (ubc *UpdateBrokerCmd) addFlags(command *cobra.Command) *cobra.Command {
-	cmd.AddFormatFlag(command.Flags())
-	return command
 }
 
 // SetOutputFormat set output format

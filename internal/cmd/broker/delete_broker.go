@@ -40,17 +40,6 @@ func NewDeleteBrokerCmd(context *cmd.Context) *DeleteBrokerCmd {
 	return &DeleteBrokerCmd{Context: context}
 }
 
-func (dbc *DeleteBrokerCmd) buildCommand() *cobra.Command {
-	return &cobra.Command{
-		Use:     "delete-broker [name] <name2 <name3> ... <nameN>>",
-		Aliases: []string{"db"},
-		Short:   "Deletes brokers",
-		Long:    `Delete one or more brokers with name.`,
-		PreRunE: dbc.prepare(dbc, dbc.Context),
-		RunE:    cmd.RunE(dbc),
-	}
-}
-
 // Validate validates command's arguments
 func (dbc *DeleteBrokerCmd) Validate(args []string) error {
 	if len(args) < 1 {
@@ -108,7 +97,14 @@ func (dbc *DeleteBrokerCmd) HideUsage() bool {
 // Prepare returns cobra command
 func (dbc *DeleteBrokerCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	dbc.prepare = prepare
-	result := dbc.buildCommand()
+	result := &cobra.Command{
+		Use:     "delete-broker [name] <name2 <name3> ... <nameN>>",
+		Aliases: []string{"db"},
+		Short:   "Deletes brokers",
+		Long:    `Delete one or more brokers with name.`,
+		PreRunE: dbc.prepare(dbc, dbc.Context),
+		RunE:    cmd.RunE(dbc),
+	}
 
 	return result
 }

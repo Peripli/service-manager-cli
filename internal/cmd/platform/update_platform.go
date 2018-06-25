@@ -102,14 +102,10 @@ smctl update-platform platform '{"name": "new-name", "description": "new-descrip
 		PreRunE: prepare(upc, upc.Context),
 		RunE:    cmd.RunE(upc),
 	}
-	result = upc.addFlags(result)
+
+	cmd.AddFormatFlag(result.Flags())
 
 	return result
-}
-
-func (upc *UpdatePlatformCmd) addFlags(command *cobra.Command) *cobra.Command {
-	cmd.AddFormatFlag(command.Flags())
-	return command
 }
 
 // SetOutputFormat set output format

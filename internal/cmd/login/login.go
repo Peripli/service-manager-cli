@@ -59,17 +59,12 @@ func (lc *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		PreRunE: prepare(lc, lc.Context),
 		RunE:    cmd.RunE(lc),
 	}
-	result = lc.addFlags(result)
+
+	result.Flags().StringVarP(&lc.serviceManagerURL, "url", "a", "", "Base URL of the Service Manager")
+	result.Flags().StringVarP(&lc.user, "user", "u", "", "User ID")
+	result.Flags().StringVarP(&lc.password, "password", "p", "", "Password")
 
 	return result
-}
-
-func (lc *Cmd) addFlags(command *cobra.Command) *cobra.Command {
-	command.PersistentFlags().StringVarP(&lc.serviceManagerURL, "url", "a", "", "Base URL of the Service Manager")
-	command.PersistentFlags().StringVarP(&lc.user, "user", "u", "", "User ID")
-	command.PersistentFlags().StringVarP(&lc.password, "password", "p", "", "Password")
-
-	return command
 }
 
 // HideUsage hides the command's usage

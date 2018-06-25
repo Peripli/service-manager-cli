@@ -37,17 +37,6 @@ func NewListBrokersCmd(context *cmd.Context) *ListBrokersCmd {
 	return &ListBrokersCmd{Context: context}
 }
 
-func (lb *ListBrokersCmd) buildCommand() *cobra.Command {
-	return &cobra.Command{
-		Use:     "list-brokers",
-		Aliases: []string{"lb"},
-		Short:   "List brokers",
-		Long:    `List all brokers.`,
-		PreRunE: lb.prepare(lb, lb.Context),
-		RunE:    cmd.RunE(lb),
-	}
-}
-
 // Run runs the command's logic
 func (lb *ListBrokersCmd) Run() error {
 	brokers, err := lb.Client.ListBrokers()
@@ -59,11 +48,6 @@ func (lb *ListBrokersCmd) Run() error {
 	output.Println(lb.Output)
 
 	return nil
-}
-
-func (lb *ListBrokersCmd) addFlags(command *cobra.Command) *cobra.Command {
-	cmd.AddFormatFlag(command.Flags())
-	return command
 }
 
 // SetOutputFormat set output format
@@ -79,8 +63,16 @@ func (lb *ListBrokersCmd) HideUsage() bool {
 // Prepare returns cobra command
 func (lb *ListBrokersCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	lb.prepare = prepare
-	result := lb.buildCommand()
-	result = lb.addFlags(result)
+	result := &cobra.Command{
+		Use:     "list-brokers",
+		Aliases: []string{"lb"},
+		Short:   "List brokers",
+		Long:    `List all brokers.`,
+		PreRunE: lb.prepare(lb, lb.Context),
+		RunE:    cmd.RunE(lb),
+	}
+
+	cmd.AddFormatFlag(result.Flags())
 
 	return result
 }
