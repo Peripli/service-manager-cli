@@ -29,7 +29,7 @@ type ListBrokersCmd struct {
 	*cmd.Context
 
 	prepare      cmd.PrepareFunc
-	outputFormat int
+	outputFormat output.Format
 }
 
 // NewListBrokersCmd returns new list-brokers command with context
@@ -67,7 +67,7 @@ func (lb *ListBrokersCmd) addFlags(command *cobra.Command) *cobra.Command {
 }
 
 // SetOutputFormat set output format
-func (lb *ListBrokersCmd) SetOutputFormat(format int) {
+func (lb *ListBrokersCmd) SetOutputFormat(format output.Format) {
 	lb.outputFormat = format
 }
 

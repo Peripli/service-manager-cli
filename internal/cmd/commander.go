@@ -27,6 +27,12 @@ import (
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
 )
 
+var supportedFormats = map[string]output.Format{
+	"text": output.FormatText,
+	"json": output.FormatJSON,
+	"yaml": output.FormatYAML,
+}
+
 // CommandPreparator used to wrap CLI commands
 type CommandPreparator interface {
 	Prepare(PrepareFunc) *cobra.Command
@@ -52,7 +58,7 @@ type HiddenUsageCommand interface {
 // FormattedCommand should be implemented if the command supports different output formatting through a --format or -f flag
 type FormattedCommand interface {
 	// SetOutputFormat sets the command's output format
-	SetOutputFormat(int)
+	SetOutputFormat(output.Format)
 }
 
 // PrepareFunc is function type which executes common prepare logic for commands
@@ -111,22 +117,19 @@ func RunE(cmd Command) func(*cobra.Command, []string) error {
 
 // AddFormatFlag adds the --format (-f) flag.
 func AddFormatFlag(flags *pflag.FlagSet) {
-	flags.StringP("format", "f", "", "output format")
+	flags.StringP("output", "o", "", "output format")
 }
 
-func getOutputFormat(flags *pflag.FlagSet) (int, error) {
-	outputFormat, _ := flags.GetString("format")
+func getOutputFormat(flags *pflag.FlagSet) (output.Format, error) {
+	outputFormat, _ := flags.GetString("output")
 	outputFormat = strings.ToLower(outputFormat)
 
-	if outputFormat == "" || outputFormat == "text" {
+	if outputFormat == "" {
 		return output.FormatText, nil
-	} else if outputFormat == "json" {
-		return output.FormatJSON, nil
-	} else if outputFormat == "yaml" {
-		return output.FormatYAML, nil
-	} else if outputFormat == "raw" {
-		return output.FormatRaw, nil
-	} else {
-		return 0, errors.New("unknown format: " + outputFormat)
 	}
+	format, exists := supportedFormats[outputFormat]
+	if !exists {
+		return output.FormatUnknown, errors.New("unknown output: " + outputFormat)
+	}
+	return format, nil
 }

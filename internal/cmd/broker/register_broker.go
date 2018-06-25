@@ -37,7 +37,7 @@ type RegisterBrokerCmd struct {
 	broker types.Broker
 
 	basicString  string
-	outputFormat int
+	outputFormat output.Format
 }
 
 // NewRegisterBrokerCmd returns new register-broker command with context
@@ -103,7 +103,7 @@ func (rbc *RegisterBrokerCmd) Run() error {
 }
 
 // SetOutputFormat set output format
-func (rbc *RegisterBrokerCmd) SetOutputFormat(format int) {
+func (rbc *RegisterBrokerCmd) SetOutputFormat(format output.Format) {
 	rbc.outputFormat = format
 }
 

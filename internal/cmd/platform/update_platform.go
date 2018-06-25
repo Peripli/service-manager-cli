@@ -33,7 +33,7 @@ import (
 type UpdatePlatformCmd struct {
 	*cmd.Context
 
-	outputFormat    int
+	outputFormat    output.Format
 	name            string
 	updatedPlatform *types.Platform
 }
@@ -113,6 +113,6 @@ func (upc *UpdatePlatformCmd) addFlags(command *cobra.Command) *cobra.Command {
 }
 
 // SetOutputFormat set output format
-func (upc *UpdatePlatformCmd) SetOutputFormat(format int) {
+func (upc *UpdatePlatformCmd) SetOutputFormat(format output.Format) {
 	upc.outputFormat = format
 }

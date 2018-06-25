@@ -113,7 +113,7 @@ var _ = Describe("Update platform command test", func() {
 		It("should print in json", func() {
 			client.UpdatePlatformReturns(&platform, nil)
 			client.ListPlatformsReturns(&types.Platforms{Platforms: []types.Platform{platform}}, nil)
-			executeWithArgs([]string{platform.Name, `{"name": "platform"}`, "-f", "json"})
+			executeWithArgs([]string{platform.Name, `{"name": "platform"}`, "-o", "json"})
 
 			jsonByte, _ := json.MarshalIndent(platform, "", "  ")
 			jsonOutputExpected := string(jsonByte) + "\n"
@@ -123,7 +123,7 @@ var _ = Describe("Update platform command test", func() {
 		It("should print in yaml", func() {
 			client.UpdatePlatformReturns(&platform, nil)
 			client.ListPlatformsReturns(&types.Platforms{Platforms: []types.Platform{platform}}, nil)
-			executeWithArgs([]string{platform.Name, `{"name": "platform"}`, "-f", "yaml"})
+			executeWithArgs([]string{platform.Name, `{"name": "platform"}`, "-o", "yaml"})
 
 			yamlByte, _ := yaml.Marshal(platform)
 			yamlOutputExpected := string(yamlByte) + "\n"

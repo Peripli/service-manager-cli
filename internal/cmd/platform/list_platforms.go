@@ -28,7 +28,7 @@ import (
 type ListPlatformsCmd struct {
 	*cmd.Context
 
-	outputFormat int
+	outputFormat output.Format
 }
 
 // NewListPlatformsCmd returns new list-brokers command with context
@@ -55,7 +55,7 @@ func (lp *ListPlatformsCmd) addFlags(command *cobra.Command) *cobra.Command {
 }
 
 // SetOutputFormat set output format
-func (lp *ListPlatformsCmd) SetOutputFormat(format int) {
+func (lp *ListPlatformsCmd) SetOutputFormat(format output.Format) {
 	lp.outputFormat = format
 }
 

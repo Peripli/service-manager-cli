@@ -32,7 +32,7 @@ type RegisterPlatformCmd struct {
 
 	platform types.Platform
 
-	outputFormat int
+	outputFormat output.Format
 }
 
 // NewRegisterPlatformCmd returns new register-platform command with context
@@ -41,7 +41,7 @@ func NewRegisterPlatformCmd(context *cmd.Context) *RegisterPlatformCmd {
 }
 
 // SetOutputFormat set command's output format
-func (rpc *RegisterPlatformCmd) SetOutputFormat(format int) {
+func (rpc *RegisterPlatformCmd) SetOutputFormat(format output.Format) {
 	rpc.outputFormat = format
 }
 

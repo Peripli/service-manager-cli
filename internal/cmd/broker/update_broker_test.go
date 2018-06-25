@@ -103,11 +103,11 @@ var _ = Describe("Update broker command test", func() {
 		})
 	})
 
-	Context("when format flag is used", func() {
+	Context("when output flag is used", func() {
 		It("should print in json", func() {
 			client.UpdateBrokerReturns(&broker, nil)
 			client.ListBrokersReturns(&types.Brokers{Brokers: []types.Broker{broker}}, nil)
-			executeWithArgs([]string{broker.Name, `{"name": "broker"}`, "-f", "json"})
+			executeWithArgs([]string{broker.Name, `{"name": "broker"}`, "-o", "json"})
 
 			jsonByte, _ := json.MarshalIndent(broker, "", "  ")
 			jsonOutputExpected := string(jsonByte) + "\n"
@@ -117,7 +117,7 @@ var _ = Describe("Update broker command test", func() {
 		It("should print in yaml", func() {
 			client.UpdateBrokerReturns(&broker, nil)
 			client.ListBrokersReturns(&types.Brokers{Brokers: []types.Broker{broker}}, nil)
-			executeWithArgs([]string{broker.Name, `{"name": "broker"}`, "-f", "yaml"})
+			executeWithArgs([]string{broker.Name, `{"name": "broker"}`, "-o", "yaml"})
 
 			yamlByte, _ := yaml.Marshal(broker)
 			yamlOutputExpected := string(yamlByte) + "\n"

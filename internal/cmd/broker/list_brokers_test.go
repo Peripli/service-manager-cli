@@ -87,7 +87,7 @@ var _ = Describe("List brokers command test", func() {
 			result := &types.Brokers{Brokers: []types.Broker{broker}}
 			client.ListBrokersReturns(result, nil)
 
-			executeWithArgs([]string{"-f", "json"})
+			executeWithArgs([]string{"-o", "json"})
 
 			jsonByte, _ := json.MarshalIndent(result, "", "  ")
 			jsonOutputExpected := string(jsonByte) + "\n"
@@ -98,7 +98,7 @@ var _ = Describe("List brokers command test", func() {
 			result := &types.Brokers{Brokers: []types.Broker{broker}}
 			client.ListBrokersReturns(result, nil)
 
-			executeWithArgs([]string{"-f", "yaml"})
+			executeWithArgs([]string{"-o", "yaml"})
 
 			yamlByte, _ := yaml.Marshal(result)
 			yamlOutputExpected := string(yamlByte) + "\n"
@@ -108,16 +108,16 @@ var _ = Describe("List brokers command test", func() {
 
 	Context("when invalid flag is used", func() {
 		It("should handle cobra error", func() {
-			err := executeWithArgs([]string{"--fformat", "json"})
+			err := executeWithArgs([]string{"--ooutput", "json"})
 			Expect(err).Should(HaveOccurred())
-			Expect(err).To(MatchError("unknown flag: --fformat"))
+			Expect(err).To(MatchError("unknown flag: --ooutput"))
 		})
 
 		It("should handle wrong value", func() {
-			err := executeWithArgs([]string{"--format", "invalid"})
+			err := executeWithArgs([]string{"--output", "invalid"})
 
 			Expect(err).Should(HaveOccurred())
-			Expect(err).To(MatchError("unknown format: invalid"))
+			Expect(err).To(MatchError("unknown output: invalid"))
 		})
 	})
 

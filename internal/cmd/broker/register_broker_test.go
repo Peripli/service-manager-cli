@@ -87,9 +87,9 @@ var _ = Describe("Register Broker Command test", func() {
 			})
 		})
 
-		Context("With json format flag", func() {
-			It("should be printed in json format", func() {
-				validRegisterBrokerExecution([]string{"validName", "validUrl", "--basic", "user:password", "--format", "json"})
+		Context("With json output flag", func() {
+			It("should be printed in json output format", func() {
+				validRegisterBrokerExecution([]string{"validName", "validUrl", "--basic", "user:password", "--output", "json"})
 
 				jsonByte, _ := json.MarshalIndent(broker, "", "  ")
 				jsonOutputExpected := string(jsonByte) + "\n"
@@ -98,9 +98,9 @@ var _ = Describe("Register Broker Command test", func() {
 			})
 		})
 
-		Context("With yaml format flag", func() {
-			It("should be printed in yaml format", func() {
-				validRegisterBrokerExecution([]string{"validName", "validUrl", "--basic", "user:password", "--format", "yaml"})
+		Context("With yaml output flag", func() {
+			It("should be printed in yaml output format", func() {
+				validRegisterBrokerExecution([]string{"validName", "validUrl", "--basic", "user:password", "--output", "yaml"})
 
 				yamlByte, _ := yaml.Marshal(broker)
 				yamlOutputExpected := string(yamlByte) + "\n"
@@ -150,10 +150,10 @@ var _ = Describe("Register Broker Command test", func() {
 		Context("With invalid output format", func() {
 			It("should return error", func() {
 				invFormat := "invalid-format"
-				err := invalidRegisterBrokerCommandExecution([]string{"validName", "validUrl", "--basic", "user:password", "--format", invFormat})
+				err := invalidRegisterBrokerCommandExecution([]string{"validName", "validUrl", "--basic", "user:password", "--output", invFormat})
 
 				Expect(err).Should(HaveOccurred())
-				Expect(err.Error()).To(Equal("unknown format: " + invFormat))
+				Expect(err.Error()).To(Equal("unknown output: " + invFormat))
 			})
 		})
 	})

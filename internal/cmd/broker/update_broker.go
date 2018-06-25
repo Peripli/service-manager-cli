@@ -33,7 +33,7 @@ import (
 type UpdateBrokerCmd struct {
 	*cmd.Context
 
-	outputFormat  int
+	outputFormat  output.Format
 	name          string
 	updatedBroker *types.Broker
 }
@@ -113,6 +113,6 @@ func (ubc *UpdateBrokerCmd) addFlags(command *cobra.Command) *cobra.Command {
 }
 
 // SetOutputFormat set output format
-func (ubc *UpdateBrokerCmd) SetOutputFormat(format int) {
+func (ubc *UpdateBrokerCmd) SetOutputFormat(format output.Format) {
 	ubc.outputFormat = format
 }

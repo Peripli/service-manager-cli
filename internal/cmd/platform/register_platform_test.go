@@ -105,7 +105,7 @@ var _ = Describe("Register Platform Command test", func() {
 
 		Context("With json format flag", func() {
 			It("should be printed in json format", func() {
-				validRegisterPlatformExecution([]string{"platform", "cf", "--format", "json"})
+				validRegisterPlatformExecution([]string{"platform", "cf", "--output", "json"})
 
 				jsonByte, _ := json.MarshalIndent(platform, "", "  ")
 				jsonOutputExpected := string(jsonByte) + "\n"
@@ -116,7 +116,7 @@ var _ = Describe("Register Platform Command test", func() {
 
 		Context("With yaml format flag", func() {
 			It("should be printed in yaml format", func() {
-				validRegisterPlatformExecution([]string{"platform", "cf", "--format", "yaml"})
+				validRegisterPlatformExecution([]string{"platform", "cf", "--output", "yaml"})
 
 				yamlByte, _ := yaml.Marshal(platform)
 				yamlOutputExpected := string(yamlByte) + "\n"
@@ -148,10 +148,10 @@ var _ = Describe("Register Platform Command test", func() {
 		Context("With invalid output format", func() {
 			It("should return error", func() {
 				invFormat := "invalid-format"
-				err := invalidRegisterPlatformCommandExecution([]string{"validName", "validUrl", "--format", invFormat})
+				err := invalidRegisterPlatformCommandExecution([]string{"validName", "validUrl", "--output", invFormat})
 
 				Expect(err).Should(HaveOccurred())
-				Expect(err.Error()).To(Equal("unknown format: " + invFormat))
+				Expect(err.Error()).To(Equal("unknown output: " + invFormat))
 			})
 		})
 	})
