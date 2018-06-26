@@ -31,12 +31,27 @@ script:
   #Execute security scan
   # - gas ./...
 
-  - GOARCH=amd64 GOOS=windows go build -o out/smctl.exe .
+  # Linux i686 build
+  - CGO_ENABLED=0 GOARCH=386 GOOS=linux go build -o out/smctl_linux_i686 .
+
+  # Linux x86-64 build
+	- CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -o out/smctl_linux_x86-64 .
+
+  # OSX build
+	- GOARCH=amd64 GOOS=darwin go build -o out/smctl_osx .
+
+  # Windows x32 build
+	- GOARCH=386 GOOS=windows go build -o out/smctl_win32.exe .
+
+  # Windows x64 build
+  - GOARCH=amd64 GOOS=windows go build -o out/smctl_win64.exe .
+
 
 deploy:
   provider: releases
   api_key: $GITHUB_TOKEN
-  file: out/smctl.exe
+  file_glob: true
+  file: out/*
   skip_cleanup: true
   on:
     tags: true
