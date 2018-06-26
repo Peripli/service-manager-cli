@@ -46,7 +46,6 @@ script:
   # Windows x64 build
   - GOARCH=amd64 GOOS=windows go build -o out/smctl_win64.exe .
 
-
 deploy:
   provider: releases
   api_key: $GITHUB_TOKEN
@@ -55,7 +54,6 @@ deploy:
   skip_cleanup: true
   on:
     tags: true
-
 
 notifications:
   slack: openservicebrokerapi:KQo2QAC6LXeEeXPOemOXja48
