@@ -3,7 +3,8 @@
 *.dll
 *.so
 *.dylib
-cmd/smctl/smctl
+
+/out
 
 # Test binary, build with `go test -c`
 *.test

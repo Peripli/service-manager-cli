@@ -31,5 +31,16 @@ script:
   #Execute security scan
   # - gas ./...
 
+  - GOARCH=amd64 GOOS=windows go build -o out/smctl.exe .
+
+deploy:
+  provider: releases
+  api_key: $GITHUB_TOKEN
+  file: out/smctl.exe
+  skip_cleanup: true
+  on:
+    tags: true
+
+
 notifications:
   slack: openservicebrokerapi:KQo2QAC6LXeEeXPOemOXja48
