@@ -6,7 +6,6 @@ import (
 
 	"bytes"
 	"errors"
-	"fmt"
 	"testing"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
@@ -62,14 +61,12 @@ var _ = Describe("Login Command test", func() {
 
 		Context("With verbose flag provided", func() {
 			It("should print more detailed messages", func() {
-				command.Verbose = true
 				lc := command.Prepare(cmd.CommonPrepare)
 				lc.SetArgs([]string{"--url=http://valid-url.com", "--user=user", "--password=password"})
 
 				err := lc.Execute()
 
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(outputBuffer.String()).To(ContainSubstring(fmt.Sprintf("Connecting to Service Manager: %s\n", "http://valid-url.com")))
 				Expect(outputBuffer.String()).To(ContainSubstring("Logged in successfully.\n"))
 			})
 		})
@@ -97,10 +94,21 @@ var _ = Describe("Login Command test", func() {
 			})
 		})
 
+		Context("With empty username provided", func() {
+			It("should return error", func() {
+				lc := command.Prepare(cmd.CommonPrepare)
+				lc.SetArgs([]string{"--url=http://valid-url.com", "--password=password"})
+				credentialsBuffer.WriteString("\n")
+				err := lc.Execute()
+
+				Expect(err).Should(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("username/password should not be empty"))
+			})
+		})
+
 		Context("With error while typing user in", func() {
 			It("should save configuration successfully", func() {
 				lc := command.Prepare(cmd.CommonPrepare)
-				lc.SetArgs([]string{"--url=http://valid-url.com", "--password=password"})
 
 				err := lc.Execute()
 

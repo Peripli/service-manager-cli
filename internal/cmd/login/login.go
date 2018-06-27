@@ -94,8 +94,8 @@ func (lc *Cmd) Run() error {
 		return err
 	}
 
-	if lc.Verbose {
-		output.PrintMessage(lc.Output, "Connecting to Service Manager: %s\n", lc.serviceManagerURL)
+	if len(lc.user) == 0 || len(lc.password) == 0 {
+		return errors.New("username/password should not be empty")
 	}
 
 	token := "basic " + base64.StdEncoding.EncodeToString([]byte(lc.user+":"+lc.password))
