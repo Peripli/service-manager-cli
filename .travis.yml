@@ -1,7 +1,11 @@
 language: go
 
 go:
-  - 1.9.x
+  - 1.10.x
+
+before_install:
+  - go get -u github.com/golang/dep/cmd/dep
+  - dep ensure
 
 install:
   - go get github.com/onsi/gomega
@@ -16,15 +20,40 @@ before_script:
 
 script:
   # Execute static checks
-  - gometalinter  ./...
+  - gometalinter --vendor ./...
 
-  #Execute tests
-  # Commented test execution as there are not go packages and tests available - to be uncommented
-  # - go test ./... -cover
-  # - goveralls -service=travis-ci
-  
+  # Execute tests and generate coverage for all the packages except fakes and tests
+  - go test ./... -coverpkg $(go list ./... | egrep -v "fakes|test" | paste -sd "," -) -coverprofile=profile.cov
+  - goveralls -coverprofile profile.cov -service=travis-ci
+
+  #To see locally coverage in html execute: go tool cover -html=profile.cov
+
   #Execute security scan
-  - gas ./...
+  # - gas ./...
+
+  # Linux i686 build
+  - CGO_ENABLED=0 GOARCH=386 GOOS=linux go build -o out/smctl_linux_i686 .
+
+  # Linux x86-64 build
+  - CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -o out/smctl_linux_x86-64 .
+
+  # OSX build
+  - GOARCH=amd64 GOOS=darwin go build -o out/smctl_osx .
+
+  # Windows x32 build
+  - GOARCH=386 GOOS=windows go build -o out/smctl_win32.exe .
+
+  # Windows x64 build
+  - GOARCH=amd64 GOOS=windows go build -o out/smctl_win64.exe .
+
+deploy:
+  provider: releases
+  api_key: $GITHUB_TOKEN
+  file_glob: true
+  file: out/*
+  skip_cleanup: true
+  on:
+    tags: true
 
 notifications:
   slack: openservicebrokerapi:KQo2QAC6LXeEeXPOemOXja48
