@@ -46,6 +46,7 @@ func (clientCfg ClientConfig) Validate() error {
 	return nil
 }
 
+// GetToken returns the oauth token from the client configuration
 func (clientCfg ClientConfig) GetToken() oauth2.Token {
 	return clientCfg.Token
 }

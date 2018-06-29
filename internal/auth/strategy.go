@@ -79,6 +79,7 @@ func (s *OpenIDStrategy) Authenticate(issuerURL, user, password string) (*oauth2
 	return oauth2Config, token, err
 }
 
+// RefreshToken tries to refresh the access token if it has expired and refresh token is provided
 func (s *OpenIDStrategy) RefreshToken(config oauth2.Config, token oauth2.Token) (*oauth2.Token, error) {
 	refresher := config.TokenSource(context.Background(), &token)
 	return refresher.Token()
