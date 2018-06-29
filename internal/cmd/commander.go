@@ -18,6 +18,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -74,8 +75,20 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 		if ctx.Client == nil {
 			clientConfig, err := ctx.Configuration.Load()
 			if err != nil {
-				return errors.New("no logged user. Use \"smctl login\" to log in")
+				return fmt.Errorf("no logged user. Use \"smctl login\" to log in. Reason: %s", err)
 			}
+
+			t, err := ctx.AuthStrategy.RefreshToken(clientConfig.Config, clientConfig.Token)
+			if err != nil {
+				return fmt.Errorf("Error refreshing token. Reason: %s", err)
+			}
+			if clientConfig.AccessToken != t.AccessToken {
+				clientConfig.Token = *t
+				if saveErr := ctx.Configuration.Save(clientConfig); saveErr != nil {
+					return fmt.Errorf("Error saving config file. Reason: %s", saveErr)
+				}
+			}
+
 			ctx.Client = smclient.NewClient(clientConfig)
 		}
 

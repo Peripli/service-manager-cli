@@ -17,6 +17,8 @@
 package configuration
 
 import (
+	"time"
+
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
 	"github.com/spf13/viper"
 )
@@ -54,7 +56,15 @@ func NewSMConfiguration(viperEnv *viper.Viper, cfgFile string) (Configuration, e
 func (smCfg *smConfiguration) Save(clientCfg *smclient.ClientConfig) error {
 	smCfg.viperEnv.Set("url", clientCfg.URL)
 	smCfg.viperEnv.Set("user", clientCfg.User)
-	smCfg.viperEnv.Set("token", clientCfg.Token)
+
+	smCfg.viperEnv.Set("access_token", clientCfg.AccessToken)
+	smCfg.viperEnv.Set("refresh_token", clientCfg.RefreshToken)
+	smCfg.viperEnv.Set("expiry", clientCfg.Expiry.Format(time.RFC1123))
+
+	smCfg.viperEnv.Set("client_id", clientCfg.ClientID)
+	smCfg.viperEnv.Set("client_secret", clientCfg.ClientSecret)
+	smCfg.viperEnv.Set("token_url", clientCfg.Endpoint.TokenURL)
+	smCfg.viperEnv.Set("auth_url", clientCfg.Endpoint.AuthURL)
 
 	return smCfg.viperEnv.WriteConfig()
 }
@@ -67,9 +77,17 @@ func (smCfg *smConfiguration) Load() (*smclient.ClientConfig, error) {
 
 	clientConfig := &smclient.ClientConfig{}
 
-	if err := smCfg.viperEnv.Unmarshal(clientConfig); err != nil {
+	if err := smCfg.viperEnv.Unmarshal(&clientConfig); err != nil {
 		return nil, err
 	}
+
+	clientConfig.AccessToken = smCfg.viperEnv.Get("access_token").(string)
+	clientConfig.RefreshToken = smCfg.viperEnv.Get("refresh_token").(string)
+	clientConfig.Expiry, _ = time.Parse(time.RFC1123, smCfg.viperEnv.Get("expiry").(string))
+	clientConfig.Endpoint.TokenURL = smCfg.viperEnv.Get("token_url").(string)
+	clientConfig.Endpoint.AuthURL = smCfg.viperEnv.Get("auth_url").(string)
+	clientConfig.ClientID = smCfg.viperEnv.Get("client_id").(string)
+	clientConfig.ClientSecret = smCfg.viperEnv.Get("client_secret").(string)
 
 	if err := clientConfig.Validate(); err != nil {
 		return nil, err

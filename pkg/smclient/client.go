@@ -18,6 +18,7 @@ package smclient
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -25,11 +26,13 @@ import (
 	"github.com/Peripli/service-manager-cli/pkg/errors"
 	"github.com/Peripli/service-manager-cli/pkg/httputil"
 	"github.com/Peripli/service-manager-cli/pkg/types"
+	"golang.org/x/oauth2"
 )
 
 // Client should be implemented by SM clients
 //go:generate counterfeiter . Client
 type Client interface {
+	GetInfo() (*types.Info, error)
 	RegisterPlatform(*types.Platform) (*types.Platform, error)
 	RegisterBroker(*types.Broker) (*types.Broker, error)
 	ListBrokers() (*types.Brokers, error)
@@ -43,18 +46,45 @@ type Client interface {
 type serviceManagerClient struct {
 	config     *ClientConfig
 	httpClient *http.Client
-	headers    *http.Header
+}
+
+type clientConfigurator interface {
+	Client(context.Context, *oauth2.Token) *http.Client
+	GetToken() oauth2.Token
 }
 
 // NewClient returns new SM client
-func NewClient(config *ClientConfig) Client {
-	client := &serviceManagerClient{config: config, httpClient: &http.Client{}, headers: &http.Header{}}
-	client.headers.Add("Content-Type", "application/json")
-	if len(client.config.Token) > 0 {
-		client.headers.Add("Authorization", client.config.Token)
+func NewClient(config clientConfigurator) Client {
+	var httpClient *http.Client
+	if config.GetToken().AccessToken != "" {
+		t := config.GetToken()
+		httpClient = config.Client(context.Background(), &t)
+	} else {
+		httpClient = http.DefaultClient
 	}
+	client := &serviceManagerClient{config: config.(*ClientConfig), httpClient: httpClient}
 
 	return client
+}
+
+func (client *serviceManagerClient) GetInfo() (*types.Info, error) {
+	response, err := client.call(http.MethodGet, "/v1/info", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return nil, errors.ResponseError{StatusCode: response.StatusCode}
+	}
+
+	var result *types.Info
+
+	err = httputil.UnmarshalResponse(response, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 // RegisterPlatform registers a platform in the service manager
@@ -199,7 +229,7 @@ func (client *serviceManagerClient) call(method string, smpath string, body io.R
 	if err != nil {
 		return nil, err
 	}
-	req.Header = *client.headers
+	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := client.httpClient.Do(req)
 	if err != nil {

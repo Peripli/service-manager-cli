@@ -20,13 +20,16 @@ import (
 	"errors"
 
 	"github.com/Peripli/service-manager-cli/internal/util"
+	"golang.org/x/oauth2"
 )
 
 // ClientConfig contains the configuration of the CLI.
 type ClientConfig struct {
-	URL   string `json:"url"`
-	User  string `json:"user,omitempty"`
-	Token string `json:"token,omitempty"`
+	oauth2.Token
+	oauth2.Config
+
+	URL  string
+	User string
 }
 
 // Validate validates client config
@@ -37,8 +40,13 @@ func (clientCfg ClientConfig) Validate() error {
 	if clientCfg.User == "" {
 		return errors.New("User must not be empty")
 	}
-	if clientCfg.Token == "" {
+	if clientCfg.AccessToken == "" {
 		return errors.New("Token must not be empty")
 	}
 	return nil
+}
+
+// GetToken returns the oauth token from the client configuration
+func (clientCfg ClientConfig) GetToken() oauth2.Token {
+	return clientCfg.Token
 }

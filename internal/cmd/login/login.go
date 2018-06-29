@@ -18,7 +18,6 @@ package login
 
 import (
 	"bufio"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
@@ -77,13 +76,24 @@ func (lc *Cmd) Validate(args []string) error {
 	if lc.serviceManagerURL == "" {
 		return errors.New("URL flag must be provided")
 	}
+
+	if err := util.ValidateURL(lc.serviceManagerURL); err != nil {
+		return fmt.Errorf("service manager URL is invalid: %v", err)
+	}
+
 	return nil
 }
 
 // Run runs the logic of the command
 func (lc *Cmd) Run() error {
-	if err := util.ValidateURL(lc.serviceManagerURL); err != nil {
-		return fmt.Errorf("service manager URL is invalid: %v", err)
+	if lc.Client == nil {
+		clientConfig := &smclient.ClientConfig{URL: lc.serviceManagerURL}
+		lc.Client = smclient.NewClient(clientConfig)
+	}
+
+	info, err := lc.Client.GetInfo()
+	if err != nil {
+		return err
 	}
 
 	if err := lc.readUser(); err != nil {
@@ -98,8 +108,18 @@ func (lc *Cmd) Run() error {
 		return errors.New("username/password should not be empty")
 	}
 
-	token := "basic " + base64.StdEncoding.EncodeToString([]byte(lc.user+":"+lc.password))
-	err := lc.Configuration.Save(&smclient.ClientConfig{URL: lc.serviceManagerURL, User: lc.user, Token: token})
+	config, token, err := lc.AuthStrategy.Authenticate(info.TokenIssuerURL, lc.user, lc.password)
+	if err != nil {
+		return err
+	}
+
+	err = lc.Configuration.Save(&smclient.ClientConfig{
+		URL:    lc.serviceManagerURL,
+		User:   lc.user,
+		Token:  *token,
+		Config: *config,
+	})
+
 	if err != nil {
 		return err
 	}
@@ -120,7 +140,7 @@ func (lc *Cmd) readUser() error {
 			return err
 		}
 
-		lc.user = (string)(readUser)
+		lc.user = string(readUser)
 	}
 	return nil
 }

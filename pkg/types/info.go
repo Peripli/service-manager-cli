@@ -14,26 +14,9 @@
  *    limitations under the License.
  */
 
-package cmd
+package types
 
-import (
-	"io"
-
-	"github.com/Peripli/service-manager-cli/internal/auth"
-	"github.com/Peripli/service-manager-cli/internal/configuration"
-	"github.com/Peripli/service-manager-cli/pkg/smclient"
-)
-
-// Context is used as a context for the commands
-type Context struct {
-	// Output should be used when printing in commands, instead of directly writing to stdout/stderr, to enable unit testing.
-	Output io.Writer
-
-	Client smclient.Client
-
-	Verbose bool
-
-	Configuration configuration.Configuration
-
-	AuthStrategy auth.AuthenticationStrategy
+// Info contains the url of a token issuer
+type Info struct {
+	TokenIssuerURL string `json:"token_issuer_url"`
 }

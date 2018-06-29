@@ -17,6 +17,10 @@
 package main
 
 import (
+	"crypto/tls"
+	"net/http"
+
+	"github.com/Peripli/service-manager-cli/internal/auth"
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/cmd/broker"
 	"github.com/Peripli/service-manager-cli/internal/cmd/info"
@@ -29,9 +33,11 @@ import (
 )
 
 func main() {
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	clientVersion := "0.0.1"
 
-	context := &cmd.Context{}
+	authStrategy := auth.NewOpenIDStrategy()
+	context := &cmd.Context{AuthStrategy: authStrategy}
 	rootCmd := cmd.BuildRootCommand(context)
 
 	normalCommandsGroup := cmd.Group{
