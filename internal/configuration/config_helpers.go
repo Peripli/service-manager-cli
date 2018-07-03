@@ -15,7 +15,7 @@ const (
 func ensureDirExists(path string) error {
 	dirPath := filepath.Dir(path)
 	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
-		if mkderr := os.Mkdir(dirPath, os.ModeDir); mkderr != nil {
+		if mkderr := os.Mkdir(dirPath, 0700); mkderr != nil {
 			return mkderr
 		}
 	}
