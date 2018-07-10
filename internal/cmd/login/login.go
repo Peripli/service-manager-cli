@@ -40,6 +40,7 @@ type Cmd struct {
 	serviceManagerURL string
 	user              string
 	password          string
+	sslDisabled		  bool
 }
 
 // NewLoginCmd return new login command with context and input reader
@@ -62,6 +63,7 @@ func (lc *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result.Flags().StringVarP(&lc.serviceManagerURL, "url", "a", "", "Base URL of the Service Manager")
 	result.Flags().StringVarP(&lc.user, "user", "u", "", "User ID")
 	result.Flags().StringVarP(&lc.password, "password", "p", "", "Password")
+	result.Flags().BoolVarP(&lc.sslDisabled, "skip-ssl-validation", "", false, "Skip verification of the OAuth endpoint. Not recommended!")
 
 	return result
 }
@@ -88,7 +90,7 @@ func (lc *Cmd) Validate(args []string) error {
 func (lc *Cmd) Run() error {
 	if lc.Client == nil {
 		clientConfig := &smclient.ClientConfig{URL: lc.serviceManagerURL}
-		lc.Client = smclient.NewClient(clientConfig)
+		lc.Client = smclient.NewClient(lc.Ctx, clientConfig)
 	}
 
 	info, err := lc.Client.GetInfo()
@@ -108,7 +110,7 @@ func (lc *Cmd) Run() error {
 		return errors.New("username/password should not be empty")
 	}
 
-	config, token, err := lc.AuthStrategy.Authenticate(info.TokenIssuerURL, lc.user, lc.password)
+	config, token, err := lc.AuthStrategy.Authenticate(lc.Ctx, info.TokenIssuerURL, lc.user, lc.password)
 	if err != nil {
 		return err
 	}
@@ -116,6 +118,7 @@ func (lc *Cmd) Run() error {
 	err = lc.Configuration.Save(&smclient.ClientConfig{
 		URL:    lc.serviceManagerURL,
 		User:   lc.user,
+		SSLDisabled: lc.sslDisabled,
 		Token:  *token,
 		Config: *config,
 	})

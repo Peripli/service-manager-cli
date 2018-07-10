@@ -54,11 +54,11 @@ type clientConfigurator interface {
 }
 
 // NewClient returns new SM client
-func NewClient(config clientConfigurator) Client {
+func NewClient(ctx context.Context, config clientConfigurator) Client {
 	var httpClient *http.Client
 	if config.GetToken().AccessToken != "" {
 		t := config.GetToken()
-		httpClient = config.Client(context.Background(), &t)
+		httpClient = config.Client(ctx, &t)
 	} else {
 		httpClient = http.DefaultClient
 	}

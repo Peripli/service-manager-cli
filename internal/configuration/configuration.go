@@ -56,6 +56,7 @@ func NewSMConfiguration(viperEnv *viper.Viper, cfgFile string) (Configuration, e
 func (smCfg *smConfiguration) Save(clientCfg *smclient.ClientConfig) error {
 	smCfg.viperEnv.Set("url", clientCfg.URL)
 	smCfg.viperEnv.Set("user", clientCfg.User)
+	smCfg.viperEnv.Set("ssl_disabled", clientCfg.SSLDisabled)
 
 	smCfg.viperEnv.Set("access_token", clientCfg.AccessToken)
 	smCfg.viperEnv.Set("refresh_token", clientCfg.RefreshToken)

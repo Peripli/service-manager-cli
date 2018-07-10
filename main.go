@@ -17,7 +17,6 @@
 package main
 
 import (
-	"crypto/tls"
 	"net/http"
 
 	"github.com/Peripli/service-manager-cli/internal/auth"
@@ -31,16 +30,19 @@ import (
 
 	"os"
 	"time"
+	"golang.org/x/oauth2"
+	"context"
+	"net"
 )
 
 func main() {
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	clientVersion := "0.0.1"
 
 	client := buildHTTPClient()
+	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, client)
 
 	authStrategy := auth.NewOpenIDStrategy(client.Do)
-	context := &cmd.Context{AuthStrategy: authStrategy}
+	context := &cmd.Context{AuthStrategy: authStrategy, Ctx: ctx}
 	rootCmd := cmd.BuildRootCommand(context)
 
 	normalCommandsGroup := cmd.Group{
@@ -74,6 +76,20 @@ func main() {
 func buildHTTPClient() *http.Client {
 	client := &http.Client{
 		Timeout: time.Second * 10,
+		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+			DialContext: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+				DualStack: true,
+			}).DialContext,
+			MaxIdleConns:          100,
+			IdleConnTimeout:       90 * time.Second,
+			TLSHandshakeTimeout:   10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+
+			//TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
 	}
 
 	return client

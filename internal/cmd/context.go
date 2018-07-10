@@ -22,6 +22,7 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/auth"
 	"github.com/Peripli/service-manager-cli/internal/configuration"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
+	"context"
 )
 
 // Context is used as a context for the commands
@@ -36,4 +37,6 @@ type Context struct {
 	Configuration configuration.Configuration
 
 	AuthStrategy auth.AuthenticationStrategy
+
+	Ctx context.Context
 }

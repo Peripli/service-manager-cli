@@ -47,8 +47,8 @@ type openIDConfiguration struct {
 // AuthenticationStrategy should be implemented for different authentication strategies
 //go:generate counterfeiter . AuthenticationStrategy
 type AuthenticationStrategy interface {
-	Authenticate(issuerURL, user, password string) (*oauth2.Config, *oauth2.Token, error)
-	RefreshToken(oauth2.Config, oauth2.Token) (*oauth2.Token, error)
+	Authenticate(ctx context.Context, issuerURL, user, password string) (*oauth2.Config, *oauth2.Token, error)
+	RefreshToken(context.Context, oauth2.Config, oauth2.Token) (*oauth2.Token, error)
 }
 
 // NewOpenIDStrategy returns OpenId auth strategy
@@ -68,8 +68,8 @@ type OpenIDStrategy struct{
 type DoRequestFunc func(request *http.Request) (*http.Response, error)
 
 // Authenticate is used to perform authentication action for OpenID strategy
-func (s *OpenIDStrategy) Authenticate(issuerURL, user, password string) (*oauth2.Config, *oauth2.Token, error) {
-	endpoints, err := s.getTokenEndpoint(issuerURL)
+func (s *OpenIDStrategy) Authenticate(ctx context.Context, issuerURL, user, password string) (*oauth2.Config, *oauth2.Token, error) {
+	endpoints, err := s.fetchOpenidConfiguration(issuerURL)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -83,17 +83,17 @@ func (s *OpenIDStrategy) Authenticate(issuerURL, user, password string) (*oauth2
 		},
 	}
 
-	token, err := oauth2Config.PasswordCredentialsToken(context.Background(), user, password)
+	token, err := oauth2Config.PasswordCredentialsToken(ctx, user, password)
 	return oauth2Config, token, err
 }
 
 // RefreshToken tries to refresh the access token if it has expired and refresh token is provided
-func (s *OpenIDStrategy) RefreshToken(config oauth2.Config, token oauth2.Token) (*oauth2.Token, error) {
-	refresher := config.TokenSource(context.Background(), &token)
+func (s *OpenIDStrategy) RefreshToken(ctx context.Context, config oauth2.Config, token oauth2.Token) (*oauth2.Token, error) {
+	refresher := config.TokenSource(ctx, &token)
 	return refresher.Token()
 }
 
-func (s *OpenIDStrategy) getTokenEndpoint(issuerURL string) (*openIDConfiguration, error) {
+func (s *OpenIDStrategy) fetchOpenidConfiguration(issuerURL string) (*openIDConfiguration, error) {
 	req, err := http.NewRequest(http.MethodGet, issuerURL+"/.well-known/openid-configuration", nil)
 	if err != nil {
 		return nil, err

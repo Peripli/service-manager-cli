@@ -30,6 +30,7 @@ type ClientConfig struct {
 
 	URL  string
 	User string
+	SSLDisabled bool
 }
 
 // Validate validates client config

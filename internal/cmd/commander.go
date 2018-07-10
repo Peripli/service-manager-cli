@@ -78,7 +78,7 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 				return fmt.Errorf("no logged user. Use \"smctl login\" to log in. Reason: %s", err)
 			}
 
-			t, err := ctx.AuthStrategy.RefreshToken(clientConfig.Config, clientConfig.Token)
+			t, err := ctx.AuthStrategy.RefreshToken(ctx.Ctx, clientConfig.Config, clientConfig.Token)
 			if err != nil {
 				return fmt.Errorf("Error refreshing token. Reason: %s", err)
 			}
@@ -89,7 +89,7 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 				}
 			}
 
-			ctx.Client = smclient.NewClient(clientConfig)
+			ctx.Client = smclient.NewClient(ctx.Ctx, clientConfig)
 		}
 
 		return nil
