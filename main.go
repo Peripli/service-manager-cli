@@ -30,13 +30,16 @@ import (
 	"github.com/spf13/cobra"
 
 	"os"
+	"time"
 )
 
 func main() {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	clientVersion := "0.0.1"
 
-	authStrategy := auth.NewOpenIDStrategy()
+	client := buildHTTPClient()
+
+	authStrategy := auth.NewOpenIDStrategy(client.Do)
 	context := &cmd.Context{AuthStrategy: authStrategy}
 	rootCmd := cmd.BuildRootCommand(context)
 
@@ -66,6 +69,14 @@ func main() {
 	registerGroups(rootCmd, normalCommandsGroup, smCommandsGroup)
 
 	cmd.Execute(rootCmd)
+}
+
+func buildHTTPClient() *http.Client {
+	client := &http.Client{
+		Timeout: time.Second * 10,
+	}
+
+	return client
 }
 
 func registerGroups(rootCmd *cobra.Command, groups ...cmd.Group) {

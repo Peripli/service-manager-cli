@@ -52,12 +52,20 @@ type AuthenticationStrategy interface {
 }
 
 // NewOpenIDStrategy returns OpenId auth strategy
-func NewOpenIDStrategy() AuthenticationStrategy {
-	return &OpenIDStrategy{}
+func NewOpenIDStrategy(requestFunc DoRequestFunc) AuthenticationStrategy {
+	return &OpenIDStrategy{
+		ReadConfigurationFunc: requestFunc,
+	}
 }
 
 // OpenIDStrategy implementation of OpenID strategy
-type OpenIDStrategy struct{}
+type OpenIDStrategy struct{
+	// ReadConfigurationFunc is the function used to call the token issuer. If one is not provided, http.DefaultClient.Do will be used
+	ReadConfigurationFunc DoRequestFunc
+}
+
+// DoRequestFunc is an alias for any function that takes an http request and returns a response and error
+type DoRequestFunc func(request *http.Request) (*http.Response, error)
 
 // Authenticate is used to perform authentication action for OpenID strategy
 func (s *OpenIDStrategy) Authenticate(issuerURL, user, password string) (*oauth2.Config, *oauth2.Token, error) {
@@ -91,8 +99,7 @@ func (s *OpenIDStrategy) getTokenEndpoint(issuerURL string) (*openIDConfiguratio
 		return nil, err
 	}
 
-	httpClient := http.DefaultClient
-	response, err := httpClient.Do(req)
+	response, err := s.ReadConfigurationFunc(req)
 	if err != nil {
 		return nil, err
 	}
