@@ -29,6 +29,7 @@ import (
 	"github.com/spf13/pflag"
 
 	"github.com/Peripli/service-manager-cli/internal/output"
+	"github.com/Peripli/service-manager-cli/internal/util"
 	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
 )
@@ -83,17 +84,12 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 				return fmt.Errorf("no logged user. Use \"smctl login\" to log in. Reason: %s", err)
 			}
 
-			if clientConfig.SSLDisabled {
-				fmt.Println(">>>SSL DISABLING")
-				ctx.HTTPClient.Transport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-			}
-
 			refresher := oidc.NewTokenRefresher(
 				clientConfig.ClientID,
 				clientConfig.ClientSecret,
 				clientConfig.AuthorizationEndpoint,
 				clientConfig.TokenEndpoint,
-				ctx.HTTPClient,
+				util.BuildHTTPClient(clientConfig.SSLDisabled),
 			)
 
 			token, err := refresher.Refresh(clientConfig.Token)

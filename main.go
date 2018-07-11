@@ -23,7 +23,6 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/cmd/login"
 	"github.com/Peripli/service-manager-cli/internal/cmd/platform"
 	"github.com/Peripli/service-manager-cli/internal/cmd/version"
-	"github.com/Peripli/service-manager-cli/internal/util"
 	"github.com/spf13/cobra"
 
 	"os"
@@ -32,13 +31,7 @@ import (
 func main() {
 	clientVersion := "0.0.1"
 
-	client := util.BuildHTTPClient(false)
-	// authStrategy := oidc.NewOpenIDStrategy(oidc.Options{
-	// 	ClientID:     "smtcl",
-	// 	ClientSecret: "smtcl",
-	// 	HTTPClient:   client,
-	// })
-	context := &cmd.Context{HTTPClient: client}
+	context := &cmd.Context{}
 	rootCmd := cmd.BuildRootCommand(context)
 
 	normalCommandsGroup := cmd.Group{

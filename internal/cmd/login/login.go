@@ -18,11 +18,9 @@ package login
 
 import (
 	"bufio"
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
-	"net/http"
 	"syscall"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
@@ -96,12 +94,10 @@ func (lc *Cmd) Validate(args []string) error {
 
 // Run runs the logic of the command
 func (lc *Cmd) Run() error {
+	httpClient := util.BuildHTTPClient(lc.sslDisabled)
 	if lc.Client == nil {
-		if lc.sslDisabled {
-			lc.HTTPClient.Transport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-		}
 		clientConfig := &smclient.ClientConfig{URL: lc.serviceManagerURL}
-		lc.Client = smclient.NewClient(lc.HTTPClient, clientConfig)
+		lc.Client = smclient.NewClient(httpClient, clientConfig)
 	}
 
 	info, err := lc.Client.GetInfo()
@@ -125,7 +121,7 @@ func (lc *Cmd) Run() error {
 		IssuerURL:    info.TokenIssuerURL,
 		ClientID:     defaultClientID,
 		ClientSecret: defaultClientSecret,
-		HTTPClient:   lc.HTTPClient,
+		HTTPClient:   httpClient,
 	})
 
 	token, err := authStrategy.Authenticate(lc.user, lc.password)
