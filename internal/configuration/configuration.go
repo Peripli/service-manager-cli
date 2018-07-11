@@ -60,12 +60,12 @@ func (smCfg *smConfiguration) Save(clientCfg *smclient.ClientConfig) error {
 
 	smCfg.viperEnv.Set("access_token", clientCfg.AccessToken)
 	smCfg.viperEnv.Set("refresh_token", clientCfg.RefreshToken)
-	smCfg.viperEnv.Set("expiry", clientCfg.Expiry.Format(time.RFC1123))
+	smCfg.viperEnv.Set("expiry", clientCfg.ExpiresIn.Format(time.RFC1123Z))
 
 	smCfg.viperEnv.Set("client_id", clientCfg.ClientID)
 	smCfg.viperEnv.Set("client_secret", clientCfg.ClientSecret)
-	smCfg.viperEnv.Set("token_url", clientCfg.Endpoint.TokenURL)
-	smCfg.viperEnv.Set("auth_url", clientCfg.Endpoint.AuthURL)
+	smCfg.viperEnv.Set("token_url", clientCfg.TokenEndpoint)
+	smCfg.viperEnv.Set("auth_url", clientCfg.AuthorizationEndpoint)
 
 	return smCfg.viperEnv.WriteConfig()
 }
@@ -82,11 +82,12 @@ func (smCfg *smConfiguration) Load() (*smclient.ClientConfig, error) {
 		return nil, err
 	}
 
+	clientConfig.SSLDisabled = smCfg.viperEnv.Get("ssl_disabled").(bool)
 	clientConfig.AccessToken = smCfg.viperEnv.Get("access_token").(string)
 	clientConfig.RefreshToken = smCfg.viperEnv.Get("refresh_token").(string)
-	clientConfig.Expiry, _ = time.Parse(time.RFC1123, smCfg.viperEnv.Get("expiry").(string))
-	clientConfig.Endpoint.TokenURL = smCfg.viperEnv.Get("token_url").(string)
-	clientConfig.Endpoint.AuthURL = smCfg.viperEnv.Get("auth_url").(string)
+	clientConfig.ExpiresIn, _ = time.Parse(time.RFC1123Z, smCfg.viperEnv.Get("expiry").(string))
+	clientConfig.TokenEndpoint = smCfg.viperEnv.Get("token_url").(string)
+	clientConfig.AuthorizationEndpoint = smCfg.viperEnv.Get("auth_url").(string)
 	clientConfig.ClientID = smCfg.viperEnv.Get("client_id").(string)
 	clientConfig.ClientSecret = smCfg.viperEnv.Get("client_secret").(string)
 

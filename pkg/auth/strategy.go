@@ -14,29 +14,29 @@
  *    limitations under the License.
  */
 
-package cmd
+package auth
 
 import (
-	"io"
 	"net/http"
-
-	"github.com/Peripli/service-manager-cli/internal/configuration"
-	"github.com/Peripli/service-manager-cli/pkg/auth"
-	"github.com/Peripli/service-manager-cli/pkg/smclient"
+	"time"
 )
 
-// Context is used as a context for the commands
-type Context struct {
-	// Output should be used when printing in commands, instead of directly writing to stdout/stderr, to enable unit testing.
-	Output io.Writer
+// Token contains the structure of a typical UAA response token
+type Token struct {
+	AccessToken  string    `json:"access_token"`
+	TokenType    string    `json:"token_type"`
+	RefreshToken string    `json:"refresh_token"`
+	ExpiresIn    time.Time `json:"expires_in"`
+	Scope        string    `json:"scope"`
+}
 
-	Client smclient.Client
+// AuthenticationStrategy should be implemented for different authentication strategies
+//go:generate counterfeiter . AuthenticationStrategy
+type AuthenticationStrategy interface {
+	Authenticate(user, password string) (*Token, error)
+}
 
-	Verbose bool
-
-	Configuration configuration.Configuration
-
-	AuthStrategy auth.AuthenticationStrategy
-
-	HTTPClient *http.Client
+type TokenRefresher interface {
+	Refresh(Token) (*Token, error)
+	Client(*Token) *http.Client
 }

@@ -17,32 +17,28 @@
 package main
 
 import (
-	"net/http"
-
-	"github.com/Peripli/service-manager-cli/internal/auth"
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/cmd/broker"
 	"github.com/Peripli/service-manager-cli/internal/cmd/info"
 	"github.com/Peripli/service-manager-cli/internal/cmd/login"
 	"github.com/Peripli/service-manager-cli/internal/cmd/platform"
 	"github.com/Peripli/service-manager-cli/internal/cmd/version"
+	"github.com/Peripli/service-manager-cli/internal/util"
 	"github.com/spf13/cobra"
 
 	"os"
-	"time"
-	"golang.org/x/oauth2"
-	"context"
-	"net"
 )
 
 func main() {
 	clientVersion := "0.0.1"
 
-	client := buildHTTPClient()
-	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, client)
-
-	authStrategy := auth.NewOpenIDStrategy(client.Do)
-	context := &cmd.Context{AuthStrategy: authStrategy, Ctx: ctx}
+	client := util.BuildHTTPClient(false)
+	// authStrategy := oidc.NewOpenIDStrategy(oidc.Options{
+	// 	ClientID:     "smtcl",
+	// 	ClientSecret: "smtcl",
+	// 	HTTPClient:   client,
+	// })
+	context := &cmd.Context{HTTPClient: client}
 	rootCmd := cmd.BuildRootCommand(context)
 
 	normalCommandsGroup := cmd.Group{
@@ -71,28 +67,6 @@ func main() {
 	registerGroups(rootCmd, normalCommandsGroup, smCommandsGroup)
 
 	cmd.Execute(rootCmd)
-}
-
-func buildHTTPClient() *http.Client {
-	client := &http.Client{
-		Timeout: time.Second * 10,
-		Transport: &http.Transport{
-			Proxy: http.ProxyFromEnvironment,
-			DialContext: (&net.Dialer{
-				Timeout:   30 * time.Second,
-				KeepAlive: 30 * time.Second,
-				DualStack: true,
-			}).DialContext,
-			MaxIdleConns:          100,
-			IdleConnTimeout:       90 * time.Second,
-			TLSHandshakeTimeout:   10 * time.Second,
-			ExpectContinueTimeout: 1 * time.Second,
-
-			//TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		},
-	}
-
-	return client
 }
 
 func registerGroups(rootCmd *cobra.Command, groups ...cmd.Group) {

@@ -18,17 +18,25 @@ package login
 
 import (
 	"bufio"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"syscall"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/internal/util"
+	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh/terminal"
+)
+
+const (
+	defaultClientID     = "smctl"
+	defaultClientSecret = "smctl"
 )
 
 // Cmd wraps the smctl login command
@@ -40,7 +48,7 @@ type Cmd struct {
 	serviceManagerURL string
 	user              string
 	password          string
-	sslDisabled		  bool
+	sslDisabled       bool
 }
 
 // NewLoginCmd return new login command with context and input reader
@@ -89,8 +97,11 @@ func (lc *Cmd) Validate(args []string) error {
 // Run runs the logic of the command
 func (lc *Cmd) Run() error {
 	if lc.Client == nil {
+		if lc.sslDisabled {
+			lc.HTTPClient.Transport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+		}
 		clientConfig := &smclient.ClientConfig{URL: lc.serviceManagerURL}
-		lc.Client = smclient.NewClient(lc.Ctx, clientConfig)
+		lc.Client = smclient.NewClient(lc.HTTPClient, clientConfig)
 	}
 
 	info, err := lc.Client.GetInfo()
@@ -110,17 +121,26 @@ func (lc *Cmd) Run() error {
 		return errors.New("username/password should not be empty")
 	}
 
-	config, token, err := lc.AuthStrategy.Authenticate(lc.Ctx, info.TokenIssuerURL, lc.user, lc.password)
+	authStrategy, openIDConfig := oidc.NewOpenIDStrategy(oidc.Options{
+		IssuerURL:    info.TokenIssuerURL,
+		ClientID:     defaultClientID,
+		ClientSecret: defaultClientSecret,
+		HTTPClient:   lc.HTTPClient,
+	})
+
+	token, err := authStrategy.Authenticate(lc.user, lc.password)
 	if err != nil {
 		return err
 	}
-
 	err = lc.Configuration.Save(&smclient.ClientConfig{
-		URL:    lc.serviceManagerURL,
-		User:   lc.user,
-		SSLDisabled: lc.sslDisabled,
-		Token:  *token,
-		Config: *config,
+		URL:                   lc.serviceManagerURL,
+		User:                  lc.user,
+		SSLDisabled:           lc.sslDisabled,
+		Token:                 *token,
+		ClientID:              defaultClientID,
+		ClientSecret:          defaultClientSecret,
+		AuthorizationEndpoint: openIDConfig.AuthorizationEndpoint,
+		TokenEndpoint:         openIDConfig.TokenEndpoint,
 	})
 
 	if err != nil {

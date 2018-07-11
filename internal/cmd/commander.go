@@ -17,14 +17,19 @@
 package cmd
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
+	"net"
+	"net/http"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
 	"github.com/Peripli/service-manager-cli/internal/output"
+	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
 )
 
@@ -78,18 +83,32 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 				return fmt.Errorf("no logged user. Use \"smctl login\" to log in. Reason: %s", err)
 			}
 
-			t, err := ctx.AuthStrategy.RefreshToken(ctx.Ctx, clientConfig.Config, clientConfig.Token)
+			if clientConfig.SSLDisabled {
+				fmt.Println(">>>SSL DISABLING")
+				ctx.HTTPClient.Transport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+			}
+
+			refresher := oidc.NewTokenRefresher(
+				clientConfig.ClientID,
+				clientConfig.ClientSecret,
+				clientConfig.AuthorizationEndpoint,
+				clientConfig.TokenEndpoint,
+				ctx.HTTPClient,
+			)
+
+			token, err := refresher.Refresh(clientConfig.Token)
 			if err != nil {
 				return fmt.Errorf("Error refreshing token. Reason: %s", err)
 			}
-			if clientConfig.AccessToken != t.AccessToken {
-				clientConfig.Token = *t
+			if clientConfig.AccessToken != token.AccessToken {
+				fmt.Println(">>>>>>>>>CHANGED ACCESS TOKEN")
+				clientConfig.Token = *token
 				if saveErr := ctx.Configuration.Save(clientConfig); saveErr != nil {
 					return fmt.Errorf("Error saving config file. Reason: %s", saveErr)
 				}
 			}
 
-			ctx.Client = smclient.NewClient(ctx.Ctx, clientConfig)
+			ctx.Client = smclient.NewClient(refresher.Client(token), clientConfig)
 		}
 
 		return nil
@@ -145,4 +164,26 @@ func getOutputFormat(flags *pflag.FlagSet) (output.Format, error) {
 		return output.FormatUnknown, errors.New("unknown output: " + outputFormat)
 	}
 	return format, nil
+}
+
+func buildHTTPClient() *http.Client {
+	client := &http.Client{
+		Timeout: time.Second * 10,
+		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+			DialContext: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+				DualStack: true,
+			}).DialContext,
+			MaxIdleConns:          100,
+			IdleConnTimeout:       90 * time.Second,
+			TLSHandshakeTimeout:   10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	}
+
+	return client
 }
