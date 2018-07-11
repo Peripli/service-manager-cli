@@ -55,16 +55,7 @@ type clientConfigurator interface {
 
 // NewClient returns new SM client
 func NewClient(httpClient *http.Client, config *ClientConfig) Client {
-	// var httpClient *http.Client
-	// if config.GetToken().AccessToken != "" {
-	// 	t := config.GetToken()
-	// 	httpClient = config.Client(ctx, &t)
-	// } else {
-	// 	httpClient = http.DefaultClient
-	// }
-	client := &serviceManagerClient{config: config, httpClient: httpClient}
-
-	return client
+	return &serviceManagerClient{config: config, httpClient: httpClient}
 }
 
 func (client *serviceManagerClient) GetInfo() (*types.Info, error) {

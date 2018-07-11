@@ -97,7 +97,6 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 				return fmt.Errorf("Error refreshing token. Reason: %s", err)
 			}
 			if clientConfig.AccessToken != token.AccessToken {
-				fmt.Println(">>>>>>>>>CHANGED ACCESS TOKEN")
 				clientConfig.Token = *token
 				if saveErr := ctx.Configuration.Save(clientConfig); saveErr != nil {
 					return fmt.Errorf("Error saving config file. Reason: %s", saveErr)
