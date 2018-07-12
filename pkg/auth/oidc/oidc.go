@@ -27,6 +27,11 @@ import (
 	"golang.org/x/oauth2"
 )
 
+type openIDConfiguration struct {
+	TokenEndpoint         string `json:"token_endpoint"`
+	AuthorizationEndpoint string `json:"authorization_endpoint"`
+}
+
 // DoRequestFunc is an alias for any function that takes an http request and returns a response and error
 type DoRequestFunc func(request *http.Request) (*http.Response, error)
 
@@ -36,14 +41,19 @@ type OpenIDStrategy struct {
 	Options Options
 }
 
-type openIDConfiguration struct {
-	TokenEndpoint         string `json:"token_endpoint"`
-	AuthorizationEndpoint string `json:"authorization_endpoint"`
-}
-
-// Options is the configuration used to construct a new OIDC authenticator
+// Options is the configuration used to construct a new OIDC authentication strategy and token refresher
 type Options struct {
+	// IssuerURL is the endpoint which to call for token acquisition and other oauth configurations
 	IssuerURL string
+
+	// AuthorizationEndpoint is the oauth endpoint for authorization.
+	// If this property is not set the IssuerURL should be set in order to fetch the configuration
+	AuthorizationEndpoint string
+
+	// TokenEndpoint is the oauth endpoint for fetching a token.
+	// If this property is not set the IssuerURL should be set in order to fetch the configuration
+	TokenEndpoint string
+
 	// ClientID is the id of the oauth client used to verify the tokens
 	ClientID string
 
@@ -93,7 +103,7 @@ func (s *OpenIDStrategy) Authenticate(user, password string) (*auth.Token, error
 	return resultToken, err
 }
 
-type TokenRefresher struct {
+type OIDCRefresher struct {
 	ClientID              string
 	ClientSecret          string
 	AuthorizationEndpoint string
@@ -101,18 +111,27 @@ type TokenRefresher struct {
 	HTTPClient            *http.Client
 }
 
-func NewTokenRefresher(clientID, clientSecret, authorizationEndpoint, tokenEndpoint string, httpClient *http.Client) auth.TokenRefresher {
-	return &TokenRefresher{
-		ClientID:              clientID,
-		ClientSecret:          clientSecret,
-		AuthorizationEndpoint: authorizationEndpoint,
-		TokenEndpoint:         tokenEndpoint,
-		HTTPClient:            httpClient,
+func NewTokenRefresher(options Options) (auth.TokenRefresher, error) {
+	if options.AuthorizationEndpoint == "" || options.TokenEndpoint == "" {
+		openIDConfig, err := fetchOpenidConfiguration(options.IssuerURL, options.HTTPClient.Do)
+		if err != nil {
+			return nil, err
+		}
+		options.AuthorizationEndpoint = openIDConfig.AuthorizationEndpoint
+		options.TokenEndpoint = openIDConfig.TokenEndpoint
 	}
+
+	return &OIDCRefresher{
+		ClientID:              options.ClientID,
+		ClientSecret:          options.ClientSecret,
+		AuthorizationEndpoint: options.AuthorizationEndpoint,
+		TokenEndpoint:         options.TokenEndpoint,
+		HTTPClient:            options.HTTPClient,
+	}, nil
 }
 
 // Refresh tries to refresh the access token if it has expired and refresh token is provided
-func (r *TokenRefresher) Refresh(old auth.Token) (*auth.Token, error) {
+func (r *OIDCRefresher) Refresh(old auth.Token) (*auth.Token, error) {
 	config := &oauth2.Config{
 		ClientID:     r.ClientID,
 		ClientSecret: r.ClientSecret,
@@ -141,7 +160,7 @@ func (r *TokenRefresher) Refresh(old auth.Token) (*auth.Token, error) {
 	return &old, nil
 }
 
-func (r *TokenRefresher) Client(reuseToken *auth.Token) *http.Client {
+func (r *OIDCRefresher) Client(reuseToken *auth.Token) *http.Client {
 	config := &oauth2.Config{
 		ClientID:     r.ClientID,
 		ClientSecret: r.ClientSecret,

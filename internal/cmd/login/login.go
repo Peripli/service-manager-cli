@@ -128,6 +128,7 @@ func (lc *Cmd) Run() error {
 	if err != nil {
 		return err
 	}
+
 	err = lc.Configuration.Save(&smclient.ClientConfig{
 		URL:                   lc.serviceManagerURL,
 		User:                  lc.user,

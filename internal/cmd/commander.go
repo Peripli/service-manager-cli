@@ -17,13 +17,9 @@
 package cmd
 
 import (
-	"crypto/tls"
 	"errors"
 	"fmt"
-	"net"
-	"net/http"
 	"strings"
-	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -84,13 +80,18 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 				return fmt.Errorf("no logged user. Use \"smctl login\" to log in. Reason: %s", err)
 			}
 
-			refresher := oidc.NewTokenRefresher(
-				clientConfig.ClientID,
-				clientConfig.ClientSecret,
-				clientConfig.AuthorizationEndpoint,
-				clientConfig.TokenEndpoint,
-				util.BuildHTTPClient(clientConfig.SSLDisabled),
+			refresher, err := oidc.NewTokenRefresher(
+				oidc.Options{
+					ClientID:              clientConfig.ClientID,
+					ClientSecret:          clientConfig.ClientSecret,
+					AuthorizationEndpoint: clientConfig.AuthorizationEndpoint,
+					TokenEndpoint:         clientConfig.TokenEndpoint,
+					HTTPClient:            util.BuildHTTPClient(clientConfig.SSLDisabled),
+				},
 			)
+			if err != nil {
+				return fmt.Errorf("Error constructing token refresher: %s", err)
+			}
 
 			token, err := refresher.Refresh(clientConfig.Token)
 			if err != nil {
@@ -159,26 +160,4 @@ func getOutputFormat(flags *pflag.FlagSet) (output.Format, error) {
 		return output.FormatUnknown, errors.New("unknown output: " + outputFormat)
 	}
 	return format, nil
-}
-
-func buildHTTPClient() *http.Client {
-	client := &http.Client{
-		Timeout: time.Second * 10,
-		Transport: &http.Transport{
-			Proxy: http.ProxyFromEnvironment,
-			DialContext: (&net.Dialer{
-				Timeout:   30 * time.Second,
-				KeepAlive: 30 * time.Second,
-				DualStack: true,
-			}).DialContext,
-			MaxIdleConns:          100,
-			IdleConnTimeout:       90 * time.Second,
-			TLSHandshakeTimeout:   10 * time.Second,
-			ExpectContinueTimeout: 1 * time.Second,
-
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		},
-	}
-
-	return client
 }
