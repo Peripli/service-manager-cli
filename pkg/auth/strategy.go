@@ -36,6 +36,8 @@ type AuthenticationStrategy interface {
 	Authenticate(user, password string) (*Token, error)
 }
 
+// TokenRefresher should be implemented for different token refresh strategies
+//go:generate counterfeiter . TokenRefresher
 type TokenRefresher interface {
 	Refresh(Token) (*Token, error)
 	Client(*Token) *http.Client

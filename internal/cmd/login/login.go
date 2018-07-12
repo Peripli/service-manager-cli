@@ -26,6 +26,7 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/internal/util"
+	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
 	"github.com/spf13/cobra"
@@ -47,11 +48,14 @@ type Cmd struct {
 	user              string
 	password          string
 	sslDisabled       bool
+	authBuilder       authenticationBuilder
 }
 
+type authenticationBuilder func(oidc.Options) (auth.AuthenticationStrategy, *oidc.OpenIDConfiguration, error)
+
 // NewLoginCmd return new login command with context and input reader
-func NewLoginCmd(context *cmd.Context, input io.ReadWriter) *Cmd {
-	return &Cmd{Context: context, input: input}
+func NewLoginCmd(context *cmd.Context, input io.ReadWriter, authBuilder authenticationBuilder) *Cmd {
+	return &Cmd{Context: context, input: input, authBuilder: authBuilder}
 }
 
 // Prepare returns cobra command
@@ -117,12 +121,15 @@ func (lc *Cmd) Run() error {
 		return errors.New("username/password should not be empty")
 	}
 
-	authStrategy, openIDConfig := oidc.NewOpenIDStrategy(oidc.Options{
+	authStrategy, openIDConfig, err := lc.authBuilder(oidc.Options{
 		IssuerURL:    info.TokenIssuerURL,
 		ClientID:     defaultClientID,
 		ClientSecret: defaultClientSecret,
 		HTTPClient:   httpClient,
 	})
+	if err != nil {
+		return err
+	}
 
 	token, err := authStrategy.Authenticate(lc.user, lc.password)
 	if err != nil {

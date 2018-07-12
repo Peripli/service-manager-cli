@@ -77,6 +77,7 @@ func GetPlatformsByName(platforms *types.Platforms, names []string) []types.Plat
 	return result
 }
 
+// BuildHTTPClient builds custom http client with configured ssl validation
 func BuildHTTPClient(sslDisabled bool) *http.Client {
 	client := &http.Client{
 		Timeout: time.Second * 10,

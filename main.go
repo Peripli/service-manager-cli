@@ -23,10 +23,16 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/cmd/login"
 	"github.com/Peripli/service-manager-cli/internal/cmd/platform"
 	"github.com/Peripli/service-manager-cli/internal/cmd/version"
+	"github.com/Peripli/service-manager-cli/pkg/auth"
+	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
 	"github.com/spf13/cobra"
 
 	"os"
 )
+
+func oidcAuthBuilder(options oidc.Options) (auth.AuthenticationStrategy, *oidc.OpenIDConfiguration, error) {
+	return oidc.NewOpenIDStrategy(options)
+}
 
 func main() {
 	clientVersion := "0.0.1"
@@ -36,7 +42,7 @@ func main() {
 
 	normalCommandsGroup := cmd.Group{
 		Commands: []cmd.CommandPreparator{
-			login.NewLoginCmd(context, os.Stdin),
+			login.NewLoginCmd(context, os.Stdin, oidcAuthBuilder),
 			version.NewVersionCmd(context, clientVersion),
 			info.NewInfoCmd(context),
 		},

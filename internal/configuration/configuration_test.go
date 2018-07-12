@@ -2,14 +2,15 @@ package configuration
 
 import (
 	"path/filepath"
+	"time"
 
 	"github.com/spf13/afero"
 	"github.com/spf13/viper"
 
+	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"golang.org/x/oauth2"
 
 	"testing"
 )
@@ -37,13 +38,20 @@ var _ = Describe("Configuration test", func() {
 				viperEnv := viper.New()
 				viperEnv.SetFs(afero.NewMemMapFs())
 				configuration, err := NewSMConfiguration(viperEnv, configPath)
-				configuration.Save(&smclient.ClientConfig{URL: "http://sm.com", User: "admin", Token: oauth2.Token{AccessToken: "token"}})
+
+				timeNow, _ := time.Parse(time.RFC1123Z, time.Now().Format(time.RFC1123Z))
+				smClientConfig := smclient.ClientConfig{URL: "http://sm.com", User: "admin", Token: auth.Token{
+					AccessToken: "token",
+					ExpiresIn:   timeNow,
+				}}
+
+				configuration.Save(&smClientConfig)
 
 				clientConfig, errLoad := configuration.Load()
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(errLoad).ShouldNot(HaveOccurred())
-				Expect(*clientConfig).To(Equal(smclient.ClientConfig{URL: "http://sm.com", User: "admin", Token: oauth2.Token{AccessToken: "token"}}))
+				Expect(*clientConfig).To(Equal(smClientConfig))
 			})
 		})
 	})

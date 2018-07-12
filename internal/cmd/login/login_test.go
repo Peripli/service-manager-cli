@@ -1,8 +1,10 @@
 package login
 
 import (
+	"github.com/Peripli/service-manager-cli/pkg/auth"
+	"github.com/Peripli/service-manager-cli/pkg/auth/authfakes"
+	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
 	"github.com/Peripli/service-manager-cli/pkg/types"
-	"golang.org/x/oauth2"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -11,7 +13,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/Peripli/service-manager-cli/internal/auth/authfakes"
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/configuration/configurationfakes"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
@@ -30,6 +31,13 @@ var _ = Describe("Login Command test", func() {
 	var authStrategy *authfakes.FakeAuthenticationStrategy
 	var client *smclientfakes.FakeClient
 
+	authBuilder := func(options oidc.Options) (auth.AuthenticationStrategy, *oidc.OpenIDConfiguration, error) {
+		return authStrategy, &oidc.OpenIDConfiguration{
+			AuthorizationEndpoint: "",
+			TokenEndpoint:         "",
+		}, nil
+	}
+
 	BeforeEach(func() {
 		client = &smclientfakes.FakeClient{}
 		credentialsBuffer = &bytes.Buffer{}
@@ -38,10 +46,12 @@ var _ = Describe("Login Command test", func() {
 		authStrategy = &authfakes.FakeAuthenticationStrategy{}
 
 		client.GetInfoReturns(&types.Info{TokenIssuerURL: "http://valid-uaa.com"}, nil)
-		authStrategy.AuthenticateReturns(&oauth2.Config{}, &oauth2.Token{AccessToken: "access-token"}, nil)
+		authStrategy.AuthenticateReturns(&auth.Token{
+			AccessToken: "access-token",
+		}, nil)
 
-		context := &cmd.Context{Output: outputBuffer, Configuration: &config, Client: client, AuthStrategy: authStrategy}
-		command = NewLoginCmd(context, credentialsBuffer)
+		context := &cmd.Context{Output: outputBuffer, Configuration: &config, Client: client}
+		command = NewLoginCmd(context, credentialsBuffer, authBuilder)
 	})
 
 	Describe("Valid request", func() {

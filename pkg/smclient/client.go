@@ -18,7 +18,6 @@ package smclient
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -26,7 +25,6 @@ import (
 	"github.com/Peripli/service-manager-cli/pkg/errors"
 	"github.com/Peripli/service-manager-cli/pkg/httputil"
 	"github.com/Peripli/service-manager-cli/pkg/types"
-	"golang.org/x/oauth2"
 )
 
 // Client should be implemented by SM clients
@@ -46,11 +44,6 @@ type Client interface {
 type serviceManagerClient struct {
 	config     *ClientConfig
 	httpClient *http.Client
-}
-
-type clientConfigurator interface {
-	Client(context.Context, *oauth2.Token) *http.Client
-	GetToken() oauth2.Token
 }
 
 // NewClient returns new SM client
@@ -221,6 +214,10 @@ func (client *serviceManagerClient) call(method string, smpath string, body io.R
 		return nil, err
 	}
 	req.Header.Add("Content-Type", "application/json")
+
+	if client.config.AccessToken != "" {
+		req.Header.Set("Authorization", "Bearer "+client.config.AccessToken)
+	}
 
 	resp, err := client.httpClient.Do(req)
 	if err != nil {

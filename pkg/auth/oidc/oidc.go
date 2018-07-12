@@ -27,7 +27,8 @@ import (
 	"golang.org/x/oauth2"
 )
 
-type openIDConfiguration struct {
+// OpenIDConfiguration holds information for openid configuration
+type OpenIDConfiguration struct {
 	TokenEndpoint         string `json:"token_endpoint"`
 	AuthorizationEndpoint string `json:"authorization_endpoint"`
 }
@@ -64,10 +65,10 @@ type Options struct {
 }
 
 // NewOpenIDStrategy returns OpenId auth strategy
-func NewOpenIDStrategy(options Options) (auth.AuthenticationStrategy, *openIDConfiguration) {
+func NewOpenIDStrategy(options Options) (auth.AuthenticationStrategy, *OpenIDConfiguration, error) {
 	openIDConfig, err := fetchOpenidConfiguration(options.IssuerURL, options.HTTPClient.Do)
 	if err != nil {
-		panic(fmt.Errorf("Error occured while fetching openid configuration: %s", err))
+		return nil, nil, fmt.Errorf("Error occurred while fetching openid configuration: %s", err)
 	}
 
 	config := &oauth2.Config{
@@ -82,7 +83,7 @@ func NewOpenIDStrategy(options Options) (auth.AuthenticationStrategy, *openIDCon
 	return &OpenIDStrategy{
 		Config:  config,
 		Options: options,
-	}, openIDConfig
+	}, openIDConfig, nil
 }
 
 // Authenticate is used to perform authentication action for OpenID strategy
@@ -103,26 +104,24 @@ func (s *OpenIDStrategy) Authenticate(user, password string) (*auth.Token, error
 	return resultToken, err
 }
 
-type OIDCRefresher struct {
+// Refresher implements TokenRefresher interface
+type Refresher struct {
 	*oauth2.Config
-	// ClientID              string
-	// ClientSecret          string
-	// AuthorizationEndpoint string
-	// TokenEndpoint         string
 	HTTPClient *http.Client
 }
 
+// NewTokenRefresher returns new oidc token refresher
 func NewTokenRefresher(options Options) (auth.TokenRefresher, error) {
 	if options.AuthorizationEndpoint == "" || options.TokenEndpoint == "" {
 		openIDConfig, err := fetchOpenidConfiguration(options.IssuerURL, options.HTTPClient.Do)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Error occurred while fetching openid configuration: %s", err)
 		}
 		options.AuthorizationEndpoint = openIDConfig.AuthorizationEndpoint
 		options.TokenEndpoint = openIDConfig.TokenEndpoint
 	}
 
-	return &OIDCRefresher{
+	return &Refresher{
 		Config: &oauth2.Config{
 			ClientID:     options.ClientID,
 			ClientSecret: options.ClientSecret,
@@ -136,7 +135,7 @@ func NewTokenRefresher(options Options) (auth.TokenRefresher, error) {
 }
 
 // Refresh tries to refresh the access token if it has expired and refresh token is provided
-func (r *OIDCRefresher) Refresh(old auth.Token) (*auth.Token, error) {
+func (r *Refresher) Refresh(old auth.Token) (*auth.Token, error) {
 	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, r.HTTPClient)
 	token := &oauth2.Token{
 		AccessToken:  old.AccessToken,
@@ -157,7 +156,8 @@ func (r *OIDCRefresher) Refresh(old auth.Token) (*auth.Token, error) {
 	return &old, nil
 }
 
-func (r *OIDCRefresher) Client(reuseToken *auth.Token) *http.Client {
+// Client returns http client with automatic token refreshing mechanism
+func (r *Refresher) Client(reuseToken *auth.Token) *http.Client {
 	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, r.HTTPClient)
 	token := &oauth2.Token{
 		AccessToken:  reuseToken.AccessToken,
@@ -169,7 +169,7 @@ func (r *OIDCRefresher) Client(reuseToken *auth.Token) *http.Client {
 	return r.Config.Client(ctx, token)
 }
 
-func fetchOpenidConfiguration(issuerURL string, readConfigurationFunc DoRequestFunc) (*openIDConfiguration, error) {
+func fetchOpenidConfiguration(issuerURL string, readConfigurationFunc DoRequestFunc) (*OpenIDConfiguration, error) {
 	req, err := http.NewRequest(http.MethodGet, issuerURL+"/.well-known/openid-configuration", nil)
 	if err != nil {
 		return nil, err
@@ -181,10 +181,10 @@ func fetchOpenidConfiguration(issuerURL string, readConfigurationFunc DoRequestF
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return nil, errors.New("Error getting OpenID configuration")
+		return nil, errors.New("Unexpected status code")
 	}
 
-	var configuration *openIDConfiguration
+	var configuration *OpenIDConfiguration
 	if err = httputil.UnmarshalResponse(response, &configuration); err != nil {
 		return nil, err
 	}
