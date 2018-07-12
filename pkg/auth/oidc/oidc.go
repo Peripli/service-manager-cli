@@ -104,11 +104,12 @@ func (s *OpenIDStrategy) Authenticate(user, password string) (*auth.Token, error
 }
 
 type OIDCRefresher struct {
-	ClientID              string
-	ClientSecret          string
-	AuthorizationEndpoint string
-	TokenEndpoint         string
-	HTTPClient            *http.Client
+	*oauth2.Config
+	// ClientID              string
+	// ClientSecret          string
+	// AuthorizationEndpoint string
+	// TokenEndpoint         string
+	HTTPClient *http.Client
 }
 
 func NewTokenRefresher(options Options) (auth.TokenRefresher, error) {
@@ -122,24 +123,20 @@ func NewTokenRefresher(options Options) (auth.TokenRefresher, error) {
 	}
 
 	return &OIDCRefresher{
-		ClientID:              options.ClientID,
-		ClientSecret:          options.ClientSecret,
-		AuthorizationEndpoint: options.AuthorizationEndpoint,
-		TokenEndpoint:         options.TokenEndpoint,
-		HTTPClient:            options.HTTPClient,
+		Config: &oauth2.Config{
+			ClientID:     options.ClientID,
+			ClientSecret: options.ClientSecret,
+			Endpoint: oauth2.Endpoint{
+				AuthURL:  options.AuthorizationEndpoint,
+				TokenURL: options.TokenEndpoint,
+			},
+		},
+		HTTPClient: options.HTTPClient,
 	}, nil
 }
 
 // Refresh tries to refresh the access token if it has expired and refresh token is provided
 func (r *OIDCRefresher) Refresh(old auth.Token) (*auth.Token, error) {
-	config := &oauth2.Config{
-		ClientID:     r.ClientID,
-		ClientSecret: r.ClientSecret,
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  r.AuthorizationEndpoint,
-			TokenURL: r.TokenEndpoint,
-		},
-	}
 	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, r.HTTPClient)
 	token := &oauth2.Token{
 		AccessToken:  old.AccessToken,
@@ -147,7 +144,7 @@ func (r *OIDCRefresher) Refresh(old auth.Token) (*auth.Token, error) {
 		Expiry:       old.ExpiresIn,
 		TokenType:    old.TokenType,
 	}
-	refresher := config.TokenSource(ctx, token)
+	refresher := r.TokenSource(ctx, token)
 	refreshedToken, err := refresher.Token()
 	if err != nil {
 		return nil, err
@@ -161,15 +158,6 @@ func (r *OIDCRefresher) Refresh(old auth.Token) (*auth.Token, error) {
 }
 
 func (r *OIDCRefresher) Client(reuseToken *auth.Token) *http.Client {
-	config := &oauth2.Config{
-		ClientID:     r.ClientID,
-		ClientSecret: r.ClientSecret,
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  r.AuthorizationEndpoint,
-			TokenURL: r.TokenEndpoint,
-		},
-	}
-
 	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, r.HTTPClient)
 	token := &oauth2.Token{
 		AccessToken:  reuseToken.AccessToken,
@@ -178,7 +166,7 @@ func (r *OIDCRefresher) Client(reuseToken *auth.Token) *http.Client {
 		TokenType:    reuseToken.TokenType,
 	}
 
-	return config.Client(ctx, token)
+	return r.Config.Client(ctx, token)
 }
 
 func fetchOpenidConfiguration(issuerURL string, readConfigurationFunc DoRequestFunc) (*openIDConfiguration, error) {

@@ -130,12 +130,14 @@ func (lc *Cmd) Run() error {
 	}
 
 	err = lc.Configuration.Save(&smclient.ClientConfig{
-		URL:                   lc.serviceManagerURL,
-		User:                  lc.user,
-		SSLDisabled:           lc.sslDisabled,
-		Token:                 *token,
-		ClientID:              defaultClientID,
-		ClientSecret:          defaultClientSecret,
+		URL:         lc.serviceManagerURL,
+		User:        lc.user,
+		SSLDisabled: lc.sslDisabled,
+
+		Token:        *token,
+		ClientID:     defaultClientID,
+		ClientSecret: defaultClientSecret,
+
 		AuthorizationEndpoint: openIDConfig.AuthorizationEndpoint,
 		TokenEndpoint:         openIDConfig.TokenEndpoint,
 	})
