@@ -64,6 +64,7 @@ func (smCfg *smConfiguration) Save(clientCfg *smclient.ClientConfig) error {
 
 	smCfg.viperEnv.Set("client_id", clientCfg.ClientID)
 	smCfg.viperEnv.Set("client_secret", clientCfg.ClientSecret)
+	smCfg.viperEnv.Set("issuer_url", clientCfg.IssuerURL)
 	smCfg.viperEnv.Set("token_url", clientCfg.TokenEndpoint)
 	smCfg.viperEnv.Set("auth_url", clientCfg.AuthorizationEndpoint)
 
@@ -88,6 +89,7 @@ func (smCfg *smConfiguration) Load() (*smclient.ClientConfig, error) {
 	clientConfig.ExpiresIn, _ = time.Parse(time.RFC1123Z, smCfg.viperEnv.Get("expiry").(string))
 	clientConfig.TokenEndpoint = smCfg.viperEnv.Get("token_url").(string)
 	clientConfig.AuthorizationEndpoint = smCfg.viperEnv.Get("auth_url").(string)
+	clientConfig.IssuerURL = smCfg.viperEnv.Get("issuer_url").(string)
 	clientConfig.ClientID = smCfg.viperEnv.Get("client_id").(string)
 	clientConfig.ClientSecret = smCfg.viperEnv.Get("client_secret").(string)
 
