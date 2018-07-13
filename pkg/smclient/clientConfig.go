@@ -31,6 +31,7 @@ type ClientConfig struct {
 	ClientSecret          string
 	AuthorizationEndpoint string
 	TokenEndpoint         string
+	IssuerURL             string
 
 	URL         string
 	User        string

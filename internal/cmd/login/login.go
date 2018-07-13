@@ -21,13 +21,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"syscall"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/internal/util"
 	"github.com/Peripli/service-manager-cli/pkg/auth"
-	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh/terminal"
@@ -51,7 +51,7 @@ type Cmd struct {
 	authBuilder       authenticationBuilder
 }
 
-type authenticationBuilder func(oidc.Options) (auth.AuthenticationStrategy, *oidc.OpenIDConfiguration, error)
+type authenticationBuilder func(*smclient.ClientConfig, *http.Client) (auth.AuthenticationStrategy, *smclient.ClientConfig, error)
 
 // NewLoginCmd return new login command with context and input reader
 func NewLoginCmd(context *cmd.Context, input io.ReadWriter, authBuilder authenticationBuilder) *Cmd {
@@ -99,8 +99,12 @@ func (lc *Cmd) Validate(args []string) error {
 // Run runs the logic of the command
 func (lc *Cmd) Run() error {
 	httpClient := util.BuildHTTPClient(lc.sslDisabled)
+	clientConfig := &smclient.ClientConfig{
+		URL:          lc.serviceManagerURL,
+		ClientID:     defaultClientID,
+		ClientSecret: defaultClientSecret,
+	}
 	if lc.Client == nil {
-		clientConfig := &smclient.ClientConfig{URL: lc.serviceManagerURL}
 		lc.Client = smclient.NewClient(httpClient, clientConfig)
 	}
 
@@ -121,12 +125,8 @@ func (lc *Cmd) Run() error {
 		return errors.New("username/password should not be empty")
 	}
 
-	authStrategy, openIDConfig, err := lc.authBuilder(oidc.Options{
-		IssuerURL:    info.TokenIssuerURL,
-		ClientID:     defaultClientID,
-		ClientSecret: defaultClientSecret,
-		HTTPClient:   httpClient,
-	})
+	clientConfig.IssuerURL = info.TokenIssuerURL
+	authStrategy, openIDConfig, err := lc.authBuilder(clientConfig, httpClient)
 	if err != nil {
 		return err
 	}
@@ -145,6 +145,7 @@ func (lc *Cmd) Run() error {
 		ClientID:     defaultClientID,
 		ClientSecret: defaultClientSecret,
 
+		IssuerURL:             info.TokenIssuerURL,
 		AuthorizationEndpoint: openIDConfig.AuthorizationEndpoint,
 		TokenEndpoint:         openIDConfig.TokenEndpoint,
 	})

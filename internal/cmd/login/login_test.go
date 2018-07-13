@@ -1,9 +1,11 @@
 package login
 
 import (
+	"net/http"
+
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/auth/authfakes"
-	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
+	"github.com/Peripli/service-manager-cli/pkg/smclient"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 
 	. "github.com/onsi/ginkgo"
@@ -31,11 +33,8 @@ var _ = Describe("Login Command test", func() {
 	var authStrategy *authfakes.FakeAuthenticationStrategy
 	var client *smclientfakes.FakeClient
 
-	authBuilder := func(options oidc.Options) (auth.AuthenticationStrategy, *oidc.OpenIDConfiguration, error) {
-		return authStrategy, &oidc.OpenIDConfiguration{
-			AuthorizationEndpoint: "",
-			TokenEndpoint:         "",
-		}, nil
+	authBuilder := func(config *smclient.ClientConfig, _ *http.Client) (auth.AuthenticationStrategy, *smclient.ClientConfig, error) {
+		return authStrategy, config, nil
 	}
 
 	BeforeEach(func() {

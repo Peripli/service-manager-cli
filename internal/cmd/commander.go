@@ -81,13 +81,8 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 			}
 
 			refresher, err := oidc.NewTokenRefresher(
-				oidc.Options{
-					ClientID:              clientConfig.ClientID,
-					ClientSecret:          clientConfig.ClientSecret,
-					AuthorizationEndpoint: clientConfig.AuthorizationEndpoint,
-					TokenEndpoint:         clientConfig.TokenEndpoint,
-					HTTPClient:            util.BuildHTTPClient(clientConfig.SSLDisabled),
-				},
+				clientConfig,
+				util.BuildHTTPClient(clientConfig.SSLDisabled),
 			)
 			if err != nil {
 				return fmt.Errorf("Error constructing token refresher: %s", err)

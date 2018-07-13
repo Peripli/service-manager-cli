@@ -24,11 +24,11 @@ import (
 
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/httputil"
+	"github.com/Peripli/service-manager-cli/pkg/smclient"
 	"golang.org/x/oauth2"
 )
 
-// OpenIDConfiguration holds information for openid configuration
-type OpenIDConfiguration struct {
+type openIDConfiguration struct {
 	TokenEndpoint         string `json:"token_endpoint"`
 	AuthorizationEndpoint string `json:"authorization_endpoint"`
 }
@@ -39,56 +39,38 @@ type DoRequestFunc func(request *http.Request) (*http.Response, error)
 // OpenIDStrategy implementation of OpenID strategy
 type OpenIDStrategy struct {
 	*oauth2.Config
-	Options Options
-}
 
-// Options is the configuration used to construct a new OIDC authentication strategy and token refresher
-type Options struct {
-	// IssuerURL is the endpoint which to call for token acquisition and other oauth configurations
-	IssuerURL string
-
-	// AuthorizationEndpoint is the oauth endpoint for authorization.
-	// If this property is not set the IssuerURL should be set in order to fetch the configuration
-	AuthorizationEndpoint string
-
-	// TokenEndpoint is the oauth endpoint for fetching a token.
-	// If this property is not set the IssuerURL should be set in order to fetch the configuration
-	TokenEndpoint string
-
-	// ClientID is the id of the oauth client used to verify the tokens
-	ClientID string
-
-	// ClientID is the id of the oauth client used to verify the tokens
-	ClientSecret string
-
-	HTTPClient *http.Client
+	httpClient *http.Client
 }
 
 // NewOpenIDStrategy returns OpenId auth strategy
-func NewOpenIDStrategy(options Options) (auth.AuthenticationStrategy, *OpenIDConfiguration, error) {
-	openIDConfig, err := fetchOpenidConfiguration(options.IssuerURL, options.HTTPClient.Do)
+func NewOpenIDStrategy(config *smclient.ClientConfig, httpClient *http.Client) (auth.AuthenticationStrategy, *smclient.ClientConfig, error) {
+	openIDConfig, err := fetchOpenidConfiguration(config.IssuerURL, httpClient.Do)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Error occurred while fetching openid configuration: %s", err)
 	}
 
-	config := &oauth2.Config{
-		ClientID:     options.ClientID,
-		ClientSecret: options.ClientSecret,
+	oauthConfig := &oauth2.Config{
+		ClientID:     config.ClientID,
+		ClientSecret: config.ClientSecret,
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  openIDConfig.AuthorizationEndpoint,
 			TokenURL: openIDConfig.TokenEndpoint,
 		},
 	}
 
+	config.AuthorizationEndpoint = openIDConfig.AuthorizationEndpoint
+	config.TokenEndpoint = openIDConfig.TokenEndpoint
+
 	return &OpenIDStrategy{
-		Config:  config,
-		Options: options,
-	}, openIDConfig, nil
+		Config:     oauthConfig,
+		httpClient: httpClient,
+	}, config, nil
 }
 
 // Authenticate is used to perform authentication action for OpenID strategy
 func (s *OpenIDStrategy) Authenticate(user, password string) (*auth.Token, error) {
-	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, s.Options.HTTPClient)
+	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, s.httpClient)
 	token, err := s.PasswordCredentialsToken(ctx, user, password)
 	if err != nil {
 		return nil, err
@@ -111,26 +93,26 @@ type Refresher struct {
 }
 
 // NewTokenRefresher returns new oidc token refresher
-func NewTokenRefresher(options Options) (auth.TokenRefresher, error) {
-	if options.AuthorizationEndpoint == "" || options.TokenEndpoint == "" {
-		openIDConfig, err := fetchOpenidConfiguration(options.IssuerURL, options.HTTPClient.Do)
+func NewTokenRefresher(config *smclient.ClientConfig, httpClient *http.Client) (auth.TokenRefresher, error) {
+	if config.AuthorizationEndpoint == "" || config.TokenEndpoint == "" {
+		openIDConfig, err := fetchOpenidConfiguration(config.IssuerURL, httpClient.Do)
 		if err != nil {
 			return nil, fmt.Errorf("Error occurred while fetching openid configuration: %s", err)
 		}
-		options.AuthorizationEndpoint = openIDConfig.AuthorizationEndpoint
-		options.TokenEndpoint = openIDConfig.TokenEndpoint
+		config.AuthorizationEndpoint = openIDConfig.AuthorizationEndpoint
+		config.TokenEndpoint = openIDConfig.TokenEndpoint
 	}
 
 	return &Refresher{
 		Config: &oauth2.Config{
-			ClientID:     options.ClientID,
-			ClientSecret: options.ClientSecret,
+			ClientID:     config.ClientID,
+			ClientSecret: config.ClientSecret,
 			Endpoint: oauth2.Endpoint{
-				AuthURL:  options.AuthorizationEndpoint,
-				TokenURL: options.TokenEndpoint,
+				AuthURL:  config.AuthorizationEndpoint,
+				TokenURL: config.TokenEndpoint,
 			},
 		},
-		HTTPClient: options.HTTPClient,
+		HTTPClient: httpClient,
 	}, nil
 }
 
@@ -169,7 +151,7 @@ func (r *Refresher) Client(reuseToken *auth.Token) *http.Client {
 	return r.Config.Client(ctx, token)
 }
 
-func fetchOpenidConfiguration(issuerURL string, readConfigurationFunc DoRequestFunc) (*OpenIDConfiguration, error) {
+func fetchOpenidConfiguration(issuerURL string, readConfigurationFunc DoRequestFunc) (*openIDConfiguration, error) {
 	req, err := http.NewRequest(http.MethodGet, issuerURL+"/.well-known/openid-configuration", nil)
 	if err != nil {
 		return nil, err
@@ -184,7 +166,7 @@ func fetchOpenidConfiguration(issuerURL string, readConfigurationFunc DoRequestF
 		return nil, errors.New("Unexpected status code")
 	}
 
-	var configuration *OpenIDConfiguration
+	var configuration *openIDConfiguration
 	if err = httputil.UnmarshalResponse(response, &configuration); err != nil {
 		return nil, err
 	}

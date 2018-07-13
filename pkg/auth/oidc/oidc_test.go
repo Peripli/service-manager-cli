@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/Peripli/service-manager-cli/pkg/auth"
+	"github.com/Peripli/service-manager-cli/pkg/smclient"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"golang.org/x/oauth2"
@@ -19,7 +20,7 @@ func TestAuthStrategy(t *testing.T) {
 
 var _ = Describe("Service Manager Auth strategy test", func() {
 	var authStrategy auth.AuthenticationStrategy
-	var openIDConfig *OpenIDConfiguration
+	var clientConfig *smclient.ClientConfig
 	var configurationResponseCode int
 	var configurationResponseBody []byte
 	var responseStatusCode int
@@ -43,11 +44,13 @@ var _ = Describe("Service Manager Auth strategy test", func() {
 		uaaServer = httptest.NewServer(createUAAHandler())
 		configurationResponseCode = http.StatusOK
 		configurationResponseBody = []byte(`{"token_endpoint": "` + uaaServer.URL + `"}`)
-		authStrategy, openIDConfig, _ = NewOpenIDStrategy(Options{
-			IssuerURL:  uaaServer.URL,
-			HTTPClient: http.DefaultClient,
-		})
-		Expect(openIDConfig).To(Equal(&OpenIDConfiguration{
+
+		authStrategy, clientConfig, _ = NewOpenIDStrategy(&smclient.ClientConfig{
+			IssuerURL: uaaServer.URL,
+		}, http.DefaultClient)
+
+		Expect(clientConfig).To(Equal(&smclient.ClientConfig{
+			IssuerURL:             uaaServer.URL,
 			TokenEndpoint:         uaaServer.URL,
 			AuthorizationEndpoint: "",
 		}))
@@ -68,10 +71,9 @@ var _ = Describe("Service Manager Auth strategy test", func() {
 		Context("when configuration response is invalid", func() {
 			It("should handle wrong response code", func() {
 				configurationResponseCode = http.StatusNotFound
-				_, _, err := NewOpenIDStrategy(Options{
-					IssuerURL:  uaaServer.URL,
-					HTTPClient: http.DefaultClient,
-				})
+				_, _, err := NewOpenIDStrategy(&smclient.ClientConfig{
+					IssuerURL: uaaServer.URL,
+				}, http.DefaultClient)
 
 				Expect(err).Should(HaveOccurred())
 				Expect(err).To(MatchError("Error occurred while fetching openid configuration: Unexpected status code"))
@@ -80,10 +82,9 @@ var _ = Describe("Service Manager Auth strategy test", func() {
 			It("should handle wrong JSON body", func() {
 				configurationResponseCode = http.StatusOK
 				configurationResponseBody = []byte(`{"}`)
-				_, _, err := NewOpenIDStrategy(Options{
-					IssuerURL:  uaaServer.URL,
-					HTTPClient: http.DefaultClient,
-				})
+				_, _, err := NewOpenIDStrategy(&smclient.ClientConfig{
+					IssuerURL: uaaServer.URL,
+				}, http.DefaultClient)
 
 				Expect(err).Should(HaveOccurred())
 			})

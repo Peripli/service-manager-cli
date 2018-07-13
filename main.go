@@ -17,6 +17,8 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/cmd/broker"
 	"github.com/Peripli/service-manager-cli/internal/cmd/info"
@@ -25,13 +27,14 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/cmd/version"
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
+	"github.com/Peripli/service-manager-cli/pkg/smclient"
 	"github.com/spf13/cobra"
 
 	"os"
 )
 
-func oidcAuthBuilder(options oidc.Options) (auth.AuthenticationStrategy, *oidc.OpenIDConfiguration, error) {
-	return oidc.NewOpenIDStrategy(options)
+func oidcAuthBuilder(config *smclient.ClientConfig, httpClient *http.Client) (auth.AuthenticationStrategy, *smclient.ClientConfig, error) {
+	return oidc.NewOpenIDStrategy(config, httpClient)
 }
 
 func main() {
