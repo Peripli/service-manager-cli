@@ -18,12 +18,15 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
 	"github.com/Peripli/service-manager-cli/internal/output"
+	"github.com/Peripli/service-manager-cli/internal/util"
+	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
 )
 
@@ -74,9 +77,29 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 		if ctx.Client == nil {
 			clientConfig, err := ctx.Configuration.Load()
 			if err != nil {
-				return errors.New("no logged user. Use \"smctl login\" to log in")
+				return fmt.Errorf("no logged user. Use \"smctl login\" to log in. Reason: %s", err)
 			}
-			ctx.Client = smclient.NewClient(clientConfig)
+
+			refresher, err := oidc.NewTokenRefresher(
+				clientConfig,
+				util.BuildHTTPClient(clientConfig.SSLDisabled),
+			)
+			if err != nil {
+				return fmt.Errorf("Error constructing token refresher: %s", err)
+			}
+
+			token, err := refresher.Refresh(clientConfig.Token)
+			if err != nil {
+				return fmt.Errorf("Error refreshing token. Reason: %s", err)
+			}
+			if clientConfig.AccessToken != token.AccessToken {
+				clientConfig.Token = *token
+				if saveErr := ctx.Configuration.Save(clientConfig); saveErr != nil {
+					return fmt.Errorf("Error saving config file. Reason: %s", saveErr)
+				}
+			}
+
+			ctx.Client = smclient.NewClient(refresher.Client(token), clientConfig)
 		}
 
 		return nil

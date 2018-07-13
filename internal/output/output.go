@@ -46,22 +46,30 @@ var (
 
 // PrintError prints an error.
 func PrintError(wr io.Writer, err error) {
-	fmt.Fprintf(wr, "Error: %s\n", err)
+	if _, err := fmt.Fprintf(wr, "Error: %s\n", err); err != nil {
+		panic(err)
+	}
 }
 
 // PrintMessage prints a message.
 func PrintMessage(wr io.Writer, format string, a ...interface{}) {
-	fmt.Fprintf(wr, format, a...)
+	if _, err := fmt.Fprintf(wr, format, a...); err != nil {
+		panic(err)
+	}
 }
 
 // Println prints a new line.
 func Println(wr io.Writer) {
-	fmt.Fprintln(wr)
+	if _, err := fmt.Fprintln(wr); err != nil {
+		panic(err)
+	}
 }
 
 // PrintTable prints in table format
 func PrintTable(wr io.Writer, data *types.TableData) {
-	fmt.Fprint(wr, data)
+	if _, err := fmt.Fprint(wr, data); err != nil {
+		panic(err)
+	}
 }
 
 // PrintServiceManagerObject should be used for printing SM objects in different formats

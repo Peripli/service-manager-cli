@@ -30,6 +30,7 @@ import (
 // Client should be implemented by SM clients
 //go:generate counterfeiter . Client
 type Client interface {
+	GetInfo() (*types.Info, error)
 	RegisterPlatform(*types.Platform) (*types.Platform, error)
 	RegisterBroker(*types.Broker) (*types.Broker, error)
 	ListBrokers() (*types.Brokers, error)
@@ -43,18 +44,31 @@ type Client interface {
 type serviceManagerClient struct {
 	config     *ClientConfig
 	httpClient *http.Client
-	headers    *http.Header
 }
 
 // NewClient returns new SM client
-func NewClient(config *ClientConfig) Client {
-	client := &serviceManagerClient{config: config, httpClient: &http.Client{}, headers: &http.Header{}}
-	client.headers.Add("Content-Type", "application/json")
-	if len(client.config.Token) > 0 {
-		client.headers.Add("Authorization", client.config.Token)
+func NewClient(httpClient *http.Client, config *ClientConfig) Client {
+	return &serviceManagerClient{config: config, httpClient: httpClient}
+}
+
+func (client *serviceManagerClient) GetInfo() (*types.Info, error) {
+	response, err := client.call(http.MethodGet, "/v1/info", nil)
+	if err != nil {
+		return nil, err
 	}
 
-	return client
+	if response.StatusCode != http.StatusOK {
+		return nil, errors.ResponseError{StatusCode: response.StatusCode}
+	}
+
+	var result *types.Info
+
+	err = httputil.UnmarshalResponse(response, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 // RegisterPlatform registers a platform in the service manager
@@ -199,7 +213,11 @@ func (client *serviceManagerClient) call(method string, smpath string, body io.R
 	if err != nil {
 		return nil, err
 	}
-	req.Header = *client.headers
+	req.Header.Add("Content-Type", "application/json")
+
+	if client.config.AccessToken != "" {
+		req.Header.Set("Authorization", "Bearer "+client.config.AccessToken)
+	}
 
 	resp, err := client.httpClient.Do(req)
 	if err != nil {

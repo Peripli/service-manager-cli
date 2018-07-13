@@ -18,18 +18,24 @@ package login
 
 import (
 	"bufio"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"syscall"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/internal/util"
+	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh/terminal"
+)
+
+const (
+	defaultClientID     = "smctl"
+	defaultClientSecret = "smctl"
 )
 
 // Cmd wraps the smctl login command
@@ -41,11 +47,15 @@ type Cmd struct {
 	serviceManagerURL string
 	user              string
 	password          string
+	sslDisabled       bool
+	authBuilder       authenticationBuilder
 }
 
+type authenticationBuilder func(*smclient.ClientConfig, *http.Client) (auth.AuthenticationStrategy, *smclient.ClientConfig, error)
+
 // NewLoginCmd return new login command with context and input reader
-func NewLoginCmd(context *cmd.Context, input io.ReadWriter) *Cmd {
-	return &Cmd{Context: context, input: input}
+func NewLoginCmd(context *cmd.Context, input io.ReadWriter, authBuilder authenticationBuilder) *Cmd {
+	return &Cmd{Context: context, input: input, authBuilder: authBuilder}
 }
 
 // Prepare returns cobra command
@@ -63,6 +73,7 @@ func (lc *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result.Flags().StringVarP(&lc.serviceManagerURL, "url", "a", "", "Base URL of the Service Manager")
 	result.Flags().StringVarP(&lc.user, "user", "u", "", "User ID")
 	result.Flags().StringVarP(&lc.password, "password", "p", "", "Password")
+	result.Flags().BoolVarP(&lc.sslDisabled, "skip-ssl-validation", "", false, "Skip verification of the OAuth endpoint. Not recommended!")
 
 	return result
 }
@@ -77,13 +88,29 @@ func (lc *Cmd) Validate(args []string) error {
 	if lc.serviceManagerURL == "" {
 		return errors.New("URL flag must be provided")
 	}
+
+	if err := util.ValidateURL(lc.serviceManagerURL); err != nil {
+		return fmt.Errorf("service manager URL is invalid: %v", err)
+	}
+
 	return nil
 }
 
 // Run runs the logic of the command
 func (lc *Cmd) Run() error {
-	if err := util.ValidateURL(lc.serviceManagerURL); err != nil {
-		return fmt.Errorf("service manager URL is invalid: %v", err)
+	httpClient := util.BuildHTTPClient(lc.sslDisabled)
+	clientConfig := &smclient.ClientConfig{
+		URL:          lc.serviceManagerURL,
+		ClientID:     defaultClientID,
+		ClientSecret: defaultClientSecret,
+	}
+	if lc.Client == nil {
+		lc.Client = smclient.NewClient(httpClient, clientConfig)
+	}
+
+	info, err := lc.Client.GetInfo()
+	if err != nil {
+		return err
 	}
 
 	if err := lc.readUser(); err != nil {
@@ -98,8 +125,31 @@ func (lc *Cmd) Run() error {
 		return errors.New("username/password should not be empty")
 	}
 
-	token := "basic " + base64.StdEncoding.EncodeToString([]byte(lc.user+":"+lc.password))
-	err := lc.Configuration.Save(&smclient.ClientConfig{URL: lc.serviceManagerURL, User: lc.user, Token: token})
+	clientConfig.IssuerURL = info.TokenIssuerURL
+	authStrategy, openIDConfig, err := lc.authBuilder(clientConfig, httpClient)
+	if err != nil {
+		return err
+	}
+
+	token, err := authStrategy.Authenticate(lc.user, lc.password)
+	if err != nil {
+		return err
+	}
+
+	err = lc.Configuration.Save(&smclient.ClientConfig{
+		URL:         lc.serviceManagerURL,
+		User:        lc.user,
+		SSLDisabled: lc.sslDisabled,
+
+		Token:        *token,
+		ClientID:     defaultClientID,
+		ClientSecret: defaultClientSecret,
+
+		IssuerURL:             info.TokenIssuerURL,
+		AuthorizationEndpoint: openIDConfig.AuthorizationEndpoint,
+		TokenEndpoint:         openIDConfig.TokenEndpoint,
+	})
+
 	if err != nil {
 		return err
 	}
@@ -120,7 +170,7 @@ func (lc *Cmd) readUser() error {
 			return err
 		}
 
-		lc.user = (string)(readUser)
+		lc.user = string(readUser)
 	}
 	return nil
 }

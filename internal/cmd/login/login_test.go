@@ -1,6 +1,13 @@
 package login
 
 import (
+	"net/http"
+
+	"github.com/Peripli/service-manager-cli/pkg/auth"
+	"github.com/Peripli/service-manager-cli/pkg/auth/authfakes"
+	"github.com/Peripli/service-manager-cli/pkg/smclient"
+	"github.com/Peripli/service-manager-cli/pkg/types"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -10,6 +17,7 @@ import (
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/configuration/configurationfakes"
+	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 )
 
 func TestLoginCmd(t *testing.T) {
@@ -22,14 +30,27 @@ var _ = Describe("Login Command test", func() {
 	var command *Cmd
 	var credentialsBuffer, outputBuffer *bytes.Buffer
 	var config configurationfakes.FakeConfiguration
+	var authStrategy *authfakes.FakeAuthenticationStrategy
+	var client *smclientfakes.FakeClient
+
+	authBuilder := func(config *smclient.ClientConfig, _ *http.Client) (auth.AuthenticationStrategy, *smclient.ClientConfig, error) {
+		return authStrategy, config, nil
+	}
 
 	BeforeEach(func() {
+		client = &smclientfakes.FakeClient{}
 		credentialsBuffer = &bytes.Buffer{}
 		outputBuffer = &bytes.Buffer{}
 		config = configurationfakes.FakeConfiguration{}
+		authStrategy = &authfakes.FakeAuthenticationStrategy{}
 
-		context := &cmd.Context{Output: outputBuffer, Configuration: &config}
-		command = NewLoginCmd(context, credentialsBuffer)
+		client.GetInfoReturns(&types.Info{TokenIssuerURL: "http://valid-uaa.com"}, nil)
+		authStrategy.AuthenticateReturns(&auth.Token{
+			AccessToken: "access-token",
+		}, nil)
+
+		context := &cmd.Context{Output: outputBuffer, Configuration: &config, Client: client}
+		command = NewLoginCmd(context, credentialsBuffer, authBuilder)
 	})
 
 	Describe("Valid request", func() {
