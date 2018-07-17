@@ -2,7 +2,7 @@
 
 The Service Manager CLI is the official tool to communicate with a Service Manager instance directly.
 
-> NOTE: Throughout this document we will refer to the Service Manager CLI as *SM CLI* for simplicity.
+> **NOTE**: Throughout this document we will refer to the Service Manager CLI as *SM CLI* for simplicity.
 
 ## Getting Started
 In order to start using the SM CLI you need to download and install it. To do that follow the instructions [HERE][1].
