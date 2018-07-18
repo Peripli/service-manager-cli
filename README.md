@@ -9,7 +9,9 @@
 
 ## Getting started
 
-To use the Service Manager CLI you need to download and install it first.
+To use the Service Manager CLI you need to download and install it first:
+
+### Approach 1: Manual installation
 
 #### Download CLI
 `` go get github.com/Peripli/service-manager-cli``
@@ -22,7 +24,10 @@ To use the Service Manager CLI you need to download and install it first.
 
 You're done! Now you can use the **smctl** command along with some other subcommand (*register-broker*, *list-platforms*, etc...) to interact with a Service Manager instance.
 
-##### Example:
+### Approach 2: Get the latest Service Manager CLI release
+You can get started with the CLI by simply downloading the latest release from [HERE][2].
+
+## Example usage of CLI:
 
 ```sh
 # We need to connect and authenticate with a running Service Manager instance before doing anythign else  
@@ -54,5 +59,10 @@ b419b538-b938-4293-86e0-7c92b0200d8e  sample-broker-2  https://demobroker.domain
 
 For a list of all available commands run: ``smctl help``
 
+## Documentation
+Documentation of the Service Manager CLI and all of it's commands can be found [HERE][3].
+
 
 [1]: https://github.com/Peripli/service-manager
+[2]: https://github.com/Peripli/service-manager-cli/releases
+[3]: docs/README.md
