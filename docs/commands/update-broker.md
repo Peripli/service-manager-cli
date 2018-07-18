@@ -57,3 +57,12 @@ update-broker, ub
     Use verbose mode.
   </p>
 </details>
+
+## Example
+```bash
+> smctl update-broker sample-broker-1 '{"description": "Updated sample-broker description"}' 
+
+ID                                    Name             URL                             Description                        Created               Updated               
+------------------------------------  ---------------  ------------------------------  ---------------------------------  --------------------  --------------------  
+a52be735-30e5-4849-af23-83d65d592464  sample-broker-1  https://demobroker.domain.com/  Updated sample-broker description  2018-06-22T13:04:19Z  2018-06-22T13:04:19Z
+```

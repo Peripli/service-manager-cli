@@ -8,11 +8,6 @@
 smctl update-platform [name] <json_platform> [flags]
 ```
 
-## Example
-```bash
-smctl update-platform platform '{"name": "new-name", "description": "new-description", "type": "new-type"}' 
-```
-
 ## Aliases
 ```bash
 update-platform, up 
@@ -57,3 +52,12 @@ update-platform, up
     Use verbose mode.
   </p>
 </details>
+
+## Example
+```bash
+> smctl update-platform sample-platform '{"description": "Sample platform instance"}' 
+
+ID                                    Name             Type    Description               Created               Updated               
+------------------------------------  ---------------  ------  ------------------------  --------------------  --------------------  
+6352fca0-c252-43ab-9cb3-d23613749b59  sample-platform  sample  Sample platform instance  2018-07-18T07:06:40Z  2018-07-18T07:09:48Z  
+```

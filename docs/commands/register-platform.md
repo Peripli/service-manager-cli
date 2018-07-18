@@ -61,3 +61,12 @@ register-platform, rp
     Use verbose mode.
   </p>
 </details>
+
+## Example
+```bash
+> smctl register-platform sample-platform sample "Sample platform"
+
+ID                                    Name             Type    Description      Created               Updated               Username                                                                                                                                                                      Password                                                                                                                                                                      
+------------------------------------  ---------------  ------  ---------------  --------------------  --------------------  ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------  ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------  
+261b96d5-3c22-44f4-a1dc-bb4a7d3d337c  sample-platform  sample  Sample platform  2018-07-18T07:04:40Z  2018-07-18T07:04:40Z  lp1tN6bB9ZfP3cDj69nUGclKOXTAhTqfta72giJB0RIe8x1dH07USE8SEvSKthNBXN+x6QxaYCCvN1f1WcQEn6qD3JH5pCfTG5EMSvpo96bhpU2VwYEN8NXc6TUt1smGOnTf8+RWAnbDjLbLhLMFB/PlhcjHaWLiZfu0T0/8LzM=  cQ6Uq1v1xlAT+eBlzkuFLUZBJJlMt2KN6w2eQH/MdjQsYRdjFCZKWkHzODLJCvaZHa/061ygqmZ5nQabxtXpq/p9Oxccs4yLEhDZBrFzhYqc8c2l45NuNlZfwBsL3eq/o2sEddu0zz10K1M7JnBcztiTM7DOeycS7uWFO2/K0PU= 
+```

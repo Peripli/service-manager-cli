@@ -52,3 +52,13 @@ list-platforms, lp
     Use verbose mode.
   </p>
 </details>
+
+## Example
+```bash
+> smctl list-platforms 
+
+One platform registered.
+ID                                    Name             Type    Description      Created               Updated               
+------------------------------------  ---------------  ------  ---------------  --------------------  --------------------  
+6352fca0-c252-43ab-9cb3-d23613749b59  sample-platform  sample  Sample platform  2018-07-18T07:06:40Z  2018-07-18T07:06:40Z
+```

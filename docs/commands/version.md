@@ -43,3 +43,10 @@ version, v
     Use verbose mode.
   </p>
 </details>
+
+## Example
+```bash
+> smctl version
+
+Service Manager Client 0.0.1
+```

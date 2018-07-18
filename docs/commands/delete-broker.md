@@ -43,3 +43,10 @@ delete-broker, db
     Use verbose mode.
   </p>
 </details>
+
+## Example
+```bash
+> smctl delete-broker sample-broker-1
+
+Broker with name: sample-broker-1 successfully deleted
+```

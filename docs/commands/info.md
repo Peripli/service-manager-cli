@@ -43,3 +43,11 @@ info, i
     Use verbose mode.
   </p>
 </details>
+
+## Example
+```bash
+> smctl info
+
+Service Manager URL: https://service-manager-url.com/
+Logged user: testUser 
+```

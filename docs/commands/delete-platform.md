@@ -43,3 +43,10 @@ delete-platform, dp
     Use verbose mode.
   </p>
 </details>
+
+## Example
+```bash
+> smctl delete-platform sample-platform
+
+Platform with name: sample-platform successfully deleted
+```
