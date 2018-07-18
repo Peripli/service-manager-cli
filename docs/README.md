@@ -5,7 +5,7 @@ The Service Manager CLI is the official tool to communicate with a Service Manag
 > **NOTE**: Throughout this document we will refer to the Service Manager CLI as *SM CLI* for simplicity.
 
 ## Getting Started
-In order to start using the SM CLI you need to download and install it. To do that follow the instructions [HERE][1].
+In order to start using the SM CLI you need to download and install it. You can get the lastest SM CLI release from [HERE][1].
 
 ## Commands
 The SM CLI provides commands for creating, listing, updating and deleting service brokers and platforms in a Service Manager instance. Here's a full list of the available commands:
@@ -23,16 +23,16 @@ The SM CLI provides commands for creating, listing, updating and deleting servic
 * [version][12]
 * [help][13]
 
-[1]: https://github.com/Peripli/service-manager-cli/blob/master/README.md 
-[2]: https://github.com/Peripli/service-manager-cli/tree/master/docs/commands/login.md
-[3]: https://github.com/Peripli/service-manager-cli/tree/master/docs/commands/register-broker.md
-[4]: https://github.com/Peripli/service-manager-cli/tree/master/docs/commands/update-broker.md
-[5]: https://github.com/Peripli/service-manager-cli/tree/master/docs/commands/list-brokers.md
-[6]: https://github.com/Peripli/service-manager-cli/tree/master/docs/commands/delete-broker.md
-[7]: https://github.com/Peripli/service-manager-cli/tree/master/docs/commands/register-platform.md
-[8]: https://github.com/Peripli/service-manager-cli/tree/master/docs/commands/update-platform.md
-[9]: https://github.com/Peripli/service-manager-cli/tree/master/docs/commands/list-platform.md
-[10]: https://github.com/Peripli/service-manager-cli/tree/master/docs/commands/delete-platform.md
-[11]: https://github.com/Peripli/service-manager-cli/tree/master/docs/commands/info.md
-[12]: https://github.com/Peripli/service-manager-cli/tree/master/docs/commands/version.md
-[13]: https://github.com/Peripli/service-manager-cli/tree/master/docs/commands/help.md
+[1]: https://github.com/Peripli/service-manager-cli/releases
+[2]: commands/login.md
+[3]: commands/register-broker.md
+[4]: commands/update-broker.md
+[5]: commands/list-brokers.md
+[6]: commands/delete-broker.md
+[7]: commands/register-platform.md
+[8]: commands/update-platform.md
+[9]: commands/list-platform.md
+[10]:commands/delete-platform.md
+[11]:commands/info.md
+[12]:commands/version.md
+[13]:commands/help.md

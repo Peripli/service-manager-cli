@@ -35,7 +35,7 @@ register-broker, rb
 <details>
   <summary>output format</summary>
   <p>
-    <code>--output</code> (alias: <code>-o</code>
+    <code>--output</code> (alias: <code>-o</code>)
   </p>
   <p>
     Output format of the command. Possible opitons: <i>json, yaml, text</i>
