@@ -79,3 +79,20 @@ login, l
     Use verbose mode.
   </p>
 </details>
+
+## Example 1
+```bash
+> smctl login -a https://service-manager-url.com
+
+User: user                # entering username
+Passowrd:                 # entering passowrd (password visibility is disabled)
+Logged in successfully.
+```
+
+## Example 2
+```bash
+> smctl login -a https://service-manager-url.com -u user -p pass
+
+Logged in successfully.
+```
+
