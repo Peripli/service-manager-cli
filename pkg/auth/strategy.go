@@ -21,6 +21,14 @@ import (
 	"time"
 )
 
+type Options struct {
+	ClientID              string
+	ClientSecret          string
+	AuthorizationEndpoint string
+	TokenEndpoint         string
+	IssuerURL             string
+}
+
 // Token contains the structure of a typical UAA response token
 type Token struct {
 	AccessToken  string    `json:"access_token"`
@@ -34,11 +42,6 @@ type Token struct {
 //go:generate counterfeiter . AuthenticationStrategy
 type AuthenticationStrategy interface {
 	Authenticate(user, password string) (*Token, error)
-}
-
-// TokenRefresher should be implemented for different token refresh strategies
-//go:generate counterfeiter . TokenRefresher
-type TokenRefresher interface {
-	Refresh(Token) (*Token, error)
-	Client(*Token) *http.Client
+	Token() (*Token, error)
+	Client() *http.Client
 }

@@ -2,6 +2,7 @@
 package authfakes
 
 import (
+	"net/http"
 	"sync"
 
 	"github.com/Peripli/service-manager-cli/pkg/auth"
@@ -21,6 +22,26 @@ type FakeAuthenticationStrategy struct {
 	authenticateReturnsOnCall map[int]struct {
 		result1 *auth.Token
 		result2 error
+	}
+	TokenStub        func() (*auth.Token, error)
+	tokenMutex       sync.RWMutex
+	tokenArgsForCall []struct{}
+	tokenReturns     struct {
+		result1 *auth.Token
+		result2 error
+	}
+	tokenReturnsOnCall map[int]struct {
+		result1 *auth.Token
+		result2 error
+	}
+	ClientStub        func() *http.Client
+	clientMutex       sync.RWMutex
+	clientArgsForCall []struct{}
+	clientReturns     struct {
+		result1 *http.Client
+	}
+	clientReturnsOnCall map[int]struct {
+		result1 *http.Client
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
@@ -78,11 +99,98 @@ func (fake *FakeAuthenticationStrategy) AuthenticateReturnsOnCall(i int, result1
 	}{result1, result2}
 }
 
+func (fake *FakeAuthenticationStrategy) Token() (*auth.Token, error) {
+	fake.tokenMutex.Lock()
+	ret, specificReturn := fake.tokenReturnsOnCall[len(fake.tokenArgsForCall)]
+	fake.tokenArgsForCall = append(fake.tokenArgsForCall, struct{}{})
+	fake.recordInvocation("Token", []interface{}{})
+	fake.tokenMutex.Unlock()
+	if fake.TokenStub != nil {
+		return fake.TokenStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.tokenReturns.result1, fake.tokenReturns.result2
+}
+
+func (fake *FakeAuthenticationStrategy) TokenCallCount() int {
+	fake.tokenMutex.RLock()
+	defer fake.tokenMutex.RUnlock()
+	return len(fake.tokenArgsForCall)
+}
+
+func (fake *FakeAuthenticationStrategy) TokenReturns(result1 *auth.Token, result2 error) {
+	fake.TokenStub = nil
+	fake.tokenReturns = struct {
+		result1 *auth.Token
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeAuthenticationStrategy) TokenReturnsOnCall(i int, result1 *auth.Token, result2 error) {
+	fake.TokenStub = nil
+	if fake.tokenReturnsOnCall == nil {
+		fake.tokenReturnsOnCall = make(map[int]struct {
+			result1 *auth.Token
+			result2 error
+		})
+	}
+	fake.tokenReturnsOnCall[i] = struct {
+		result1 *auth.Token
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeAuthenticationStrategy) Client() *http.Client {
+	fake.clientMutex.Lock()
+	ret, specificReturn := fake.clientReturnsOnCall[len(fake.clientArgsForCall)]
+	fake.clientArgsForCall = append(fake.clientArgsForCall, struct{}{})
+	fake.recordInvocation("Client", []interface{}{})
+	fake.clientMutex.Unlock()
+	if fake.ClientStub != nil {
+		return fake.ClientStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.clientReturns.result1
+}
+
+func (fake *FakeAuthenticationStrategy) ClientCallCount() int {
+	fake.clientMutex.RLock()
+	defer fake.clientMutex.RUnlock()
+	return len(fake.clientArgsForCall)
+}
+
+func (fake *FakeAuthenticationStrategy) ClientReturns(result1 *http.Client) {
+	fake.ClientStub = nil
+	fake.clientReturns = struct {
+		result1 *http.Client
+	}{result1}
+}
+
+func (fake *FakeAuthenticationStrategy) ClientReturnsOnCall(i int, result1 *http.Client) {
+	fake.ClientStub = nil
+	if fake.clientReturnsOnCall == nil {
+		fake.clientReturnsOnCall = make(map[int]struct {
+			result1 *http.Client
+		})
+	}
+	fake.clientReturnsOnCall[i] = struct {
+		result1 *http.Client
+	}{result1}
+}
+
 func (fake *FakeAuthenticationStrategy) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.authenticateMutex.RLock()
 	defer fake.authenticateMutex.RUnlock()
+	fake.tokenMutex.RLock()
+	defer fake.tokenMutex.RUnlock()
+	fake.clientMutex.RLock()
+	defer fake.clientMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
