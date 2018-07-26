@@ -21,7 +21,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net/http"
 	"syscall"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
@@ -34,8 +33,8 @@ import (
 )
 
 const (
-	defaultClientID     = "smctl"
-	defaultClientSecret = "smctl"
+	defaultClientID     = "cf"
+	defaultClientSecret = ""
 )
 
 // Cmd wraps the smctl login command
@@ -51,7 +50,7 @@ type Cmd struct {
 	authBuilder       authenticationBuilder
 }
 
-type authenticationBuilder func(*smclient.ClientConfig, *http.Client) (auth.AuthenticationStrategy, *smclient.ClientConfig, error)
+type authenticationBuilder func(*auth.Options) (auth.AuthenticationStrategy, *auth.Options, error)
 
 // NewLoginCmd return new login command with context and input reader
 func NewLoginCmd(context *cmd.Context, input io.ReadWriter, authBuilder authenticationBuilder) *Cmd {
@@ -100,9 +99,7 @@ func (lc *Cmd) Validate(args []string) error {
 func (lc *Cmd) Run() error {
 	httpClient := util.BuildHTTPClient(lc.sslDisabled)
 	clientConfig := &smclient.ClientConfig{
-		URL:          lc.serviceManagerURL,
-		ClientID:     defaultClientID,
-		ClientSecret: defaultClientSecret,
+		URL: lc.serviceManagerURL,
 	}
 	if lc.Client == nil {
 		lc.Client = smclient.NewClient(httpClient, clientConfig)
@@ -125,12 +122,16 @@ func (lc *Cmd) Run() error {
 		return errors.New("username/password should not be empty")
 	}
 
-	clientConfig.IssuerURL = info.TokenIssuerURL
-	authStrategy, openIDConfig, err := lc.authBuilder(clientConfig, httpClient)
+	options := &auth.Options{
+		ClientID:     defaultClientID,
+		ClientSecret: defaultClientSecret,
+		IssuerURL:    info.TokenIssuerURL,
+		SSLDisabled:  lc.sslDisabled,
+	}
+	authStrategy, options, err := lc.authBuilder(options)
 	if err != nil {
 		return err
 	}
-
 	token, err := authStrategy.Authenticate(lc.user, lc.password)
 	if err != nil {
 		return err
@@ -146,8 +147,8 @@ func (lc *Cmd) Run() error {
 		ClientSecret: defaultClientSecret,
 
 		IssuerURL:             info.TokenIssuerURL,
-		AuthorizationEndpoint: openIDConfig.AuthorizationEndpoint,
-		TokenEndpoint:         openIDConfig.TokenEndpoint,
+		AuthorizationEndpoint: options.AuthorizationEndpoint,
+		TokenEndpoint:         options.TokenEndpoint,
 	})
 
 	if err != nil {

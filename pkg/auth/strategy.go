@@ -21,12 +21,17 @@ import (
 	"time"
 )
 
+// Options is used to configure new authenticators and clients
 type Options struct {
 	ClientID              string
 	ClientSecret          string
 	AuthorizationEndpoint string
 	TokenEndpoint         string
 	IssuerURL             string
+
+	SSLDisabled bool
+
+	Timeout time.Duration
 }
 
 // Token contains the structure of a typical UAA response token
@@ -42,6 +47,17 @@ type Token struct {
 //go:generate counterfeiter . AuthenticationStrategy
 type AuthenticationStrategy interface {
 	Authenticate(user, password string) (*Token, error)
+}
+
+// Refresher should be implemented for refreshing access tokens with refresh token flow
+// go:generate counterfeiter . Refresher
+type Refresher interface {
 	Token() (*Token, error)
-	Client() *http.Client
+}
+
+// Client should be implemented for http like clients which do automatic authentication
+//go:generate counterfeiter . Client
+type Client interface {
+	Do(*http.Request) (*http.Response, error)
+	// Token() (*Token, error)
 }

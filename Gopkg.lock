@@ -160,6 +160,7 @@
   name = "golang.org/x/oauth2"
   packages = [
     ".",
+    "clientcredentials",
     "internal"
   ]
   revision = "ef147856a6ddbb60760db74283d2424e98c87bff"
@@ -223,6 +224,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "93160a28e35f4ce0ff0f5c02af7c15f2ab7f580205ec4d9167f264f24c9a7af2"
+  inputs-digest = "429f649391242fb248cd9852abb622a71422e64df153da34501a0d502672a0f9"
   solver-name = "gps-cdcl"
   solver-version = 1

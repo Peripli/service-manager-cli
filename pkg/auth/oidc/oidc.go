@@ -22,51 +22,122 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Peripli/service-manager-cli/internal/util"
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/httputil"
 	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/clientcredentials"
 )
+
+// NewClient builds configured HTTP client.
+//
+// If token is provided will execute try to refresh the token if it has expired,
+// if not provided will do client_credentials flow and fetch token
+func NewClient(options *auth.Options, token *auth.Token) auth.Client {
+	httpClient := util.BuildHTTPClient(options.SSLDisabled)
+	httpClient.Timeout = options.Timeout
+
+	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, httpClient)
+
+	var oauthClient *http.Client
+	var tokenSource oauth2.TokenSource
+
+	if token == nil {
+		oauthConfig := &clientcredentials.Config{
+			ClientID:     options.ClientID,
+			ClientSecret: options.ClientSecret,
+			TokenURL:     options.TokenEndpoint,
+		}
+		tokenSource = oauthConfig.TokenSource(ctx)
+	} else {
+		oauthConfig := &oauth2.Config{
+			ClientID:     options.ClientID,
+			ClientSecret: options.ClientSecret,
+			Endpoint: oauth2.Endpoint{
+				AuthURL:  options.AuthorizationEndpoint,
+				TokenURL: options.TokenEndpoint,
+			},
+		}
+		tokenSource = oauthConfig.TokenSource(ctx, &oauth2.Token{
+			AccessToken:  token.AccessToken,
+			RefreshToken: token.RefreshToken,
+			Expiry:       token.ExpiresIn,
+			TokenType:    token.TokenType,
+		})
+	}
+
+	oauthClient = oauth2.NewClient(ctx, tokenSource)
+	oauthClient.Timeout = options.Timeout
+
+	return &Client{
+		tokenSource: tokenSource,
+		httpClient:  oauthClient,
+	}
+}
+
+// Client is used to make http requests including bearer token automatically and refreshing it
+// if necessary
+type Client struct {
+	tokenSource oauth2.TokenSource
+	httpClient  *http.Client
+}
+
+// Do makes a http request with the underlying HTTP client which includes an access token in the request
+func (c *Client) Do(req *http.Request) (*http.Response, error) {
+	return c.httpClient.Do(req)
+}
+
+// Token returns the token, refreshing it if necessary
+func (c *Client) Token() (*auth.Token, error) {
+	token, err := c.tokenSource.Token()
+	if err != nil {
+		return nil, err
+	}
+	return &auth.Token{
+		AccessToken:  token.AccessToken,
+		RefreshToken: token.RefreshToken,
+		ExpiresIn:    token.Expiry,
+		TokenType:    token.TokenType,
+	}, nil
+}
 
 type openIDConfiguration struct {
 	TokenEndpoint         string `json:"token_endpoint"`
 	AuthorizationEndpoint string `json:"authorization_endpoint"`
 }
 
-// DoRequestFunc is an alias for any function that takes an http request and returns a response and error
-type DoRequestFunc func(request *http.Request) (*http.Response, error)
-
 // OpenIDStrategy implementation of OpenID strategy
 type OpenIDStrategy struct {
 	*oauth2.Config
-	token *oauth2.Token
-
 	httpClient *http.Client
 }
 
 // NewOpenIDStrategy returns OpenId auth strategy
-func NewOpenIDStrategy(config *auth.Options, httpClient *http.Client) (auth.AuthenticationStrategy, *auth.Options, error) {
-	openIDConfig, err := fetchOpenidConfiguration(config.IssuerURL, httpClient.Do)
+func NewOpenIDStrategy(options *auth.Options) (auth.AuthenticationStrategy, *auth.Options, error) {
+	httpClient := util.BuildHTTPClient(options.SSLDisabled)
+	httpClient.Timeout = options.Timeout
+
+	openIDConfig, err := fetchOpenidConfiguration(options.IssuerURL, httpClient.Do)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Error occurred while fetching openid configuration: %s", err)
 	}
 
 	oauthConfig := &oauth2.Config{
-		ClientID:     config.ClientID,
-		ClientSecret: config.ClientSecret,
+		ClientID:     options.ClientID,
+		ClientSecret: options.ClientSecret,
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  openIDConfig.AuthorizationEndpoint,
 			TokenURL: openIDConfig.TokenEndpoint,
 		},
 	}
 
-	config.AuthorizationEndpoint = openIDConfig.AuthorizationEndpoint
-	config.TokenEndpoint = openIDConfig.TokenEndpoint
+	options.AuthorizationEndpoint = openIDConfig.AuthorizationEndpoint
+	options.TokenEndpoint = openIDConfig.TokenEndpoint
 
 	return &OpenIDStrategy{
 		Config:     oauthConfig,
 		httpClient: httpClient,
-		token:      nil,
-	}, config, nil
+	}, options, nil
 }
 
 // Authenticate is used to perform authentication action for OpenID strategy
@@ -76,8 +147,6 @@ func (s *OpenIDStrategy) Authenticate(user, password string) (*auth.Token, error
 	if err != nil {
 		return nil, err
 	}
-
-	s.token = token
 
 	resultToken := &auth.Token{
 		AccessToken:  token.AccessToken,
@@ -89,35 +158,8 @@ func (s *OpenIDStrategy) Authenticate(user, password string) (*auth.Token, error
 	return resultToken, err
 }
 
-// Token returns access token, if it expires will refresh it and return it
-func (s *OpenIDStrategy) Token() (*auth.Token, error) {
-	if s.token == nil {
-		return nil, errors.New("strategy is not authenticated")
-	}
-	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, s.httpClient)
-
-	refresher := s.Config.TokenSource(ctx, s.token)
-	refreshedToken, err := refresher.Token()
-	if err != nil {
-		return nil, err
-	}
-
-	s.token = refreshedToken
-	resultToken := &auth.Token{
-		AccessToken:  refreshedToken.AccessToken,
-		RefreshToken: refreshedToken.RefreshToken,
-		ExpiresIn:    refreshedToken.Expiry,
-		TokenType:    refreshedToken.TokenType,
-	}
-
-	return resultToken, nil
-}
-
-// Client returns http client with automatic token refreshing mechanism
-func (s *OpenIDStrategy) Client() *http.Client {
-	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, s.httpClient)
-	return s.Config.Client(ctx, s.token)
-}
+// DoRequestFunc is an alias for any function that takes an http request and returns a response and error
+type DoRequestFunc func(request *http.Request) (*http.Response, error)
 
 func fetchOpenidConfiguration(issuerURL string, readConfigurationFunc DoRequestFunc) (*openIDConfiguration, error) {
 	req, err := http.NewRequest(http.MethodGet, issuerURL+"/.well-known/openid-configuration", nil)

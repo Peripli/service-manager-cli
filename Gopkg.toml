@@ -47,3 +47,7 @@
 [[constraint]]
   name = "github.com/onsi/ginkgo"
   version = "1.4.0"
+
+[[constraint]]
+  branch = "master"
+  name = "golang.org/x/oauth2"
