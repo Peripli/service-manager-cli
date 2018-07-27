@@ -62,6 +62,46 @@ var _ = Describe("Login Command test", func() {
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(outputBuffer.String()).To(ContainSubstring("Logged in successfully.\n"))
+
+				savedConfig := config.SaveArgsForCall(0)
+				Expect(savedConfig.ClientID).To(Equal("cf"))
+				Expect(savedConfig.ClientSecret).To(Equal(""))
+			})
+		})
+
+		Context("With password and client id provided through flags", func() {
+			It("should save configuration successfully", func() {
+				lc := command.Prepare(cmd.CommonPrepare)
+				lc.SetArgs([]string{"--url=http://valid-url.com", "--password=password", "--client-id=smctl"})
+
+				credentialsBuffer.WriteString("user\n")
+
+				err := lc.Execute()
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(outputBuffer.String()).To(ContainSubstring("Logged in successfully.\n"))
+
+				savedConfig := config.SaveArgsForCall(0)
+				Expect(savedConfig.ClientID).To(Equal("smctl"))
+				Expect(savedConfig.ClientSecret).To(Equal(""))
+			})
+		})
+
+		Context("With password, client id and client secret provided through flags", func() {
+			It("should save configuration successfully", func() {
+				lc := command.Prepare(cmd.CommonPrepare)
+				lc.SetArgs([]string{"--url=http://valid-url.com", "--password=password", "--client-id=smctl", "--client-secret=smctl"})
+
+				credentialsBuffer.WriteString("user\n")
+
+				err := lc.Execute()
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(outputBuffer.String()).To(ContainSubstring("Logged in successfully.\n"))
+
+				savedConfig := config.SaveArgsForCall(0)
+				Expect(savedConfig.ClientID).To(Equal("smctl"))
+				Expect(savedConfig.ClientSecret).To(Equal("smctl"))
 			})
 		})
 
