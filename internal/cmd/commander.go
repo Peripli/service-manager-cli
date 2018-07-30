@@ -25,7 +25,7 @@ import (
 	"github.com/spf13/pflag"
 
 	"github.com/Peripli/service-manager-cli/internal/output"
-	"github.com/Peripli/service-manager-cli/internal/util"
+	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
 )
@@ -80,26 +80,30 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 				return fmt.Errorf("no logged user. Use \"smctl login\" to log in. Reason: %s", err)
 			}
 
-			refresher, err := oidc.NewTokenRefresher(
-				clientConfig,
-				util.BuildHTTPClient(clientConfig.SSLDisabled),
-			)
-			if err != nil {
-				return fmt.Errorf("Error constructing token refresher: %s", err)
-			}
+			oidcClient := oidc.NewClient(&auth.Options{
+				AuthorizationEndpoint: clientConfig.AuthorizationEndpoint,
+				TokenEndpoint:         clientConfig.TokenEndpoint,
+				ClientID:              clientConfig.ClientID,
+				ClientSecret:          clientConfig.ClientSecret,
+				IssuerURL:             clientConfig.IssuerURL,
+				SSLDisabled:           clientConfig.SSLDisabled,
+			}, &clientConfig.Token)
 
-			token, err := refresher.Refresh(clientConfig.Token)
-			if err != nil {
-				return fmt.Errorf("Error refreshing token. Reason: %s", err)
-			}
-			if clientConfig.AccessToken != token.AccessToken {
-				clientConfig.Token = *token
-				if saveErr := ctx.Configuration.Save(clientConfig); saveErr != nil {
-					return fmt.Errorf("Error saving config file. Reason: %s", saveErr)
+			refresher, isRefresher := oidcClient.(auth.Refresher)
+			if isRefresher {
+				token, err := refresher.Token()
+				if err != nil {
+					return fmt.Errorf("Error refreshing token. Reason: %s", err)
+				}
+				if clientConfig.AccessToken != token.AccessToken {
+					clientConfig.Token = *token
+					if saveErr := ctx.Configuration.Save(clientConfig); saveErr != nil {
+						return fmt.Errorf("Error saving config file. Reason: %s", saveErr)
+					}
 				}
 			}
 
-			ctx.Client = smclient.NewClient(refresher.Client(token), clientConfig)
+			ctx.Client = smclient.NewClient(oidcClient, clientConfig)
 		}
 
 		return nil

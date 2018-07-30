@@ -21,6 +21,19 @@ import (
 	"time"
 )
 
+// Options is used to configure new authenticators and clients
+type Options struct {
+	ClientID              string `mapstructure:"client_id"`
+	ClientSecret          string `mapstructure:"client_secret"`
+	AuthorizationEndpoint string `mapstructure:"authorization_endpoint"`
+	TokenEndpoint         string `mapstructure:"token_endpoint"`
+	IssuerURL             string `mapstructure:"issuer_url"`
+
+	SSLDisabled bool `mapstructure:"ssl_disabled"`
+
+	Timeout time.Duration `mapstructure:"timeout"`
+}
+
 // Token contains the structure of a typical UAA response token
 type Token struct {
 	AccessToken  string    `json:"access_token"`
@@ -36,9 +49,15 @@ type AuthenticationStrategy interface {
 	Authenticate(user, password string) (*Token, error)
 }
 
-// TokenRefresher should be implemented for different token refresh strategies
-//go:generate counterfeiter . TokenRefresher
-type TokenRefresher interface {
-	Refresh(Token) (*Token, error)
-	Client(*Token) *http.Client
+// Refresher should be implemented for refreshing access tokens with refresh token flow
+//go:generate counterfeiter . Refresher
+type Refresher interface {
+	Token() (*Token, error)
+}
+
+// Client should be implemented for http like clients which do automatic authentication
+//go:generate counterfeiter . Client
+type Client interface {
+	Do(*http.Request) (*http.Response, error)
+	// Token() (*Token, error)
 }

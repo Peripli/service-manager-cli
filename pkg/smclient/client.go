@@ -22,6 +22,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/errors"
 	"github.com/Peripli/service-manager-cli/pkg/httputil"
 	"github.com/Peripli/service-manager-cli/pkg/types"
@@ -43,11 +44,11 @@ type Client interface {
 
 type serviceManagerClient struct {
 	config     *ClientConfig
-	httpClient *http.Client
+	httpClient auth.Client
 }
 
 // NewClient returns new SM client
-func NewClient(httpClient *http.Client, config *ClientConfig) Client {
+func NewClient(httpClient auth.Client, config *ClientConfig) Client {
 	return &serviceManagerClient{config: config, httpClient: httpClient}
 }
 
