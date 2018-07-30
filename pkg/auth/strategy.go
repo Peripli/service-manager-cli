@@ -23,15 +23,15 @@ import (
 
 // Options is used to configure new authenticators and clients
 type Options struct {
-	ClientID              string
-	ClientSecret          string
-	AuthorizationEndpoint string
-	TokenEndpoint         string
-	IssuerURL             string
+	ClientID              string `mapstructure:"client_id"`
+	ClientSecret          string `mapstructure:"client_secret"`
+	AuthorizationEndpoint string `mapstructure:"authorization_endpoint"`
+	TokenEndpoint         string `mapstructure:"token_endpoint"`
+	IssuerURL             string `mapstructure:"issuer_url"`
 
-	SSLDisabled bool
+	SSLDisabled bool `mapstructure:"ssl_disabled"`
 
-	Timeout time.Duration
+	Timeout time.Duration `mapstructure:"timeout"`
 }
 
 // Token contains the structure of a typical UAA response token
@@ -50,7 +50,7 @@ type AuthenticationStrategy interface {
 }
 
 // Refresher should be implemented for refreshing access tokens with refresh token flow
-// go:generate counterfeiter . Refresher
+//go:generate counterfeiter . Refresher
 type Refresher interface {
 	Token() (*Token, error)
 }

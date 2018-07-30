@@ -2,7 +2,6 @@
 package authfakes
 
 import (
-	"net/http"
 	"sync"
 
 	"github.com/Peripli/service-manager-cli/pkg/auth"
@@ -21,30 +20,6 @@ type FakeAuthenticationStrategy struct {
 	}
 	authenticateReturnsOnCall map[int]struct {
 		result1 *auth.Token
-		result2 error
-	}
-	RefreshTokenStub        func(*auth.Token) (*auth.Token, error)
-	refreshTokenMutex       sync.RWMutex
-	refreshTokenArgsForCall []struct {
-		arg1 *auth.Token
-	}
-	refreshTokenReturns struct {
-		result1 *auth.Token
-		result2 error
-	}
-	refreshTokenReturnsOnCall map[int]struct {
-		result1 *auth.Token
-		result2 error
-	}
-	ClientStub        func() (*http.Client, error)
-	clientMutex       sync.RWMutex
-	clientArgsForCall []struct{}
-	clientReturns     struct {
-		result1 *http.Client
-		result2 error
-	}
-	clientReturnsOnCall map[int]struct {
-		result1 *http.Client
 		result2 error
 	}
 	invocations      map[string][][]interface{}
@@ -103,109 +78,11 @@ func (fake *FakeAuthenticationStrategy) AuthenticateReturnsOnCall(i int, result1
 	}{result1, result2}
 }
 
-func (fake *FakeAuthenticationStrategy) RefreshToken(arg1 *auth.Token) (*auth.Token, error) {
-	fake.refreshTokenMutex.Lock()
-	ret, specificReturn := fake.refreshTokenReturnsOnCall[len(fake.refreshTokenArgsForCall)]
-	fake.refreshTokenArgsForCall = append(fake.refreshTokenArgsForCall, struct {
-		arg1 *auth.Token
-	}{arg1})
-	fake.recordInvocation("RefreshToken", []interface{}{arg1})
-	fake.refreshTokenMutex.Unlock()
-	if fake.RefreshTokenStub != nil {
-		return fake.RefreshTokenStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fake.refreshTokenReturns.result1, fake.refreshTokenReturns.result2
-}
-
-func (fake *FakeAuthenticationStrategy) RefreshTokenCallCount() int {
-	fake.refreshTokenMutex.RLock()
-	defer fake.refreshTokenMutex.RUnlock()
-	return len(fake.refreshTokenArgsForCall)
-}
-
-func (fake *FakeAuthenticationStrategy) RefreshTokenArgsForCall(i int) *auth.Token {
-	fake.refreshTokenMutex.RLock()
-	defer fake.refreshTokenMutex.RUnlock()
-	return fake.refreshTokenArgsForCall[i].arg1
-}
-
-func (fake *FakeAuthenticationStrategy) RefreshTokenReturns(result1 *auth.Token, result2 error) {
-	fake.RefreshTokenStub = nil
-	fake.refreshTokenReturns = struct {
-		result1 *auth.Token
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeAuthenticationStrategy) RefreshTokenReturnsOnCall(i int, result1 *auth.Token, result2 error) {
-	fake.RefreshTokenStub = nil
-	if fake.refreshTokenReturnsOnCall == nil {
-		fake.refreshTokenReturnsOnCall = make(map[int]struct {
-			result1 *auth.Token
-			result2 error
-		})
-	}
-	fake.refreshTokenReturnsOnCall[i] = struct {
-		result1 *auth.Token
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeAuthenticationStrategy) Client() (*http.Client, error) {
-	fake.clientMutex.Lock()
-	ret, specificReturn := fake.clientReturnsOnCall[len(fake.clientArgsForCall)]
-	fake.clientArgsForCall = append(fake.clientArgsForCall, struct{}{})
-	fake.recordInvocation("Client", []interface{}{})
-	fake.clientMutex.Unlock()
-	if fake.ClientStub != nil {
-		return fake.ClientStub()
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fake.clientReturns.result1, fake.clientReturns.result2
-}
-
-func (fake *FakeAuthenticationStrategy) ClientCallCount() int {
-	fake.clientMutex.RLock()
-	defer fake.clientMutex.RUnlock()
-	return len(fake.clientArgsForCall)
-}
-
-func (fake *FakeAuthenticationStrategy) ClientReturns(result1 *http.Client, result2 error) {
-	fake.ClientStub = nil
-	fake.clientReturns = struct {
-		result1 *http.Client
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeAuthenticationStrategy) ClientReturnsOnCall(i int, result1 *http.Client, result2 error) {
-	fake.ClientStub = nil
-	if fake.clientReturnsOnCall == nil {
-		fake.clientReturnsOnCall = make(map[int]struct {
-			result1 *http.Client
-			result2 error
-		})
-	}
-	fake.clientReturnsOnCall[i] = struct {
-		result1 *http.Client
-		result2 error
-	}{result1, result2}
-}
-
 func (fake *FakeAuthenticationStrategy) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.authenticateMutex.RLock()
 	defer fake.authenticateMutex.RUnlock()
-	fake.refreshTokenMutex.RLock()
-	defer fake.refreshTokenMutex.RUnlock()
-	fake.clientMutex.RLock()
-	defer fake.clientMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
