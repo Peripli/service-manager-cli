@@ -47,7 +47,10 @@ type Cmd struct {
 	user              string
 	password          string
 	sslDisabled       bool
-	authBuilder       authenticationBuilder
+	clientID          string
+	clientSecret      string
+
+	authBuilder authenticationBuilder
 }
 
 type authenticationBuilder func(*auth.Options) (auth.AuthenticationStrategy, *auth.Options, error)
@@ -72,6 +75,8 @@ func (lc *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result.Flags().StringVarP(&lc.serviceManagerURL, "url", "a", "", "Base URL of the Service Manager")
 	result.Flags().StringVarP(&lc.user, "user", "u", "", "User ID")
 	result.Flags().StringVarP(&lc.password, "password", "p", "", "Password")
+	result.Flags().StringVarP(&lc.clientID, "client-id", "", defaultClientID, "Client id used for OAuth flow")
+	result.Flags().StringVarP(&lc.clientSecret, "client-secret", "", defaultClientSecret, "Client secret used for OAuth flow")
 	result.Flags().BoolVarP(&lc.sslDisabled, "skip-ssl-validation", "", false, "Skip verification of the OAuth endpoint. Not recommended!")
 
 	return result
@@ -123,8 +128,8 @@ func (lc *Cmd) Run() error {
 	}
 
 	options := &auth.Options{
-		ClientID:     defaultClientID,
-		ClientSecret: defaultClientSecret,
+		ClientID:     lc.clientID,
+		ClientSecret: lc.clientSecret,
 		IssuerURL:    info.TokenIssuerURL,
 		SSLDisabled:  lc.sslDisabled,
 	}
@@ -143,8 +148,8 @@ func (lc *Cmd) Run() error {
 		SSLDisabled: lc.sslDisabled,
 
 		Token:        *token,
-		ClientID:     defaultClientID,
-		ClientSecret: defaultClientSecret,
+		ClientID:     options.ClientID,
+		ClientSecret: options.ClientSecret,
 
 		IssuerURL:             info.TokenIssuerURL,
 		AuthorizationEndpoint: options.AuthorizationEndpoint,

@@ -59,5 +59,4 @@ type Refresher interface {
 //go:generate counterfeiter . Client
 type Client interface {
 	Do(*http.Request) (*http.Response, error)
-	// Token() (*Token, error)
 }
