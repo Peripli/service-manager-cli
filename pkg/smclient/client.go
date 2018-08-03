@@ -40,6 +40,8 @@ type Client interface {
 	DeletePlatform(string) error
 	UpdateBroker(string, *types.Broker) (*types.Broker, error)
 	UpdatePlatform(string, *types.Platform) (*types.Platform, error)
+
+	Call(method string, smpath string, body io.Reader) (*http.Response, error)
 }
 
 type serviceManagerClient struct {
@@ -53,7 +55,7 @@ func NewClient(httpClient auth.Client, config *ClientConfig) Client {
 }
 
 func (client *serviceManagerClient) GetInfo() (*types.Info, error) {
-	response, err := client.call(http.MethodGet, "/v1/info", nil)
+	response, err := client.Call(http.MethodGet, "/v1/info", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +82,7 @@ func (client *serviceManagerClient) RegisterPlatform(platform *types.Platform) (
 	}
 
 	buffer := bytes.NewBuffer(requestBody)
-	response, err := client.call(http.MethodPost, "/v1/platforms", buffer)
+	response, err := client.Call(http.MethodPost, "/v1/platforms", buffer)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +108,7 @@ func (client *serviceManagerClient) RegisterBroker(broker *types.Broker) (*types
 	}
 
 	buffer := bytes.NewBuffer(requestBody)
-	response, err := client.call(http.MethodPost, "/v1/service_brokers", buffer)
+	response, err := client.Call(http.MethodPost, "/v1/service_brokers", buffer)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +142,7 @@ func (client *serviceManagerClient) ListPlatforms() (*types.Platforms, error) {
 }
 
 func (client *serviceManagerClient) list(result interface{}, path string) error {
-	resp, err := client.call(http.MethodGet, path, nil)
+	resp, err := client.Call(http.MethodGet, path, nil)
 	if err != nil {
 		return err
 	}
@@ -161,7 +163,7 @@ func (client *serviceManagerClient) DeletePlatform(id string) error {
 }
 
 func (client *serviceManagerClient) delete(id, path string) error {
-	resp, err := client.call(http.MethodDelete, path+id, nil)
+	resp, err := client.Call(http.MethodDelete, path+id, nil)
 	if err != nil {
 		return err
 	}
@@ -194,7 +196,7 @@ func (client *serviceManagerClient) UpdatePlatform(id string, updatedPlatform *t
 
 func (client *serviceManagerClient) update(result interface{}, body []byte, id, path string) error {
 	buffer := bytes.NewBuffer(body)
-	resp, err := client.call(http.MethodPatch, path+id, buffer)
+	resp, err := client.Call(http.MethodPatch, path+id, buffer)
 	if err != nil {
 		return err
 	}
@@ -206,7 +208,7 @@ func (client *serviceManagerClient) update(result interface{}, body []byte, id, 
 	return httputil.UnmarshalResponse(resp, &result)
 }
 
-func (client *serviceManagerClient) call(method string, smpath string, body io.Reader) (*http.Response, error) {
+func (client *serviceManagerClient) Call(method string, smpath string, body io.Reader) (*http.Response, error) {
 	fullURL := httputil.NormalizeURL(client.config.URL)
 	fullURL = fullURL + smpath
 

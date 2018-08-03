@@ -2,6 +2,8 @@
 package smclientfakes
 
 import (
+	"io"
+	"net/http"
 	"sync"
 
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
@@ -116,6 +118,21 @@ type FakeClient struct {
 	}
 	updatePlatformReturnsOnCall map[int]struct {
 		result1 *types.Platform
+		result2 error
+	}
+	CallStub        func(method string, smpath string, body io.Reader) (*http.Response, error)
+	callMutex       sync.RWMutex
+	callArgsForCall []struct {
+		method string
+		smpath string
+		body   io.Reader
+	}
+	callReturns struct {
+		result1 *http.Response
+		result2 error
+	}
+	callReturnsOnCall map[int]struct {
+		result1 *http.Response
 		result2 error
 	}
 	invocations      map[string][][]interface{}
@@ -553,6 +570,59 @@ func (fake *FakeClient) UpdatePlatformReturnsOnCall(i int, result1 *types.Platfo
 	}{result1, result2}
 }
 
+func (fake *FakeClient) Call(method string, smpath string, body io.Reader) (*http.Response, error) {
+	fake.callMutex.Lock()
+	ret, specificReturn := fake.callReturnsOnCall[len(fake.callArgsForCall)]
+	fake.callArgsForCall = append(fake.callArgsForCall, struct {
+		method string
+		smpath string
+		body   io.Reader
+	}{method, smpath, body})
+	fake.recordInvocation("Call", []interface{}{method, smpath, body})
+	fake.callMutex.Unlock()
+	if fake.CallStub != nil {
+		return fake.CallStub(method, smpath, body)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.callReturns.result1, fake.callReturns.result2
+}
+
+func (fake *FakeClient) CallCallCount() int {
+	fake.callMutex.RLock()
+	defer fake.callMutex.RUnlock()
+	return len(fake.callArgsForCall)
+}
+
+func (fake *FakeClient) CallArgsForCall(i int) (string, string, io.Reader) {
+	fake.callMutex.RLock()
+	defer fake.callMutex.RUnlock()
+	return fake.callArgsForCall[i].method, fake.callArgsForCall[i].smpath, fake.callArgsForCall[i].body
+}
+
+func (fake *FakeClient) CallReturns(result1 *http.Response, result2 error) {
+	fake.CallStub = nil
+	fake.callReturns = struct {
+		result1 *http.Response
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) CallReturnsOnCall(i int, result1 *http.Response, result2 error) {
+	fake.CallStub = nil
+	if fake.callReturnsOnCall == nil {
+		fake.callReturnsOnCall = make(map[int]struct {
+			result1 *http.Response
+			result2 error
+		})
+	}
+	fake.callReturnsOnCall[i] = struct {
+		result1 *http.Response
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -574,6 +644,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.updateBrokerMutex.RUnlock()
 	fake.updatePlatformMutex.RLock()
 	defer fake.updatePlatformMutex.RUnlock()
+	fake.callMutex.RLock()
+	defer fake.callMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
