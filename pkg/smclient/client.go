@@ -41,6 +41,8 @@ type Client interface {
 	UpdateBroker(string, *types.Broker) (*types.Broker, error)
 	UpdatePlatform(string, *types.Platform) (*types.Platform, error)
 
+	// Call makes HTTP request to the Service Manager server with authentication.
+	// It should be used only in case there is no already implemented method for such an operation
 	Call(method string, smpath string, body io.Reader) (*http.Response, error)
 }
 
@@ -126,6 +128,7 @@ func (client *serviceManagerClient) RegisterBroker(broker *types.Broker) (*types
 	return newBroker, nil
 }
 
+// ListBrokers returns brokers registered in the Service Manager
 func (client *serviceManagerClient) ListBrokers() (*types.Brokers, error) {
 	brokers := &types.Brokers{}
 	err := client.list(brokers, "/v1/service_brokers")
@@ -133,7 +136,7 @@ func (client *serviceManagerClient) ListBrokers() (*types.Brokers, error) {
 	return brokers, err
 }
 
-// ListPlatforms lists platforms registered in the Service Manager
+// ListPlatforms returns platforms registered in the Service Manager
 func (client *serviceManagerClient) ListPlatforms() (*types.Platforms, error) {
 	platforms := &types.Platforms{}
 	err := client.list(platforms, "/v1/platforms")
