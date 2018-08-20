@@ -17,19 +17,17 @@
 package login
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"io"
-	"syscall"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/internal/util"
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
+	pkgUtil "github.com/Peripli/service-manager-cli/pkg/util"
 	"github.com/spf13/cobra"
-	"golang.org/x/crypto/ssh/terminal"
 )
 
 const (
@@ -167,16 +165,12 @@ func (lc *Cmd) Run() error {
 func (lc *Cmd) readUser() error {
 	if lc.user == "" {
 		output.PrintMessage(lc.Output, "User: ")
-		bufReader := bufio.NewReader(lc.input)
-		readUser, isPrefix, err := bufReader.ReadLine()
-		if isPrefix {
-			return errors.New("username too long")
-		}
+		user, err := pkgUtil.ReadInput(lc.input)
 		if err != nil {
 			return err
 		}
 
-		lc.user = string(readUser)
+		lc.user = user
 	}
 	return nil
 }
@@ -184,13 +178,13 @@ func (lc *Cmd) readUser() error {
 func (lc *Cmd) readPassword() error {
 	if lc.password == "" {
 		output.PrintMessage(lc.Output, "Password: ")
-		password, err := terminal.ReadPassword((int)(syscall.Stdin))
+		password, err := pkgUtil.ReadPassword()
 		output.Println(lc.Output)
 		if err != nil {
 			return err
 		}
 
-		lc.password = string(password)
+		lc.password = password
 	}
 	return nil
 }
