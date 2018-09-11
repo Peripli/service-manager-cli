@@ -20,6 +20,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
+	"github.com/Peripli/service-manager-cli/internal/configuration"
 	"github.com/Peripli/service-manager-cli/internal/output"
 )
 
@@ -50,7 +51,10 @@ func (ic *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 
 // Run runs the command's logic
 func (ic *Cmd) Run() error {
-	clientConfig, err := ic.Configuration.Load()
+	settings := configuration.DefaultSettings()
+	// TODO: check err properly
+	err := ic.Configuration.Unmarshal(settings)
+	clientConfig := settings.SMClient
 	if err != nil {
 		output.PrintMessage(ic.Output, "There is no logged user. Use \"smctl login\" to log in.\n")
 	} else {

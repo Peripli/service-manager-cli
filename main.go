@@ -37,28 +37,28 @@ func oidcAuthBuilder(options *auth.Options) (auth.AuthenticationStrategy, *auth.
 func main() {
 	clientVersion := "0.0.1"
 
-	context := &cmd.Context{}
-	rootCmd := cmd.BuildRootCommand(context)
+	cmdContext := &cmd.Context{}
+	rootCmd := cmd.BuildRootCommand(cmdContext)
 
 	normalCommandsGroup := cmd.Group{
 		Commands: []cmd.CommandPreparator{
-			login.NewLoginCmd(context, os.Stdin, oidcAuthBuilder),
-			version.NewVersionCmd(context, clientVersion),
-			info.NewInfoCmd(context),
+			login.NewLoginCmd(cmdContext, os.Stdin, oidcAuthBuilder),
+			version.NewVersionCmd(cmdContext, clientVersion),
+			info.NewInfoCmd(cmdContext),
 		},
 		PrepareFn: cmd.CommonPrepare,
 	}
 
 	smCommandsGroup := cmd.Group{
 		Commands: []cmd.CommandPreparator{
-			broker.NewRegisterBrokerCmd(context),
-			broker.NewListBrokersCmd(context),
-			broker.NewDeleteBrokerCmd(context),
-			broker.NewUpdateBrokerCmd(context),
-			platform.NewRegisterPlatformCmd(context),
-			platform.NewListPlatformsCmd(context),
-			platform.NewDeletePlatformCmd(context),
-			platform.NewUpdatePlatformCmd(context),
+			broker.NewRegisterBrokerCmd(cmdContext),
+			broker.NewListBrokersCmd(cmdContext),
+			broker.NewDeleteBrokerCmd(cmdContext),
+			broker.NewUpdateBrokerCmd(cmdContext),
+			platform.NewRegisterPlatformCmd(cmdContext),
+			platform.NewListPlatformsCmd(cmdContext),
+			platform.NewDeletePlatformCmd(cmdContext),
+			platform.NewUpdatePlatformCmd(cmdContext),
 		},
 		PrepareFn: cmd.SmPrepare,
 	}

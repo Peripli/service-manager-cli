@@ -33,9 +33,12 @@ type ClientConfig struct {
 	TokenEndpoint         string
 	IssuerURL             string
 
-	URL         string
-	User        string
-	SSLDisabled bool
+	URL  string
+	User string
+}
+
+func DefaultSettings() *ClientConfig {
+	return &ClientConfig{}
 }
 
 // Validate validates client config

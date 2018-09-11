@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/Peripli/service-manager-cli/internal/util"
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/httputil"
 	"golang.org/x/oauth2"
@@ -34,8 +33,7 @@ import (
 // If token is provided will execute try to refresh the token if it has expired,
 // if not provided will do client_credentials flow and fetch token
 func NewClient(options *auth.Options, token *auth.Token) auth.Client {
-	httpClient := util.BuildHTTPClient(options.SSLDisabled)
-	httpClient.Timeout = options.Timeout
+	httpClient := httputil.BuildHTTPClient(options.HTTP)
 
 	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, httpClient)
 
@@ -67,7 +65,6 @@ func NewClient(options *auth.Options, token *auth.Token) auth.Client {
 	}
 
 	oauthClient = oauth2.NewClient(ctx, tokenSource)
-	oauthClient.Timeout = options.Timeout
 
 	return &Client{
 		tokenSource: tokenSource,
@@ -114,8 +111,7 @@ type OpenIDStrategy struct {
 
 // NewOpenIDStrategy returns OpenId auth strategy
 func NewOpenIDStrategy(options *auth.Options) (auth.AuthenticationStrategy, *auth.Options, error) {
-	httpClient := util.BuildHTTPClient(options.SSLDisabled)
-	httpClient.Timeout = options.Timeout
+	httpClient := httputil.BuildHTTPClient(options.HTTP)
 
 	openIDConfig, err := fetchOpenidConfiguration(options.IssuerURL, httpClient.Do)
 	if err != nil {

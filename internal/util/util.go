@@ -17,13 +17,9 @@
 package util
 
 import (
-	"crypto/tls"
 	"errors"
 	"fmt"
-	"net"
-	"net/http"
 	"net/url"
-	"time"
 
 	"github.com/Peripli/service-manager-cli/pkg/types"
 )
@@ -75,28 +71,4 @@ func GetPlatformsByName(platforms *types.Platforms, names []string) []types.Plat
 		}
 	}
 	return result
-}
-
-// BuildHTTPClient builds custom http client with configured ssl validation
-func BuildHTTPClient(sslDisabled bool) *http.Client {
-	client := &http.Client{
-		Timeout: time.Second * 10,
-		Transport: &http.Transport{
-			Proxy: http.ProxyFromEnvironment,
-			DialContext: (&net.Dialer{
-				Timeout:   30 * time.Second,
-				KeepAlive: 30 * time.Second,
-				DualStack: true,
-			}).DialContext,
-			MaxIdleConns:          100,
-			IdleConnTimeout:       90 * time.Second,
-			TLSHandshakeTimeout:   10 * time.Second,
-			ExpectContinueTimeout: 1 * time.Second,
-		},
-	}
-	if sslDisabled {
-		client.Transport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	}
-
-	return client
 }

@@ -24,6 +24,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
+	"github.com/Peripli/service-manager-cli/internal/configuration"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
@@ -75,10 +76,14 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 		}
 
 		if ctx.Client == nil {
-			clientConfig, err := ctx.Configuration.Load()
-			if err != nil {
-				return fmt.Errorf("no logged user. Use \"smctl login\" to log in. Reason: %s", err)
-			}
+			settings := configuration.DefaultSettings()
+			// TODO: check err
+			ctx.Configuration.Unmarshal(settings)
+			clientConfig := settings.SMClient
+
+			// if err != nil {
+			// 	return fmt.Errorf("no logged user. Use \"smctl login\" to log in. Reason: %s", err)
+			// }
 
 			oidcClient := oidc.NewClient(&auth.Options{
 				AuthorizationEndpoint: clientConfig.AuthorizationEndpoint,
@@ -86,7 +91,7 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 				ClientID:              clientConfig.ClientID,
 				ClientSecret:          clientConfig.ClientSecret,
 				IssuerURL:             clientConfig.IssuerURL,
-				SSLDisabled:           clientConfig.SSLDisabled,
+				HTTP:                  settings.HTTP,
 			}, &clientConfig.Token)
 
 			refresher, isRefresher := oidcClient.(auth.Refresher)
@@ -97,7 +102,7 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 				}
 				if clientConfig.AccessToken != token.AccessToken {
 					clientConfig.Token = *token
-					if saveErr := ctx.Configuration.Save(clientConfig); saveErr != nil {
+					if saveErr := ctx.Configuration.Save(settings); saveErr != nil {
 						return fmt.Errorf("Error saving config file. Reason: %s", saveErr)
 					}
 				}

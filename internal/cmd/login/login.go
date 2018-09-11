@@ -24,9 +24,11 @@ import (
 	"syscall"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
+	"github.com/Peripli/service-manager-cli/internal/configuration"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/internal/util"
 	"github.com/Peripli/service-manager-cli/pkg/auth"
+	"github.com/Peripli/service-manager-cli/pkg/httputil"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh/terminal"
@@ -77,7 +79,6 @@ func (lc *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result.Flags().StringVarP(&lc.password, "password", "p", "", "Password")
 	result.Flags().StringVarP(&lc.clientID, "client-id", "", defaultClientID, "Client id used for OAuth flow")
 	result.Flags().StringVarP(&lc.clientSecret, "client-secret", "", defaultClientSecret, "Client secret used for OAuth flow")
-	result.Flags().BoolVarP(&lc.sslDisabled, "skip-ssl-validation", "", false, "Skip verification of the OAuth endpoint. Not recommended!")
 
 	return result
 }
@@ -102,10 +103,16 @@ func (lc *Cmd) Validate(args []string) error {
 
 // Run runs the logic of the command
 func (lc *Cmd) Run() error {
-	httpClient := util.BuildHTTPClient(lc.sslDisabled)
+	settings := configuration.DefaultSettings()
+	lc.Configuration.Unmarshal(settings)
+	httpClient := httputil.BuildHTTPClient(settings.HTTP)
+
+	fmt.Println(">>>>", settings.HTTP)
+
 	clientConfig := &smclient.ClientConfig{
 		URL: lc.serviceManagerURL,
 	}
+
 	if lc.Client == nil {
 		lc.Client = smclient.NewClient(httpClient, clientConfig)
 	}
@@ -131,7 +138,7 @@ func (lc *Cmd) Run() error {
 		ClientID:     lc.clientID,
 		ClientSecret: lc.clientSecret,
 		IssuerURL:    info.TokenIssuerURL,
-		SSLDisabled:  lc.sslDisabled,
+		HTTP:         settings.HTTP,
 	}
 	authStrategy, options, err := lc.authBuilder(options)
 	if err != nil {
@@ -142,10 +149,23 @@ func (lc *Cmd) Run() error {
 		return err
 	}
 
-	err = lc.Configuration.Save(&smclient.ClientConfig{
-		URL:         lc.serviceManagerURL,
-		User:        lc.user,
-		SSLDisabled: lc.sslDisabled,
+	// toSave := configuration.DefaultSettings()
+	// toSave.SMClient = &smclient.ClientConfig{
+	// 	URL:  lc.serviceManagerURL,
+	// 	User: lc.user,
+
+	// 	Token:        *token,
+	// 	ClientID:     options.ClientID,
+	// 	ClientSecret: options.ClientSecret,
+
+	// 	IssuerURL:             info.TokenIssuerURL,
+	// 	AuthorizationEndpoint: options.AuthorizationEndpoint,
+	// 	TokenEndpoint:         options.TokenEndpoint,
+	// }
+
+	err = lc.Configuration.Save(struct{ SMClient *smclient.ClientConfig }{SMClient: &smclient.ClientConfig{
+		URL:  lc.serviceManagerURL,
+		User: lc.user,
 
 		Token:        *token,
 		ClientID:     options.ClientID,
@@ -154,7 +174,7 @@ func (lc *Cmd) Run() error {
 		IssuerURL:             info.TokenIssuerURL,
 		AuthorizationEndpoint: options.AuthorizationEndpoint,
 		TokenEndpoint:         options.TokenEndpoint,
-	})
+	}})
 
 	if err != nil {
 		return err

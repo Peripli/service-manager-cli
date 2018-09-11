@@ -19,6 +19,8 @@ package auth
 import (
 	"net/http"
 	"time"
+
+	"github.com/Peripli/service-manager-cli/pkg/httputil"
 )
 
 // Options is used to configure new authenticators and clients
@@ -29,9 +31,7 @@ type Options struct {
 	TokenEndpoint         string `mapstructure:"token_endpoint"`
 	IssuerURL             string `mapstructure:"issuer_url"`
 
-	SSLDisabled bool `mapstructure:"ssl_disabled"`
-
-	Timeout time.Duration `mapstructure:"timeout"`
+	HTTP *httputil.HTTPConfig
 }
 
 // Token contains the structure of a typical UAA response token

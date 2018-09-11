@@ -20,7 +20,6 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
 	"github.com/Peripli/service-manager-cli/internal/configuration"
 )
@@ -34,9 +33,6 @@ func Execute(cmd *cobra.Command) {
 
 // BuildRootCommand builds a new SM root command with context
 func BuildRootCommand(ctx *Context) *cobra.Command {
-	var cfgFile string
-	viperEnv := viper.New()
-
 	rootCmd := &cobra.Command{
 		Use:   "smctl",
 		Short: "Service Manager CLI",
@@ -48,20 +44,23 @@ func BuildRootCommand(ctx *Context) *cobra.Command {
 			if ctx.Output == nil {
 				ctx.Output = cmd.OutOrStdout()
 			}
-			if ctx.Configuration == nil {
-				configuration, err := configuration.NewSMConfiguration(viperEnv, cfgFile)
-				if err != nil {
-					return err
-				}
-				ctx.Configuration = configuration
-			}
 
 			cmd.SilenceUsage = false
 			return nil
 		},
 	}
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.sm/config.json)")
+	flags := rootCmd.PersistentFlags()
+	configuration.AddPFlags(flags)
+	environment, err := configuration.NewEnv(flags)
+	if err != nil {
+		panic(err)
+	}
+	if ctx.Configuration == nil {
+		ctx.Configuration = environment
+	}
+
+	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.sm/config.json)")
 	rootCmd.PersistentFlags().BoolVarP(&ctx.Verbose, "verbose", "v", false, "verbose")
 
 	return rootCmd

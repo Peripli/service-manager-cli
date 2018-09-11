@@ -17,85 +17,122 @@
 package configuration
 
 import (
-	"time"
+	"fmt"
+	"reflect"
+	"strings"
 
+	"github.com/Peripli/service-manager-cli/pkg/httputil"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
+	"github.com/Peripli/service-manager/pkg/env"
+	"github.com/fatih/structs"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
+
+type Settings struct {
+	SMClient *smclient.ClientConfig
+	HTTP     *httputil.HTTPConfig
+}
+
+func DefaultSettings() *Settings {
+	return &Settings{
+		SMClient: smclient.DefaultSettings(),
+		HTTP:     httputil.DefaultHTTPConfig(),
+	}
+}
 
 // Configuration should be implemented for load and save of SM client config
 // go:generate counterfeiter . Configuration
 type Configuration interface {
-	Save(*smclient.ClientConfig) error
-	Load() (*smclient.ClientConfig, error)
+	env.Environment
+	Save(interface{}) error
 }
 
 type smConfiguration struct {
+	env.Environment
 	viperEnv *viper.Viper
 }
 
-// NewSMConfiguration returns implementation of Configuration interface
-func NewSMConfiguration(viperEnv *viper.Viper, cfgFile string) (Configuration, error) {
-	if cfgFile == "" {
-		var err error
-		cfgFile, err = defaultFilePath()
-		if err != nil {
-			return nil, err
-		}
+func DefaultConfigFile() env.File {
+	fileDir, err := defaultFilePath()
+	if err != nil {
+		panic(fmt.Sprintf("Could not find home dir %s", err))
 	}
-	if err := ensureDirExists(cfgFile); err != nil {
+	return env.File{
+		Location: fileDir,
+		Name:     "config",
+		Format:   "json",
+	}
+}
+
+func AddPFlags(set *pflag.FlagSet) {
+	env.CreatePFlags(set, struct{ File env.File }{File: DefaultConfigFile()})
+	env.CreatePFlags(set, DefaultSettings())
+}
+
+func New(env env.Environment) (*Settings, error) {
+	config := DefaultSettings()
+	if err := env.Unmarshal(config); err != nil {
 		return nil, err
 	}
+	return config, nil
+}
 
-	viperEnv.SetConfigFile(cfgFile)
+// NewSMConfiguration returns implementation of Configuration interface
+func NewEnv(flags *pflag.FlagSet) (Configuration, error) {
+	cfg := struct{ File File }{File: File{}}
+	if err := v.Unmarshal(&cfg); err != nil {
+		return fmt.Errorf("could not find configuration cfg: %s", err)
+	}
+	ensureDirExists(flags)
 
-	return &smConfiguration{viperEnv}, nil
+	environment, err := env.New(flags)
+	if err != nil {
+		return nil, fmt.Errorf("Could not create environment: %s", err)
+	}
+
+	return &smConfiguration{
+		viperEnv:    environment.Viper,
+		Environment: environment,
+	}, nil
 }
 
 // Save implements configuration save
-func (smCfg *smConfiguration) Save(clientCfg *smclient.ClientConfig) error {
-	smCfg.viperEnv.Set("url", clientCfg.URL)
-	smCfg.viperEnv.Set("user", clientCfg.User)
-	smCfg.viperEnv.Set("ssl_disabled", clientCfg.SSLDisabled)
-
-	smCfg.viperEnv.Set("access_token", clientCfg.AccessToken)
-	smCfg.viperEnv.Set("refresh_token", clientCfg.RefreshToken)
-	smCfg.viperEnv.Set("expiry", clientCfg.ExpiresIn.Format(time.RFC1123Z))
-
-	smCfg.viperEnv.Set("client_id", clientCfg.ClientID)
-	smCfg.viperEnv.Set("client_secret", clientCfg.ClientSecret)
-	smCfg.viperEnv.Set("issuer_url", clientCfg.IssuerURL)
-	smCfg.viperEnv.Set("token_url", clientCfg.TokenEndpoint)
-	smCfg.viperEnv.Set("auth_url", clientCfg.AuthorizationEndpoint)
+func (smCfg *smConfiguration) Save(value interface{}) error {
+	properties := make(map[string]interface{})
+	traverseFields(value, "", properties)
+	for key, value := range properties {
+		smCfg.viperEnv.Set(key, value)
+	}
 
 	return smCfg.viperEnv.WriteConfig()
 }
 
-// Load implements configuration load
-func (smCfg *smConfiguration) Load() (*smclient.ClientConfig, error) {
-	if err := smCfg.viperEnv.ReadInConfig(); err != nil {
-		return nil, err
+// traverseFields traverses the provided structure and prepares a slice of strings that contains
+// the paths to the structure fields (nested paths in the provided structure use dot as a separator)
+func traverseFields(value interface{}, buffer string, result map[string]interface{}) {
+	if !structs.IsStruct(value) {
+		index := strings.LastIndex(buffer, ".")
+		if index == -1 {
+			index = 0
+		}
+		key := strings.ToLower(buffer[0:index])
+		result[key] = value
+		return
 	}
 
-	clientConfig := &smclient.ClientConfig{}
-
-	if err := smCfg.viperEnv.Unmarshal(&clientConfig); err != nil {
-		return nil, err
+	s := structs.New(value)
+	for _, field := range s.Fields() {
+		if field.IsExported() && field.Kind() != reflect.Interface && field.Kind() != reflect.Func {
+			var name string
+			if field.Tag("mapstructure") != "" {
+				name = field.Tag("mapstructure")
+			} else {
+				name = field.Name()
+			}
+			buffer += name + "."
+			traverseFields(field.Value(), buffer, result)
+			buffer = buffer[0:strings.LastIndex(buffer, name)]
+		}
 	}
-
-	clientConfig.SSLDisabled = smCfg.viperEnv.Get("ssl_disabled").(bool)
-	clientConfig.AccessToken = smCfg.viperEnv.Get("access_token").(string)
-	clientConfig.RefreshToken = smCfg.viperEnv.Get("refresh_token").(string)
-	clientConfig.ExpiresIn, _ = time.Parse(time.RFC1123Z, smCfg.viperEnv.Get("expiry").(string))
-	clientConfig.TokenEndpoint = smCfg.viperEnv.Get("token_url").(string)
-	clientConfig.AuthorizationEndpoint = smCfg.viperEnv.Get("auth_url").(string)
-	clientConfig.IssuerURL = smCfg.viperEnv.Get("issuer_url").(string)
-	clientConfig.ClientID = smCfg.viperEnv.Get("client_id").(string)
-	clientConfig.ClientSecret = smCfg.viperEnv.Get("client_secret").(string)
-
-	if err := clientConfig.Validate(); err != nil {
-		return nil, err
-	}
-
-	return clientConfig, nil
 }

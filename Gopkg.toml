@@ -51,3 +51,8 @@
 [[constraint]]
   branch = "master"
   name = "golang.org/x/oauth2"
+
+[[constraint]]
+  name = "github.com/fatih/structs"
+	"github.com/Peripli/service-manager-cli/internal/configuration"
+  version = "=1.0.0"
