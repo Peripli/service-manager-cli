@@ -23,8 +23,9 @@ import (
 	"io"
 	"syscall"
 
-	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/configuration"
+
+	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/internal/util"
 	"github.com/Peripli/service-manager-cli/pkg/auth"
@@ -103,11 +104,13 @@ func (lc *Cmd) Validate(args []string) error {
 
 // Run runs the logic of the command
 func (lc *Cmd) Run() error {
-	settings := configuration.DefaultSettings()
-	lc.Configuration.Unmarshal(settings)
-	httpClient := httputil.BuildHTTPClient(settings.HTTP)
+	var httpConfig = httputil.DefaultHTTPConfig()
+	err := lc.Configuration.UnmarshalKey(configuration.HTTPConfigKey, httpConfig)
+	if err != nil {
+		return fmt.Errorf("Could not unmarshal key: %s", configuration.SMConfigKey)
+	}
 
-	fmt.Println(">>>>", settings.HTTP)
+	httpClient := httputil.BuildHTTPClient(httpConfig)
 
 	clientConfig := &smclient.ClientConfig{
 		URL: lc.serviceManagerURL,
@@ -138,7 +141,7 @@ func (lc *Cmd) Run() error {
 		ClientID:     lc.clientID,
 		ClientSecret: lc.clientSecret,
 		IssuerURL:    info.TokenIssuerURL,
-		HTTP:         settings.HTTP,
+		HTTP:         httpConfig,
 	}
 	authStrategy, options, err := lc.authBuilder(options)
 	if err != nil {
@@ -149,21 +152,7 @@ func (lc *Cmd) Run() error {
 		return err
 	}
 
-	// toSave := configuration.DefaultSettings()
-	// toSave.SMClient = &smclient.ClientConfig{
-	// 	URL:  lc.serviceManagerURL,
-	// 	User: lc.user,
-
-	// 	Token:        *token,
-	// 	ClientID:     options.ClientID,
-	// 	ClientSecret: options.ClientSecret,
-
-	// 	IssuerURL:             info.TokenIssuerURL,
-	// 	AuthorizationEndpoint: options.AuthorizationEndpoint,
-	// 	TokenEndpoint:         options.TokenEndpoint,
-	// }
-
-	err = lc.Configuration.Save(struct{ SMClient *smclient.ClientConfig }{SMClient: &smclient.ClientConfig{
+	err = lc.Configuration.Save(configuration.SMConfigKey, &smclient.ClientConfig{
 		URL:  lc.serviceManagerURL,
 		User: lc.user,
 
@@ -174,7 +163,7 @@ func (lc *Cmd) Run() error {
 		IssuerURL:             info.TokenIssuerURL,
 		AuthorizationEndpoint: options.AuthorizationEndpoint,
 		TokenEndpoint:         options.TokenEndpoint,
-	}})
+	})
 
 	if err != nil {
 		return err

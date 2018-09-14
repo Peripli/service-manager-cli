@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/httputil"
@@ -56,10 +57,13 @@ func NewClient(options *auth.Options, token *auth.Token) auth.Client {
 				TokenURL: options.TokenEndpoint,
 			},
 		}
+
+		// TODO: handle err
+		expiry, _ := time.Parse(time.RFC1123Z, token.ExpiresIn)
 		tokenSource = oauthConfig.TokenSource(ctx, &oauth2.Token{
 			AccessToken:  token.AccessToken,
 			RefreshToken: token.RefreshToken,
-			Expiry:       token.ExpiresIn,
+			Expiry:       expiry,
 			TokenType:    token.TokenType,
 		})
 	}
@@ -93,7 +97,7 @@ func (c *Client) Token() (*auth.Token, error) {
 	return &auth.Token{
 		AccessToken:  token.AccessToken,
 		RefreshToken: token.RefreshToken,
-		ExpiresIn:    token.Expiry,
+		ExpiresIn:    token.Expiry.Format(time.RFC1123Z),
 		TokenType:    token.TokenType,
 	}, nil
 }
@@ -147,7 +151,7 @@ func (s *OpenIDStrategy) Authenticate(user, password string) (*auth.Token, error
 	resultToken := &auth.Token{
 		AccessToken:  token.AccessToken,
 		RefreshToken: token.RefreshToken,
-		ExpiresIn:    token.Expiry,
+		ExpiresIn:    token.Expiry.Format(time.RFC1123Z),
 		TokenType:    token.TokenType,
 	}
 

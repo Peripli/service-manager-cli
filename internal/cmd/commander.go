@@ -21,13 +21,15 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Peripli/service-manager-cli/internal/configuration"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
-	"github.com/Peripli/service-manager-cli/internal/configuration"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
+	"github.com/Peripli/service-manager-cli/pkg/httputil"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
 )
 
@@ -76,14 +78,20 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 		}
 
 		if ctx.Client == nil {
-			settings := configuration.DefaultSettings()
-			// TODO: check err
-			ctx.Configuration.Unmarshal(settings)
-			clientConfig := settings.SMClient
+			clientConfig := smclient.DefaultSettings()
 
-			// if err != nil {
-			// 	return fmt.Errorf("no logged user. Use \"smctl login\" to log in. Reason: %s", err)
-			// }
+			if err := ctx.Configuration.UnmarshalKey(configuration.SMConfigKey, clientConfig); err != nil {
+				return fmt.Errorf("Error during reading SM configuration: %s", err)
+			}
+
+			if clientConfig.User == "" {
+				return fmt.Errorf("no logged user. Use \"smctl login\" to log in.")
+			}
+
+			var httpConfig = httputil.DefaultHTTPConfig()
+			if err := ctx.Configuration.UnmarshalKey(configuration.HTTPConfigKey, httpConfig); err != nil {
+				return fmt.Errorf("Error during reading \"httpConfig\": %s", err)
+			}
 
 			oidcClient := oidc.NewClient(&auth.Options{
 				AuthorizationEndpoint: clientConfig.AuthorizationEndpoint,
@@ -91,7 +99,7 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 				ClientID:              clientConfig.ClientID,
 				ClientSecret:          clientConfig.ClientSecret,
 				IssuerURL:             clientConfig.IssuerURL,
-				HTTP:                  settings.HTTP,
+				HTTP:                  httpConfig,
 			}, &clientConfig.Token)
 
 			refresher, isRefresher := oidcClient.(auth.Refresher)
@@ -100,9 +108,9 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 				if err != nil {
 					return fmt.Errorf("Error refreshing token. Reason: %s", err)
 				}
-				if clientConfig.AccessToken != token.AccessToken {
+				if clientConfig.Token.AccessToken != token.AccessToken {
 					clientConfig.Token = *token
-					if saveErr := ctx.Configuration.Save(settings); saveErr != nil {
+					if saveErr := ctx.Configuration.Save(configuration.SMConfigKey, clientConfig); saveErr != nil {
 						return fmt.Errorf("Error saving config file. Reason: %s", saveErr)
 					}
 				}

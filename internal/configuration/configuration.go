@@ -18,121 +18,65 @@ package configuration
 
 import (
 	"fmt"
-	"reflect"
-	"strings"
+	"os"
 
-	"github.com/Peripli/service-manager-cli/pkg/httputil"
-	"github.com/Peripli/service-manager-cli/pkg/smclient"
-	"github.com/Peripli/service-manager/pkg/env"
-	"github.com/fatih/structs"
-	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
-type Settings struct {
-	SMClient *smclient.ClientConfig
-	HTTP     *httputil.HTTPConfig
-}
-
-func DefaultSettings() *Settings {
-	return &Settings{
-		SMClient: smclient.DefaultSettings(),
-		HTTP:     httputil.DefaultHTTPConfig(),
-	}
-}
+const (
+	SMConfigKey   = "smclient"
+	HTTPConfigKey = "httpconfig"
+)
 
 // Configuration should be implemented for load and save of SM client config
 // go:generate counterfeiter . Configuration
 type Configuration interface {
-	env.Environment
-	Save(interface{}) error
+	UnmarshalKey(string, interface{}) error
+	Unmarshal(interface{}) error
+
+	Set(string, interface{})
+	Save(string, interface{}) error
 }
 
 type smConfiguration struct {
-	env.Environment
-	viperEnv *viper.Viper
+	*viper.Viper
 }
 
-func DefaultConfigFile() env.File {
-	fileDir, err := defaultFilePath()
-	if err != nil {
-		panic(fmt.Sprintf("Could not find home dir %s", err))
+// New returns implementation of Configuration interface
+func New(cfgFile string) (Configuration, error) {
+	if cfgFile == "" {
+		var err error
+		cfgFile, err = defaultFilePath()
+		if err != nil {
+			return nil, err
+		}
 	}
-	return env.File{
-		Location: fileDir,
-		Name:     "config",
-		Format:   "json",
-	}
-}
-
-func AddPFlags(set *pflag.FlagSet) {
-	env.CreatePFlags(set, struct{ File env.File }{File: DefaultConfigFile()})
-	env.CreatePFlags(set, DefaultSettings())
-}
-
-func New(env env.Environment) (*Settings, error) {
-	config := DefaultSettings()
-	if err := env.Unmarshal(config); err != nil {
+	if err := ensureDirExists(cfgFile); err != nil {
 		return nil, err
 	}
+
+	viperEnv := viper.New()
+	viperEnv.SetConfigFile(cfgFile)
+
+	config := &smConfiguration{
+		Viper: viperEnv,
+	}
+
+	if err := viperEnv.ReadInConfig(); err != nil {
+		if err, ok := err.(*os.PathError); ok {
+			// TODO: print somewhere else
+			fmt.Println("Config File was not found: ", err)
+			return config, nil
+		}
+		return nil, fmt.Errorf("could not read configuration cfg: %s", err)
+	}
+
 	return config, nil
 }
 
-// NewSMConfiguration returns implementation of Configuration interface
-func NewEnv(flags *pflag.FlagSet) (Configuration, error) {
-	cfg := struct{ File File }{File: File{}}
-	if err := v.Unmarshal(&cfg); err != nil {
-		return fmt.Errorf("could not find configuration cfg: %s", err)
-	}
-	ensureDirExists(flags)
-
-	environment, err := env.New(flags)
-	if err != nil {
-		return nil, fmt.Errorf("Could not create environment: %s", err)
-	}
-
-	return &smConfiguration{
-		viperEnv:    environment.Viper,
-		Environment: environment,
-	}, nil
-}
-
 // Save implements configuration save
-func (smCfg *smConfiguration) Save(value interface{}) error {
-	properties := make(map[string]interface{})
-	traverseFields(value, "", properties)
-	for key, value := range properties {
-		smCfg.viperEnv.Set(key, value)
-	}
+func (smCfg *smConfiguration) Save(key string, value interface{}) error {
+	smCfg.Set(key, value)
 
-	return smCfg.viperEnv.WriteConfig()
-}
-
-// traverseFields traverses the provided structure and prepares a slice of strings that contains
-// the paths to the structure fields (nested paths in the provided structure use dot as a separator)
-func traverseFields(value interface{}, buffer string, result map[string]interface{}) {
-	if !structs.IsStruct(value) {
-		index := strings.LastIndex(buffer, ".")
-		if index == -1 {
-			index = 0
-		}
-		key := strings.ToLower(buffer[0:index])
-		result[key] = value
-		return
-	}
-
-	s := structs.New(value)
-	for _, field := range s.Fields() {
-		if field.IsExported() && field.Kind() != reflect.Interface && field.Kind() != reflect.Func {
-			var name string
-			if field.Tag("mapstructure") != "" {
-				name = field.Tag("mapstructure")
-			} else {
-				name = field.Name()
-			}
-			buffer += name + "."
-			traverseFields(field.Value(), buffer, result)
-			buffer = buffer[0:strings.LastIndex(buffer, name)]
-		}
-	}
+	return smCfg.WriteConfig()
 }

@@ -17,11 +17,14 @@
 package info
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/configuration"
 	"github.com/Peripli/service-manager-cli/internal/output"
+	"github.com/Peripli/service-manager-cli/pkg/smclient"
 )
 
 // Cmd wraps the smctl info command
@@ -51,11 +54,14 @@ func (ic *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 
 // Run runs the command's logic
 func (ic *Cmd) Run() error {
-	settings := configuration.DefaultSettings()
-	// TODO: check err properly
-	err := ic.Configuration.Unmarshal(settings)
-	clientConfig := settings.SMClient
+	clientConfig := smclient.DefaultSettings()
+
+	err := ic.Configuration.UnmarshalKey(configuration.SMConfigKey, clientConfig)
 	if err != nil {
+		return fmt.Errorf("Could not unmarshal key: %s", configuration.SMConfigKey)
+	}
+
+	if clientConfig.User == "" {
 		output.PrintMessage(ic.Output, "There is no logged user. Use \"smctl login\" to log in.\n")
 	} else {
 		output.PrintMessage(ic.Output, "Service Manager URL: %s\n", clientConfig.URL)

@@ -29,7 +29,7 @@ func defaultFilePath() (string, error) {
 		return "", err
 	}
 
-	return filepath.Join(homeDir, defaultConfigDirName), nil
+	return filepath.Join(homeDir, defaultConfigDirName, defaultConfigFileName), nil
 }
 
 func homeDir() (string, error) {

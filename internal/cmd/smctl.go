@@ -17,11 +17,13 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 
 	"github.com/Peripli/service-manager-cli/internal/configuration"
+	"github.com/Peripli/service-manager-cli/pkg/httputil"
 )
 
 // Execute executes the root command
@@ -33,6 +35,9 @@ func Execute(cmd *cobra.Command) {
 
 // BuildRootCommand builds a new SM root command with context
 func BuildRootCommand(ctx *Context) *cobra.Command {
+	var cfgFile string
+	httpConfig := httputil.DefaultHTTPConfig()
+
 	rootCmd := &cobra.Command{
 		Use:   "smctl",
 		Short: "Service Manager CLI",
@@ -45,23 +50,25 @@ func BuildRootCommand(ctx *Context) *cobra.Command {
 				ctx.Output = cmd.OutOrStdout()
 			}
 
+			if ctx.Configuration == nil {
+				config, err := configuration.New(cfgFile)
+				if err != nil {
+					return fmt.Errorf("Could not create configuration: %s", err)
+				}
+				ctx.Configuration = config
+				config.Set(configuration.HTTPConfigKey, httpConfig)
+			}
+
 			cmd.SilenceUsage = false
 			return nil
 		},
 	}
 
-	flags := rootCmd.PersistentFlags()
-	configuration.AddPFlags(flags)
-	environment, err := configuration.NewEnv(flags)
-	if err != nil {
-		panic(err)
-	}
-	if ctx.Configuration == nil {
-		ctx.Configuration = environment
-	}
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.sm/config.json)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.sm/config.json)")
 	rootCmd.PersistentFlags().BoolVarP(&ctx.Verbose, "verbose", "v", false, "verbose")
+	rootCmd.PersistentFlags().DurationVarP(&httpConfig.Timeout, "timeout", "t", httpConfig.Timeout, "Timeout for http requests")
+	rootCmd.PersistentFlags().DurationVarP(&httpConfig.KeepAlive, "keepalive", "k", httpConfig.KeepAlive, "Timeout for keepalive http connections")
+	rootCmd.PersistentFlags().BoolVar(&httpConfig.SSLDisabled, "skip-ssl-validation", httpConfig.SSLDisabled, "Skip ssl validation for http requests")
 
 	return rootCmd
 }

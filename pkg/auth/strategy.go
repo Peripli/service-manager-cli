@@ -18,7 +18,6 @@ package auth
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/Peripli/service-manager-cli/pkg/httputil"
 )
@@ -36,11 +35,11 @@ type Options struct {
 
 // Token contains the structure of a typical UAA response token
 type Token struct {
-	AccessToken  string    `json:"access_token"`
-	TokenType    string    `json:"token_type"`
-	RefreshToken string    `json:"refresh_token"`
-	ExpiresIn    time.Time `json:"expires_in"`
-	Scope        string    `json:"scope"`
+	AccessToken  string `mapstructure:"access_token" json:"access_token"`
+	TokenType    string `mapstructure:"token_type" json:"token_type"`
+	RefreshToken string `mapstructure:"refresh_token" json:"refresh_token"`
+	ExpiresIn    string `mapstructure:"expires_in" json:"expires_in"`
+	Scope        string `mapstructure:"scope" json:"scope"`
 }
 
 // AuthenticationStrategy should be implemented for different authentication strategies

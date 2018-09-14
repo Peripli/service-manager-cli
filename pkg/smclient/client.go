@@ -221,8 +221,8 @@ func (client *serviceManagerClient) Call(method string, smpath string, body io.R
 	}
 	req.Header.Add("Content-Type", "application/json")
 
-	if client.config.AccessToken != "" {
-		req.Header.Set("Authorization", "Bearer "+client.config.AccessToken)
+	if client.config.Token.AccessToken != "" {
+		req.Header.Set("Authorization", "Bearer "+client.config.Token.AccessToken)
 	}
 
 	resp, err := client.httpClient.Do(req)
