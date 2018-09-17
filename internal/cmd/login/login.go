@@ -49,7 +49,6 @@ type Cmd struct {
 	serviceManagerURL string
 	user              string
 	password          string
-	sslDisabled       bool
 	clientID          string
 	clientSecret      string
 

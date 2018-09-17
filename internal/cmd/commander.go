@@ -85,7 +85,7 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 			}
 
 			if clientConfig.User == "" {
-				return fmt.Errorf("no logged user. Use \"smctl login\" to log in.")
+				return fmt.Errorf("no logged user. Use \"smctl login\" to log in")
 			}
 
 			var httpConfig = httputil.DefaultHTTPConfig()

@@ -58,7 +58,7 @@ func (ic *Cmd) Run() error {
 
 	err := ic.Configuration.UnmarshalKey(configuration.SMConfigKey, clientConfig)
 	if err != nil {
-		return fmt.Errorf("Could not unmarshal key: %s", configuration.SMConfigKey)
+		return fmt.Errorf("Could not unmarshal key: %s. Reason: %s", configuration.SMConfigKey, err)
 	}
 
 	if clientConfig.User == "" {

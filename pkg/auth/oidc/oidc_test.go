@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/Peripli/service-manager-cli/pkg/auth"
+	"github.com/Peripli/service-manager-cli/pkg/httputil"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"golang.org/x/oauth2"
@@ -46,12 +47,14 @@ var _ = Describe("Service Manager Auth strategy test", func() {
 
 		authStrategy, authOptions, _ = NewOpenIDStrategy(&auth.Options{
 			IssuerURL: uaaServer.URL,
+			HTTP:      httputil.DefaultHTTPConfig(),
 		})
 
 		Expect(authOptions).To(Equal(&auth.Options{
 			IssuerURL:             uaaServer.URL,
 			TokenEndpoint:         uaaServer.URL,
 			AuthorizationEndpoint: "",
+			HTTP:      httputil.DefaultHTTPConfig(),
 		}))
 	})
 
@@ -72,6 +75,7 @@ var _ = Describe("Service Manager Auth strategy test", func() {
 				configurationResponseCode = http.StatusNotFound
 				_, _, err := NewOpenIDStrategy(&auth.Options{
 					IssuerURL: uaaServer.URL,
+					HTTP:      httputil.DefaultHTTPConfig(),
 				})
 
 				Expect(err).Should(HaveOccurred())
@@ -83,6 +87,7 @@ var _ = Describe("Service Manager Auth strategy test", func() {
 				configurationResponseBody = []byte(`{"}`)
 				_, _, err := NewOpenIDStrategy(&auth.Options{
 					IssuerURL: uaaServer.URL,
+					HTTP:      httputil.DefaultHTTPConfig(),
 				})
 
 				Expect(err).Should(HaveOccurred())

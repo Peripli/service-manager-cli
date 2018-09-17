@@ -5,7 +5,6 @@ import (
 	. "github.com/onsi/gomega"
 
 	"bytes"
-	"errors"
 	"fmt"
 	"testing"
 
@@ -25,19 +24,32 @@ var _ = Describe("Login Command test", func() {
 	var buffer *bytes.Buffer
 	var config *configurationfakes.FakeConfiguration
 
-	clientConfig := smclient.ClientConfig{URL: "http://test-url.com", User: "test-user"}
+	var clientConfig smclient.ClientConfig
 
 	BeforeEach(func() {
 		buffer = &bytes.Buffer{}
 		config = &configurationfakes.FakeConfiguration{}
 		context := &cmd.Context{Output: buffer, Configuration: config}
 		command = NewInfoCmd(context)
+		clientConfig = smclient.ClientConfig{URL: "http://test-url.com", User: "test-user"}
 	})
 
 	Describe("Valid request", func() {
+
+		JustBeforeEach(func() {
+			config.UnmarshalKeyReturns(nil)
+			config.UnmarshalKeyStub = func(key string, value interface{}) error {
+				val, ok := value.(*smclient.ClientConfig)
+				if ok {
+					*val = clientConfig
+				}
+				return nil
+			}
+		})
+
 		Context("With no logged user", func() {
 			It("should print prompt to log in", func() {
-				config.LoadReturns(nil, errors.New("configuration file not found"))
+				clientConfig.User = ""
 
 				ic := command.Prepare(cmd.CommonPrepare)
 				err := ic.Execute()
@@ -49,8 +61,6 @@ var _ = Describe("Login Command test", func() {
 
 		Context("With logged user", func() {
 			It("should print URL and logged user", func() {
-				config.LoadReturns(&clientConfig, nil)
-
 				ic := command.Prepare(cmd.CommonPrepare)
 				err := ic.Execute()
 

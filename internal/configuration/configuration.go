@@ -24,15 +24,17 @@ import (
 )
 
 const (
-	SMConfigKey   = "smclient"
+	// SMConfigKey is the configuration key to load/save Service Manager config
+	SMConfigKey = "smclient"
+
+	// HTTPConfigKey is the configuration key to load/save HTTP client config
 	HTTPConfigKey = "httpconfig"
 )
 
 // Configuration should be implemented for load and save of SM client config
-// go:generate counterfeiter . Configuration
+//go:generate counterfeiter . Configuration
 type Configuration interface {
 	UnmarshalKey(string, interface{}) error
-	Unmarshal(interface{}) error
 
 	Set(string, interface{})
 	Save(string, interface{}) error
@@ -43,7 +45,7 @@ type smConfiguration struct {
 }
 
 // New returns implementation of Configuration interface
-func New(cfgFile string) (Configuration, error) {
+func New(viperEnv *viper.Viper, cfgFile string) (Configuration, error) {
 	if cfgFile == "" {
 		var err error
 		cfgFile, err = defaultFilePath()
@@ -55,7 +57,6 @@ func New(cfgFile string) (Configuration, error) {
 		return nil, err
 	}
 
-	viperEnv := viper.New()
 	viperEnv.SetConfigFile(cfgFile)
 
 	config := &smConfiguration{

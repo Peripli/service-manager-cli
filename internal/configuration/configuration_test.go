@@ -2,13 +2,10 @@ package configuration
 
 import (
 	"path/filepath"
-	"time"
 
 	"github.com/spf13/afero"
 	"github.com/spf13/viper"
 
-	"github.com/Peripli/service-manager-cli/pkg/auth"
-	"github.com/Peripli/service-manager-cli/pkg/smclient"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -37,21 +34,26 @@ var _ = Describe("Configuration test", func() {
 			It("should save to this file and load the same client config", func() {
 				viperEnv := viper.New()
 				viperEnv.SetFs(afero.NewMemMapFs())
-				configuration, err := NewSMConfiguration(viperEnv, configPath)
+				configuration, err := New(viperEnv, configPath)
 
-				timeNow, _ := time.Parse(time.RFC1123Z, time.Now().Format(time.RFC1123Z))
-				smClientConfig := smclient.ClientConfig{URL: "http://sm.com", User: "admin", Token: auth.Token{
-					AccessToken: "token",
-					ExpiresIn:   timeNow,
-				}}
+				data := struct {
+					Name string
+					Age  int
+				}{
+					Name: "test",
+					Age:  10,
+				}
+				configuration.Save("key", &data)
 
-				configuration.Save(&smClientConfig)
-
-				clientConfig, errLoad := configuration.Load()
+				var loadIn struct {
+					Name string
+					Age  int
+				}
+				errLoad := configuration.UnmarshalKey("key", &loadIn)
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(errLoad).ShouldNot(HaveOccurred())
-				Expect(*clientConfig).To(Equal(smClientConfig))
+				Expect(loadIn).To(Equal(data))
 			})
 		})
 	})

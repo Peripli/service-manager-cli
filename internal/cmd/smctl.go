@@ -21,6 +21,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/Peripli/service-manager-cli/internal/configuration"
 	"github.com/Peripli/service-manager-cli/pkg/httputil"
@@ -51,7 +52,7 @@ func BuildRootCommand(ctx *Context) *cobra.Command {
 			}
 
 			if ctx.Configuration == nil {
-				config, err := configuration.New(cfgFile)
+				config, err := configuration.New(viper.New(), cfgFile)
 				if err != nil {
 					return fmt.Errorf("Could not create configuration: %s", err)
 				}

@@ -14,6 +14,7 @@ import (
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/configuration/configurationfakes"
+	"github.com/Peripli/service-manager-cli/pkg/smclient"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 )
 
@@ -63,9 +64,11 @@ var _ = Describe("Login Command test", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(outputBuffer.String()).To(ContainSubstring("Logged in successfully.\n"))
 
-				savedConfig := config.SaveArgsForCall(0)
-				Expect(savedConfig.ClientID).To(Equal("cf"))
-				Expect(savedConfig.ClientSecret).To(Equal(""))
+				_, savedConfig := config.SaveArgsForCall(0)
+				Expect(savedConfig).Should(BeAssignableToTypeOf(smclient.DefaultSettings()))
+				savedClientConfig, _ := savedConfig.(*smclient.ClientConfig)
+				Expect(savedClientConfig.ClientID).To(Equal("cf"))
+				Expect(savedClientConfig.ClientSecret).To(Equal(""))
 			})
 		})
 
@@ -81,9 +84,11 @@ var _ = Describe("Login Command test", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(outputBuffer.String()).To(ContainSubstring("Logged in successfully.\n"))
 
-				savedConfig := config.SaveArgsForCall(0)
-				Expect(savedConfig.ClientID).To(Equal("smctl"))
-				Expect(savedConfig.ClientSecret).To(Equal(""))
+				_, savedConfig := config.SaveArgsForCall(0)
+				Expect(savedConfig).Should(BeAssignableToTypeOf(smclient.DefaultSettings()))
+				savedClientConfig, _ := savedConfig.(*smclient.ClientConfig)
+				Expect(savedClientConfig.ClientID).To(Equal("smctl"))
+				Expect(savedClientConfig.ClientSecret).To(Equal(""))
 			})
 		})
 
@@ -99,9 +104,11 @@ var _ = Describe("Login Command test", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(outputBuffer.String()).To(ContainSubstring("Logged in successfully.\n"))
 
-				savedConfig := config.SaveArgsForCall(0)
-				Expect(savedConfig.ClientID).To(Equal("smctl"))
-				Expect(savedConfig.ClientSecret).To(Equal("smctl"))
+				_, savedConfig := config.SaveArgsForCall(0)
+				Expect(savedConfig).Should(BeAssignableToTypeOf(smclient.DefaultSettings()))
+				savedClientConfig, _ := savedConfig.(*smclient.ClientConfig)
+				Expect(savedClientConfig.ClientID).To(Equal("smctl"))
+				Expect(savedClientConfig.ClientSecret).To(Equal("smctl"))
 			})
 		})
 

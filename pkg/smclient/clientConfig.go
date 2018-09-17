@@ -36,6 +36,7 @@ type ClientConfig struct {
 	User string `mapstructure:"user" json:"user"`
 }
 
+// DefaultSettings constructs default Service Manager config
 func DefaultSettings() *ClientConfig {
 	return &ClientConfig{}
 }

@@ -25,12 +25,14 @@ import (
 	"time"
 )
 
+// HTTPConfig configures an HTTP client
 type HTTPConfig struct {
 	SSLDisabled bool
 	Timeout     time.Duration
 	KeepAlive   time.Duration
 }
 
+// DefaultHTTPConfig constructs default HTTP config
 func DefaultHTTPConfig() *HTTPConfig {
 	return &HTTPConfig{
 		SSLDisabled: false,

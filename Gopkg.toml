@@ -54,5 +54,4 @@
 
 [[constraint]]
   name = "github.com/fatih/structs"
-	"github.com/Peripli/service-manager-cli/internal/configuration"
   version = "=1.0.0"
