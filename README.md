@@ -18,7 +18,7 @@ To use the Service Manager CLI you need to download and install it first:
 
 #### Install CLI
 
-``go install github.com/Peripli/service-manager-cli/smctl``
+`` cd $GOPATH/github.com/Peripli/service-manager-cli && go build -o smctl && mv smctl $GOPATH/bin ``
 
 #### Use CLI
 
