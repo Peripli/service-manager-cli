@@ -53,7 +53,7 @@ type Cmd struct {
 	authBuilder authenticationBuilder
 }
 
-type authenticationBuilder func(*auth.Options) (auth.AuthenticationStrategy, *auth.Options, error)
+type authenticationBuilder func(*auth.Options, string, string) (auth.AuthenticationStrategy, *auth.Options, error)
 
 // NewLoginCmd return new login command with context and input reader
 func NewLoginCmd(context *cmd.Context, input io.ReadWriter, authBuilder authenticationBuilder) *Cmd {
@@ -123,17 +123,13 @@ func (lc *Cmd) Run() error {
 		return err
 	}
 
-	if len(lc.user) == 0 || len(lc.password) == 0 {
-		return errors.New("username/password should not be empty")
-	}
-
 	options := &auth.Options{
 		ClientID:     lc.clientID,
 		ClientSecret: lc.clientSecret,
 		IssuerURL:    info.TokenIssuerURL,
 		SSLDisabled:  lc.sslDisabled,
 	}
-	authStrategy, options, err := lc.authBuilder(options)
+	authStrategy, options, err := lc.authBuilder(options, lc.user, lc.password)
 	if err != nil {
 		return err
 	}
@@ -142,7 +138,7 @@ func (lc *Cmd) Run() error {
 		return err
 	}
 
-	err = lc.Configuration.Save(&smclient.ClientConfig{
+	clientConfig = &smclient.ClientConfig{
 		URL:         lc.serviceManagerURL,
 		User:        lc.user,
 		SSLDisabled: lc.sslDisabled,
@@ -154,7 +150,11 @@ func (lc *Cmd) Run() error {
 		IssuerURL:             info.TokenIssuerURL,
 		AuthorizationEndpoint: options.AuthorizationEndpoint,
 		TokenEndpoint:         options.TokenEndpoint,
-	})
+	}
+	if clientConfig.User == "" {
+		clientConfig.User = options.ClientID
+	}
+	err = lc.Configuration.Save(clientConfig)
 
 	if err != nil {
 		return err

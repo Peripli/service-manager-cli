@@ -30,7 +30,7 @@ var _ = Describe("Login Command test", func() {
 	var authStrategy *authfakes.FakeAuthenticationStrategy
 	var client *smclientfakes.FakeClient
 
-	authBuilder := func(options *auth.Options) (auth.AuthenticationStrategy, *auth.Options, error) {
+	authBuilder := func(options *auth.Options, _, _ string) (auth.AuthenticationStrategy, *auth.Options, error) {
 		return authStrategy, options, nil
 	}
 
@@ -149,18 +149,6 @@ var _ = Describe("Login Command test", func() {
 
 				Expect(err).Should(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("service manager URL is invalid"))
-			})
-		})
-
-		Context("With empty username provided", func() {
-			It("should return error", func() {
-				lc := command.Prepare(cmd.CommonPrepare)
-				lc.SetArgs([]string{"--url=http://valid-url.com", "--password=password"})
-				credentialsBuffer.WriteString("\n")
-				err := lc.Execute()
-
-				Expect(err).Should(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("username/password should not be empty"))
 			})
 		})
 

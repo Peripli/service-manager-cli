@@ -24,21 +24,17 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/util"
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/clientcredentials"
 )
 
-type openIDConfiguration struct {
-	TokenEndpoint         string `json:"token_endpoint"`
-	AuthorizationEndpoint string `json:"authorization_endpoint"`
-}
-
-// OpenIDStrategy implementation of OpenID strategy
-type OpenIDStrategy struct {
-	*oauth2.Config
+// ClientCredentialsStrategy implements client credentials flow authentication strategy
+type ClientCredentialsStrategy struct {
+	*clientcredentials.Config
 	httpClient *http.Client
 }
 
-// NewOpenIDStrategy returns OpenId auth strategy
-func NewOpenIDStrategy(options *auth.Options) (auth.AuthenticationStrategy, *auth.Options, error) {
+// NewClientCredentialsStrategy returns client credentials auth strategy
+func NewClientCredentialsStrategy(options *auth.Options) (auth.AuthenticationStrategy, *auth.Options, error) {
 	httpClient := util.BuildHTTPClient(options.SSLDisabled)
 	httpClient.Timeout = options.Timeout
 
@@ -46,29 +42,26 @@ func NewOpenIDStrategy(options *auth.Options) (auth.AuthenticationStrategy, *aut
 	if err != nil {
 		return nil, nil, fmt.Errorf("Error occurred while fetching openid configuration: %s", err)
 	}
-
-	oauthConfig := &oauth2.Config{
-		ClientID:     options.ClientID,
-		ClientSecret: options.ClientSecret,
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  openIDConfig.AuthorizationEndpoint,
-			TokenURL: openIDConfig.TokenEndpoint,
-		},
-	}
-
 	options.AuthorizationEndpoint = openIDConfig.AuthorizationEndpoint
 	options.TokenEndpoint = openIDConfig.TokenEndpoint
 
-	return &OpenIDStrategy{
+	oauthConfig := &clientcredentials.Config{
+		ClientID:     options.ClientID,
+		ClientSecret: options.ClientSecret,
+		TokenURL:     options.TokenEndpoint,
+	}
+
+	return &ClientCredentialsStrategy{
 		Config:     oauthConfig,
 		httpClient: httpClient,
 	}, options, nil
 }
 
-// Authenticate is used to perform authentication action for OpenID strategy
-func (s *OpenIDStrategy) Authenticate(user, password string) (*auth.Token, error) {
+// Authenticate is used to perform authentication action for client credentials strategy
+func (s *ClientCredentialsStrategy) Authenticate(user, password string) (*auth.Token, error) {
 	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, s.httpClient)
-	token, err := s.PasswordCredentialsToken(ctx, user, password)
+	token, err := s.Token(ctx)
+
 	if err != nil {
 		return nil, err
 	}
