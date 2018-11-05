@@ -30,8 +30,8 @@ import (
 
 // NewClient builds configured HTTP client.
 //
-// If token is provided will execute try to refresh the token if it has expired,
-// if not provided will do client_credentials flow and fetch token
+// If token is provided will try to refresh the token if it has expired,
+// otherwise if token is not provided will do client_credentials flow and fetch token
 func NewClient(options *auth.Options, token *auth.Token) auth.Client {
 	httpClient := util.BuildHTTPClient(options.SSLDisabled)
 	httpClient.Timeout = options.Timeout

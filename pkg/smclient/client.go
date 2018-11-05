@@ -22,6 +22,8 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
+
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/errors"
 	"github.com/Peripli/service-manager-cli/pkg/httputil"
@@ -51,9 +53,43 @@ type serviceManagerClient struct {
 	httpClient auth.Client
 }
 
-// NewClient returns new SM client
-func NewClient(httpClient auth.Client, config *ClientConfig) Client {
-	return &serviceManagerClient{config: config, httpClient: httpClient}
+// NewClientWithAuth returns new SM Client configured with the provided configuration
+func NewClientWithAuth(httpClient auth.Client, config *ClientConfig) (Client, error) {
+	if httpClient == nil {
+		httpClient = http.DefaultClient
+	}
+	client := &serviceManagerClient{config: config, httpClient: httpClient}
+	info, err := client.GetInfo()
+	if err != nil {
+		return nil, err
+	}
+
+	authOptions := &auth.Options{
+		IssuerURL:    info.TokenIssuerURL,
+		ClientID:     config.ClientID,
+		ClientSecret: config.ClientSecret,
+		SSLDisabled:  config.SSLDisabled,
+	}
+	var authStrategy auth.Authenticator
+	authStrategy, authOptions, err = oidc.NewOpenIDStrategy(authOptions)
+
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := auth.GetToken(authOptions, authStrategy)
+	if err != nil {
+		return nil, err
+	}
+	authClient := oidc.NewClient(authOptions, token)
+	client = &serviceManagerClient{config: config, httpClient: authClient}
+
+	return client, nil
+}
+
+// NewClient returns new SM client which will use the http client provided to make calls
+func NewClient(httpClient auth.Client, URL string) Client {
+	return &serviceManagerClient{config: &ClientConfig{URL: URL}, httpClient: httpClient}
 }
 
 func (client *serviceManagerClient) GetInfo() (*types.Info, error) {
@@ -221,16 +257,11 @@ func (client *serviceManagerClient) Call(method string, smpath string, body io.R
 	}
 	req.Header.Add("Content-Type", "application/json")
 
-	if client.config.AccessToken != "" {
-		req.Header.Set("Authorization", "Bearer "+client.config.AccessToken)
-	}
-
 	resp, err := client.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
 
-	// handle errors
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		respErr := errors.ResponseError{
 			URL:        fullURL,

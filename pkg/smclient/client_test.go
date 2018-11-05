@@ -6,13 +6,21 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/errors"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
+
+type FakeAuthClient struct {
+	AccessToken string
+}
+
+func (c *FakeAuthClient) Do(req *http.Request) (*http.Response, error) {
+	req.Header.Set("Authorization", "Bearer "+c.AccessToken)
+	return http.DefaultClient.Do(req)
+}
 
 func TestSmClient(t *testing.T) {
 	RegisterFailHandler(Fail)
@@ -54,15 +62,14 @@ var _ = Describe("Service Manager Client test", func() {
 
 	BeforeEach(func() {
 		smServer = httptest.NewServer(createSMHandler())
-		clientConfig := &ClientConfig{URL: smServer.URL, User: "admin", Token: auth.Token{AccessToken: "valid-token"}}
-		client = NewClient(http.DefaultClient, clientConfig)
+		fakeAuthClient := &FakeAuthClient{AccessToken: validToken}
+		client = NewClient(fakeAuthClient, smServer.URL)
 	})
 
 	Describe("Test failing client authentication", func() {
 		Context("When wrong token is used", func() {
 			It("should fail to authentication", func() {
-				clientConfig := &ClientConfig{URL: smServer.URL, User: "admin", Token: auth.Token{AccessToken: "invalid-token"}}
-				client = NewClient(http.DefaultClient, clientConfig)
+				client = NewClient(http.DefaultClient, smServer.URL)
 				_, err := client.ListBrokers()
 
 				Expect(err).Should(HaveOccurred())
@@ -143,8 +150,7 @@ var _ = Describe("Service Manager Client test", func() {
 
 		Context("When invalid config is set", func() {
 			It("should return error", func() {
-				clientConfig := &ClientConfig{URL: "invalidURL", User: "admin", Token: auth.Token{AccessToken: "token"}}
-				client = NewClient(http.DefaultClient, clientConfig)
+				client = NewClient(http.DefaultClient, "invalidURL")
 				_, err := client.RegisterPlatform(platform)
 
 				Expect(err).Should(HaveOccurred())
@@ -225,8 +231,7 @@ var _ = Describe("Service Manager Client test", func() {
 
 		Context("When invalid config is set", func() {
 			It("should return error", func() {
-				clientConfig := &ClientConfig{URL: "invalidURL", User: "admin", Token: auth.Token{AccessToken: "token"}}
-				client = NewClient(http.DefaultClient, clientConfig)
+				client = NewClient(http.DefaultClient, "invalidURL")
 				_, err := client.RegisterBroker(broker)
 
 				Expect(err).Should(HaveOccurred())

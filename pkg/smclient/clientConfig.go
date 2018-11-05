@@ -16,43 +16,14 @@
 
 package smclient
 
-import (
-	"errors"
-
-	"github.com/Peripli/service-manager-cli/internal/util"
-	"github.com/Peripli/service-manager-cli/pkg/auth"
-)
-
-// ClientConfig contains the configuration of the CLI.
+// ClientConfig contains the configuration of the Service Manager client
 type ClientConfig struct {
-	auth.Token
+	URL string
 
-	ClientID              string
-	ClientSecret          string
-	AuthorizationEndpoint string
-	TokenEndpoint         string
-	IssuerURL             string
+	User         string
+	Password     string
+	ClientID     string
+	ClientSecret string
 
-	URL         string
-	User        string
 	SSLDisabled bool
-}
-
-// Validate validates client config
-func (clientCfg ClientConfig) Validate() error {
-	if err := util.ValidateURL(clientCfg.URL); err != nil {
-		return err
-	}
-	if clientCfg.User == "" {
-		return errors.New("User must not be empty")
-	}
-	if clientCfg.AccessToken == "" {
-		return errors.New("Token must not be empty")
-	}
-	return nil
-}
-
-// GetToken returns the oauth token from the client configuration
-func (clientCfg ClientConfig) GetToken() auth.Token {
-	return clientCfg.Token
 }

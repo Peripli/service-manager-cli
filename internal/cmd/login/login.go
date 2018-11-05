@@ -24,6 +24,7 @@ import (
 	"syscall"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
+	"github.com/Peripli/service-manager-cli/internal/configuration"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/internal/util"
 	"github.com/Peripli/service-manager-cli/pkg/auth"
@@ -130,11 +131,9 @@ func (lc *Cmd) Validate(args []string) error {
 // Run runs the logic of the command
 func (lc *Cmd) Run() error {
 	httpClient := util.BuildHTTPClient(lc.sslDisabled)
-	clientConfig := &smclient.ClientConfig{
-		URL: lc.serviceManagerURL,
-	}
+
 	if lc.Client == nil {
-		lc.Client = smclient.NewClient(httpClient, clientConfig)
+		lc.Client = smclient.NewClient(httpClient, lc.serviceManagerURL)
 	}
 
 	info, err := lc.Client.GetInfo()
@@ -147,6 +146,8 @@ func (lc *Cmd) Run() error {
 	}
 
 	options := &auth.Options{
+		User:         lc.user,
+		Password:     lc.password,
 		ClientID:     lc.clientID,
 		ClientSecret: lc.clientSecret,
 		IssuerURL:    info.TokenIssuerURL,
@@ -157,7 +158,7 @@ func (lc *Cmd) Run() error {
 	if err != nil {
 		return cmd.NewError("Could not build authenticator", err.Error())
 	}
-	token, err := lc.getToken(authStrategy)
+	token, err := auth.GetToken(options, authStrategy)
 	if err != nil {
 		if authError, ok := err.(*auth.Error); ok {
 			log.D().Debugf("login: %s", authError.Error())
@@ -166,7 +167,7 @@ func (lc *Cmd) Run() error {
 		return cmd.NewError("Could not login", err.Error())
 	}
 
-	clientConfig = &smclient.ClientConfig{
+	settings := &configuration.Settings{
 		URL:         lc.serviceManagerURL,
 		User:        lc.user,
 		SSLDisabled: lc.sslDisabled,
@@ -179,10 +180,10 @@ func (lc *Cmd) Run() error {
 		AuthorizationEndpoint: options.AuthorizationEndpoint,
 		TokenEndpoint:         options.TokenEndpoint,
 	}
-	if clientConfig.User == "" {
-		clientConfig.User = options.ClientID
+	if settings.User == "" {
+		settings.User = options.ClientID
 	}
-	err = lc.Configuration.Save(clientConfig)
+	err = lc.Configuration.Save(settings)
 
 	if err != nil {
 		return err
