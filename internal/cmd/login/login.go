@@ -43,17 +43,18 @@ type Cmd struct {
 
 	input io.ReadWriter
 
-	serviceManagerURL string
-	user              string
-	password          string
-	sslDisabled       bool
-	clientID          string
-	clientSecret      string
+	serviceManagerURL     string
+	user                  string
+	password              string
+	sslDisabled           bool
+	clientCredentialsFlow bool
+	clientID              string
+	clientSecret          string
 
 	authBuilder authenticationBuilder
 }
 
-type authenticationBuilder func(*auth.Options, string, string) (auth.AuthenticationStrategy, *auth.Options, error)
+type authenticationBuilder func(*auth.Options, bool) (auth.AuthenticationStrategy, *auth.Options, error)
 
 // NewLoginCmd return new login command with context and input reader
 func NewLoginCmd(context *cmd.Context, input io.ReadWriter, authBuilder authenticationBuilder) *Cmd {
@@ -78,6 +79,7 @@ func (lc *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result.Flags().StringVarP(&lc.clientID, "client-id", "", defaultClientID, "Client id used for OAuth flow")
 	result.Flags().StringVarP(&lc.clientSecret, "client-secret", "", defaultClientSecret, "Client secret used for OAuth flow")
 	result.Flags().BoolVarP(&lc.sslDisabled, "skip-ssl-validation", "", false, "Skip verification of the OAuth endpoint. Not recommended!")
+	result.Flags().BoolVarP(&lc.clientCredentialsFlow, "client-credentials", "", false, "Use client credentials flow with provided client id and secret")
 
 	return result
 }
@@ -115,11 +117,7 @@ func (lc *Cmd) Run() error {
 		return err
 	}
 
-	if err := lc.readUser(); err != nil {
-		return err
-	}
-
-	if err := lc.readPassword(); err != nil {
+	if err := lc.checkLoginFlow(); err != nil {
 		return err
 	}
 
@@ -129,7 +127,7 @@ func (lc *Cmd) Run() error {
 		IssuerURL:    info.TokenIssuerURL,
 		SSLDisabled:  lc.sslDisabled,
 	}
-	authStrategy, options, err := lc.authBuilder(options, lc.user, lc.password)
+	authStrategy, options, err := lc.authBuilder(options, lc.clientCredentialsFlow)
 	if err != nil {
 		return err
 	}
@@ -161,6 +159,28 @@ func (lc *Cmd) Run() error {
 	}
 
 	output.PrintMessage(lc.Output, "Logged in successfully.\n")
+	return nil
+}
+
+func (lc *Cmd) checkLoginFlow() error {
+	if lc.clientCredentialsFlow {
+		if len(lc.clientID) == 0 || len(lc.clientSecret) == 0 {
+			return errors.New("clientID/clientSecret should not be empty when using client credentials flow")
+		}
+	} else {
+		if err := lc.readUser(); err != nil {
+			return err
+		}
+
+		if err := lc.readPassword(); err != nil {
+			return err
+		}
+
+		if len(lc.user) == 0 || len(lc.password) == 0 {
+			return errors.New("username/password should not be empty")
+		}
+	}
+
 	return nil
 }
 

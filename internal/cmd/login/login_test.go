@@ -30,7 +30,7 @@ var _ = Describe("Login Command test", func() {
 	var authStrategy *authfakes.FakeAuthenticationStrategy
 	var client *smclientfakes.FakeClient
 
-	authBuilder := func(options *auth.Options, _, _ string) (auth.AuthenticationStrategy, *auth.Options, error) {
+	authBuilder := func(options *auth.Options, _ bool) (auth.AuthenticationStrategy, *auth.Options, error) {
 		return authStrategy, options, nil
 	}
 
@@ -128,6 +128,20 @@ var _ = Describe("Login Command test", func() {
 				Expect(outputBuffer.String()).To(ContainSubstring("Logged in successfully.\n"))
 			})
 		})
+
+		Context("With client credentials flow", func() {
+			When("client id secret are provided through flag", func() {
+				It("login successfully", func() {
+					lc := command.Prepare(cmd.CommonPrepare)
+					lc.SetArgs([]string{"--url=http://valid-url.com", "--client-credentials", "--client-id=id", "--client-secret=secret"})
+
+					err := lc.Execute()
+
+					Expect(err).ShouldNot(HaveOccurred())
+					Expect(outputBuffer.String()).To(ContainSubstring("Logged in successfully.\n"))
+				})
+			})
+		})
 	})
 
 	Describe("Invalid request", func() {
@@ -152,6 +166,17 @@ var _ = Describe("Login Command test", func() {
 			})
 		})
 
+		Context("With empty username provided", func() {
+			It("should return error", func() {
+				lc := command.Prepare(cmd.CommonPrepare)
+				lc.SetArgs([]string{"--url=http://valid-url.com", "--password=password"})
+				credentialsBuffer.WriteString("\n")
+				err := lc.Execute()
+				Expect(err).Should(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("username/password should not be empty"))
+			})
+		})
+
 		Context("With error while typing user in", func() {
 			It("should save configuration successfully", func() {
 				lc := command.Prepare(cmd.CommonPrepare)
@@ -172,6 +197,20 @@ var _ = Describe("Login Command test", func() {
 
 				Expect(err).Should(HaveOccurred())
 				Expect(err.Error()).To(Equal("saving configuration error"))
+			})
+		})
+
+		Context("With client-credentials flow", func() {
+			When("client id or secret is not provided", func() {
+				It("should return an error", func() {
+					lc := command.Prepare(cmd.CommonPrepare)
+					lc.SetArgs([]string{"--url=http://valid-url.com", "--client-credentials"})
+
+					err := lc.Execute()
+
+					Expect(err).Should(HaveOccurred())
+					Expect(err.Error()).To(Equal("clientID/clientSecret should not be empty when using client credentials flow"))
+				})
 			})
 		})
 	})

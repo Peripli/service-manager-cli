@@ -30,11 +30,11 @@ import (
 	"os"
 )
 
-func oidcAuthBuilder(options *auth.Options, username, password string) (auth.AuthenticationStrategy, *auth.Options, error) {
-	if username != "" && password != "" {
-		return oidc.NewOpenIDStrategy(options)
+func oidcAuthBuilder(options *auth.Options, clientCredentialsFlow bool) (auth.AuthenticationStrategy, *auth.Options, error) {
+	if clientCredentialsFlow {
+		return oidc.NewClientCredentialsStrategy(options)
 	}
-	return oidc.NewClientCredentialsStrategy(options)
+	return oidc.NewOpenIDStrategy(options)
 }
 
 func main() {
