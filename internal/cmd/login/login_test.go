@@ -27,10 +27,10 @@ var _ = Describe("Login Command test", func() {
 	var command *Cmd
 	var credentialsBuffer, outputBuffer *bytes.Buffer
 	var config configurationfakes.FakeConfiguration
-	var authStrategy *authfakes.FakeAuthenticationStrategy
+	var authStrategy *authfakes.FakeAuthenticator
 	var client *smclientfakes.FakeClient
 
-	authBuilder := func(options *auth.Options, _ bool) (auth.AuthenticationStrategy, *auth.Options, error) {
+	authBuilder := func(options *auth.Options) (auth.Authenticator, *auth.Options, error) {
 		return authStrategy, options, nil
 	}
 
@@ -39,10 +39,13 @@ var _ = Describe("Login Command test", func() {
 		credentialsBuffer = &bytes.Buffer{}
 		outputBuffer = &bytes.Buffer{}
 		config = configurationfakes.FakeConfiguration{}
-		authStrategy = &authfakes.FakeAuthenticationStrategy{}
+		authStrategy = &authfakes.FakeAuthenticator{}
 
 		client.GetInfoReturns(&types.Info{TokenIssuerURL: "http://valid-uaa.com"}, nil)
-		authStrategy.AuthenticateReturns(&auth.Token{
+		authStrategy.PasswordCredentialsReturns(&auth.Token{
+			AccessToken: "access-token",
+		}, nil)
+		authStrategy.ClientCredentialsReturns(&auth.Token{
 			AccessToken: "access-token",
 		}, nil)
 

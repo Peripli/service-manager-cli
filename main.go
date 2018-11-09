@@ -30,10 +30,7 @@ import (
 	"os"
 )
 
-func oidcAuthBuilder(options *auth.Options, clientCredentialsFlow bool) (auth.AuthenticationStrategy, *auth.Options, error) {
-	if clientCredentialsFlow {
-		return oidc.NewClientCredentialsStrategy(options)
-	}
+func oidcAuthBuilder(options *auth.Options) (auth.Authenticator, *auth.Options, error) {
 	return oidc.NewOpenIDStrategy(options)
 }
 

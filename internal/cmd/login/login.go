@@ -54,7 +54,7 @@ type Cmd struct {
 	authBuilder authenticationBuilder
 }
 
-type authenticationBuilder func(*auth.Options, bool) (auth.AuthenticationStrategy, *auth.Options, error)
+type authenticationBuilder func(*auth.Options) (auth.Authenticator, *auth.Options, error)
 
 // NewLoginCmd return new login command with context and input reader
 func NewLoginCmd(context *cmd.Context, input io.ReadWriter, authBuilder authenticationBuilder) *Cmd {
@@ -127,11 +127,12 @@ func (lc *Cmd) Run() error {
 		IssuerURL:    info.TokenIssuerURL,
 		SSLDisabled:  lc.sslDisabled,
 	}
-	authStrategy, options, err := lc.authBuilder(options, lc.clientCredentialsFlow)
+
+	authStrategy, options, err := lc.authBuilder(options)
 	if err != nil {
 		return err
 	}
-	token, err := authStrategy.Authenticate(lc.user, lc.password)
+	token, err := lc.getToken(authStrategy)
 	if err != nil {
 		return err
 	}
@@ -160,6 +161,13 @@ func (lc *Cmd) Run() error {
 
 	output.PrintMessage(lc.Output, "Logged in successfully.\n")
 	return nil
+}
+
+func (lc *Cmd) getToken(authStrategy auth.Authenticator) (*auth.Token, error) {
+	if lc.clientCredentialsFlow {
+		return authStrategy.ClientCredentials()
+	}
+	return authStrategy.PasswordCredentials(lc.user, lc.password)
 }
 
 func (lc *Cmd) checkLoginFlow() error {
