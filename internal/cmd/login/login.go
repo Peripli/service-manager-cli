@@ -28,6 +28,7 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/util"
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
+	"github.com/Peripli/service-manager/pkg/log"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh/terminal"
 )
@@ -76,7 +77,7 @@ func (lc *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result.Flags().StringVarP(&lc.serviceManagerURL, "url", "a", "", "Base URL of the Service Manager")
 	result.Flags().StringVarP(&lc.user, "user", "u", "", "User ID")
 	result.Flags().StringVarP(&lc.password, "password", "p", "", "Password")
-	result.Flags().StringVarP(&lc.clientID, "client-id", "", defaultClientID, "Client id used for OAuth flow")
+	result.Flags().StringVarP(&lc.clientID, "client-id", "", "", "Client id used for OAuth flow")
 	result.Flags().StringVarP(&lc.clientSecret, "client-secret", "", defaultClientSecret, "Client secret used for OAuth flow")
 	result.Flags().BoolVarP(&lc.sslDisabled, "skip-ssl-validation", "", false, "Skip verification of the OAuth endpoint. Not recommended!")
 	result.Flags().BoolVarP(&lc.clientCredentialsFlow, "client-credentials", "", false, "Use client credentials flow with provided client id and secret")
@@ -114,7 +115,7 @@ func (lc *Cmd) Run() error {
 
 	info, err := lc.Client.GetInfo()
 	if err != nil {
-		return err
+		return cmd.NewError("Could not get Service Manager info", err.Error())
 	}
 
 	if err := lc.checkLoginFlow(); err != nil {
@@ -130,11 +131,15 @@ func (lc *Cmd) Run() error {
 
 	authStrategy, options, err := lc.authBuilder(options)
 	if err != nil {
-		return err
+		return cmd.NewError("Could not build authenticator", err.Error())
 	}
 	token, err := lc.getToken(authStrategy)
 	if err != nil {
-		return err
+		if authError, ok := err.(*auth.Error); ok {
+			log.D().Debugf("login: %s", authError.Error())
+			return cmd.NewError("Could not login", authError.Description)
+		}
+		return cmd.NewError("Could not login", err.Error())
 	}
 
 	clientConfig = &smclient.ClientConfig{
@@ -176,6 +181,9 @@ func (lc *Cmd) checkLoginFlow() error {
 			return errors.New("clientID/clientSecret should not be empty when using client credentials flow")
 		}
 	} else {
+		if len(lc.clientID) == 0 {
+			lc.clientID = defaultClientID
+		}
 		if err := lc.readUser(); err != nil {
 			return err
 		}

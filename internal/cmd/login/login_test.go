@@ -204,10 +204,22 @@ var _ = Describe("Login Command test", func() {
 		})
 
 		Context("With client-credentials flow", func() {
-			When("client id or secret is not provided", func() {
+			When("client id and secret is not provided", func() {
 				It("should return an error", func() {
 					lc := command.Prepare(cmd.CommonPrepare)
 					lc.SetArgs([]string{"--url=http://valid-url.com", "--client-credentials"})
+
+					err := lc.Execute()
+
+					Expect(err).Should(HaveOccurred())
+					Expect(err.Error()).To(Equal("clientID/clientSecret should not be empty when using client credentials flow"))
+				})
+			})
+
+			When("client id is not provided", func() {
+				It("should return an error", func() {
+					lc := command.Prepare(cmd.CommonPrepare)
+					lc.SetArgs([]string{"--url=http://valid-url.com", "--client-credentials", "--client-secret", "secret"})
 
 					err := lc.Execute()
 

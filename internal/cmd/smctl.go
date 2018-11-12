@@ -17,12 +17,14 @@
 package cmd
 
 import (
+	"context"
 	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"github.com/Peripli/service-manager-cli/internal/configuration"
+	"github.com/Peripli/service-manager/pkg/log"
 )
 
 // Execute executes the root command
@@ -43,6 +45,7 @@ func BuildRootCommand(ctx *Context) *cobra.Command {
 		Long:  `smctl controls a Service Manager instance.`,
 
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			log.Configure(context.Background(), logSettings(ctx.Verbose))
 			cmd.SilenceUsage = true
 
 			if ctx.Output == nil {
@@ -65,4 +68,14 @@ func BuildRootCommand(ctx *Context) *cobra.Command {
 	rootCmd.PersistentFlags().BoolVarP(&ctx.Verbose, "verbose", "v", false, "verbose")
 
 	return rootCmd
+}
+
+func logSettings(verbose bool) *log.Settings {
+	settings := log.DefaultSettings()
+	if verbose {
+		settings.Level = "debug"
+	} else {
+		settings.Level = "info"
+	}
+	return settings
 }

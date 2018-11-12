@@ -9,7 +9,6 @@ import (
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"golang.org/x/oauth2"
 )
 
 func TestAuthStrategy(t *testing.T) {
@@ -117,7 +116,7 @@ var _ = Describe("Service Manager Auth strategy test", func() {
 				_, err := authStrategy.PasswordCredentials("admin", "admin")
 
 				Expect(err).Should(HaveOccurred())
-				Expect(err.(*oauth2.RetrieveError).Error()).To(ContainSubstring(errorMsg))
+				Expect(err.(*auth.Error).Error()).To(ContainSubstring(errorMsg))
 			})
 
 			It("should handle wrong JSON body", func() {

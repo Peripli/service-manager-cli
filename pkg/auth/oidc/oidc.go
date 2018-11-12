@@ -18,8 +18,11 @@ package oidc
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/Peripli/service-manager/pkg/log"
 
 	"github.com/Peripli/service-manager-cli/internal/util"
 	"github.com/Peripli/service-manager-cli/pkg/auth"
@@ -79,7 +82,8 @@ func (s *OpenIDStrategy) ClientCredentials() (*auth.Token, error) {
 	token, err := s.ccConfig.Token(ctx)
 
 	if err != nil {
-		return nil, err
+		log.D().Debugf("authenticator: %s", err.Error())
+		return nil, wrapError(err)
 	}
 
 	resultToken := &auth.Token{
@@ -97,7 +101,7 @@ func (s *OpenIDStrategy) PasswordCredentials(user, password string) (*auth.Token
 	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, s.httpClient)
 	token, err := s.oauth2Config.PasswordCredentialsToken(ctx, user, password)
 	if err != nil {
-		return nil, err
+		return nil, wrapError(err)
 	}
 
 	resultToken := &auth.Token{
@@ -108,4 +112,21 @@ func (s *OpenIDStrategy) PasswordCredentials(user, password string) (*auth.Token
 	}
 
 	return resultToken, err
+}
+
+func wrapError(err error) error {
+	oauth2Err, ok := err.(*oauth2.RetrieveError)
+	if ok {
+		type A struct {
+			Description string `json:"error_description"`
+		}
+		a := A{}
+		unmarshalErr := json.Unmarshal(oauth2Err.Body, &a)
+		if unmarshalErr != nil {
+			return unmarshalErr
+		}
+
+		return &auth.Error{Description: a.Description, Cause: oauth2Err}
+	}
+	return err
 }
