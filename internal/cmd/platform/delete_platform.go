@@ -68,7 +68,7 @@ func (dpc *DeletePlatformCmd) Run() error {
 	for _, toDelete := range toDeletePlatforms {
 		err := dpc.Client.DeletePlatform(toDelete.ID)
 		if err != nil {
-			output.PrintMessage(dpc.Output, "Could not delete platform %s\n", toDelete.Name, err)
+			output.PrintMessage(dpc.Output, "Could not delete platform %s: %v\n", toDelete.Name, err)
 		} else {
 			output.PrintMessage(dpc.Output, "Platform with name: %s successfully deleted\n", toDelete.Name)
 			deletedPlatforms[toDelete.Name] = true

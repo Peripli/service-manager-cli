@@ -3,6 +3,7 @@
 *.dll
 *.so
 *.dylib
+/service-manager-cli
 
 /out
 

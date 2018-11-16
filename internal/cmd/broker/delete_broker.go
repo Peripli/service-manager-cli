@@ -73,7 +73,7 @@ func (dbc *DeleteBrokerCmd) Run() error {
 	for _, toDelete := range toDeleteBrokers {
 		err := dbc.Client.DeleteBroker(toDelete.ID)
 		if err != nil {
-			output.PrintMessage(dbc.Output, "Could not delete broker %s\n", toDelete.Name, err)
+			output.PrintMessage(dbc.Output, "Could not delete broker %s: %v\n", toDelete.Name, err)
 		} else {
 			output.PrintMessage(dbc.Output, "Broker with name: %s successfully deleted\n", toDelete.Name)
 			deletedBrokers[toDelete.Name] = true
