@@ -23,13 +23,14 @@ import (
 	"io"
 	"syscall"
 
+	cliErr "github.com/Peripli/service-manager-cli/pkg/errors"
+
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/configuration"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/internal/util"
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
-	"github.com/Peripli/service-manager/pkg/log"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh/terminal"
 )
@@ -138,7 +139,7 @@ func (lc *Cmd) Run() error {
 
 	info, err := lc.Client.GetInfo()
 	if err != nil {
-		return cmd.NewError("Could not get Service Manager info", err.Error())
+		return cliErr.New("Could not get Service Manager info", err)
 	}
 
 	if err := lc.checkLoginFlow(); err != nil {
@@ -156,15 +157,11 @@ func (lc *Cmd) Run() error {
 
 	authStrategy, options, err := lc.authBuilder(options)
 	if err != nil {
-		return cmd.NewError("Could not build authenticator", err.Error())
+		return cliErr.New("Could not build authenticator", err)
 	}
 	token, err := auth.GetToken(options, authStrategy)
 	if err != nil {
-		if authError, ok := err.(*auth.Error); ok {
-			log.D().Debugf("login: %s", authError.Error())
-			return cmd.NewError("Could not login", authError.Description)
-		}
-		return cmd.NewError("Could not login", err.Error())
+		return cliErr.New("Could not login", err)
 	}
 
 	settings := &configuration.Settings{

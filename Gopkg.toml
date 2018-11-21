@@ -54,4 +54,4 @@
 
 [[constraint]]
  name = "github.com/Peripli/service-manager"
- branch = "master"
+ branch = "0.1.1"

@@ -116,6 +116,7 @@ func (s *OpenIDStrategy) PasswordCredentials(user, password string) (*auth.Token
 
 func wrapError(err error) error {
 	oauth2Err, ok := err.(*oauth2.RetrieveError)
+	log.D().Debugf("oidc error: %s", oauth2Err)
 	if ok {
 		type A struct {
 			Description string `json:"error_description"`
@@ -126,7 +127,7 @@ func wrapError(err error) error {
 			return unmarshalErr
 		}
 
-		return &auth.Error{Description: a.Description, Cause: oauth2Err}
+		return fmt.Errorf("auth error: %s", a.Description)
 	}
 	return err
 }
