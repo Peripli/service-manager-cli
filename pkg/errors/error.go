@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package cmd
+package errors
 
 import (
 	"fmt"
@@ -22,19 +22,19 @@ import (
 
 // Error wraps command errors
 type Error struct {
-	description string
-	reason      string
+	Description string
+	Cause       error
 }
 
-// NewError is used to create command errors
-func NewError(description string, reason string) *Error {
+// New is used to create command errors
+func New(description string, cause error) *Error {
 	return &Error{
 		description,
-		reason,
+		cause,
 	}
 }
 
 // Error prints the error description and the reason for the error
 func (e *Error) Error() string {
-	return fmt.Sprintf("%s\nReason: %s", e.description, e.reason)
+	return fmt.Sprintf("%s\nReason: %s", e.Description, e.Cause.Error())
 }

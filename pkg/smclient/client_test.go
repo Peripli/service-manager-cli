@@ -47,8 +47,9 @@ var _ = Describe("Service Manager Client test", func() {
 		Credentials: &types.Credentials{Basic: types.Basic{User: "test user", Password: "test password"}},
 	}
 
-	createSMHandler := func() http.HandlerFunc {
-		return func(response http.ResponseWriter, req *http.Request) {
+	createSMHandler := func() http.Handler {
+		mux := http.NewServeMux()
+		mux.HandleFunc("/", func(response http.ResponseWriter, req *http.Request) {
 			authorization := req.Header.Get("Authorization")
 			if authorization != "Bearer "+validToken {
 				response.WriteHeader(http.StatusUnauthorized)
@@ -57,7 +58,9 @@ var _ = Describe("Service Manager Client test", func() {
 			}
 			response.WriteHeader(responseStatusCode)
 			response.Write([]byte(responseBody))
-		}
+		})
+
+		return mux
 	}
 
 	BeforeEach(func() {
