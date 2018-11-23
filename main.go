@@ -30,7 +30,7 @@ import (
 	"os"
 )
 
-func oidcAuthBuilder(options *auth.Options) (auth.AuthenticationStrategy, *auth.Options, error) {
+func oidcAuthBuilder(options *auth.Options) (auth.Authenticator, *auth.Options, error) {
 	return oidc.NewOpenIDStrategy(options)
 }
 

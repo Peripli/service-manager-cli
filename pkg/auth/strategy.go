@@ -43,10 +43,11 @@ type Token struct {
 	Scope        string    `json:"scope"`
 }
 
-// AuthenticationStrategy should be implemented for different authentication strategies
-//go:generate counterfeiter . AuthenticationStrategy
-type AuthenticationStrategy interface {
-	Authenticate(user, password string) (*Token, error)
+// Authenticator should be implemented for different authentication strategies
+//go:generate counterfeiter . Authenticator
+type Authenticator interface {
+	ClientCredentials() (*Token, error)
+	PasswordCredentials(user, password string) (*Token, error)
 }
 
 // Refresher should be implemented for refreshing access tokens with refresh token flow

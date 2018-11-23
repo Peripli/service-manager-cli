@@ -28,6 +28,7 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/util"
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
+	"github.com/Peripli/service-manager/pkg/log"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh/terminal"
 )
@@ -37,23 +38,48 @@ const (
 	defaultClientSecret = ""
 )
 
+type authFlow string
+
+func (a *authFlow) String() string {
+	return string(*a)
+}
+func (a *authFlow) Set(value string) error {
+	*a = authFlow(value)
+	return nil
+}
+
+func (a *authFlow) Type() string {
+	return "authFlow"
+}
+
+func newAuthFlowValue(value authFlow, p *authFlow) *authFlow {
+	*p = value
+	return (*authFlow)(p)
+}
+
+const (
+	clientCredentials authFlow = "client-credentials"
+	passwordGrant     authFlow = "password-grant"
+)
+
 // Cmd wraps the smctl login command
 type Cmd struct {
 	*cmd.Context
 
 	input io.ReadWriter
 
-	serviceManagerURL string
-	user              string
-	password          string
-	sslDisabled       bool
-	clientID          string
-	clientSecret      string
+	serviceManagerURL  string
+	user               string
+	password           string
+	sslDisabled        bool
+	clientID           string
+	clientSecret       string
+	authenticationFlow authFlow
 
 	authBuilder authenticationBuilder
 }
 
-type authenticationBuilder func(*auth.Options) (auth.AuthenticationStrategy, *auth.Options, error)
+type authenticationBuilder func(*auth.Options) (auth.Authenticator, *auth.Options, error)
 
 // NewLoginCmd return new login command with context and input reader
 func NewLoginCmd(context *cmd.Context, input io.ReadWriter, authBuilder authenticationBuilder) *Cmd {
@@ -75,9 +101,10 @@ func (lc *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result.Flags().StringVarP(&lc.serviceManagerURL, "url", "a", "", "Base URL of the Service Manager")
 	result.Flags().StringVarP(&lc.user, "user", "u", "", "User ID")
 	result.Flags().StringVarP(&lc.password, "password", "p", "", "Password")
-	result.Flags().StringVarP(&lc.clientID, "client-id", "", defaultClientID, "Client id used for OAuth flow")
+	result.Flags().StringVarP(&lc.clientID, "client-id", "", "", "Client id used for OAuth flow")
 	result.Flags().StringVarP(&lc.clientSecret, "client-secret", "", defaultClientSecret, "Client secret used for OAuth flow")
 	result.Flags().BoolVarP(&lc.sslDisabled, "skip-ssl-validation", "", false, "Skip verification of the OAuth endpoint. Not recommended!")
+	result.Flags().VarP(newAuthFlowValue(passwordGrant, &lc.authenticationFlow), "auth-flow", "", "provide Oauth2 authentication flow type")
 
 	return result
 }
@@ -112,19 +139,11 @@ func (lc *Cmd) Run() error {
 
 	info, err := lc.Client.GetInfo()
 	if err != nil {
-		return err
+		return cmd.NewError("Could not get Service Manager info", err.Error())
 	}
 
-	if err := lc.readUser(); err != nil {
+	if err := lc.checkLoginFlow(); err != nil {
 		return err
-	}
-
-	if err := lc.readPassword(); err != nil {
-		return err
-	}
-
-	if len(lc.user) == 0 || len(lc.password) == 0 {
-		return errors.New("username/password should not be empty")
 	}
 
 	options := &auth.Options{
@@ -133,16 +152,21 @@ func (lc *Cmd) Run() error {
 		IssuerURL:    info.TokenIssuerURL,
 		SSLDisabled:  lc.sslDisabled,
 	}
+
 	authStrategy, options, err := lc.authBuilder(options)
 	if err != nil {
-		return err
+		return cmd.NewError("Could not build authenticator", err.Error())
 	}
-	token, err := authStrategy.Authenticate(lc.user, lc.password)
+	token, err := lc.getToken(authStrategy)
 	if err != nil {
-		return err
+		if authError, ok := err.(*auth.Error); ok {
+			log.D().Debugf("login: %s", authError.Error())
+			return cmd.NewError("Could not login", authError.Description)
+		}
+		return cmd.NewError("Could not login", err.Error())
 	}
 
-	err = lc.Configuration.Save(&smclient.ClientConfig{
+	clientConfig = &smclient.ClientConfig{
 		URL:         lc.serviceManagerURL,
 		User:        lc.user,
 		SSLDisabled: lc.sslDisabled,
@@ -154,13 +178,53 @@ func (lc *Cmd) Run() error {
 		IssuerURL:             info.TokenIssuerURL,
 		AuthorizationEndpoint: options.AuthorizationEndpoint,
 		TokenEndpoint:         options.TokenEndpoint,
-	})
+	}
+	if clientConfig.User == "" {
+		clientConfig.User = options.ClientID
+	}
+	err = lc.Configuration.Save(clientConfig)
 
 	if err != nil {
 		return err
 	}
 
 	output.PrintMessage(lc.Output, "Logged in successfully.\n")
+	return nil
+}
+
+func (lc *Cmd) getToken(authStrategy auth.Authenticator) (*auth.Token, error) {
+	switch lc.authenticationFlow {
+	case clientCredentials:
+		return authStrategy.ClientCredentials()
+	case passwordGrant:
+		return authStrategy.PasswordCredentials(lc.user, lc.password)
+	default:
+		return nil, fmt.Errorf("authentication flow %s not recognized", lc.authenticationFlow)
+	}
+}
+
+func (lc *Cmd) checkLoginFlow() error {
+	if lc.authenticationFlow == clientCredentials {
+		if len(lc.clientID) == 0 || len(lc.clientSecret) == 0 {
+			return errors.New("clientID/clientSecret should not be empty when using client credentials flow")
+		}
+	} else {
+		if len(lc.clientID) == 0 {
+			lc.clientID = defaultClientID
+		}
+		if err := lc.readUser(); err != nil {
+			return err
+		}
+
+		if err := lc.readPassword(); err != nil {
+			return err
+		}
+
+		if len(lc.user) == 0 || len(lc.password) == 0 {
+			return errors.New("username/password should not be empty")
+		}
+	}
+
 	return nil
 }
 

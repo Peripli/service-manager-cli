@@ -18,88 +18,17 @@ package oidc
 
 import (
 	"context"
-	"errors"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
+	"github.com/Peripli/service-manager/pkg/log"
+
 	"github.com/Peripli/service-manager-cli/internal/util"
 	"github.com/Peripli/service-manager-cli/pkg/auth"
-	"github.com/Peripli/service-manager-cli/pkg/httputil"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
 )
-
-// NewClient builds configured HTTP client.
-//
-// If token is provided will execute try to refresh the token if it has expired,
-// if not provided will do client_credentials flow and fetch token
-func NewClient(options *auth.Options, token *auth.Token) auth.Client {
-	httpClient := util.BuildHTTPClient(options.SSLDisabled)
-	httpClient.Timeout = options.Timeout
-
-	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, httpClient)
-
-	var oauthClient *http.Client
-	var tokenSource oauth2.TokenSource
-
-	if token == nil {
-		oauthConfig := &clientcredentials.Config{
-			ClientID:     options.ClientID,
-			ClientSecret: options.ClientSecret,
-			TokenURL:     options.TokenEndpoint,
-		}
-		tokenSource = oauthConfig.TokenSource(ctx)
-	} else {
-		oauthConfig := &oauth2.Config{
-			ClientID:     options.ClientID,
-			ClientSecret: options.ClientSecret,
-			Endpoint: oauth2.Endpoint{
-				AuthURL:  options.AuthorizationEndpoint,
-				TokenURL: options.TokenEndpoint,
-			},
-		}
-		tokenSource = oauthConfig.TokenSource(ctx, &oauth2.Token{
-			AccessToken:  token.AccessToken,
-			RefreshToken: token.RefreshToken,
-			Expiry:       token.ExpiresIn,
-			TokenType:    token.TokenType,
-		})
-	}
-
-	oauthClient = oauth2.NewClient(ctx, tokenSource)
-	oauthClient.Timeout = options.Timeout
-
-	return &Client{
-		tokenSource: tokenSource,
-		httpClient:  oauthClient,
-	}
-}
-
-// Client is used to make http requests including bearer token automatically and refreshing it
-// if necessary
-type Client struct {
-	tokenSource oauth2.TokenSource
-	httpClient  *http.Client
-}
-
-// Do makes a http request with the underlying HTTP client which includes an access token in the request
-func (c *Client) Do(req *http.Request) (*http.Response, error) {
-	return c.httpClient.Do(req)
-}
-
-// Token returns the token, refreshing it if necessary
-func (c *Client) Token() (*auth.Token, error) {
-	token, err := c.tokenSource.Token()
-	if err != nil {
-		return nil, err
-	}
-	return &auth.Token{
-		AccessToken:  token.AccessToken,
-		RefreshToken: token.RefreshToken,
-		ExpiresIn:    token.Expiry,
-		TokenType:    token.TokenType,
-	}, nil
-}
 
 type openIDConfiguration struct {
 	TokenEndpoint         string `json:"token_endpoint"`
@@ -108,12 +37,13 @@ type openIDConfiguration struct {
 
 // OpenIDStrategy implementation of OpenID strategy
 type OpenIDStrategy struct {
-	*oauth2.Config
-	httpClient *http.Client
+	oauth2Config *oauth2.Config
+	ccConfig     *clientcredentials.Config
+	httpClient   *http.Client
 }
 
 // NewOpenIDStrategy returns OpenId auth strategy
-func NewOpenIDStrategy(options *auth.Options) (auth.AuthenticationStrategy, *auth.Options, error) {
+func NewOpenIDStrategy(options *auth.Options) (*OpenIDStrategy, *auth.Options, error) {
 	httpClient := util.BuildHTTPClient(options.SSLDisabled)
 	httpClient.Timeout = options.Timeout
 
@@ -121,31 +51,39 @@ func NewOpenIDStrategy(options *auth.Options) (auth.AuthenticationStrategy, *aut
 	if err != nil {
 		return nil, nil, fmt.Errorf("Error occurred while fetching openid configuration: %s", err)
 	}
+	options.AuthorizationEndpoint = openIDConfig.AuthorizationEndpoint
+	options.TokenEndpoint = openIDConfig.TokenEndpoint
 
 	oauthConfig := &oauth2.Config{
 		ClientID:     options.ClientID,
 		ClientSecret: options.ClientSecret,
 		Endpoint: oauth2.Endpoint{
-			AuthURL:  openIDConfig.AuthorizationEndpoint,
-			TokenURL: openIDConfig.TokenEndpoint,
+			AuthURL:  options.AuthorizationEndpoint,
+			TokenURL: options.TokenEndpoint,
 		},
 	}
 
-	options.AuthorizationEndpoint = openIDConfig.AuthorizationEndpoint
-	options.TokenEndpoint = openIDConfig.TokenEndpoint
+	ccConfig := &clientcredentials.Config{
+		ClientID:     options.ClientID,
+		ClientSecret: options.ClientSecret,
+		TokenURL:     options.TokenEndpoint,
+	}
 
 	return &OpenIDStrategy{
-		Config:     oauthConfig,
-		httpClient: httpClient,
+		oauth2Config: oauthConfig,
+		ccConfig:     ccConfig,
+		httpClient:   httpClient,
 	}, options, nil
 }
 
-// Authenticate is used to perform authentication action for OpenID strategy
-func (s *OpenIDStrategy) Authenticate(user, password string) (*auth.Token, error) {
+// ClientCredentials is used to perform client credentials grant type flow
+func (s *OpenIDStrategy) ClientCredentials() (*auth.Token, error) {
 	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, s.httpClient)
-	token, err := s.PasswordCredentialsToken(ctx, user, password)
+	token, err := s.ccConfig.Token(ctx)
+
 	if err != nil {
-		return nil, err
+		log.D().Debugf("authenticator: %s", err.Error())
+		return nil, wrapError(err)
 	}
 
 	resultToken := &auth.Token{
@@ -158,28 +96,37 @@ func (s *OpenIDStrategy) Authenticate(user, password string) (*auth.Token, error
 	return resultToken, err
 }
 
-// DoRequestFunc is an alias for any function that takes an http request and returns a response and error
-type DoRequestFunc func(request *http.Request) (*http.Response, error)
-
-func fetchOpenidConfiguration(issuerURL string, readConfigurationFunc DoRequestFunc) (*openIDConfiguration, error) {
-	req, err := http.NewRequest(http.MethodGet, issuerURL+"/.well-known/openid-configuration", nil)
+// PasswordCredentials is used to perform password grant type flow
+func (s *OpenIDStrategy) PasswordCredentials(user, password string) (*auth.Token, error) {
+	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, s.httpClient)
+	token, err := s.oauth2Config.PasswordCredentialsToken(ctx, user, password)
 	if err != nil {
-		return nil, err
+		return nil, wrapError(err)
 	}
 
-	response, err := readConfigurationFunc(req)
-	if err != nil {
-		return nil, err
+	resultToken := &auth.Token{
+		AccessToken:  token.AccessToken,
+		RefreshToken: token.RefreshToken,
+		ExpiresIn:    token.Expiry,
+		TokenType:    token.TokenType,
 	}
 
-	if response.StatusCode != http.StatusOK {
-		return nil, errors.New("Unexpected status code")
-	}
+	return resultToken, err
+}
 
-	var configuration *openIDConfiguration
-	if err = httputil.UnmarshalResponse(response, &configuration); err != nil {
-		return nil, err
-	}
+func wrapError(err error) error {
+	oauth2Err, ok := err.(*oauth2.RetrieveError)
+	if ok {
+		type A struct {
+			Description string `json:"error_description"`
+		}
+		a := A{}
+		unmarshalErr := json.Unmarshal(oauth2Err.Body, &a)
+		if unmarshalErr != nil {
+			return unmarshalErr
+		}
 
-	return configuration, nil
+		return &auth.Error{Description: a.Description, Cause: oauth2Err}
+	}
+	return err
 }

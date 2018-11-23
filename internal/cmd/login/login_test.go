@@ -27,10 +27,10 @@ var _ = Describe("Login Command test", func() {
 	var command *Cmd
 	var credentialsBuffer, outputBuffer *bytes.Buffer
 	var config configurationfakes.FakeConfiguration
-	var authStrategy *authfakes.FakeAuthenticationStrategy
+	var authStrategy *authfakes.FakeAuthenticator
 	var client *smclientfakes.FakeClient
 
-	authBuilder := func(options *auth.Options) (auth.AuthenticationStrategy, *auth.Options, error) {
+	authBuilder := func(options *auth.Options) (auth.Authenticator, *auth.Options, error) {
 		return authStrategy, options, nil
 	}
 
@@ -39,10 +39,13 @@ var _ = Describe("Login Command test", func() {
 		credentialsBuffer = &bytes.Buffer{}
 		outputBuffer = &bytes.Buffer{}
 		config = configurationfakes.FakeConfiguration{}
-		authStrategy = &authfakes.FakeAuthenticationStrategy{}
+		authStrategy = &authfakes.FakeAuthenticator{}
 
 		client.GetInfoReturns(&types.Info{TokenIssuerURL: "http://valid-uaa.com"}, nil)
-		authStrategy.AuthenticateReturns(&auth.Token{
+		authStrategy.PasswordCredentialsReturns(&auth.Token{
+			AccessToken: "access-token",
+		}, nil)
+		authStrategy.ClientCredentialsReturns(&auth.Token{
 			AccessToken: "access-token",
 		}, nil)
 
@@ -128,6 +131,20 @@ var _ = Describe("Login Command test", func() {
 				Expect(outputBuffer.String()).To(ContainSubstring("Logged in successfully.\n"))
 			})
 		})
+
+		Context("With client credentials flow", func() {
+			When("client id secret are provided through flag", func() {
+				It("login successfully", func() {
+					lc := command.Prepare(cmd.CommonPrepare)
+					lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=client-credentials", "--client-id=id", "--client-secret=secret"})
+
+					err := lc.Execute()
+
+					Expect(err).ShouldNot(HaveOccurred())
+					Expect(outputBuffer.String()).To(ContainSubstring("Logged in successfully.\n"))
+				})
+			})
+		})
 	})
 
 	Describe("Invalid request", func() {
@@ -158,7 +175,6 @@ var _ = Describe("Login Command test", func() {
 				lc.SetArgs([]string{"--url=http://valid-url.com", "--password=password"})
 				credentialsBuffer.WriteString("\n")
 				err := lc.Execute()
-
 				Expect(err).Should(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("username/password should not be empty"))
 			})
@@ -184,6 +200,32 @@ var _ = Describe("Login Command test", func() {
 
 				Expect(err).Should(HaveOccurred())
 				Expect(err.Error()).To(Equal("saving configuration error"))
+			})
+		})
+
+		Context("With client-credentials flow", func() {
+			When("client id and secret is not provided", func() {
+				It("should return an error", func() {
+					lc := command.Prepare(cmd.CommonPrepare)
+					lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=client-credentials"})
+
+					err := lc.Execute()
+
+					Expect(err).Should(HaveOccurred())
+					Expect(err.Error()).To(Equal("clientID/clientSecret should not be empty when using client credentials flow"))
+				})
+			})
+
+			When("client id is not provided", func() {
+				It("should return an error", func() {
+					lc := command.Prepare(cmd.CommonPrepare)
+					lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=client-credentials", "--client-secret", "secret"})
+
+					err := lc.Execute()
+
+					Expect(err).Should(HaveOccurred())
+					Expect(err.Error()).To(Equal("clientID/clientSecret should not be empty when using client credentials flow"))
+				})
 			})
 		})
 	})

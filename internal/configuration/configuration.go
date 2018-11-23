@@ -24,7 +24,7 @@ import (
 )
 
 // Configuration should be implemented for load and save of SM client config
-// go:generate counterfeiter . Configuration
+//go:generate counterfeiter . Configuration
 type Configuration interface {
 	Save(*smclient.ClientConfig) error
 	Load() (*smclient.ClientConfig, error)
