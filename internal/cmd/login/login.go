@@ -159,7 +159,7 @@ func (lc *Cmd) Run() error {
 	if err != nil {
 		return cliErr.New("Could not build authenticator", err)
 	}
-	token, err := auth.GetToken(options, authStrategy)
+	token, err := lc.getToken(authStrategy)
 	if err != nil {
 		return cliErr.New("Could not login", err)
 	}
