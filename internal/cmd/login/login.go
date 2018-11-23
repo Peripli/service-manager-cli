@@ -38,19 +38,43 @@ const (
 	defaultClientSecret = ""
 )
 
+type authFlow string
+
+func (a *authFlow) String() string {
+	return string(*a)
+}
+func (a *authFlow) Set(value string) error {
+	*a = authFlow(value)
+	return nil
+}
+
+func (a *authFlow) Type() string {
+	return "authFlow"
+}
+
+func newAuthFlowValue(value authFlow, p *authFlow) *authFlow {
+	*p = value
+	return (*authFlow)(p)
+}
+
+const (
+	clientCredentials authFlow = "client-credentials"
+	passwordGrant     authFlow = "password-grant"
+)
+
 // Cmd wraps the smctl login command
 type Cmd struct {
 	*cmd.Context
 
 	input io.ReadWriter
 
-	serviceManagerURL     string
-	user                  string
-	password              string
-	sslDisabled           bool
-	clientCredentialsFlow bool
-	clientID              string
-	clientSecret          string
+	serviceManagerURL  string
+	user               string
+	password           string
+	sslDisabled        bool
+	clientID           string
+	clientSecret       string
+	authenticationFlow authFlow
 
 	authBuilder authenticationBuilder
 }
@@ -80,7 +104,7 @@ func (lc *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result.Flags().StringVarP(&lc.clientID, "client-id", "", "", "Client id used for OAuth flow")
 	result.Flags().StringVarP(&lc.clientSecret, "client-secret", "", defaultClientSecret, "Client secret used for OAuth flow")
 	result.Flags().BoolVarP(&lc.sslDisabled, "skip-ssl-validation", "", false, "Skip verification of the OAuth endpoint. Not recommended!")
-	result.Flags().BoolVarP(&lc.clientCredentialsFlow, "client-credentials", "", false, "Use client credentials flow with provided client id and secret")
+	result.Flags().VarP(newAuthFlowValue(passwordGrant, &lc.authenticationFlow), "auth-flow", "", "provide Oauth2 authentication flow type")
 
 	return result
 }
@@ -169,14 +193,18 @@ func (lc *Cmd) Run() error {
 }
 
 func (lc *Cmd) getToken(authStrategy auth.Authenticator) (*auth.Token, error) {
-	if lc.clientCredentialsFlow {
+	switch lc.authenticationFlow {
+	case clientCredentials:
 		return authStrategy.ClientCredentials()
+	case passwordGrant:
+		return authStrategy.PasswordCredentials(lc.user, lc.password)
+	default:
+		return nil, fmt.Errorf("authentication flow %s not recognized", lc.authenticationFlow)
 	}
-	return authStrategy.PasswordCredentials(lc.user, lc.password)
 }
 
 func (lc *Cmd) checkLoginFlow() error {
-	if lc.clientCredentialsFlow {
+	if lc.authenticationFlow == clientCredentials {
 		if len(lc.clientID) == 0 || len(lc.clientSecret) == 0 {
 			return errors.New("clientID/clientSecret should not be empty when using client credentials flow")
 		}

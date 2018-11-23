@@ -136,7 +136,7 @@ var _ = Describe("Login Command test", func() {
 			When("client id secret are provided through flag", func() {
 				It("login successfully", func() {
 					lc := command.Prepare(cmd.CommonPrepare)
-					lc.SetArgs([]string{"--url=http://valid-url.com", "--client-credentials", "--client-id=id", "--client-secret=secret"})
+					lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=client-credentials", "--client-id=id", "--client-secret=secret"})
 
 					err := lc.Execute()
 
@@ -207,7 +207,7 @@ var _ = Describe("Login Command test", func() {
 			When("client id and secret is not provided", func() {
 				It("should return an error", func() {
 					lc := command.Prepare(cmd.CommonPrepare)
-					lc.SetArgs([]string{"--url=http://valid-url.com", "--client-credentials"})
+					lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=client-credentials"})
 
 					err := lc.Execute()
 
@@ -219,7 +219,7 @@ var _ = Describe("Login Command test", func() {
 			When("client id is not provided", func() {
 				It("should return an error", func() {
 					lc := command.Prepare(cmd.CommonPrepare)
-					lc.SetArgs([]string{"--url=http://valid-url.com", "--client-credentials", "--client-secret", "secret"})
+					lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=client-credentials", "--client-secret", "secret"})
 
 					err := lc.Execute()
 
