@@ -24,6 +24,8 @@
 #   go-tests = true
 #   unused-packages = true
 
+required = ["gopkg.in/fsnotify.v1"]
+
 [[constraint]]
   name = "github.com/spf13/cobra"
   version = "0.0.1"
@@ -31,6 +33,10 @@
 [[constraint]]
   name = "github.com/spf13/viper"
   version = "1.0.0"
+
+[[constraint]]
+  name = "gopkg.in/fsnotify.v1"
+  source = "https://github.com/fsnotify/fsnotify.git"
 
 [prune]
   go-tests = true
@@ -54,4 +60,5 @@
 
 [[constraint]]
   name = "github.com/Peripli/service-manager"
-  version = "0.1.1"
+  version = "0.1.2"
+
