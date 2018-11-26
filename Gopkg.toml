@@ -53,5 +53,5 @@
   name = "golang.org/x/oauth2"
 
 [[constraint]]
- name = "github.com/Peripli/service-manager"
- branch = "0.1.1"
+  name = "github.com/Peripli/service-manager"
+  version = "0.1.1"
