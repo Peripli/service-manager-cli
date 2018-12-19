@@ -22,6 +22,10 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"path/filepath"
+	"strings"
+
+	"github.com/spf13/afero"
 
 	"github.com/Peripli/service-manager-cli/internal/output"
 
@@ -33,6 +37,7 @@ import (
 // Cmd wraps the smctl curl command
 type Cmd struct {
 	*cmd.Context
+	Fs afero.Fs
 
 	path   string
 	method string
@@ -40,8 +45,8 @@ type Cmd struct {
 }
 
 // NewCurlCmd returns new curl command with context
-func NewCurlCmd(context *cmd.Context) *Cmd {
-	return &Cmd{Context: context}
+func NewCurlCmd(context *cmd.Context, fs afero.Fs) *Cmd {
+	return &Cmd{Context: context, Fs: fs}
 }
 
 // Prepare returns the cobra command
@@ -69,6 +74,23 @@ func (c *Cmd) Validate(args []string) error {
 		return fmt.Errorf("[path] is required")
 	}
 	c.path = args[0]
+
+	if strings.HasPrefix(c.body, "@") {
+		filename, err := filepath.Abs(c.body[1:])
+		if err != nil {
+			return err
+		}
+
+		f, err := c.Fs.Open(filename)
+		if err != nil {
+			return err
+		}
+		fileContents, err := ioutil.ReadAll(f)
+		if err != nil {
+			return fmt.Errorf("error reading file %s. Reason: %v", filename, err)
+		}
+		c.body = string(fileContents)
+	}
 
 	return nil
 }
