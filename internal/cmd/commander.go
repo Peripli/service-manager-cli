@@ -142,9 +142,14 @@ func RunE(cmd Command) func(*cobra.Command, []string) error {
 	}
 }
 
-// AddFormatFlag adds the --format (-f) flag.
+// AddFormatFlag adds the --output (-o) flag.
 func AddFormatFlag(flags *pflag.FlagSet) {
 	flags.StringP("output", "o", "", "output format")
+}
+
+// AddFormatFlagDefault is same as AddFormatFlag but allows to set default value.
+func AddFormatFlagDefault(flags *pflag.FlagSet, defValue string) {
+	flags.StringP("output", "o", defValue, "output format")
 }
 
 func getOutputFormat(flags *pflag.FlagSet) (output.Format, error) {

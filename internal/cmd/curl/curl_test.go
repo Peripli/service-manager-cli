@@ -1,6 +1,7 @@
 package curl
 
 import (
+	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -74,11 +75,16 @@ var _ = Describe("Curl command test", func() {
 
 	Context("when curl with path only", func() {
 		It("should do GET by default", func() {
-			expectedOutput := `{"brokers":[]}`
-			setCallReturns(200, []byte(expectedOutput), nil)
-			err := executeWithArgs([]string{"/v1/service_brokers"})
+			a := struct {
+				Brokers []interface{} `json:"brokers"`
+			}{Brokers: []interface{}{}}
+			expectedOutput, err := json.MarshalIndent(&a, "", "  ")
+			Expect(err).ShouldNot(HaveOccurred())
+
+			setCallReturns(200, expectedOutput, nil)
+			err = executeWithArgs([]string{"/v1/service_brokers"})
 			Expect(err).To(BeNil())
-			Expect(buffer.String()).To(Equal(expectedOutput))
+			Expect(buffer.String()).To(Equal(string(expectedOutput)))
 		})
 	})
 
@@ -89,9 +95,13 @@ var _ = Describe("Curl command test", func() {
 		})
 
 		It("should do PATCH method", func() {
-			body := []byte(`{"name": "test-broker"}`)
+			broker := struct {
+				Name string `json:"name"`
+			}{Name: "test-broker"}
+			body, err := json.MarshalIndent(&broker, "", "  ")
+			Expect(err).ShouldNot(HaveOccurred())
 			setCallReturns(201, body, nil)
-			assertLastCall(http.MethodPost, "/v1/service_brokers", body, `{"name": "test-broker"}`, nil)
+			assertLastCall(http.MethodPost, "/v1/service_brokers", body, string(body), nil)
 		})
 
 		Context("when body is file", func() {
@@ -99,11 +109,17 @@ var _ = Describe("Curl command test", func() {
 				filename, _ := filepath.Abs("test.txt")
 				f, err := fs.Create(filename)
 				Expect(err).To(BeNil())
-				content := `{"name":"test"}`
+
+				a := struct {
+					Name string `json:"name"`
+				}{Name: "test"}
+				content, err := json.MarshalIndent(&a, "", "  ")
+				Expect(err).ShouldNot(HaveOccurred())
+				// content := `{"name":"test"}`
 				f.Write([]byte(content))
 
 				setCallReturns(201, []byte(content), nil)
-				assertLastCall(http.MethodPost, "/v1/service_brokers", []byte(`@test.txt`), content, nil)
+				assertLastCall(http.MethodPost, "/v1/service_brokers", []byte(`@test.txt`), string(content), nil)
 			})
 		})
 	})
