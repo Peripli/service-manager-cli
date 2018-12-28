@@ -18,6 +18,7 @@ package curl
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -38,6 +39,8 @@ import (
 type Cmd struct {
 	*cmd.Context
 	Fs afero.Fs
+
+	outputFormat output.Format
 
 	path   string
 	method string
@@ -64,6 +67,7 @@ func (c *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	// TODO: Add flag for headers
 	result.Flags().StringVarP(&c.method, "X", "X", "GET", "HTTP method (GET,POST,PUT,DELETE,etc)")
 	result.Flags().StringVarP(&c.body, "d", "d", "", "HTTP data to include in the request body, or '@' followed by a file name to read the data from")
+	cmd.AddFormatFlagDefault(result.Flags(), "json")
 
 	return result
 }
@@ -111,7 +115,29 @@ func (c *Cmd) Run() error {
 		return err
 	}
 
-	output.PrintMessage(c.Output, string(data))
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		var result map[string]interface{}
+		if err = json.Unmarshal(data, &result); err != nil {
+			return err
+		}
+		if output.HasPrinter(c.outputFormat) {
+			output.PrintFormat(c.Output, c.outputFormat, result)
+		} else {
+			output.PrintMessage(c.Output, string(data))
+		}
+	} else {
+		output.PrintMessage(c.Output, string(data))
+	}
 
 	return nil
+}
+
+// SetOutputFormat set output format
+func (c *Cmd) SetOutputFormat(format output.Format) {
+	c.outputFormat = format
+}
+
+// HideUsage hide command's usage
+func (c *Cmd) HideUsage() bool {
+	return true
 }

@@ -86,3 +86,18 @@ func PrintServiceManagerObject(wr io.Writer, outputFormat Format, object types.S
 		printers[outputFormat].Print(wr, object)
 	}
 }
+
+// HasPrinter checks whether there is printer for output format
+func HasPrinter(outputFormat Format) bool {
+	_, found := printers[outputFormat]
+	return found
+}
+
+// PrintFormat prints the object in the provided format if possible
+func PrintFormat(wr io.Writer, outputFormat Format, object interface{}) {
+	printer, found := printers[outputFormat]
+	if !found {
+		panic("printer for the selected format not found")
+	}
+	printer.Print(wr, object)
+}
