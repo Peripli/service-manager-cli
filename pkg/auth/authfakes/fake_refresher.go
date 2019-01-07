@@ -2,16 +2,17 @@
 package authfakes
 
 import (
-	"sync"
+	sync "sync"
 
-	"github.com/Peripli/service-manager-cli/pkg/auth"
+	auth "github.com/Peripli/service-manager-cli/pkg/auth"
 )
 
 type FakeRefresher struct {
 	TokenStub        func() (*auth.Token, error)
 	tokenMutex       sync.RWMutex
-	tokenArgsForCall []struct{}
-	tokenReturns     struct {
+	tokenArgsForCall []struct {
+	}
+	tokenReturns struct {
 		result1 *auth.Token
 		result2 error
 	}
@@ -26,7 +27,8 @@ type FakeRefresher struct {
 func (fake *FakeRefresher) Token() (*auth.Token, error) {
 	fake.tokenMutex.Lock()
 	ret, specificReturn := fake.tokenReturnsOnCall[len(fake.tokenArgsForCall)]
-	fake.tokenArgsForCall = append(fake.tokenArgsForCall, struct{}{})
+	fake.tokenArgsForCall = append(fake.tokenArgsForCall, struct {
+	}{})
 	fake.recordInvocation("Token", []interface{}{})
 	fake.tokenMutex.Unlock()
 	if fake.TokenStub != nil {
@@ -35,7 +37,8 @@ func (fake *FakeRefresher) Token() (*auth.Token, error) {
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.tokenReturns.result1, fake.tokenReturns.result2
+	fakeReturns := fake.tokenReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *FakeRefresher) TokenCallCount() int {
@@ -44,7 +47,15 @@ func (fake *FakeRefresher) TokenCallCount() int {
 	return len(fake.tokenArgsForCall)
 }
 
+func (fake *FakeRefresher) TokenCalls(stub func() (*auth.Token, error)) {
+	fake.tokenMutex.Lock()
+	defer fake.tokenMutex.Unlock()
+	fake.TokenStub = stub
+}
+
 func (fake *FakeRefresher) TokenReturns(result1 *auth.Token, result2 error) {
+	fake.tokenMutex.Lock()
+	defer fake.tokenMutex.Unlock()
 	fake.TokenStub = nil
 	fake.tokenReturns = struct {
 		result1 *auth.Token
@@ -53,6 +64,8 @@ func (fake *FakeRefresher) TokenReturns(result1 *auth.Token, result2 error) {
 }
 
 func (fake *FakeRefresher) TokenReturnsOnCall(i int, result1 *auth.Token, result2 error) {
+	fake.tokenMutex.Lock()
+	defer fake.tokenMutex.Unlock()
 	fake.TokenStub = nil
 	if fake.tokenReturnsOnCall == nil {
 		fake.tokenReturnsOnCall = make(map[int]struct {

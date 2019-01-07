@@ -62,3 +62,7 @@ required = ["gopkg.in/fsnotify.v1"]
   name = "github.com/Peripli/service-manager"
   version = "0.1.8"
 
+# Refer to issue https://github.com/golang/dep/issues/1799
+ [[override]]
+ name = "gopkg.in/fsnotify.v1"
+ source = "https://github.com/fsnotify/fsnotify.git"

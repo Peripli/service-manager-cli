@@ -107,6 +107,18 @@ func (smCfg *smConfiguration) Save(settings *Settings) error {
 	return smCfg.viperEnv.WriteConfig()
 }
 
+func (smCfg *smConfiguration) Set(key string, value interface{}) error {
+	smCfg.viperEnv.Set(key, value)
+	return smCfg.viperEnv.WriteConfig()
+}
+
+func (smCfg *smConfiguration) Get(key string) (interface{}, error) {
+	if err := smCfg.viperEnv.ReadInConfig(); err != nil {
+		return nil, err
+	}
+	return smCfg.viperEnv.Get(key), nil
+}
+
 // Load implements configuration load
 func (smCfg *smConfiguration) Load() (*Settings, error) {
 	if err := smCfg.viperEnv.ReadInConfig(); err != nil {
