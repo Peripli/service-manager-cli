@@ -75,6 +75,7 @@ type Cmd struct {
 	clientID           string
 	clientSecret       string
 	authenticationFlow authFlow
+	token              string
 
 	authBuilder authenticationBuilder
 }
@@ -105,6 +106,7 @@ func (lc *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result.Flags().StringVarP(&lc.clientSecret, "client-secret", "", defaultClientSecret, "Client secret used for OAuth flow")
 	result.Flags().BoolVarP(&lc.sslDisabled, "skip-ssl-validation", "", false, "Skip verification of the OAuth endpoint. Not recommended!")
 	result.Flags().VarP(newAuthFlowValue(passwordGrant, &lc.authenticationFlow), "auth-flow", "", "provide Oauth2 authentication flow type")
+	result.Flags().StringVarP(&lc.token, "token", "", "", "access token to be used for OAuth flow")
 
 	return result
 }
@@ -153,17 +155,26 @@ func (lc *Cmd) Run() error {
 		SSLDisabled:  lc.sslDisabled,
 	}
 
+	var token *auth.Token
+
 	authStrategy, options, err := lc.authBuilder(options)
 	if err != nil {
 		return cmd.NewError("Could not build authenticator", err.Error())
 	}
-	token, err := lc.getToken(authStrategy)
-	if err != nil {
-		if authError, ok := err.(*auth.Error); ok {
-			log.D().Debugf("login: %s", authError.Error())
-			return cmd.NewError("Could not login", authError.Description)
+
+	if lc.token == "" {
+		token, err = lc.getToken(authStrategy)
+		if err != nil {
+			if authError, ok := err.(*auth.Error); ok {
+				log.D().Debugf("login: %s", authError.Error())
+				return cmd.NewError("Could not login", authError.Description)
+			}
+			return cmd.NewError("Could not login", err.Error())
 		}
-		return cmd.NewError("Could not login", err.Error())
+	} else {
+		token = &auth.Token{
+			AccessToken: lc.token,
+		}
 	}
 
 	clientConfig = &smclient.ClientConfig{
@@ -212,6 +223,10 @@ func (lc *Cmd) checkLoginFlow() error {
 		if len(lc.clientID) == 0 {
 			lc.clientID = defaultClientID
 		}
+		if lc.token != "" {
+			return nil
+		}
+
 		if err := lc.readUser(); err != nil {
 			return err
 		}
