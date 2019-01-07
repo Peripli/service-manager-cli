@@ -2,72 +2,28 @@
 package smclientfakes
 
 import (
-	"io"
-	"net/http"
-	"sync"
+	io "io"
+	http "net/http"
+	sync "sync"
 
-	"github.com/Peripli/service-manager-cli/pkg/smclient"
-	"github.com/Peripli/service-manager-cli/pkg/types"
+	smclient "github.com/Peripli/service-manager-cli/pkg/smclient"
+	types "github.com/Peripli/service-manager-cli/pkg/types"
 )
 
 type FakeClient struct {
-	GetInfoStub        func() (*types.Info, error)
-	getInfoMutex       sync.RWMutex
-	getInfoArgsForCall []struct{}
-	getInfoReturns     struct {
-		result1 *types.Info
+	CallStub        func(string, string, io.Reader) (*http.Response, error)
+	callMutex       sync.RWMutex
+	callArgsForCall []struct {
+		arg1 string
+		arg2 string
+		arg3 io.Reader
+	}
+	callReturns struct {
+		result1 *http.Response
 		result2 error
 	}
-	getInfoReturnsOnCall map[int]struct {
-		result1 *types.Info
-		result2 error
-	}
-	RegisterPlatformStub        func(*types.Platform) (*types.Platform, error)
-	registerPlatformMutex       sync.RWMutex
-	registerPlatformArgsForCall []struct {
-		arg1 *types.Platform
-	}
-	registerPlatformReturns struct {
-		result1 *types.Platform
-		result2 error
-	}
-	registerPlatformReturnsOnCall map[int]struct {
-		result1 *types.Platform
-		result2 error
-	}
-	RegisterBrokerStub        func(*types.Broker) (*types.Broker, error)
-	registerBrokerMutex       sync.RWMutex
-	registerBrokerArgsForCall []struct {
-		arg1 *types.Broker
-	}
-	registerBrokerReturns struct {
-		result1 *types.Broker
-		result2 error
-	}
-	registerBrokerReturnsOnCall map[int]struct {
-		result1 *types.Broker
-		result2 error
-	}
-	ListBrokersStub        func() (*types.Brokers, error)
-	listBrokersMutex       sync.RWMutex
-	listBrokersArgsForCall []struct{}
-	listBrokersReturns     struct {
-		result1 *types.Brokers
-		result2 error
-	}
-	listBrokersReturnsOnCall map[int]struct {
-		result1 *types.Brokers
-		result2 error
-	}
-	ListPlatformsStub        func() (*types.Platforms, error)
-	listPlatformsMutex       sync.RWMutex
-	listPlatformsArgsForCall []struct{}
-	listPlatformsReturns     struct {
-		result1 *types.Platforms
-		result2 error
-	}
-	listPlatformsReturnsOnCall map[int]struct {
-		result1 *types.Platforms
+	callReturnsOnCall map[int]struct {
+		result1 *http.Response
 		result2 error
 	}
 	DeleteBrokerStub        func(string) error
@@ -91,6 +47,68 @@ type FakeClient struct {
 	}
 	deletePlatformReturnsOnCall map[int]struct {
 		result1 error
+	}
+	GetInfoStub        func() (*types.Info, error)
+	getInfoMutex       sync.RWMutex
+	getInfoArgsForCall []struct {
+	}
+	getInfoReturns struct {
+		result1 *types.Info
+		result2 error
+	}
+	getInfoReturnsOnCall map[int]struct {
+		result1 *types.Info
+		result2 error
+	}
+	ListBrokersStub        func() (*types.Brokers, error)
+	listBrokersMutex       sync.RWMutex
+	listBrokersArgsForCall []struct {
+	}
+	listBrokersReturns struct {
+		result1 *types.Brokers
+		result2 error
+	}
+	listBrokersReturnsOnCall map[int]struct {
+		result1 *types.Brokers
+		result2 error
+	}
+	ListPlatformsStub        func() (*types.Platforms, error)
+	listPlatformsMutex       sync.RWMutex
+	listPlatformsArgsForCall []struct {
+	}
+	listPlatformsReturns struct {
+		result1 *types.Platforms
+		result2 error
+	}
+	listPlatformsReturnsOnCall map[int]struct {
+		result1 *types.Platforms
+		result2 error
+	}
+	RegisterBrokerStub        func(*types.Broker) (*types.Broker, error)
+	registerBrokerMutex       sync.RWMutex
+	registerBrokerArgsForCall []struct {
+		arg1 *types.Broker
+	}
+	registerBrokerReturns struct {
+		result1 *types.Broker
+		result2 error
+	}
+	registerBrokerReturnsOnCall map[int]struct {
+		result1 *types.Broker
+		result2 error
+	}
+	RegisterPlatformStub        func(*types.Platform) (*types.Platform, error)
+	registerPlatformMutex       sync.RWMutex
+	registerPlatformArgsForCall []struct {
+		arg1 *types.Platform
+	}
+	registerPlatformReturns struct {
+		result1 *types.Platform
+		result2 error
+	}
+	registerPlatformReturnsOnCall map[int]struct {
+		result1 *types.Platform
+		result2 error
 	}
 	UpdateBrokerStub        func(string, *types.Broker) (*types.Broker, error)
 	updateBrokerMutex       sync.RWMutex
@@ -120,252 +138,71 @@ type FakeClient struct {
 		result1 *types.Platform
 		result2 error
 	}
-	CallStub        func(method string, smpath string, body io.Reader) (*http.Response, error)
-	callMutex       sync.RWMutex
-	callArgsForCall []struct {
-		method string
-		smpath string
-		body   io.Reader
-	}
-	callReturns struct {
-		result1 *http.Response
-		result2 error
-	}
-	callReturnsOnCall map[int]struct {
-		result1 *http.Response
-		result2 error
-	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeClient) GetInfo() (*types.Info, error) {
-	fake.getInfoMutex.Lock()
-	ret, specificReturn := fake.getInfoReturnsOnCall[len(fake.getInfoArgsForCall)]
-	fake.getInfoArgsForCall = append(fake.getInfoArgsForCall, struct{}{})
-	fake.recordInvocation("GetInfo", []interface{}{})
-	fake.getInfoMutex.Unlock()
-	if fake.GetInfoStub != nil {
-		return fake.GetInfoStub()
+func (fake *FakeClient) Call(arg1 string, arg2 string, arg3 io.Reader) (*http.Response, error) {
+	fake.callMutex.Lock()
+	ret, specificReturn := fake.callReturnsOnCall[len(fake.callArgsForCall)]
+	fake.callArgsForCall = append(fake.callArgsForCall, struct {
+		arg1 string
+		arg2 string
+		arg3 io.Reader
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("Call", []interface{}{arg1, arg2, arg3})
+	fake.callMutex.Unlock()
+	if fake.CallStub != nil {
+		return fake.CallStub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.getInfoReturns.result1, fake.getInfoReturns.result2
+	fakeReturns := fake.callReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeClient) GetInfoCallCount() int {
-	fake.getInfoMutex.RLock()
-	defer fake.getInfoMutex.RUnlock()
-	return len(fake.getInfoArgsForCall)
+func (fake *FakeClient) CallCallCount() int {
+	fake.callMutex.RLock()
+	defer fake.callMutex.RUnlock()
+	return len(fake.callArgsForCall)
 }
 
-func (fake *FakeClient) GetInfoReturns(result1 *types.Info, result2 error) {
-	fake.GetInfoStub = nil
-	fake.getInfoReturns = struct {
-		result1 *types.Info
+func (fake *FakeClient) CallCalls(stub func(string, string, io.Reader) (*http.Response, error)) {
+	fake.callMutex.Lock()
+	defer fake.callMutex.Unlock()
+	fake.CallStub = stub
+}
+
+func (fake *FakeClient) CallArgsForCall(i int) (string, string, io.Reader) {
+	fake.callMutex.RLock()
+	defer fake.callMutex.RUnlock()
+	argsForCall := fake.callArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeClient) CallReturns(result1 *http.Response, result2 error) {
+	fake.callMutex.Lock()
+	defer fake.callMutex.Unlock()
+	fake.CallStub = nil
+	fake.callReturns = struct {
+		result1 *http.Response
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeClient) GetInfoReturnsOnCall(i int, result1 *types.Info, result2 error) {
-	fake.GetInfoStub = nil
-	if fake.getInfoReturnsOnCall == nil {
-		fake.getInfoReturnsOnCall = make(map[int]struct {
-			result1 *types.Info
+func (fake *FakeClient) CallReturnsOnCall(i int, result1 *http.Response, result2 error) {
+	fake.callMutex.Lock()
+	defer fake.callMutex.Unlock()
+	fake.CallStub = nil
+	if fake.callReturnsOnCall == nil {
+		fake.callReturnsOnCall = make(map[int]struct {
+			result1 *http.Response
 			result2 error
 		})
 	}
-	fake.getInfoReturnsOnCall[i] = struct {
-		result1 *types.Info
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeClient) RegisterPlatform(arg1 *types.Platform) (*types.Platform, error) {
-	fake.registerPlatformMutex.Lock()
-	ret, specificReturn := fake.registerPlatformReturnsOnCall[len(fake.registerPlatformArgsForCall)]
-	fake.registerPlatformArgsForCall = append(fake.registerPlatformArgsForCall, struct {
-		arg1 *types.Platform
-	}{arg1})
-	fake.recordInvocation("RegisterPlatform", []interface{}{arg1})
-	fake.registerPlatformMutex.Unlock()
-	if fake.RegisterPlatformStub != nil {
-		return fake.RegisterPlatformStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fake.registerPlatformReturns.result1, fake.registerPlatformReturns.result2
-}
-
-func (fake *FakeClient) RegisterPlatformCallCount() int {
-	fake.registerPlatformMutex.RLock()
-	defer fake.registerPlatformMutex.RUnlock()
-	return len(fake.registerPlatformArgsForCall)
-}
-
-func (fake *FakeClient) RegisterPlatformArgsForCall(i int) *types.Platform {
-	fake.registerPlatformMutex.RLock()
-	defer fake.registerPlatformMutex.RUnlock()
-	return fake.registerPlatformArgsForCall[i].arg1
-}
-
-func (fake *FakeClient) RegisterPlatformReturns(result1 *types.Platform, result2 error) {
-	fake.RegisterPlatformStub = nil
-	fake.registerPlatformReturns = struct {
-		result1 *types.Platform
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeClient) RegisterPlatformReturnsOnCall(i int, result1 *types.Platform, result2 error) {
-	fake.RegisterPlatformStub = nil
-	if fake.registerPlatformReturnsOnCall == nil {
-		fake.registerPlatformReturnsOnCall = make(map[int]struct {
-			result1 *types.Platform
-			result2 error
-		})
-	}
-	fake.registerPlatformReturnsOnCall[i] = struct {
-		result1 *types.Platform
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeClient) RegisterBroker(arg1 *types.Broker) (*types.Broker, error) {
-	fake.registerBrokerMutex.Lock()
-	ret, specificReturn := fake.registerBrokerReturnsOnCall[len(fake.registerBrokerArgsForCall)]
-	fake.registerBrokerArgsForCall = append(fake.registerBrokerArgsForCall, struct {
-		arg1 *types.Broker
-	}{arg1})
-	fake.recordInvocation("RegisterBroker", []interface{}{arg1})
-	fake.registerBrokerMutex.Unlock()
-	if fake.RegisterBrokerStub != nil {
-		return fake.RegisterBrokerStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fake.registerBrokerReturns.result1, fake.registerBrokerReturns.result2
-}
-
-func (fake *FakeClient) RegisterBrokerCallCount() int {
-	fake.registerBrokerMutex.RLock()
-	defer fake.registerBrokerMutex.RUnlock()
-	return len(fake.registerBrokerArgsForCall)
-}
-
-func (fake *FakeClient) RegisterBrokerArgsForCall(i int) *types.Broker {
-	fake.registerBrokerMutex.RLock()
-	defer fake.registerBrokerMutex.RUnlock()
-	return fake.registerBrokerArgsForCall[i].arg1
-}
-
-func (fake *FakeClient) RegisterBrokerReturns(result1 *types.Broker, result2 error) {
-	fake.RegisterBrokerStub = nil
-	fake.registerBrokerReturns = struct {
-		result1 *types.Broker
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeClient) RegisterBrokerReturnsOnCall(i int, result1 *types.Broker, result2 error) {
-	fake.RegisterBrokerStub = nil
-	if fake.registerBrokerReturnsOnCall == nil {
-		fake.registerBrokerReturnsOnCall = make(map[int]struct {
-			result1 *types.Broker
-			result2 error
-		})
-	}
-	fake.registerBrokerReturnsOnCall[i] = struct {
-		result1 *types.Broker
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeClient) ListBrokers() (*types.Brokers, error) {
-	fake.listBrokersMutex.Lock()
-	ret, specificReturn := fake.listBrokersReturnsOnCall[len(fake.listBrokersArgsForCall)]
-	fake.listBrokersArgsForCall = append(fake.listBrokersArgsForCall, struct{}{})
-	fake.recordInvocation("ListBrokers", []interface{}{})
-	fake.listBrokersMutex.Unlock()
-	if fake.ListBrokersStub != nil {
-		return fake.ListBrokersStub()
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fake.listBrokersReturns.result1, fake.listBrokersReturns.result2
-}
-
-func (fake *FakeClient) ListBrokersCallCount() int {
-	fake.listBrokersMutex.RLock()
-	defer fake.listBrokersMutex.RUnlock()
-	return len(fake.listBrokersArgsForCall)
-}
-
-func (fake *FakeClient) ListBrokersReturns(result1 *types.Brokers, result2 error) {
-	fake.ListBrokersStub = nil
-	fake.listBrokersReturns = struct {
-		result1 *types.Brokers
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeClient) ListBrokersReturnsOnCall(i int, result1 *types.Brokers, result2 error) {
-	fake.ListBrokersStub = nil
-	if fake.listBrokersReturnsOnCall == nil {
-		fake.listBrokersReturnsOnCall = make(map[int]struct {
-			result1 *types.Brokers
-			result2 error
-		})
-	}
-	fake.listBrokersReturnsOnCall[i] = struct {
-		result1 *types.Brokers
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeClient) ListPlatforms() (*types.Platforms, error) {
-	fake.listPlatformsMutex.Lock()
-	ret, specificReturn := fake.listPlatformsReturnsOnCall[len(fake.listPlatformsArgsForCall)]
-	fake.listPlatformsArgsForCall = append(fake.listPlatformsArgsForCall, struct{}{})
-	fake.recordInvocation("ListPlatforms", []interface{}{})
-	fake.listPlatformsMutex.Unlock()
-	if fake.ListPlatformsStub != nil {
-		return fake.ListPlatformsStub()
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fake.listPlatformsReturns.result1, fake.listPlatformsReturns.result2
-}
-
-func (fake *FakeClient) ListPlatformsCallCount() int {
-	fake.listPlatformsMutex.RLock()
-	defer fake.listPlatformsMutex.RUnlock()
-	return len(fake.listPlatformsArgsForCall)
-}
-
-func (fake *FakeClient) ListPlatformsReturns(result1 *types.Platforms, result2 error) {
-	fake.ListPlatformsStub = nil
-	fake.listPlatformsReturns = struct {
-		result1 *types.Platforms
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeClient) ListPlatformsReturnsOnCall(i int, result1 *types.Platforms, result2 error) {
-	fake.ListPlatformsStub = nil
-	if fake.listPlatformsReturnsOnCall == nil {
-		fake.listPlatformsReturnsOnCall = make(map[int]struct {
-			result1 *types.Platforms
-			result2 error
-		})
-	}
-	fake.listPlatformsReturnsOnCall[i] = struct {
-		result1 *types.Platforms
+	fake.callReturnsOnCall[i] = struct {
+		result1 *http.Response
 		result2 error
 	}{result1, result2}
 }
@@ -384,7 +221,8 @@ func (fake *FakeClient) DeleteBroker(arg1 string) error {
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.deleteBrokerReturns.result1
+	fakeReturns := fake.deleteBrokerReturns
+	return fakeReturns.result1
 }
 
 func (fake *FakeClient) DeleteBrokerCallCount() int {
@@ -393,13 +231,22 @@ func (fake *FakeClient) DeleteBrokerCallCount() int {
 	return len(fake.deleteBrokerArgsForCall)
 }
 
+func (fake *FakeClient) DeleteBrokerCalls(stub func(string) error) {
+	fake.deleteBrokerMutex.Lock()
+	defer fake.deleteBrokerMutex.Unlock()
+	fake.DeleteBrokerStub = stub
+}
+
 func (fake *FakeClient) DeleteBrokerArgsForCall(i int) string {
 	fake.deleteBrokerMutex.RLock()
 	defer fake.deleteBrokerMutex.RUnlock()
-	return fake.deleteBrokerArgsForCall[i].arg1
+	argsForCall := fake.deleteBrokerArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *FakeClient) DeleteBrokerReturns(result1 error) {
+	fake.deleteBrokerMutex.Lock()
+	defer fake.deleteBrokerMutex.Unlock()
 	fake.DeleteBrokerStub = nil
 	fake.deleteBrokerReturns = struct {
 		result1 error
@@ -407,6 +254,8 @@ func (fake *FakeClient) DeleteBrokerReturns(result1 error) {
 }
 
 func (fake *FakeClient) DeleteBrokerReturnsOnCall(i int, result1 error) {
+	fake.deleteBrokerMutex.Lock()
+	defer fake.deleteBrokerMutex.Unlock()
 	fake.DeleteBrokerStub = nil
 	if fake.deleteBrokerReturnsOnCall == nil {
 		fake.deleteBrokerReturnsOnCall = make(map[int]struct {
@@ -432,7 +281,8 @@ func (fake *FakeClient) DeletePlatform(arg1 string) error {
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.deletePlatformReturns.result1
+	fakeReturns := fake.deletePlatformReturns
+	return fakeReturns.result1
 }
 
 func (fake *FakeClient) DeletePlatformCallCount() int {
@@ -441,13 +291,22 @@ func (fake *FakeClient) DeletePlatformCallCount() int {
 	return len(fake.deletePlatformArgsForCall)
 }
 
+func (fake *FakeClient) DeletePlatformCalls(stub func(string) error) {
+	fake.deletePlatformMutex.Lock()
+	defer fake.deletePlatformMutex.Unlock()
+	fake.DeletePlatformStub = stub
+}
+
 func (fake *FakeClient) DeletePlatformArgsForCall(i int) string {
 	fake.deletePlatformMutex.RLock()
 	defer fake.deletePlatformMutex.RUnlock()
-	return fake.deletePlatformArgsForCall[i].arg1
+	argsForCall := fake.deletePlatformArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *FakeClient) DeletePlatformReturns(result1 error) {
+	fake.deletePlatformMutex.Lock()
+	defer fake.deletePlatformMutex.Unlock()
 	fake.DeletePlatformStub = nil
 	fake.deletePlatformReturns = struct {
 		result1 error
@@ -455,6 +314,8 @@ func (fake *FakeClient) DeletePlatformReturns(result1 error) {
 }
 
 func (fake *FakeClient) DeletePlatformReturnsOnCall(i int, result1 error) {
+	fake.deletePlatformMutex.Lock()
+	defer fake.deletePlatformMutex.Unlock()
 	fake.DeletePlatformStub = nil
 	if fake.deletePlatformReturnsOnCall == nil {
 		fake.deletePlatformReturnsOnCall = make(map[int]struct {
@@ -464,6 +325,297 @@ func (fake *FakeClient) DeletePlatformReturnsOnCall(i int, result1 error) {
 	fake.deletePlatformReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
+}
+
+func (fake *FakeClient) GetInfo() (*types.Info, error) {
+	fake.getInfoMutex.Lock()
+	ret, specificReturn := fake.getInfoReturnsOnCall[len(fake.getInfoArgsForCall)]
+	fake.getInfoArgsForCall = append(fake.getInfoArgsForCall, struct {
+	}{})
+	fake.recordInvocation("GetInfo", []interface{}{})
+	fake.getInfoMutex.Unlock()
+	if fake.GetInfoStub != nil {
+		return fake.GetInfoStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.getInfoReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeClient) GetInfoCallCount() int {
+	fake.getInfoMutex.RLock()
+	defer fake.getInfoMutex.RUnlock()
+	return len(fake.getInfoArgsForCall)
+}
+
+func (fake *FakeClient) GetInfoCalls(stub func() (*types.Info, error)) {
+	fake.getInfoMutex.Lock()
+	defer fake.getInfoMutex.Unlock()
+	fake.GetInfoStub = stub
+}
+
+func (fake *FakeClient) GetInfoReturns(result1 *types.Info, result2 error) {
+	fake.getInfoMutex.Lock()
+	defer fake.getInfoMutex.Unlock()
+	fake.GetInfoStub = nil
+	fake.getInfoReturns = struct {
+		result1 *types.Info
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) GetInfoReturnsOnCall(i int, result1 *types.Info, result2 error) {
+	fake.getInfoMutex.Lock()
+	defer fake.getInfoMutex.Unlock()
+	fake.GetInfoStub = nil
+	if fake.getInfoReturnsOnCall == nil {
+		fake.getInfoReturnsOnCall = make(map[int]struct {
+			result1 *types.Info
+			result2 error
+		})
+	}
+	fake.getInfoReturnsOnCall[i] = struct {
+		result1 *types.Info
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) ListBrokers() (*types.Brokers, error) {
+	fake.listBrokersMutex.Lock()
+	ret, specificReturn := fake.listBrokersReturnsOnCall[len(fake.listBrokersArgsForCall)]
+	fake.listBrokersArgsForCall = append(fake.listBrokersArgsForCall, struct {
+	}{})
+	fake.recordInvocation("ListBrokers", []interface{}{})
+	fake.listBrokersMutex.Unlock()
+	if fake.ListBrokersStub != nil {
+		return fake.ListBrokersStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.listBrokersReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeClient) ListBrokersCallCount() int {
+	fake.listBrokersMutex.RLock()
+	defer fake.listBrokersMutex.RUnlock()
+	return len(fake.listBrokersArgsForCall)
+}
+
+func (fake *FakeClient) ListBrokersCalls(stub func() (*types.Brokers, error)) {
+	fake.listBrokersMutex.Lock()
+	defer fake.listBrokersMutex.Unlock()
+	fake.ListBrokersStub = stub
+}
+
+func (fake *FakeClient) ListBrokersReturns(result1 *types.Brokers, result2 error) {
+	fake.listBrokersMutex.Lock()
+	defer fake.listBrokersMutex.Unlock()
+	fake.ListBrokersStub = nil
+	fake.listBrokersReturns = struct {
+		result1 *types.Brokers
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) ListBrokersReturnsOnCall(i int, result1 *types.Brokers, result2 error) {
+	fake.listBrokersMutex.Lock()
+	defer fake.listBrokersMutex.Unlock()
+	fake.ListBrokersStub = nil
+	if fake.listBrokersReturnsOnCall == nil {
+		fake.listBrokersReturnsOnCall = make(map[int]struct {
+			result1 *types.Brokers
+			result2 error
+		})
+	}
+	fake.listBrokersReturnsOnCall[i] = struct {
+		result1 *types.Brokers
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) ListPlatforms() (*types.Platforms, error) {
+	fake.listPlatformsMutex.Lock()
+	ret, specificReturn := fake.listPlatformsReturnsOnCall[len(fake.listPlatformsArgsForCall)]
+	fake.listPlatformsArgsForCall = append(fake.listPlatformsArgsForCall, struct {
+	}{})
+	fake.recordInvocation("ListPlatforms", []interface{}{})
+	fake.listPlatformsMutex.Unlock()
+	if fake.ListPlatformsStub != nil {
+		return fake.ListPlatformsStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.listPlatformsReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeClient) ListPlatformsCallCount() int {
+	fake.listPlatformsMutex.RLock()
+	defer fake.listPlatformsMutex.RUnlock()
+	return len(fake.listPlatformsArgsForCall)
+}
+
+func (fake *FakeClient) ListPlatformsCalls(stub func() (*types.Platforms, error)) {
+	fake.listPlatformsMutex.Lock()
+	defer fake.listPlatformsMutex.Unlock()
+	fake.ListPlatformsStub = stub
+}
+
+func (fake *FakeClient) ListPlatformsReturns(result1 *types.Platforms, result2 error) {
+	fake.listPlatformsMutex.Lock()
+	defer fake.listPlatformsMutex.Unlock()
+	fake.ListPlatformsStub = nil
+	fake.listPlatformsReturns = struct {
+		result1 *types.Platforms
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) ListPlatformsReturnsOnCall(i int, result1 *types.Platforms, result2 error) {
+	fake.listPlatformsMutex.Lock()
+	defer fake.listPlatformsMutex.Unlock()
+	fake.ListPlatformsStub = nil
+	if fake.listPlatformsReturnsOnCall == nil {
+		fake.listPlatformsReturnsOnCall = make(map[int]struct {
+			result1 *types.Platforms
+			result2 error
+		})
+	}
+	fake.listPlatformsReturnsOnCall[i] = struct {
+		result1 *types.Platforms
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) RegisterBroker(arg1 *types.Broker) (*types.Broker, error) {
+	fake.registerBrokerMutex.Lock()
+	ret, specificReturn := fake.registerBrokerReturnsOnCall[len(fake.registerBrokerArgsForCall)]
+	fake.registerBrokerArgsForCall = append(fake.registerBrokerArgsForCall, struct {
+		arg1 *types.Broker
+	}{arg1})
+	fake.recordInvocation("RegisterBroker", []interface{}{arg1})
+	fake.registerBrokerMutex.Unlock()
+	if fake.RegisterBrokerStub != nil {
+		return fake.RegisterBrokerStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.registerBrokerReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeClient) RegisterBrokerCallCount() int {
+	fake.registerBrokerMutex.RLock()
+	defer fake.registerBrokerMutex.RUnlock()
+	return len(fake.registerBrokerArgsForCall)
+}
+
+func (fake *FakeClient) RegisterBrokerCalls(stub func(*types.Broker) (*types.Broker, error)) {
+	fake.registerBrokerMutex.Lock()
+	defer fake.registerBrokerMutex.Unlock()
+	fake.RegisterBrokerStub = stub
+}
+
+func (fake *FakeClient) RegisterBrokerArgsForCall(i int) *types.Broker {
+	fake.registerBrokerMutex.RLock()
+	defer fake.registerBrokerMutex.RUnlock()
+	argsForCall := fake.registerBrokerArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeClient) RegisterBrokerReturns(result1 *types.Broker, result2 error) {
+	fake.registerBrokerMutex.Lock()
+	defer fake.registerBrokerMutex.Unlock()
+	fake.RegisterBrokerStub = nil
+	fake.registerBrokerReturns = struct {
+		result1 *types.Broker
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) RegisterBrokerReturnsOnCall(i int, result1 *types.Broker, result2 error) {
+	fake.registerBrokerMutex.Lock()
+	defer fake.registerBrokerMutex.Unlock()
+	fake.RegisterBrokerStub = nil
+	if fake.registerBrokerReturnsOnCall == nil {
+		fake.registerBrokerReturnsOnCall = make(map[int]struct {
+			result1 *types.Broker
+			result2 error
+		})
+	}
+	fake.registerBrokerReturnsOnCall[i] = struct {
+		result1 *types.Broker
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) RegisterPlatform(arg1 *types.Platform) (*types.Platform, error) {
+	fake.registerPlatformMutex.Lock()
+	ret, specificReturn := fake.registerPlatformReturnsOnCall[len(fake.registerPlatformArgsForCall)]
+	fake.registerPlatformArgsForCall = append(fake.registerPlatformArgsForCall, struct {
+		arg1 *types.Platform
+	}{arg1})
+	fake.recordInvocation("RegisterPlatform", []interface{}{arg1})
+	fake.registerPlatformMutex.Unlock()
+	if fake.RegisterPlatformStub != nil {
+		return fake.RegisterPlatformStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.registerPlatformReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeClient) RegisterPlatformCallCount() int {
+	fake.registerPlatformMutex.RLock()
+	defer fake.registerPlatformMutex.RUnlock()
+	return len(fake.registerPlatformArgsForCall)
+}
+
+func (fake *FakeClient) RegisterPlatformCalls(stub func(*types.Platform) (*types.Platform, error)) {
+	fake.registerPlatformMutex.Lock()
+	defer fake.registerPlatformMutex.Unlock()
+	fake.RegisterPlatformStub = stub
+}
+
+func (fake *FakeClient) RegisterPlatformArgsForCall(i int) *types.Platform {
+	fake.registerPlatformMutex.RLock()
+	defer fake.registerPlatformMutex.RUnlock()
+	argsForCall := fake.registerPlatformArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeClient) RegisterPlatformReturns(result1 *types.Platform, result2 error) {
+	fake.registerPlatformMutex.Lock()
+	defer fake.registerPlatformMutex.Unlock()
+	fake.RegisterPlatformStub = nil
+	fake.registerPlatformReturns = struct {
+		result1 *types.Platform
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) RegisterPlatformReturnsOnCall(i int, result1 *types.Platform, result2 error) {
+	fake.registerPlatformMutex.Lock()
+	defer fake.registerPlatformMutex.Unlock()
+	fake.RegisterPlatformStub = nil
+	if fake.registerPlatformReturnsOnCall == nil {
+		fake.registerPlatformReturnsOnCall = make(map[int]struct {
+			result1 *types.Platform
+			result2 error
+		})
+	}
+	fake.registerPlatformReturnsOnCall[i] = struct {
+		result1 *types.Platform
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeClient) UpdateBroker(arg1 string, arg2 *types.Broker) (*types.Broker, error) {
@@ -481,7 +633,8 @@ func (fake *FakeClient) UpdateBroker(arg1 string, arg2 *types.Broker) (*types.Br
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.updateBrokerReturns.result1, fake.updateBrokerReturns.result2
+	fakeReturns := fake.updateBrokerReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *FakeClient) UpdateBrokerCallCount() int {
@@ -490,13 +643,22 @@ func (fake *FakeClient) UpdateBrokerCallCount() int {
 	return len(fake.updateBrokerArgsForCall)
 }
 
+func (fake *FakeClient) UpdateBrokerCalls(stub func(string, *types.Broker) (*types.Broker, error)) {
+	fake.updateBrokerMutex.Lock()
+	defer fake.updateBrokerMutex.Unlock()
+	fake.UpdateBrokerStub = stub
+}
+
 func (fake *FakeClient) UpdateBrokerArgsForCall(i int) (string, *types.Broker) {
 	fake.updateBrokerMutex.RLock()
 	defer fake.updateBrokerMutex.RUnlock()
-	return fake.updateBrokerArgsForCall[i].arg1, fake.updateBrokerArgsForCall[i].arg2
+	argsForCall := fake.updateBrokerArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeClient) UpdateBrokerReturns(result1 *types.Broker, result2 error) {
+	fake.updateBrokerMutex.Lock()
+	defer fake.updateBrokerMutex.Unlock()
 	fake.UpdateBrokerStub = nil
 	fake.updateBrokerReturns = struct {
 		result1 *types.Broker
@@ -505,6 +667,8 @@ func (fake *FakeClient) UpdateBrokerReturns(result1 *types.Broker, result2 error
 }
 
 func (fake *FakeClient) UpdateBrokerReturnsOnCall(i int, result1 *types.Broker, result2 error) {
+	fake.updateBrokerMutex.Lock()
+	defer fake.updateBrokerMutex.Unlock()
 	fake.UpdateBrokerStub = nil
 	if fake.updateBrokerReturnsOnCall == nil {
 		fake.updateBrokerReturnsOnCall = make(map[int]struct {
@@ -533,7 +697,8 @@ func (fake *FakeClient) UpdatePlatform(arg1 string, arg2 *types.Platform) (*type
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.updatePlatformReturns.result1, fake.updatePlatformReturns.result2
+	fakeReturns := fake.updatePlatformReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *FakeClient) UpdatePlatformCallCount() int {
@@ -542,13 +707,22 @@ func (fake *FakeClient) UpdatePlatformCallCount() int {
 	return len(fake.updatePlatformArgsForCall)
 }
 
+func (fake *FakeClient) UpdatePlatformCalls(stub func(string, *types.Platform) (*types.Platform, error)) {
+	fake.updatePlatformMutex.Lock()
+	defer fake.updatePlatformMutex.Unlock()
+	fake.UpdatePlatformStub = stub
+}
+
 func (fake *FakeClient) UpdatePlatformArgsForCall(i int) (string, *types.Platform) {
 	fake.updatePlatformMutex.RLock()
 	defer fake.updatePlatformMutex.RUnlock()
-	return fake.updatePlatformArgsForCall[i].arg1, fake.updatePlatformArgsForCall[i].arg2
+	argsForCall := fake.updatePlatformArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeClient) UpdatePlatformReturns(result1 *types.Platform, result2 error) {
+	fake.updatePlatformMutex.Lock()
+	defer fake.updatePlatformMutex.Unlock()
 	fake.UpdatePlatformStub = nil
 	fake.updatePlatformReturns = struct {
 		result1 *types.Platform
@@ -557,6 +731,8 @@ func (fake *FakeClient) UpdatePlatformReturns(result1 *types.Platform, result2 e
 }
 
 func (fake *FakeClient) UpdatePlatformReturnsOnCall(i int, result1 *types.Platform, result2 error) {
+	fake.updatePlatformMutex.Lock()
+	defer fake.updatePlatformMutex.Unlock()
 	fake.UpdatePlatformStub = nil
 	if fake.updatePlatformReturnsOnCall == nil {
 		fake.updatePlatformReturnsOnCall = make(map[int]struct {
@@ -570,82 +746,29 @@ func (fake *FakeClient) UpdatePlatformReturnsOnCall(i int, result1 *types.Platfo
 	}{result1, result2}
 }
 
-func (fake *FakeClient) Call(method string, smpath string, body io.Reader) (*http.Response, error) {
-	fake.callMutex.Lock()
-	ret, specificReturn := fake.callReturnsOnCall[len(fake.callArgsForCall)]
-	fake.callArgsForCall = append(fake.callArgsForCall, struct {
-		method string
-		smpath string
-		body   io.Reader
-	}{method, smpath, body})
-	fake.recordInvocation("Call", []interface{}{method, smpath, body})
-	fake.callMutex.Unlock()
-	if fake.CallStub != nil {
-		return fake.CallStub(method, smpath, body)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fake.callReturns.result1, fake.callReturns.result2
-}
-
-func (fake *FakeClient) CallCallCount() int {
-	fake.callMutex.RLock()
-	defer fake.callMutex.RUnlock()
-	return len(fake.callArgsForCall)
-}
-
-func (fake *FakeClient) CallArgsForCall(i int) (string, string, io.Reader) {
-	fake.callMutex.RLock()
-	defer fake.callMutex.RUnlock()
-	return fake.callArgsForCall[i].method, fake.callArgsForCall[i].smpath, fake.callArgsForCall[i].body
-}
-
-func (fake *FakeClient) CallReturns(result1 *http.Response, result2 error) {
-	fake.CallStub = nil
-	fake.callReturns = struct {
-		result1 *http.Response
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeClient) CallReturnsOnCall(i int, result1 *http.Response, result2 error) {
-	fake.CallStub = nil
-	if fake.callReturnsOnCall == nil {
-		fake.callReturnsOnCall = make(map[int]struct {
-			result1 *http.Response
-			result2 error
-		})
-	}
-	fake.callReturnsOnCall[i] = struct {
-		result1 *http.Response
-		result2 error
-	}{result1, result2}
-}
-
 func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.getInfoMutex.RLock()
-	defer fake.getInfoMutex.RUnlock()
-	fake.registerPlatformMutex.RLock()
-	defer fake.registerPlatformMutex.RUnlock()
-	fake.registerBrokerMutex.RLock()
-	defer fake.registerBrokerMutex.RUnlock()
-	fake.listBrokersMutex.RLock()
-	defer fake.listBrokersMutex.RUnlock()
-	fake.listPlatformsMutex.RLock()
-	defer fake.listPlatformsMutex.RUnlock()
+	fake.callMutex.RLock()
+	defer fake.callMutex.RUnlock()
 	fake.deleteBrokerMutex.RLock()
 	defer fake.deleteBrokerMutex.RUnlock()
 	fake.deletePlatformMutex.RLock()
 	defer fake.deletePlatformMutex.RUnlock()
+	fake.getInfoMutex.RLock()
+	defer fake.getInfoMutex.RUnlock()
+	fake.listBrokersMutex.RLock()
+	defer fake.listBrokersMutex.RUnlock()
+	fake.listPlatformsMutex.RLock()
+	defer fake.listPlatformsMutex.RUnlock()
+	fake.registerBrokerMutex.RLock()
+	defer fake.registerBrokerMutex.RUnlock()
+	fake.registerPlatformMutex.RLock()
+	defer fake.registerPlatformMutex.RUnlock()
 	fake.updateBrokerMutex.RLock()
 	defer fake.updateBrokerMutex.RUnlock()
 	fake.updatePlatformMutex.RLock()
 	defer fake.updatePlatformMutex.RUnlock()
-	fake.callMutex.RLock()
-	defer fake.callMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

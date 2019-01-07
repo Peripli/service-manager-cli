@@ -25,7 +25,7 @@ import (
 
 // ClientConfig contains the configuration of the CLI.
 type ClientConfig struct {
-	auth.Token
+	auth.Token `structs:",flatten"`
 
 	ClientID              string
 	ClientSecret          string

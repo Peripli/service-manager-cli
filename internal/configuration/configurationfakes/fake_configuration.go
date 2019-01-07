@@ -2,13 +2,38 @@
 package configurationfakes
 
 import (
-	"sync"
+	sync "sync"
 
-	"github.com/Peripli/service-manager-cli/internal/configuration"
-	"github.com/Peripli/service-manager-cli/pkg/smclient"
+	configuration "github.com/Peripli/service-manager-cli/internal/configuration"
+	smclient "github.com/Peripli/service-manager-cli/pkg/smclient"
 )
 
 type FakeConfiguration struct {
+	GetStub        func(string) (interface{}, error)
+	getMutex       sync.RWMutex
+	getArgsForCall []struct {
+		arg1 string
+	}
+	getReturns struct {
+		result1 interface{}
+		result2 error
+	}
+	getReturnsOnCall map[int]struct {
+		result1 interface{}
+		result2 error
+	}
+	LoadStub        func() (*smclient.ClientConfig, error)
+	loadMutex       sync.RWMutex
+	loadArgsForCall []struct {
+	}
+	loadReturns struct {
+		result1 *smclient.ClientConfig
+		result2 error
+	}
+	loadReturnsOnCall map[int]struct {
+		result1 *smclient.ClientConfig
+		result2 error
+	}
 	SaveStub        func(*smclient.ClientConfig) error
 	saveMutex       sync.RWMutex
 	saveArgsForCall []struct {
@@ -20,19 +45,138 @@ type FakeConfiguration struct {
 	saveReturnsOnCall map[int]struct {
 		result1 error
 	}
-	LoadStub        func() (*smclient.ClientConfig, error)
-	loadMutex       sync.RWMutex
-	loadArgsForCall []struct{}
-	loadReturns     struct {
-		result1 *smclient.ClientConfig
-		result2 error
+	SetStub        func(string, interface{}) error
+	setMutex       sync.RWMutex
+	setArgsForCall []struct {
+		arg1 string
+		arg2 interface{}
 	}
-	loadReturnsOnCall map[int]struct {
-		result1 *smclient.ClientConfig
-		result2 error
+	setReturns struct {
+		result1 error
+	}
+	setReturnsOnCall map[int]struct {
+		result1 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeConfiguration) Get(arg1 string) (interface{}, error) {
+	fake.getMutex.Lock()
+	ret, specificReturn := fake.getReturnsOnCall[len(fake.getArgsForCall)]
+	fake.getArgsForCall = append(fake.getArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("Get", []interface{}{arg1})
+	fake.getMutex.Unlock()
+	if fake.GetStub != nil {
+		return fake.GetStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.getReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeConfiguration) GetCallCount() int {
+	fake.getMutex.RLock()
+	defer fake.getMutex.RUnlock()
+	return len(fake.getArgsForCall)
+}
+
+func (fake *FakeConfiguration) GetCalls(stub func(string) (interface{}, error)) {
+	fake.getMutex.Lock()
+	defer fake.getMutex.Unlock()
+	fake.GetStub = stub
+}
+
+func (fake *FakeConfiguration) GetArgsForCall(i int) string {
+	fake.getMutex.RLock()
+	defer fake.getMutex.RUnlock()
+	argsForCall := fake.getArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeConfiguration) GetReturns(result1 interface{}, result2 error) {
+	fake.getMutex.Lock()
+	defer fake.getMutex.Unlock()
+	fake.GetStub = nil
+	fake.getReturns = struct {
+		result1 interface{}
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeConfiguration) GetReturnsOnCall(i int, result1 interface{}, result2 error) {
+	fake.getMutex.Lock()
+	defer fake.getMutex.Unlock()
+	fake.GetStub = nil
+	if fake.getReturnsOnCall == nil {
+		fake.getReturnsOnCall = make(map[int]struct {
+			result1 interface{}
+			result2 error
+		})
+	}
+	fake.getReturnsOnCall[i] = struct {
+		result1 interface{}
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeConfiguration) Load() (*smclient.ClientConfig, error) {
+	fake.loadMutex.Lock()
+	ret, specificReturn := fake.loadReturnsOnCall[len(fake.loadArgsForCall)]
+	fake.loadArgsForCall = append(fake.loadArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Load", []interface{}{})
+	fake.loadMutex.Unlock()
+	if fake.LoadStub != nil {
+		return fake.LoadStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.loadReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeConfiguration) LoadCallCount() int {
+	fake.loadMutex.RLock()
+	defer fake.loadMutex.RUnlock()
+	return len(fake.loadArgsForCall)
+}
+
+func (fake *FakeConfiguration) LoadCalls(stub func() (*smclient.ClientConfig, error)) {
+	fake.loadMutex.Lock()
+	defer fake.loadMutex.Unlock()
+	fake.LoadStub = stub
+}
+
+func (fake *FakeConfiguration) LoadReturns(result1 *smclient.ClientConfig, result2 error) {
+	fake.loadMutex.Lock()
+	defer fake.loadMutex.Unlock()
+	fake.LoadStub = nil
+	fake.loadReturns = struct {
+		result1 *smclient.ClientConfig
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeConfiguration) LoadReturnsOnCall(i int, result1 *smclient.ClientConfig, result2 error) {
+	fake.loadMutex.Lock()
+	defer fake.loadMutex.Unlock()
+	fake.LoadStub = nil
+	if fake.loadReturnsOnCall == nil {
+		fake.loadReturnsOnCall = make(map[int]struct {
+			result1 *smclient.ClientConfig
+			result2 error
+		})
+	}
+	fake.loadReturnsOnCall[i] = struct {
+		result1 *smclient.ClientConfig
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeConfiguration) Save(arg1 *smclient.ClientConfig) error {
@@ -49,7 +193,8 @@ func (fake *FakeConfiguration) Save(arg1 *smclient.ClientConfig) error {
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.saveReturns.result1
+	fakeReturns := fake.saveReturns
+	return fakeReturns.result1
 }
 
 func (fake *FakeConfiguration) SaveCallCount() int {
@@ -58,13 +203,22 @@ func (fake *FakeConfiguration) SaveCallCount() int {
 	return len(fake.saveArgsForCall)
 }
 
+func (fake *FakeConfiguration) SaveCalls(stub func(*smclient.ClientConfig) error) {
+	fake.saveMutex.Lock()
+	defer fake.saveMutex.Unlock()
+	fake.SaveStub = stub
+}
+
 func (fake *FakeConfiguration) SaveArgsForCall(i int) *smclient.ClientConfig {
 	fake.saveMutex.RLock()
 	defer fake.saveMutex.RUnlock()
-	return fake.saveArgsForCall[i].arg1
+	argsForCall := fake.saveArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *FakeConfiguration) SaveReturns(result1 error) {
+	fake.saveMutex.Lock()
+	defer fake.saveMutex.Unlock()
 	fake.SaveStub = nil
 	fake.saveReturns = struct {
 		result1 error
@@ -72,6 +226,8 @@ func (fake *FakeConfiguration) SaveReturns(result1 error) {
 }
 
 func (fake *FakeConfiguration) SaveReturnsOnCall(i int, result1 error) {
+	fake.saveMutex.Lock()
+	defer fake.saveMutex.Unlock()
 	fake.SaveStub = nil
 	if fake.saveReturnsOnCall == nil {
 		fake.saveReturnsOnCall = make(map[int]struct {
@@ -83,56 +239,78 @@ func (fake *FakeConfiguration) SaveReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeConfiguration) Load() (*smclient.ClientConfig, error) {
-	fake.loadMutex.Lock()
-	ret, specificReturn := fake.loadReturnsOnCall[len(fake.loadArgsForCall)]
-	fake.loadArgsForCall = append(fake.loadArgsForCall, struct{}{})
-	fake.recordInvocation("Load", []interface{}{})
-	fake.loadMutex.Unlock()
-	if fake.LoadStub != nil {
-		return fake.LoadStub()
+func (fake *FakeConfiguration) Set(arg1 string, arg2 interface{}) error {
+	fake.setMutex.Lock()
+	ret, specificReturn := fake.setReturnsOnCall[len(fake.setArgsForCall)]
+	fake.setArgsForCall = append(fake.setArgsForCall, struct {
+		arg1 string
+		arg2 interface{}
+	}{arg1, arg2})
+	fake.recordInvocation("Set", []interface{}{arg1, arg2})
+	fake.setMutex.Unlock()
+	if fake.SetStub != nil {
+		return fake.SetStub(arg1, arg2)
 	}
 	if specificReturn {
-		return ret.result1, ret.result2
+		return ret.result1
 	}
-	return fake.loadReturns.result1, fake.loadReturns.result2
+	fakeReturns := fake.setReturns
+	return fakeReturns.result1
 }
 
-func (fake *FakeConfiguration) LoadCallCount() int {
-	fake.loadMutex.RLock()
-	defer fake.loadMutex.RUnlock()
-	return len(fake.loadArgsForCall)
+func (fake *FakeConfiguration) SetCallCount() int {
+	fake.setMutex.RLock()
+	defer fake.setMutex.RUnlock()
+	return len(fake.setArgsForCall)
 }
 
-func (fake *FakeConfiguration) LoadReturns(result1 *smclient.ClientConfig, result2 error) {
-	fake.LoadStub = nil
-	fake.loadReturns = struct {
-		result1 *smclient.ClientConfig
-		result2 error
-	}{result1, result2}
+func (fake *FakeConfiguration) SetCalls(stub func(string, interface{}) error) {
+	fake.setMutex.Lock()
+	defer fake.setMutex.Unlock()
+	fake.SetStub = stub
 }
 
-func (fake *FakeConfiguration) LoadReturnsOnCall(i int, result1 *smclient.ClientConfig, result2 error) {
-	fake.LoadStub = nil
-	if fake.loadReturnsOnCall == nil {
-		fake.loadReturnsOnCall = make(map[int]struct {
-			result1 *smclient.ClientConfig
-			result2 error
+func (fake *FakeConfiguration) SetArgsForCall(i int) (string, interface{}) {
+	fake.setMutex.RLock()
+	defer fake.setMutex.RUnlock()
+	argsForCall := fake.setArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeConfiguration) SetReturns(result1 error) {
+	fake.setMutex.Lock()
+	defer fake.setMutex.Unlock()
+	fake.SetStub = nil
+	fake.setReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeConfiguration) SetReturnsOnCall(i int, result1 error) {
+	fake.setMutex.Lock()
+	defer fake.setMutex.Unlock()
+	fake.SetStub = nil
+	if fake.setReturnsOnCall == nil {
+		fake.setReturnsOnCall = make(map[int]struct {
+			result1 error
 		})
 	}
-	fake.loadReturnsOnCall[i] = struct {
-		result1 *smclient.ClientConfig
-		result2 error
-	}{result1, result2}
+	fake.setReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *FakeConfiguration) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.saveMutex.RLock()
-	defer fake.saveMutex.RUnlock()
+	fake.getMutex.RLock()
+	defer fake.getMutex.RUnlock()
 	fake.loadMutex.RLock()
 	defer fake.loadMutex.RUnlock()
+	fake.saveMutex.RLock()
+	defer fake.saveMutex.RUnlock()
+	fake.setMutex.RLock()
+	defer fake.setMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

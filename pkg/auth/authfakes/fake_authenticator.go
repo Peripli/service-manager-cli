@@ -2,16 +2,17 @@
 package authfakes
 
 import (
-	"sync"
+	sync "sync"
 
-	"github.com/Peripli/service-manager-cli/pkg/auth"
+	auth "github.com/Peripli/service-manager-cli/pkg/auth"
 )
 
 type FakeAuthenticator struct {
 	ClientCredentialsStub        func() (*auth.Token, error)
 	clientCredentialsMutex       sync.RWMutex
-	clientCredentialsArgsForCall []struct{}
-	clientCredentialsReturns     struct {
+	clientCredentialsArgsForCall []struct {
+	}
+	clientCredentialsReturns struct {
 		result1 *auth.Token
 		result2 error
 	}
@@ -19,11 +20,11 @@ type FakeAuthenticator struct {
 		result1 *auth.Token
 		result2 error
 	}
-	PasswordCredentialsStub        func(user, password string) (*auth.Token, error)
+	PasswordCredentialsStub        func(string, string) (*auth.Token, error)
 	passwordCredentialsMutex       sync.RWMutex
 	passwordCredentialsArgsForCall []struct {
-		user     string
-		password string
+		arg1 string
+		arg2 string
 	}
 	passwordCredentialsReturns struct {
 		result1 *auth.Token
@@ -40,7 +41,8 @@ type FakeAuthenticator struct {
 func (fake *FakeAuthenticator) ClientCredentials() (*auth.Token, error) {
 	fake.clientCredentialsMutex.Lock()
 	ret, specificReturn := fake.clientCredentialsReturnsOnCall[len(fake.clientCredentialsArgsForCall)]
-	fake.clientCredentialsArgsForCall = append(fake.clientCredentialsArgsForCall, struct{}{})
+	fake.clientCredentialsArgsForCall = append(fake.clientCredentialsArgsForCall, struct {
+	}{})
 	fake.recordInvocation("ClientCredentials", []interface{}{})
 	fake.clientCredentialsMutex.Unlock()
 	if fake.ClientCredentialsStub != nil {
@@ -49,7 +51,8 @@ func (fake *FakeAuthenticator) ClientCredentials() (*auth.Token, error) {
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.clientCredentialsReturns.result1, fake.clientCredentialsReturns.result2
+	fakeReturns := fake.clientCredentialsReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *FakeAuthenticator) ClientCredentialsCallCount() int {
@@ -58,7 +61,15 @@ func (fake *FakeAuthenticator) ClientCredentialsCallCount() int {
 	return len(fake.clientCredentialsArgsForCall)
 }
 
+func (fake *FakeAuthenticator) ClientCredentialsCalls(stub func() (*auth.Token, error)) {
+	fake.clientCredentialsMutex.Lock()
+	defer fake.clientCredentialsMutex.Unlock()
+	fake.ClientCredentialsStub = stub
+}
+
 func (fake *FakeAuthenticator) ClientCredentialsReturns(result1 *auth.Token, result2 error) {
+	fake.clientCredentialsMutex.Lock()
+	defer fake.clientCredentialsMutex.Unlock()
 	fake.ClientCredentialsStub = nil
 	fake.clientCredentialsReturns = struct {
 		result1 *auth.Token
@@ -67,6 +78,8 @@ func (fake *FakeAuthenticator) ClientCredentialsReturns(result1 *auth.Token, res
 }
 
 func (fake *FakeAuthenticator) ClientCredentialsReturnsOnCall(i int, result1 *auth.Token, result2 error) {
+	fake.clientCredentialsMutex.Lock()
+	defer fake.clientCredentialsMutex.Unlock()
 	fake.ClientCredentialsStub = nil
 	if fake.clientCredentialsReturnsOnCall == nil {
 		fake.clientCredentialsReturnsOnCall = make(map[int]struct {
@@ -80,22 +93,23 @@ func (fake *FakeAuthenticator) ClientCredentialsReturnsOnCall(i int, result1 *au
 	}{result1, result2}
 }
 
-func (fake *FakeAuthenticator) PasswordCredentials(user string, password string) (*auth.Token, error) {
+func (fake *FakeAuthenticator) PasswordCredentials(arg1 string, arg2 string) (*auth.Token, error) {
 	fake.passwordCredentialsMutex.Lock()
 	ret, specificReturn := fake.passwordCredentialsReturnsOnCall[len(fake.passwordCredentialsArgsForCall)]
 	fake.passwordCredentialsArgsForCall = append(fake.passwordCredentialsArgsForCall, struct {
-		user     string
-		password string
-	}{user, password})
-	fake.recordInvocation("PasswordCredentials", []interface{}{user, password})
+		arg1 string
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("PasswordCredentials", []interface{}{arg1, arg2})
 	fake.passwordCredentialsMutex.Unlock()
 	if fake.PasswordCredentialsStub != nil {
-		return fake.PasswordCredentialsStub(user, password)
+		return fake.PasswordCredentialsStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.passwordCredentialsReturns.result1, fake.passwordCredentialsReturns.result2
+	fakeReturns := fake.passwordCredentialsReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *FakeAuthenticator) PasswordCredentialsCallCount() int {
@@ -104,13 +118,22 @@ func (fake *FakeAuthenticator) PasswordCredentialsCallCount() int {
 	return len(fake.passwordCredentialsArgsForCall)
 }
 
+func (fake *FakeAuthenticator) PasswordCredentialsCalls(stub func(string, string) (*auth.Token, error)) {
+	fake.passwordCredentialsMutex.Lock()
+	defer fake.passwordCredentialsMutex.Unlock()
+	fake.PasswordCredentialsStub = stub
+}
+
 func (fake *FakeAuthenticator) PasswordCredentialsArgsForCall(i int) (string, string) {
 	fake.passwordCredentialsMutex.RLock()
 	defer fake.passwordCredentialsMutex.RUnlock()
-	return fake.passwordCredentialsArgsForCall[i].user, fake.passwordCredentialsArgsForCall[i].password
+	argsForCall := fake.passwordCredentialsArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeAuthenticator) PasswordCredentialsReturns(result1 *auth.Token, result2 error) {
+	fake.passwordCredentialsMutex.Lock()
+	defer fake.passwordCredentialsMutex.Unlock()
 	fake.PasswordCredentialsStub = nil
 	fake.passwordCredentialsReturns = struct {
 		result1 *auth.Token
@@ -119,6 +142,8 @@ func (fake *FakeAuthenticator) PasswordCredentialsReturns(result1 *auth.Token, r
 }
 
 func (fake *FakeAuthenticator) PasswordCredentialsReturnsOnCall(i int, result1 *auth.Token, result2 error) {
+	fake.passwordCredentialsMutex.Lock()
+	defer fake.passwordCredentialsMutex.Unlock()
 	fake.PasswordCredentialsStub = nil
 	if fake.passwordCredentialsReturnsOnCall == nil {
 		fake.passwordCredentialsReturnsOnCall = make(map[int]struct {

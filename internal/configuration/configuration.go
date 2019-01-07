@@ -28,6 +28,8 @@ import (
 type Configuration interface {
 	Save(*smclient.ClientConfig) error
 	Load() (*smclient.ClientConfig, error)
+	Set(string, interface{}) error
+	Get(string) (interface{}, error)
 }
 
 type smConfiguration struct {
@@ -69,6 +71,18 @@ func (smCfg *smConfiguration) Save(clientCfg *smclient.ClientConfig) error {
 	smCfg.viperEnv.Set("auth_url", clientCfg.AuthorizationEndpoint)
 
 	return smCfg.viperEnv.WriteConfig()
+}
+
+func (smCfg *smConfiguration) Set(key string, value interface{}) error {
+	smCfg.viperEnv.Set(key, value)
+	return smCfg.viperEnv.WriteConfig()
+}
+
+func (smCfg *smConfiguration) Get(key string) (interface{}, error) {
+	if err := smCfg.viperEnv.ReadInConfig(); err != nil {
+		return nil, err
+	}
+	return smCfg.viperEnv.Get(key), nil
 }
 
 // Load implements configuration load

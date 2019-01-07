@@ -55,3 +55,8 @@
 [[constraint]]
  name = "github.com/Peripli/service-manager"
  branch = "master"
+
+# Refer to issue https://github.com/golang/dep/issues/1799
+ [[override]]
+ name = "gopkg.in/fsnotify.v1"
+ source = "https://github.com/fsnotify/fsnotify.git"
