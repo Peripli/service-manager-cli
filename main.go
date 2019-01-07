@@ -19,7 +19,6 @@ package main
 import (
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/cmd/broker"
-	"github.com/Peripli/service-manager-cli/internal/cmd/config"
 	"github.com/Peripli/service-manager-cli/internal/cmd/curl"
 	"github.com/Peripli/service-manager-cli/internal/cmd/info"
 	"github.com/Peripli/service-manager-cli/internal/cmd/login"
@@ -55,7 +54,6 @@ func main() {
 
 	smCommandsGroup := cmd.Group{
 		Commands: []cmd.CommandPreparator{
-			config.NewConfigCmd(context),
 			curl.NewCurlCmd(context, fs),
 			broker.NewRegisterBrokerCmd(context),
 			broker.NewListBrokersCmd(context),
