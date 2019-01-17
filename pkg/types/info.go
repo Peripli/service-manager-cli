@@ -19,4 +19,10 @@ package types
 // Info contains the url of a token issuer
 type Info struct {
 	TokenIssuerURL string `json:"token_issuer_url"`
+	TokenBasicAuth bool   `json:"token_basic_auth"`
+}
+
+// DefaultInfo contains default values
+var DefaultInfo = Info{
+	TokenBasicAuth: true, // RFC 6749 section 2.3.1
 }

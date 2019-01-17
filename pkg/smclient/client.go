@@ -102,14 +102,13 @@ func (client *serviceManagerClient) GetInfo() (*types.Info, error) {
 		return nil, errors.ResponseError{StatusCode: response.StatusCode}
 	}
 
-	var result *types.Info
-
-	err = httputil.UnmarshalResponse(response, &result)
+	info := types.DefaultInfo
+	err = httputil.UnmarshalResponse(response, &info)
 	if err != nil {
 		return nil, err
 	}
 
-	return result, nil
+	return &info, nil
 }
 
 // RegisterPlatform registers a platform in the service manager

@@ -152,6 +152,7 @@ func (lc *Cmd) Run() error {
 		ClientID:     lc.clientID,
 		ClientSecret: lc.clientSecret,
 		IssuerURL:    info.TokenIssuerURL,
+		UseBasicAuth: info.TokenBasicAuth,
 		SSLDisabled:  lc.sslDisabled,
 	}
 
@@ -176,6 +177,7 @@ func (lc *Cmd) Run() error {
 		IssuerURL:             info.TokenIssuerURL,
 		AuthorizationEndpoint: options.AuthorizationEndpoint,
 		TokenEndpoint:         options.TokenEndpoint,
+		TokenBasicAuth:        info.TokenBasicAuth,
 	}
 	if settings.User == "" {
 		settings.User = options.ClientID

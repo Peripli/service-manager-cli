@@ -3,7 +3,7 @@
 *.dll
 *.so
 *.dylib
-
+/service-manager-cli
 /out
 
 # Test binary, build with `go test -c`

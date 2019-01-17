@@ -29,6 +29,7 @@ import (
 type Settings struct {
 	auth.Token
 
+	TokenBasicAuth        bool
 	ClientID              string
 	ClientSecret          string
 	AuthorizationEndpoint string
@@ -84,6 +85,7 @@ func NewSMConfiguration(viperEnv *viper.Viper, cfgFile string) (Configuration, e
 	}
 
 	viperEnv.SetConfigFile(cfgFile)
+	viperEnv.SetDefault("token_basic_auth", true) // RFC 6749 section 2.3.1
 
 	return &smConfiguration{viperEnv}, nil
 }
@@ -93,6 +95,7 @@ func (smCfg *smConfiguration) Save(settings *Settings) error {
 	smCfg.viperEnv.Set("url", settings.URL)
 	smCfg.viperEnv.Set("user", settings.User)
 	smCfg.viperEnv.Set("ssl_disabled", settings.SSLDisabled)
+	smCfg.viperEnv.Set("token_basic_auth", settings.TokenBasicAuth)
 
 	smCfg.viperEnv.Set("access_token", settings.AccessToken)
 	smCfg.viperEnv.Set("refresh_token", settings.RefreshToken)
@@ -120,6 +123,7 @@ func (smCfg *smConfiguration) Load() (*Settings, error) {
 	}
 
 	settings.SSLDisabled = smCfg.viperEnv.Get("ssl_disabled").(bool)
+	settings.TokenBasicAuth = smCfg.viperEnv.Get("token_basic_auth").(bool)
 	settings.AccessToken = smCfg.viperEnv.Get("access_token").(string)
 	settings.RefreshToken = smCfg.viperEnv.Get("refresh_token").(string)
 	settings.ExpiresIn, _ = time.Parse(time.RFC1123Z, smCfg.viperEnv.Get("expiry").(string))
