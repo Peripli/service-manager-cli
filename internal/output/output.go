@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/Peripli/service-manager/pkg/log"
+
 	"github.com/Peripli/service-manager-cli/pkg/types"
 )
 
@@ -97,7 +99,7 @@ func HasPrinter(outputFormat Format) bool {
 func PrintFormat(wr io.Writer, outputFormat Format, object interface{}) {
 	printer, found := printers[outputFormat]
 	if !found {
-		panic("printer for the selected format not found")
+		log.D().Warn("printer for the selected format is not supported")
 	}
 	printer.Print(wr, object)
 }
