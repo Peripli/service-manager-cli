@@ -60,5 +60,5 @@ required = ["gopkg.in/fsnotify.v1"]
 
 [[constraint]]
   name = "github.com/Peripli/service-manager"
-  version = "0.1.2"
+  version = "0.1.8"
 

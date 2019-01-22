@@ -2,12 +2,12 @@
 
 
 [[projects]]
-  digest = "1:d022b9146de688275348d238e3f39381bccabde4ee53eb41644a8cefda864b9f"
+  digest = "1:ee0ec0b57c504b70647aa7bc1b5c7ede80470f3021cf864852f86d8eb2d7f275"
   name = "github.com/Peripli/service-manager"
   packages = ["pkg/log"]
   pruneopts = "UT"
-  revision = "c3ab19d95c45ece39c1f430c950e2939e5c0e286"
-  version = "v0.1.2"
+  revision = "f11633863979b692795e1ec8ec1aa9771dcfdca3"
+  version = "v0.1.8"
 
 [[projects]]
   digest = "1:abeb38ade3f32a92943e5be54f55ed6d6e3b6602761d74b4aab4c9dd45c18abd"
