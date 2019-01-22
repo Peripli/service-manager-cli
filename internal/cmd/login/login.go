@@ -147,13 +147,13 @@ func (lc *Cmd) Run() error {
 	}
 
 	options := &auth.Options{
-		User:         lc.user,
-		Password:     lc.password,
-		ClientID:     lc.clientID,
-		ClientSecret: lc.clientSecret,
-		IssuerURL:    info.TokenIssuerURL,
-		UseBasicAuth: info.TokenBasicAuth,
-		SSLDisabled:  lc.sslDisabled,
+		User:           lc.user,
+		Password:       lc.password,
+		ClientID:       lc.clientID,
+		ClientSecret:   lc.clientSecret,
+		IssuerURL:      info.TokenIssuerURL,
+		TokenBasicAuth: info.TokenBasicAuth,
+		SSLDisabled:    lc.sslDisabled,
 	}
 
 	authStrategy, options, err := lc.authBuilder(options)

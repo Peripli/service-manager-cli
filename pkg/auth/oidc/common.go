@@ -33,7 +33,7 @@ import (
 // If token is provided will try to refresh the token if it has expired,
 // otherwise if token is not provided will do client_credentials flow and fetch token
 func NewClient(options *auth.Options, token *auth.Token) auth.Client {
-	if !options.UseBasicAuth {
+	if !options.TokenBasicAuth {
 		oauth2.RegisterBrokenAuthHeaderProvider(options.IssuerURL)
 	}
 

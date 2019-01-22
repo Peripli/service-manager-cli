@@ -31,8 +31,8 @@ type Options struct {
 	TokenEndpoint         string `mapstructure:"token_endpoint"`
 	IssuerURL             string `mapstructure:"issuer_url"`
 
-	UseBasicAuth bool `mapstructure:"use_basic_auth"`
-	SSLDisabled  bool `mapstructure:"ssl_disabled"`
+	TokenBasicAuth bool `mapstructure:"token_basic_auth"`
+	SSLDisabled    bool `mapstructure:"ssl_disabled"`
 
 	Timeout time.Duration `mapstructure:"timeout"`
 }

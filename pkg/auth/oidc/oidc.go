@@ -44,7 +44,7 @@ type OpenIDStrategy struct {
 
 // NewOpenIDStrategy returns OpenId auth strategy
 func NewOpenIDStrategy(options *auth.Options) (*OpenIDStrategy, *auth.Options, error) {
-	if !options.UseBasicAuth {
+	if !options.TokenBasicAuth {
 		oauth2.RegisterBrokenAuthHeaderProvider(options.IssuerURL)
 	}
 

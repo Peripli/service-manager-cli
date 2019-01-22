@@ -29,16 +29,16 @@ import (
 type Settings struct {
 	auth.Token
 
-	TokenBasicAuth        bool
 	ClientID              string
 	ClientSecret          string
 	AuthorizationEndpoint string
 	TokenEndpoint         string
 	IssuerURL             string
 
-	URL         string
-	User        string
-	SSLDisabled bool
+	URL            string
+	User           string
+	TokenBasicAuth bool
+	SSLDisabled    bool
 }
 
 // Validate validates client config

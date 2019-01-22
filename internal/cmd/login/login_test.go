@@ -162,7 +162,7 @@ var _ = Describe("Login Command test", func() {
 
 					Expect(err).ShouldNot(HaveOccurred())
 					savedConfig := config.SaveArgsForCall(0)
-					Expect(authOptions.UseBasicAuth).To(Equal(tokenBasicAuth))
+					Expect(authOptions.TokenBasicAuth).To(Equal(tokenBasicAuth))
 					Expect(savedConfig.TokenBasicAuth).To(Equal(tokenBasicAuth))
 				})
 			}
