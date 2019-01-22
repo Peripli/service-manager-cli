@@ -52,7 +52,7 @@ func (ubc *UpdateBrokerCmd) Validate(args []string) error {
 	ubc.name = args[0]
 
 	if len(args) < 2 {
-		return fmt.Errorf("Nothing to update. Broker JSON is not provided")
+		return fmt.Errorf("nothing to update. Broker JSON is not provided")
 	}
 
 	if err := json.Unmarshal([]byte(args[1]), &ubc.updatedBroker); err != nil {

@@ -122,7 +122,7 @@ func fetchOpenidConfiguration(issuerURL string, readConfigurationFunc DoRequestF
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return nil, errors.New("Unexpected status code")
+		return nil, errors.New("unexpected status code")
 	}
 
 	var configuration *openIDConfiguration

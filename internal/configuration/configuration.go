@@ -46,10 +46,10 @@ func (settings Settings) Validate() error {
 		return err
 	}
 	if settings.User == "" {
-		return errors.New("User must not be empty")
+		return errors.New("user must not be empty")
 	}
 	if settings.AccessToken == "" {
-		return errors.New("Token must not be empty")
+		return errors.New("token must not be empty")
 	}
 	return nil
 }

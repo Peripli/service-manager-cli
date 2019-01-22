@@ -49,7 +49,7 @@ func NewOpenIDStrategy(options *auth.Options) (*OpenIDStrategy, *auth.Options, e
 
 	openIDConfig, err := fetchOpenidConfiguration(options.IssuerURL, httpClient.Do)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Error occurred while fetching openid configuration: %s", err)
+		return nil, nil, fmt.Errorf("error occurred while fetching openid configuration: %s", err)
 	}
 	options.AuthorizationEndpoint = openIDConfig.AuthorizationEndpoint
 	options.TokenEndpoint = openIDConfig.TokenEndpoint

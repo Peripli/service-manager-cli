@@ -93,12 +93,12 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 			if isRefresher {
 				token, err := refresher.Token()
 				if err != nil {
-					return fmt.Errorf("Error refreshing token. Reason: %s", err)
+					return fmt.Errorf("error refreshing token. Reason: %s", err)
 				}
 				if settings.AccessToken != token.AccessToken {
 					settings.Token = *token
 					if saveErr := ctx.Configuration.Save(settings); saveErr != nil {
-						return fmt.Errorf("Error saving config file. Reason: %s", saveErr)
+						return fmt.Errorf("error saving config file. Reason: %s", saveErr)
 					}
 				}
 			}
