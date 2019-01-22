@@ -75,7 +75,7 @@ var _ = Describe("Service Manager Auth strategy test", func() {
 				})
 
 				Expect(err).Should(HaveOccurred())
-				Expect(err).To(MatchError("Error occurred while fetching openid configuration: Unexpected status code"))
+				Expect(err).To(MatchError("error occurred while fetching openid configuration: unexpected status code"))
 			})
 
 			It("should handle wrong JSON body", func() {

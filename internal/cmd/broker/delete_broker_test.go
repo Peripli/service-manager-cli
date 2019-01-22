@@ -72,7 +72,7 @@ var _ = Describe("List brokers command test", func() {
 
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring("Broker with name: broker-name successfully deleted"))
-			Expect(buffer.String()).To(ContainSubstring("Broker with name: broker was not found"))
+			Expect(buffer.String()).To(ContainSubstring("broker with name: broker was not found"))
 		})
 	})
 
@@ -84,7 +84,7 @@ var _ = Describe("List brokers command test", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring("Broker with name: broker-name successfully deleted"))
 			Expect(buffer.String()).To(ContainSubstring("Broker with name: broker2 successfully deleted"))
-			Expect(buffer.String()).To(ContainSubstring("Broker with name: non-existing was not found"))
+			Expect(buffer.String()).To(ContainSubstring("broker with name: non-existing was not found"))
 		})
 	})
 

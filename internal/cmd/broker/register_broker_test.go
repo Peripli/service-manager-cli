@@ -115,7 +115,7 @@ var _ = Describe("Register Broker Command test", func() {
 			It("should return error", func() {
 				err := invalidRegisterBrokerCommandExecution([]string{"validName", "--basic", "user:password"})
 
-				Expect(err.Error()).To(ContainSubstring("Name and URL are required"))
+				Expect(err.Error()).To(ContainSubstring("name and URL are required"))
 			})
 		})
 

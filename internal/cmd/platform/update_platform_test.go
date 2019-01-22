@@ -97,7 +97,7 @@ var _ = Describe("Update platform command test", func() {
 		It("should throw error", func() {
 			err := executeWithArgs([]string{"platform"})
 			Expect(err).Should(HaveOccurred())
-			Expect(err).To(MatchError("Nothing to update. Platform JSON is not provided"))
+			Expect(err).To(MatchError("nothing to update. Platform JSON is not provided"))
 		})
 	})
 
