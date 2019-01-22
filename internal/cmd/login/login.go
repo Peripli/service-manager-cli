@@ -77,7 +77,6 @@ type Cmd struct {
 	clientID           string
 	clientSecret       string
 	authenticationFlow authFlow
-	token              string
 
 	authBuilder authenticationBuilder
 }
@@ -108,7 +107,6 @@ func (lc *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result.Flags().StringVarP(&lc.clientSecret, "client-secret", "", defaultClientSecret, "Client secret used for OAuth flow")
 	result.Flags().BoolVarP(&lc.sslDisabled, "skip-ssl-validation", "", false, "Skip verification of the OAuth endpoint. Not recommended!")
 	result.Flags().VarP(newAuthFlowValue(passwordGrant, &lc.authenticationFlow), "auth-flow", "", "provide Oauth2 authentication flow type")
-	result.Flags().StringVarP(&lc.token, "token", "", "", "access token to be used for OAuth flow")
 
 	return result
 }
@@ -211,9 +209,6 @@ func (lc *Cmd) checkLoginFlow() error {
 	} else {
 		if len(lc.clientID) == 0 {
 			lc.clientID = defaultClientID
-		}
-		if lc.token != "" {
-			return nil
 		}
 
 		if err := lc.readUser(); err != nil {
