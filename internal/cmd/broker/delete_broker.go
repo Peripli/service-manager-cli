@@ -82,7 +82,7 @@ func (dbc *DeleteBrokerCmd) Run() error {
 
 	for _, brokerName := range dbc.names {
 		if _, deleted := deletedBrokers[brokerName]; !deleted {
-			output.PrintError(dbc.Output, fmt.Errorf("Broker with name: %s was not found", brokerName))
+			output.PrintError(dbc.Output, fmt.Errorf("broker with name: %s was not found", brokerName))
 		}
 	}
 

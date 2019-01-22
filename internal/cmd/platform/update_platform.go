@@ -52,7 +52,7 @@ func (upc *UpdatePlatformCmd) Validate(args []string) error {
 	upc.name = args[0]
 
 	if len(args) < 2 {
-		return fmt.Errorf("Nothing to update. Platform JSON is not provided")
+		return fmt.Errorf("nothing to update. Platform JSON is not provided")
 	}
 
 	if err := json.Unmarshal([]byte(args[1]), &upc.updatedPlatform); err != nil {

@@ -77,7 +77,7 @@ func (dpc *DeletePlatformCmd) Run() error {
 
 	for _, platformName := range dpc.names {
 		if _, deleted := deletedPlatforms[platformName]; !deleted {
-			output.PrintError(dpc.Output, fmt.Errorf("Platform with name: %s was not found", platformName))
+			output.PrintError(dpc.Output, fmt.Errorf("platform with name: %s was not found", platformName))
 		}
 	}
 

@@ -91,7 +91,7 @@ var _ = Describe("Update broker command test", func() {
 		It("should throw error", func() {
 			err := executeWithArgs([]string{"broker"})
 			Expect(err).Should(HaveOccurred())
-			Expect(err).To(MatchError("Nothing to update. Broker JSON is not provided"))
+			Expect(err).To(MatchError("nothing to update. Broker JSON is not provided"))
 		})
 	})
 

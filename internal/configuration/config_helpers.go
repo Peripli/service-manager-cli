@@ -39,7 +39,7 @@ func homeDir() (string, error) {
 		homeDir = os.Getenv("SM_HOME")
 
 		if _, err := os.Stat(homeDir); os.IsNotExist(err) {
-			return "", fmt.Errorf("Error locating SM_HOME folder '%s'", homeDir)
+			return "", fmt.Errorf("error locating SM_HOME folder '%s'", homeDir)
 		}
 	} else {
 		homeDir = userHomeDir()

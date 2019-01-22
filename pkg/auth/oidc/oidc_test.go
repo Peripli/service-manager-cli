@@ -1,6 +1,7 @@
 package oidc
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -74,7 +75,7 @@ var _ = Describe("Service Manager Auth strategy test", func() {
 				})
 
 				Expect(err).Should(HaveOccurred())
-				Expect(err).To(MatchError("Error occurred while fetching openid configuration: Unexpected status code"))
+				Expect(err).To(MatchError("error occurred while fetching openid configuration: unexpected status code"))
 			})
 
 			It("should handle wrong JSON body", func() {
@@ -110,13 +111,13 @@ var _ = Describe("Service Manager Auth strategy test", func() {
 
 		Context("when token response is invalid", func() {
 			It("should handle wrong response code", func() {
-				errorMsg := `{"error":"missing client_id or client_secret"}`
+				errorMsg := "missing client_id or client_secret"
 				responseStatusCode = http.StatusBadRequest
-				responseBody = []byte(errorMsg)
+				responseBody = []byte(fmt.Sprintf(`{"error_description": "%s"}`, errorMsg))
 				_, err := authStrategy.PasswordCredentials("admin", "admin")
 
 				Expect(err).Should(HaveOccurred())
-				Expect(err.(*auth.Error).Error()).To(ContainSubstring(errorMsg))
+				Expect(err.Error()).To(ContainSubstring(errorMsg))
 			})
 
 			It("should handle wrong JSON body", func() {

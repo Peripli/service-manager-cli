@@ -72,7 +72,7 @@ var _ = Describe("Delete platforms command test", func() {
 
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring("Platform with name: platform-name successfully deleted"))
-			Expect(buffer.String()).To(ContainSubstring("Platform with name: platform was not found"))
+			Expect(buffer.String()).To(ContainSubstring("platform with name: platform was not found"))
 		})
 	})
 

@@ -23,6 +23,8 @@ import (
 
 // Options is used to configure new authenticators and clients
 type Options struct {
+	User                  string
+	Password              string
 	ClientID              string `mapstructure:"client_id"`
 	ClientSecret          string `mapstructure:"client_secret"`
 	AuthorizationEndpoint string `mapstructure:"authorization_endpoint"`
