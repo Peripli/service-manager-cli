@@ -20,8 +20,6 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/Peripli/service-manager/pkg/log"
-
 	"github.com/Peripli/service-manager-cli/pkg/types"
 )
 
@@ -89,17 +87,19 @@ func PrintServiceManagerObject(wr io.Writer, outputFormat Format, object types.S
 	}
 }
 
-// HasPrinter checks whether there is printer for output format
-func HasPrinter(outputFormat Format) bool {
-	_, found := printers[outputFormat]
-	return found
-}
+type converterFunc func([]byte) (interface{}, error)
 
 // PrintFormat prints the object in the provided format if possible
-func PrintFormat(wr io.Writer, outputFormat Format, object interface{}) {
+func PrintFormat(wr io.Writer, outputFormat Format, encodedObject []byte, converter converterFunc) error {
+	object, err := converter(encodedObject)
+	if err != nil {
+		return err
+	}
 	printer, found := printers[outputFormat]
 	if !found {
-		log.D().Warn("printer for the selected format is not supported")
+		PrintMessage(wr, string(encodedObject))
+		return nil
 	}
 	printer.Print(wr, object)
+	return nil
 }

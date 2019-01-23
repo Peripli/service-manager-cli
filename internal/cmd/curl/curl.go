@@ -116,20 +116,19 @@ func (c *Cmd) Run() error {
 	}
 
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		var result map[string]interface{}
-		if err = json.Unmarshal(data, &result); err != nil {
-			return err
-		}
-		if output.HasPrinter(c.outputFormat) {
-			output.PrintFormat(c.Output, c.outputFormat, result)
-		} else {
-			output.PrintMessage(c.Output, string(data))
-		}
-	} else {
-		output.PrintMessage(c.Output, string(data))
+		return output.PrintFormat(c.Output, c.outputFormat, data, toMap)
 	}
+	output.PrintMessage(c.Output, string(data))
 
 	return nil
+}
+
+func toMap(data []byte) (interface{}, error) {
+	var result map[string]interface{}
+	if err := json.Unmarshal(data, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 // SetOutputFormat set output format
