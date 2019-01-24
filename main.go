@@ -19,12 +19,14 @@ package main
 import (
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/cmd/broker"
+	"github.com/Peripli/service-manager-cli/internal/cmd/curl"
 	"github.com/Peripli/service-manager-cli/internal/cmd/info"
 	"github.com/Peripli/service-manager-cli/internal/cmd/login"
 	"github.com/Peripli/service-manager-cli/internal/cmd/platform"
 	"github.com/Peripli/service-manager-cli/internal/cmd/version"
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
 	"os"
@@ -39,6 +41,7 @@ func main() {
 
 	context := &cmd.Context{}
 	rootCmd := cmd.BuildRootCommand(context)
+	fs := afero.NewOsFs()
 
 	normalCommandsGroup := cmd.Group{
 		Commands: []cmd.CommandPreparator{
@@ -51,6 +54,7 @@ func main() {
 
 	smCommandsGroup := cmd.Group{
 		Commands: []cmd.CommandPreparator{
+			curl.NewCurlCmd(context, fs),
 			broker.NewRegisterBrokerCmd(context),
 			broker.NewListBrokersCmd(context),
 			broker.NewDeleteBrokerCmd(context),

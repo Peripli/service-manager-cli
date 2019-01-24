@@ -161,7 +161,7 @@ func (lc *Cmd) Run() error {
 	}
 	token, err := lc.getToken(authStrategy)
 	if err != nil {
-		return cliErr.New("Could not login", err)
+		return cliErr.New("could not login", err)
 	}
 
 	settings := &configuration.Settings{
@@ -210,6 +210,7 @@ func (lc *Cmd) checkLoginFlow() error {
 		if len(lc.clientID) == 0 {
 			lc.clientID = defaultClientID
 		}
+
 		if err := lc.readUser(); err != nil {
 			return err
 		}

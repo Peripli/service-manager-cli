@@ -86,3 +86,20 @@ func PrintServiceManagerObject(wr io.Writer, outputFormat Format, object types.S
 		printers[outputFormat].Print(wr, object)
 	}
 }
+
+type converterFunc func([]byte) (interface{}, error)
+
+// PrintFormat prints the object in the provided format if possible
+func PrintFormat(wr io.Writer, outputFormat Format, encodedObject []byte, converter converterFunc) error {
+	object, err := converter(encodedObject)
+	if err != nil {
+		return err
+	}
+	printer, found := printers[outputFormat]
+	if !found {
+		PrintMessage(wr, string(encodedObject))
+		return nil
+	}
+	printer.Print(wr, object)
+	return nil
+}
