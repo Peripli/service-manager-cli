@@ -437,12 +437,24 @@ var _ = Describe("Service Manager Client test", func() {
 
 	Describe("Get info", func() {
 		Context("when token issuer is set", func() {
-			It("should get the right issuer", func() {
+			It("should get the right issuer and default token basic auth", func() {
 				responseStatusCode = http.StatusOK
 				responseBody = []byte(`{"token_issuer_url": "http://uaa.com"}`)
 
 				info, _ := client.GetInfo()
 				Expect(info.TokenIssuerURL).To(Equal("http://uaa.com"))
+				Expect(info.TokenBasicAuth).To(BeTrue()) // default value
+			})
+		})
+
+		Context("when token basic auth is set", func() {
+			It("should get the right value", func() {
+				responseStatusCode = http.StatusOK
+				responseBody = []byte(`{"token_issuer_url": "http://uaa.com", "token_basic_auth": false}`)
+
+				info, _ := client.GetInfo()
+				Expect(info.TokenIssuerURL).To(Equal("http://uaa.com"))
+				Expect(info.TokenBasicAuth).To(BeFalse())
 			})
 		})
 

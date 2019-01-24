@@ -87,6 +87,7 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 				ClientSecret:          settings.ClientSecret,
 				IssuerURL:             settings.IssuerURL,
 				SSLDisabled:           settings.SSLDisabled,
+				TokenBasicAuth:        settings.TokenBasicAuth,
 			}, &settings.Token)
 
 			refresher, isRefresher := oidcClient.(auth.Refresher)
