@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
 
@@ -249,6 +250,12 @@ func (client *serviceManagerClient) update(result interface{}, body []byte, id, 
 func (client *serviceManagerClient) Call(method string, smpath string, body io.Reader) (*http.Response, error) {
 	fullURL := httputil.NormalizeURL(client.config.URL)
 	fullURL = fullURL + smpath
+	parsedURL, err := url.Parse(fullURL)
+	if err != nil {
+		return nil, err
+	}
+	parsedURL.RawQuery = parsedURL.Query().Encode()
+	fullURL = parsedURL.String()
 
 	req, err := http.NewRequest(method, fullURL, body)
 	if err != nil {
