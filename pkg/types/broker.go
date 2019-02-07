@@ -52,7 +52,7 @@ func (b *Broker) TableData() *TableData {
 
 // Brokers wraps an array of brokers
 type Brokers struct {
-	Brokers []Broker `json:"brokers"`
+	Brokers []Broker `json:"service_brokers"`
 }
 
 // IsEmpty whether the structure is empty
