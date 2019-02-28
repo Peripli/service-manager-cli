@@ -45,7 +45,15 @@ func NewClient(options *auth.Options, token *auth.Token) auth.Client {
 	var oauthClient *http.Client
 	var tokenSource oauth2.TokenSource
 
-	if token == nil || token.RefreshToken == "" {
+	var tt oauth2.Token
+	if token != nil {
+		tt.AccessToken = token.AccessToken
+		tt.RefreshToken = token.RefreshToken
+		tt.Expiry = token.ExpiresIn
+		tt.TokenType = token.TokenType
+	}
+
+	if token == nil || tt.RefreshToken == "" {
 		oauthConfig := &clientcredentials.Config{
 			ClientID:     options.ClientID,
 			ClientSecret: options.ClientSecret,
@@ -54,11 +62,7 @@ func NewClient(options *auth.Options, token *auth.Token) auth.Client {
 		clientCredentialsSource := oauthConfig.TokenSource(ctx)
 		// The double wrapping of TokenSource objects is needed, because there is no other way
 		// to pass the existing access token and the client will try to fetch a token for each request
-		tokenSource = oauth2.ReuseTokenSource(&oauth2.Token{
-			AccessToken: token.AccessToken,
-			Expiry:      token.ExpiresIn,
-			TokenType:   token.TokenType,
-		}, clientCredentialsSource)
+		tokenSource = oauth2.ReuseTokenSource(&tt, clientCredentialsSource)
 	} else {
 		oauthConfig := &oauth2.Config{
 			ClientID:     options.ClientID,
@@ -68,12 +72,7 @@ func NewClient(options *auth.Options, token *auth.Token) auth.Client {
 				TokenURL: options.TokenEndpoint,
 			},
 		}
-		tokenSource = oauthConfig.TokenSource(ctx, &oauth2.Token{
-			AccessToken:  token.AccessToken,
-			RefreshToken: token.RefreshToken,
-			Expiry:       token.ExpiresIn,
-			TokenType:    token.TokenType,
-		})
+		tokenSource = oauthConfig.TokenSource(ctx, &tt)
 	}
 
 	oauthClient = oauth2.NewClient(ctx, tokenSource)
