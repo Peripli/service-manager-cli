@@ -17,8 +17,10 @@
 package cmd
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -62,6 +64,12 @@ type HiddenUsageCommand interface {
 type FormattedCommand interface {
 	// SetOutputFormat sets the command's output format
 	SetOutputFormat(output.Format)
+}
+
+//ConfirmedCommand should be implemented if the command should ask for user confirmation prior execution
+type ConfirmedCommand interface {
+	// AskForConfirmation asks user to confirm the execution of desired operation
+	AskForConfirmation() (bool, error)
 }
 
 // PrepareFunc is function type which executes common prepare logic for commands
@@ -132,6 +140,16 @@ func CommonPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) err
 			c.SilenceUsage = huCmd.HideUsage()
 		}
 
+		if confirmedCmd, ok := cmd.(ConfirmedCommand); ok {
+			confirmed, err := confirmedCmd.AskForConfirmation()
+			if err != nil {
+				return err
+			}
+			if !confirmed {
+				return errors.New("Aborting...");
+			}
+		}
+
 		return nil
 	}
 }
@@ -152,6 +170,32 @@ func AddFormatFlag(flags *pflag.FlagSet) {
 func AddFormatFlagDefault(flags *pflag.FlagSet, defValue string) {
 	flags.StringP("output", "o", defValue, "output format")
 }
+
+//CommonConfirmationPrompt provides common logic for confirmation of an operation
+func CommonConfirmationPrompt(message string, ctx *Context, input io.Reader) (bool, error) {
+	output.PrintMessage(ctx.Output, message)
+
+	positiveResponses := map[string]bool {
+		"y": true,
+		"Y": true,
+		"yes": true,
+		"Yes": true,
+		"YES": true,
+	}
+
+	bufReader := bufio.NewReader(input)
+	resp, isPrefix, err := bufReader.ReadLine()
+	if isPrefix {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return positiveResponses[string(resp)], nil
+
+
+}
+
 
 func getOutputFormat(flags *pflag.FlagSet) (output.Format, error) {
 	outputFormat, _ := flags.GetString("output")

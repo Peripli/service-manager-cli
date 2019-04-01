@@ -18,6 +18,8 @@ package platform
 
 import (
 	"fmt"
+	"io"
+	"strings"
 
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/internal/util"
@@ -31,12 +33,15 @@ import (
 type DeletePlatformCmd struct {
 	*cmd.Context
 
+	input io.Reader
+	force bool
+
 	names []string
 }
 
 // NewDeletePlatformCmd returns new list-brokers command with context
-func NewDeletePlatformCmd(context *cmd.Context) *DeletePlatformCmd {
-	return &DeletePlatformCmd{Context: context}
+func NewDeletePlatformCmd(context *cmd.Context, input io.Reader) *DeletePlatformCmd {
+	return &DeletePlatformCmd{Context: context, input:input}
 }
 
 // Validate validates command's arguments
@@ -89,6 +94,14 @@ func (dpc *DeletePlatformCmd) HideUsage() bool {
 	return true
 }
 
+func (dpc *DeletePlatformCmd) AskForConfirmation() (bool, error) {
+	if !dpc.force {
+		message := fmt.Sprintf("Really delete platforms with names [%s]: ", strings.Join(dpc.names, ", "))
+		return cmd.CommonConfirmationPrompt(message, dpc.Context, dpc.input)
+	}
+	return true, nil
+}
+
 // Prepare returns cobra command
 func (dpc *DeletePlatformCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
@@ -99,6 +112,8 @@ func (dpc *DeletePlatformCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		PreRunE: prepare(dpc, dpc.Context),
 		RunE:    cmd.RunE(dpc),
 	}
+
+	result.Flags().BoolVarP(&dpc.force, "force", "f", false, "Force delete without confirmation")
 
 	return result
 }
