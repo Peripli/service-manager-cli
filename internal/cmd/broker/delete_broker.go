@@ -99,6 +99,7 @@ func (dbc *DeleteBrokerCmd) HideUsage() bool {
 	return true
 }
 
+// AskForConfirmation asks the user to confirm deletion
 func (dbc *DeleteBrokerCmd) AskForConfirmation() (bool, error) {
 	if !dbc.force {
 		message := fmt.Sprintf("Really delete brokers with names [%s]: ", strings.Join(dbc.names, ", "))

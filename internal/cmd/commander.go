@@ -146,7 +146,7 @@ func CommonPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) err
 				return err
 			}
 			if !confirmed {
-				return errors.New("Aborting...");
+				return errors.New("delete declined")
 			}
 		}
 

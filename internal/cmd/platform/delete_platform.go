@@ -94,6 +94,7 @@ func (dpc *DeletePlatformCmd) HideUsage() bool {
 	return true
 }
 
+// AskForConfirmation asks the user to confirm deletion
 func (dpc *DeletePlatformCmd) AskForConfirmation() (bool, error) {
 	if !dpc.force {
 		message := fmt.Sprintf("Really delete platforms with names [%s]: ", strings.Join(dpc.names, ", "))
