@@ -2,12 +2,12 @@
 package smclientfakes
 
 import (
-	io "io"
-	http "net/http"
-	sync "sync"
+	"io"
+	"net/http"
+	"sync"
 
-	smclient "github.com/Peripli/service-manager-cli/pkg/smclient"
-	types "github.com/Peripli/service-manager-cli/pkg/types"
+	"github.com/Peripli/service-manager-cli/pkg/smclient"
+	"github.com/Peripli/service-manager-cli/pkg/types"
 )
 
 type FakeClient struct {
@@ -70,6 +70,18 @@ type FakeClient struct {
 	}
 	listBrokersReturnsOnCall map[int]struct {
 		result1 *types.Brokers
+		result2 error
+	}
+	ListOfferingsStub        func() (*types.ServiceOfferings, error)
+	listOfferingsMutex       sync.RWMutex
+	listOfferingsArgsForCall []struct {
+	}
+	listOfferingsReturns struct {
+		result1 *types.ServiceOfferings
+		result2 error
+	}
+	listOfferingsReturnsOnCall map[int]struct {
+		result1 *types.ServiceOfferings
 		result2 error
 	}
 	ListPlatformsStub        func() (*types.Platforms, error)
@@ -437,6 +449,61 @@ func (fake *FakeClient) ListBrokersReturnsOnCall(i int, result1 *types.Brokers, 
 	}{result1, result2}
 }
 
+func (fake *FakeClient) ListOfferings() (*types.ServiceOfferings, error) {
+	fake.listOfferingsMutex.Lock()
+	ret, specificReturn := fake.listOfferingsReturnsOnCall[len(fake.listOfferingsArgsForCall)]
+	fake.listOfferingsArgsForCall = append(fake.listOfferingsArgsForCall, struct {
+	}{})
+	fake.recordInvocation("ListOfferings", []interface{}{})
+	fake.listOfferingsMutex.Unlock()
+	if fake.ListOfferingsStub != nil {
+		return fake.ListOfferingsStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.listOfferingsReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeClient) ListOfferingsCallCount() int {
+	fake.listOfferingsMutex.RLock()
+	defer fake.listOfferingsMutex.RUnlock()
+	return len(fake.listOfferingsArgsForCall)
+}
+
+func (fake *FakeClient) ListOfferingsCalls(stub func() (*types.ServiceOfferings, error)) {
+	fake.listOfferingsMutex.Lock()
+	defer fake.listOfferingsMutex.Unlock()
+	fake.ListOfferingsStub = stub
+}
+
+func (fake *FakeClient) ListOfferingsReturns(result1 *types.ServiceOfferings, result2 error) {
+	fake.listOfferingsMutex.Lock()
+	defer fake.listOfferingsMutex.Unlock()
+	fake.ListOfferingsStub = nil
+	fake.listOfferingsReturns = struct {
+		result1 *types.ServiceOfferings
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) ListOfferingsReturnsOnCall(i int, result1 *types.ServiceOfferings, result2 error) {
+	fake.listOfferingsMutex.Lock()
+	defer fake.listOfferingsMutex.Unlock()
+	fake.ListOfferingsStub = nil
+	if fake.listOfferingsReturnsOnCall == nil {
+		fake.listOfferingsReturnsOnCall = make(map[int]struct {
+			result1 *types.ServiceOfferings
+			result2 error
+		})
+	}
+	fake.listOfferingsReturnsOnCall[i] = struct {
+		result1 *types.ServiceOfferings
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeClient) ListPlatforms() (*types.Platforms, error) {
 	fake.listPlatformsMutex.Lock()
 	ret, specificReturn := fake.listPlatformsReturnsOnCall[len(fake.listPlatformsArgsForCall)]
@@ -759,6 +826,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.getInfoMutex.RUnlock()
 	fake.listBrokersMutex.RLock()
 	defer fake.listBrokersMutex.RUnlock()
+	fake.listOfferingsMutex.RLock()
+	defer fake.listOfferingsMutex.RUnlock()
 	fake.listPlatformsMutex.RLock()
 	defer fake.listPlatformsMutex.RUnlock()
 	fake.registerBrokerMutex.RLock()

@@ -38,6 +38,7 @@ type Client interface {
 	RegisterBroker(*types.Broker) (*types.Broker, error)
 	ListBrokers() (*types.Brokers, error)
 	ListPlatforms() (*types.Platforms, error)
+	ListOfferings() (*types.ServiceOfferings, error)
 	DeleteBroker(string) error
 	DeletePlatform(string) error
 	UpdateBroker(string, *types.Broker) (*types.Broker, error)
@@ -177,6 +178,32 @@ func (client *serviceManagerClient) ListPlatforms() (*types.Platforms, error) {
 	err := client.list(platforms, "/v1/platforms")
 
 	return platforms, err
+}
+
+// ListOfferings returns service offerings of brokers registered in Service Manager
+func (client *serviceManagerClient) ListOfferings() (*types.ServiceOfferings, error) {
+	serviceOfferings := &types.ServiceOfferings{}
+	err := client.list(serviceOfferings, "/v1/service_offerings")
+	if err != nil {
+		return nil, err
+	}
+	for i, v := range serviceOfferings.ServiceOfferings {
+		plans := &types.ServicePlans{}
+		err := client.list(plans, "/v1/service_plans?fieldQuery=service_offering_id+=+"+v.ID)
+		if err != nil {
+			return nil, err
+		}
+		serviceOfferings.ServiceOfferings[i].Plans = plans.ServicePlans
+
+		broker := &types.Broker{}
+		err = client.list(broker, "/v1/service_brokers/" + v.BrokerID)
+		if err != nil {
+			return nil, err
+		}
+
+		serviceOfferings.ServiceOfferings[i].BrokerName = broker.Name
+	}
+	return serviceOfferings, nil
 }
 
 func (client *serviceManagerClient) list(result interface{}, path string) error {
