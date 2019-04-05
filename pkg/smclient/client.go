@@ -185,20 +185,20 @@ func (client *serviceManagerClient) ListOfferings() (*types.ServiceOfferings, er
 	serviceOfferings := &types.ServiceOfferings{}
 	err := client.list(serviceOfferings, "/v1/service_offerings")
 	if err != nil {
-		return serviceOfferings, err
+		return nil, err
 	}
 	for i, v := range serviceOfferings.ServiceOfferings {
 		plans := &types.ServicePlans{}
 		err := client.list(plans, "/v1/service_plans?fieldQuery=service_offering_id+=+"+v.ID)
 		if err != nil {
-			return serviceOfferings, err
+			return nil, err
 		}
 		serviceOfferings.ServiceOfferings[i].Plans = plans.ServicePlans
 
 		broker := &types.Broker{}
 		err = client.list(broker, "/v1/service_brokers/" + v.BrokerID)
 		if err != nil {
-			return serviceOfferings, err
+			return nil, err
 		}
 
 		serviceOfferings.ServiceOfferings[i].BrokerName = broker.Name

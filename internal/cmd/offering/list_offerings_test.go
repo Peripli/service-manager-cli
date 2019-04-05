@@ -25,17 +25,17 @@ var _ = Describe("List offerings command test", func() {
 	var buffer *bytes.Buffer
 
 	plan1 := types.ServicePlan{
-		Name: "plan 1",
+		Name: "plan1",
 		Description: "desc",
 	}
 
 	plan2 := types.ServicePlan{
-		Name: "plan 2",
+		Name: "plan2",
 		Description: "desc",
 	}
 
 	noPlanOffering := types.ServiceOffering{
-		Name: "no plan offering",
+		Name: "no-plan-offering",
 		Plans: []types.ServicePlan{},
 		Description: "desc",
 		BrokerName: "broker",
@@ -43,18 +43,18 @@ var _ = Describe("List offerings command test", func() {
 	}
 
 	offering1 := types.ServiceOffering{
-		Name: "offering 1",
+		Name: "offering1",
 		Plans: []types.ServicePlan{plan1},
 		Description: "desc",
-		BrokerName: "broker 1",
+		BrokerName: "broker1",
 		BrokerID: "id1",
 	}
 
 	offering2 := types.ServiceOffering{
-		Name: "offering 2",
+		Name: "offering2",
 		Plans: []types.ServicePlan{plan1, plan2},
 		Description: "desc",
-		BrokerName: "broker 2",
+		BrokerName: "broker2",
 		BrokerID: "id2",
 	}
 
@@ -107,7 +107,7 @@ var _ = Describe("List offerings command test", func() {
 		It("should list empty plans list when no plans provided", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{noPlanOffering}}
 			client.ListOfferingsReturns(result, nil)
-			err := executeWithArgs([]string{"-s", "no plan offering"})
+			err := executeWithArgs([]string{"-s", "no-plan-offering"})
 
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring("There are no service plans for this service offering."))
@@ -116,7 +116,7 @@ var _ = Describe("List offerings command test", func() {
 		It("should list 1 plan when a single plan is provided", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1}}
 			client.ListOfferingsReturns(result, nil)
-			err := executeWithArgs([]string{"-s", "offering 1"})
+			err := executeWithArgs([]string{"-s", "offering1"})
 
 			expected := &types.ServicePlans{ServicePlans: result.ServiceOfferings[0].Plans}
 
@@ -127,11 +127,12 @@ var _ = Describe("List offerings command test", func() {
 		It("should list multiple plans when multiple plans are provided", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering2}}
 			client.ListOfferingsReturns(result, nil)
-			err := executeWithArgs([]string{"-s", "offering 2"})
+			err := executeWithArgs([]string{"-s", "offering2"})
 
 			expected := &types.ServicePlans{ServicePlans: result.ServiceOfferings[0].Plans}
 
 			Expect(err).ShouldNot(HaveOccurred())
+			Expect(buffer.String()).To(ContainSubstring(expected.Message()))
 			Expect(buffer.String()).To(ContainSubstring(expected.TableData().String()))
 		})
 	})
@@ -163,7 +164,7 @@ var _ = Describe("List offerings command test", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1}}
 			client.ListOfferingsReturns(result, nil)
 
-			executeWithArgs([]string{"-s", "offering 1", "-o", "json"})
+			executeWithArgs([]string{"-s", "offering1", "-o", "json"})
 
 			jsonByte, _ := json.MarshalIndent(&types.ServicePlans{ServicePlans: result.ServiceOfferings[0].Plans}, "", "  ")
 			jsonOutputExpected := string(jsonByte) + "\n"
@@ -174,7 +175,7 @@ var _ = Describe("List offerings command test", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1}}
 			client.ListOfferingsReturns(result, nil)
 
-			executeWithArgs([]string{"-s", "offering 1", "-o", "yaml"})
+			executeWithArgs([]string{"-s", "offering1", "-o", "yaml"})
 
 			yamlByte, _ := yaml.Marshal(&types.ServicePlans{ServicePlans: result.ServiceOfferings[0].Plans})
 			yamlOutputExpected := string(yamlByte) + "\n"
@@ -201,11 +202,12 @@ var _ = Describe("List offerings command test", func() {
 
 	Context("when error is returned by Service manager", func() {
 		It("should handle error", func() {
-			client.ListOfferingsReturns(nil, errors.New("Http Client Error"))
+			expectedErr := errors.New("Http Client Error")
+			client.ListOfferingsReturns(nil, expectedErr)
 			err := executeWithArgs([]string{})
 
 			Expect(err).Should(HaveOccurred())
-			Expect(err).To(MatchError("Http Client Error"))
+			Expect(err).To(MatchError(expectedErr))
 		})
 	})
 

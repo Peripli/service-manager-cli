@@ -48,32 +48,32 @@ var _ = Describe("Service Manager Client test", func() {
 	}
 
 	broker := &types.Broker{
-		Name:        "test broker",
+		Name:        "test-broker",
 		URL:         "http://test-url.com",
 		Credentials: &types.Credentials{Basic: types.Basic{User: "test user", Password: "test password"}},
 	}
 
 	initialOffering := &types.ServiceOffering{
 		ID: "offeringID",
-		Name: "initial offering",
+		Name: "initial-offering",
 		Description: "Some description",
 		BrokerID: "id",
 	}
 
 	plan := &types.ServicePlan{
 		ID: "planID",
-		Name: "plan 1",
+		Name: "plan-1",
 		Description: "Sample Plan",
 		ServiceOfferingID: "offeringID",
 	}
 
 	resultOffering := &types.ServiceOffering{
 		ID: "offeringID",
-		Name: "initial offering",
+		Name: "initial-offering",
 		Description: "Some description",
 		Plans: []types.ServicePlan{*plan},
 		BrokerID: "id",
-		BrokerName: "test broker",
+		BrokerName: "test-broker",
 	}
 
 

@@ -50,7 +50,7 @@ func (lo *ListOfferingsCmd) Run() error {
 		plans := &types.ServicePlans{}
 		for _, v := range offerings.ServiceOfferings {
 			if v.Name == lo.offering {
-				plans.ServicePlans = v.Plans
+				plans.ServicePlans = append(plans.ServicePlans, v.Plans...)
 			}
 		}
 		output.PrintServiceManagerObject(lo.Output, lo.outputFormat, plans)
