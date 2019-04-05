@@ -42,7 +42,7 @@ type DeleteBrokerCmd struct {
 
 // NewDeleteBrokerCmd returns new delete-broker command with context
 func NewDeleteBrokerCmd(context *cmd.Context, input io.Reader) *DeleteBrokerCmd {
-	return &DeleteBrokerCmd{Context: context, input:input}
+	return &DeleteBrokerCmd{Context: context, input: input}
 }
 
 // Validate validates command's arguments
@@ -66,38 +66,39 @@ func (dbc *DeleteBrokerCmd) Run() error {
 	if err != nil {
 		return err
 	}
-	if confirmed {
-		allBrokers, err := dbc.Client.ListBrokers()
-		if err != nil {
-			return err
-		}
-
-		toDeleteBrokers := util.GetBrokersByName(allBrokers, dbc.names)
-		if len(toDeleteBrokers) < 1 {
-			output.PrintMessage(dbc.Output, "Service Broker(s) not found\n")
-			return nil
-		}
-
-		deletedBrokers := make(map[string]bool)
-
-		for _, toDelete := range toDeleteBrokers {
-			err := dbc.Client.DeleteBroker(toDelete.ID)
-			if err != nil {
-				output.PrintMessage(dbc.Output, "Could not delete broker %s. Reason: %s\n", toDelete.Name, err)
-			} else {
-				output.PrintMessage(dbc.Output, "Broker with name: %s successfully deleted\n", toDelete.Name)
-				deletedBrokers[toDelete.Name] = true
-			}
-		}
-
-		for _, brokerName := range dbc.names {
-			if _, deleted := deletedBrokers[brokerName]; !deleted {
-				output.PrintError(dbc.Output, fmt.Errorf("broker with name: %s was not found", brokerName))
-			}
-		}
-	} else {
+	if !confirmed {
 		output.PrintMessage(dbc.Output, "Delete declined")
+		return nil
 	}
+	allBrokers, err := dbc.Client.ListBrokers()
+	if err != nil {
+		return err
+	}
+
+	toDeleteBrokers := util.GetBrokersByName(allBrokers, dbc.names)
+	if len(toDeleteBrokers) < 1 {
+		output.PrintMessage(dbc.Output, "Service Broker(s) not found\n")
+		return nil
+	}
+
+	deletedBrokers := make(map[string]bool)
+
+	for _, toDelete := range toDeleteBrokers {
+		err := dbc.Client.DeleteBroker(toDelete.ID)
+		if err != nil {
+			output.PrintMessage(dbc.Output, "Could not delete broker %s. Reason: %s\n", toDelete.Name, err)
+		} else {
+			output.PrintMessage(dbc.Output, "Broker with name: %s successfully deleted\n", toDelete.Name)
+			deletedBrokers[toDelete.Name] = true
+		}
+	}
+
+	for _, brokerName := range dbc.names {
+		if _, deleted := deletedBrokers[brokerName]; !deleted {
+			output.PrintError(dbc.Output, fmt.Errorf("broker with name: %s was not found", brokerName))
+		}
+	}
+
 	return nil
 }
 

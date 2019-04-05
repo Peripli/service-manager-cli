@@ -165,9 +165,9 @@ func AddFormatFlagDefault(flags *pflag.FlagSet, defValue string) {
 func CommonConfirmationPrompt(message string, ctx *Context, input io.Reader) (bool, error) {
 	output.PrintMessage(ctx.Output, message)
 
-	positiveResponses := map[string]bool {
-		"y": true,
-		"Y": true,
+	positiveResponses := map[string]bool{
+		"y":   true,
+		"Y":   true,
 		"yes": true,
 		"Yes": true,
 		"YES": true,
@@ -183,9 +183,7 @@ func CommonConfirmationPrompt(message string, ctx *Context, input io.Reader) (bo
 	}
 	return positiveResponses[string(resp)], nil
 
-
 }
-
 
 func getOutputFormat(flags *pflag.FlagSet) (output.Format, error) {
 	outputFormat, _ := flags.GetString("output")

@@ -41,7 +41,7 @@ type DeletePlatformCmd struct {
 
 // NewDeletePlatformCmd returns new list-brokers command with context
 func NewDeletePlatformCmd(context *cmd.Context, input io.Reader) *DeletePlatformCmd {
-	return &DeletePlatformCmd{Context: context, input:input}
+	return &DeletePlatformCmd{Context: context, input: input}
 }
 
 // Validate validates command's arguments
@@ -61,38 +61,37 @@ func (dpc *DeletePlatformCmd) Run() error {
 	if err != nil {
 		return err
 	}
-
-	if confirmed {
-		allPlatforms, err := dpc.Client.ListPlatforms()
-		if err != nil {
-			return err
-		}
-
-		toDeletePlatforms := util.GetPlatformsByName(allPlatforms, dpc.names)
-		if len(toDeletePlatforms) < 1 {
-			output.PrintMessage(dpc.Output, "Platform(s) not found\n")
-			return nil
-		}
-
-		deletedPlatforms := make(map[string]bool)
-
-		for _, toDelete := range toDeletePlatforms {
-			err := dpc.Client.DeletePlatform(toDelete.ID)
-			if err != nil {
-				output.PrintMessage(dpc.Output, "Could not delete platform %s. Reason %s\n", toDelete.Name, err)
-			} else {
-				output.PrintMessage(dpc.Output, "Platform with name: %s successfully deleted\n", toDelete.Name)
-				deletedPlatforms[toDelete.Name] = true
-			}
-		}
-
-		for _, platformName := range dpc.names {
-			if _, deleted := deletedPlatforms[platformName]; !deleted {
-				output.PrintError(dpc.Output, fmt.Errorf("platform with name: %s was not found", platformName))
-			}
-		}
-	} else {
+	if !confirmed {
 		output.PrintMessage(dpc.Output, "Delete declined")
+		return nil
+	}
+	allPlatforms, err := dpc.Client.ListPlatforms()
+	if err != nil {
+		return err
+	}
+
+	toDeletePlatforms := util.GetPlatformsByName(allPlatforms, dpc.names)
+	if len(toDeletePlatforms) < 1 {
+		output.PrintMessage(dpc.Output, "Platform(s) not found\n")
+		return nil
+	}
+
+	deletedPlatforms := make(map[string]bool)
+
+	for _, toDelete := range toDeletePlatforms {
+		err := dpc.Client.DeletePlatform(toDelete.ID)
+		if err != nil {
+			output.PrintMessage(dpc.Output, "Could not delete platform %s. Reason %s\n", toDelete.Name, err)
+		} else {
+			output.PrintMessage(dpc.Output, "Platform with name: %s successfully deleted\n", toDelete.Name)
+			deletedPlatforms[toDelete.Name] = true
+		}
+	}
+
+	for _, platformName := range dpc.names {
+		if _, deleted := deletedPlatforms[platformName]; !deleted {
+			output.PrintError(dpc.Output, fmt.Errorf("platform with name: %s was not found", platformName))
+		}
 	}
 
 	return nil
