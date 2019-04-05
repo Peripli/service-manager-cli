@@ -62,35 +62,42 @@ func (dbc *DeleteBrokerCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (dbc *DeleteBrokerCmd) Run() error {
-	allBrokers, err := dbc.Client.ListBrokers()
+	confirmed, err := dbc.AskForConfirmation()
 	if err != nil {
 		return err
 	}
-
-	toDeleteBrokers := util.GetBrokersByName(allBrokers, dbc.names)
-	if len(toDeleteBrokers) < 1 {
-		output.PrintMessage(dbc.Output, "Service Broker(s) not found\n")
-		return nil
-	}
-
-	deletedBrokers := make(map[string]bool)
-
-	for _, toDelete := range toDeleteBrokers {
-		err := dbc.Client.DeleteBroker(toDelete.ID)
+	if confirmed {
+		allBrokers, err := dbc.Client.ListBrokers()
 		if err != nil {
-			output.PrintMessage(dbc.Output, "Could not delete broker %s. Reason: %s\n", toDelete.Name, err)
-		} else {
-			output.PrintMessage(dbc.Output, "Broker with name: %s successfully deleted\n", toDelete.Name)
-			deletedBrokers[toDelete.Name] = true
+			return err
 		}
-	}
 
-	for _, brokerName := range dbc.names {
-		if _, deleted := deletedBrokers[brokerName]; !deleted {
-			output.PrintError(dbc.Output, fmt.Errorf("broker with name: %s was not found", brokerName))
+		toDeleteBrokers := util.GetBrokersByName(allBrokers, dbc.names)
+		if len(toDeleteBrokers) < 1 {
+			output.PrintMessage(dbc.Output, "Service Broker(s) not found\n")
+			return nil
 		}
-	}
 
+		deletedBrokers := make(map[string]bool)
+
+		for _, toDelete := range toDeleteBrokers {
+			err := dbc.Client.DeleteBroker(toDelete.ID)
+			if err != nil {
+				output.PrintMessage(dbc.Output, "Could not delete broker %s. Reason: %s\n", toDelete.Name, err)
+			} else {
+				output.PrintMessage(dbc.Output, "Broker with name: %s successfully deleted\n", toDelete.Name)
+				deletedBrokers[toDelete.Name] = true
+			}
+		}
+
+		for _, brokerName := range dbc.names {
+			if _, deleted := deletedBrokers[brokerName]; !deleted {
+				output.PrintError(dbc.Output, fmt.Errorf("broker with name: %s was not found", brokerName))
+			}
+		}
+	} else {
+		output.PrintMessage(dbc.Output, "Delete declined")
+	}
 	return nil
 }
 
@@ -102,7 +109,7 @@ func (dbc *DeleteBrokerCmd) HideUsage() bool {
 // AskForConfirmation asks the user to confirm deletion
 func (dbc *DeleteBrokerCmd) AskForConfirmation() (bool, error) {
 	if !dbc.force {
-		message := fmt.Sprintf("Really delete brokers with names [%s]: ", strings.Join(dbc.names, ", "))
+		message := fmt.Sprintf("Do you really want to delete brokers with names [%s] (Y/n): ", strings.Join(dbc.names, ", "))
 		return cmd.CommonConfirmationPrompt(message, dbc.Context, dbc.input)
 	}
 	return true, nil

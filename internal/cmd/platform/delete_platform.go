@@ -57,33 +57,42 @@ func (dpc *DeletePlatformCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (dpc *DeletePlatformCmd) Run() error {
-	allPlatforms, err := dpc.Client.ListPlatforms()
+	confirmed, err := dpc.AskForConfirmation()
 	if err != nil {
 		return err
 	}
 
-	toDeletePlatforms := util.GetPlatformsByName(allPlatforms, dpc.names)
-	if len(toDeletePlatforms) < 1 {
-		output.PrintMessage(dpc.Output, "Platform(s) not found\n")
-		return nil
-	}
-
-	deletedPlatforms := make(map[string]bool)
-
-	for _, toDelete := range toDeletePlatforms {
-		err := dpc.Client.DeletePlatform(toDelete.ID)
+	if confirmed {
+		allPlatforms, err := dpc.Client.ListPlatforms()
 		if err != nil {
-			output.PrintMessage(dpc.Output, "Could not delete platform %s. Reason %s\n", toDelete.Name, err)
-		} else {
-			output.PrintMessage(dpc.Output, "Platform with name: %s successfully deleted\n", toDelete.Name)
-			deletedPlatforms[toDelete.Name] = true
+			return err
 		}
-	}
 
-	for _, platformName := range dpc.names {
-		if _, deleted := deletedPlatforms[platformName]; !deleted {
-			output.PrintError(dpc.Output, fmt.Errorf("platform with name: %s was not found", platformName))
+		toDeletePlatforms := util.GetPlatformsByName(allPlatforms, dpc.names)
+		if len(toDeletePlatforms) < 1 {
+			output.PrintMessage(dpc.Output, "Platform(s) not found\n")
+			return nil
 		}
+
+		deletedPlatforms := make(map[string]bool)
+
+		for _, toDelete := range toDeletePlatforms {
+			err := dpc.Client.DeletePlatform(toDelete.ID)
+			if err != nil {
+				output.PrintMessage(dpc.Output, "Could not delete platform %s. Reason %s\n", toDelete.Name, err)
+			} else {
+				output.PrintMessage(dpc.Output, "Platform with name: %s successfully deleted\n", toDelete.Name)
+				deletedPlatforms[toDelete.Name] = true
+			}
+		}
+
+		for _, platformName := range dpc.names {
+			if _, deleted := deletedPlatforms[platformName]; !deleted {
+				output.PrintError(dpc.Output, fmt.Errorf("platform with name: %s was not found", platformName))
+			}
+		}
+	} else {
+		output.PrintMessage(dpc.Output, "Delete declined")
 	}
 
 	return nil
@@ -97,7 +106,7 @@ func (dpc *DeletePlatformCmd) HideUsage() bool {
 // AskForConfirmation asks the user to confirm deletion
 func (dpc *DeletePlatformCmd) AskForConfirmation() (bool, error) {
 	if !dpc.force {
-		message := fmt.Sprintf("Really delete platforms with names [%s]: ", strings.Join(dpc.names, ", "))
+		message := fmt.Sprintf("Do you really want to delete platforms with names [%s] (Y/n): ", strings.Join(dpc.names, ", "))
 		return cmd.CommonConfirmationPrompt(message, dpc.Context, dpc.input)
 	}
 	return true, nil

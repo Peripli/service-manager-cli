@@ -57,7 +57,7 @@ var _ = Describe("Delete platforms command test", func() {
 	})
 
 	Context("when existing platform is being deleted", func() {
-		It("should list success message", func() {
+		It("should list success message when confirmed", func() {
 			client.DeletePlatformReturns(nil)
 			promptBuffer.WriteString("y")
 			err := executeWithArgs([]string{"platform-name"})
@@ -65,6 +65,16 @@ var _ = Describe("Delete platforms command test", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring("Platform with name: platform-name successfully deleted"))
 		})
+
+		It("should print delete declined when declined", func() {
+			client.DeletePlatformReturns(nil)
+			promptBuffer.WriteString("n")
+			err := executeWithArgs([]string{"platform-name"})
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(buffer.String()).To(ContainSubstring("Delete declined"))
+		})
+
 	})
 
 	Context("when 2 platforms are being deleted", func() {

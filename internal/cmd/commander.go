@@ -140,16 +140,6 @@ func CommonPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) err
 			c.SilenceUsage = huCmd.HideUsage()
 		}
 
-		if confirmedCmd, ok := cmd.(ConfirmedCommand); ok {
-			confirmed, err := confirmedCmd.AskForConfirmation()
-			if err != nil {
-				return err
-			}
-			if !confirmed {
-				return errors.New("delete declined")
-			}
-		}
-
 		return nil
 	}
 }

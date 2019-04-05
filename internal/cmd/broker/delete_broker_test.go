@@ -57,13 +57,22 @@ var _ = Describe("List brokers command test", func() {
 	})
 
 	Context("when existing broker is being deleted", func() {
-		It("should list success message", func() {
+		It("should list success message when confirmed", func() {
 			client.DeleteBrokerReturns(nil)
 			promptBuffer.WriteString("y")
 			err := executeWithArgs([]string{"broker-name"})
 
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring("Broker with name: broker-name successfully deleted"))
+		})
+
+		It("should print delete declined when declined", func() {
+			client.DeleteBrokerReturns(nil)
+			promptBuffer.WriteString("n")
+			err := executeWithArgs([]string{"broker-name"})
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(buffer.String()).To(ContainSubstring("Delete declined"))
 		})
 	})
 
