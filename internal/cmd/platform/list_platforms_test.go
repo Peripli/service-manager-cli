@@ -27,12 +27,12 @@ var _ = Describe("List platforms command test", func() {
 	var command *ListPlatformsCmd
 	var buffer *bytes.Buffer
 	platform := types.Platform{
-		Name: "broker1",
+		Name: "platform1",
 		Type: "type1",
 		ID:   "id1",
 	}
 	platform2 := types.Platform{
-		Name: "broker2",
+		Name: "platform2",
 		Type: "type2",
 		ID:   "id2",
 	}
@@ -53,7 +53,7 @@ var _ = Describe("List platforms command test", func() {
 
 	Context("when no platforms are registered", func() {
 		It("should list empty platforms", func() {
-			client.ListPlatformsReturns(&types.Platforms{Platforms: []types.Platform{}}, nil)
+			client.ListPlatformsWithQueryReturns(&types.Platforms{Platforms: []types.Platform{}}, nil)
 			err := executeWithArgs([]string{})
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -64,7 +64,7 @@ var _ = Describe("List platforms command test", func() {
 	Context("when platforms are registered", func() {
 		It("should list 1 platform", func() {
 			result := &types.Platforms{Platforms: []types.Platform{platform}}
-			client.ListPlatformsReturns(result, nil)
+			client.ListPlatformsWithQueryReturns(result, nil)
 			err := executeWithArgs([]string{})
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -73,7 +73,7 @@ var _ = Describe("List platforms command test", func() {
 
 		It("should list more platforms", func() {
 			result := &types.Platforms{Platforms: []types.Platform{platform, platform2}}
-			client.ListPlatformsReturns(result, nil)
+			client.ListPlatformsWithQueryReturns(result, nil)
 			err := executeWithArgs([]string{})
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -82,10 +82,23 @@ var _ = Describe("List platforms command test", func() {
 		})
 	})
 
+	Context("when field query flag is used", func() {
+		It("should pass it to SM", func() {
+			result := &types.Platforms{Platforms: []types.Platform{platform}}
+			client.ListPlatformsWithQueryReturns(result, nil)
+			err := executeWithArgs([]string{"-f","name = platform1"})
+
+			arg := client.ListPlatformsWithQueryArgsForCall(0)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect([]string{arg}).To(ConsistOf("name+=+platform1"))
+		})
+	})
+
 	Context("when format flag is used", func() {
 		It("should print in json", func() {
 			result := &types.Platforms{Platforms: []types.Platform{platform}}
-			client.ListPlatformsReturns(result, nil)
+			client.ListPlatformsWithQueryReturns(result, nil)
 
 			executeWithArgs([]string{"-o", "json"})
 
@@ -96,7 +109,7 @@ var _ = Describe("List platforms command test", func() {
 
 		It("should print in yaml", func() {
 			result := &types.Platforms{Platforms: []types.Platform{platform}}
-			client.ListPlatformsReturns(result, nil)
+			client.ListPlatformsWithQueryReturns(result, nil)
 
 			executeWithArgs([]string{"-o", "yaml"})
 

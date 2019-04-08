@@ -371,7 +371,7 @@ var _ = Describe("Service Manager Client test", func() {
 			It("should handle status code > 299", func() {
 				_, err := client.ListBrokers()
 				Expect(err).Should(HaveOccurred())
-				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: smServer.URL + web.BrokersURL}))
+				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: smServer.URL + web.BrokersURL + "?fieldQuery=&labelQuery="}))
 			})
 		})
 	})
@@ -433,7 +433,7 @@ var _ = Describe("Service Manager Client test", func() {
 			It("should handle status code > 299", func() {
 				_, err := client.ListPlatforms()
 				Expect(err).Should(HaveOccurred())
-				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: smServer.URL + web.PlatformsURL}))
+				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: smServer.URL + web.PlatformsURL + "?fieldQuery="}))
 			})
 		})
 	})

@@ -37,7 +37,9 @@ type Client interface {
 	GetInfo() (*types.Info, error)
 	RegisterPlatform(*types.Platform) (*types.Platform, error)
 	RegisterBroker(*types.Broker) (*types.Broker, error)
+	ListBrokersWithQuery(string, string) (*types.Brokers, error)
 	ListBrokers() (*types.Brokers, error)
+	ListPlatformsWithQuery(string) (*types.Platforms, error)
 	ListPlatforms() (*types.Platforms, error)
 	ListOfferings() (*types.ServiceOfferings, error)
 	DeleteBroker(string) error
@@ -165,18 +167,23 @@ func (client *serviceManagerClient) RegisterBroker(broker *types.Broker) (*types
 	return newBroker, nil
 }
 
-// ListBrokers returns brokers registered in the Service Manager
-func (client *serviceManagerClient) ListBrokers() (*types.Brokers, error) {
+// ListBrokersWithQuery returns brokers registered in the Service Manager satisfying provided queries
+func (client *serviceManagerClient) ListBrokersWithQuery(fieldQuery string, labelQuery string) (*types.Brokers, error) {
 	brokers := &types.Brokers{}
-	err := client.list(brokers, web.BrokersURL)
+	err := client.list(brokers, web.BrokersURL + "?fieldQuery="+fieldQuery+"&labelQuery="+labelQuery)
 
 	return brokers, err
 }
 
-// ListPlatforms returns platforms registered in the Service Manager
-func (client *serviceManagerClient) ListPlatforms() (*types.Platforms, error) {
+// ListBrokers returns brokers registered in the Service Manager
+func (client *serviceManagerClient) ListBrokers() (*types.Brokers, error) {
+	return client.ListBrokersWithQuery("", "")
+}
+
+// ListPlatforms returns platforms registered in the Service Manager satisfying provided queries
+func (client *serviceManagerClient) ListPlatformsWithQuery(fieldQuery string) (*types.Platforms, error) {
 	platforms := &types.Platforms{}
-	err := client.list(platforms, web.PlatformsURL)
+	err := client.list(platforms, web.PlatformsURL + "?fieldQuery=" + fieldQuery)
 
 	return platforms, err
 }
@@ -190,14 +197,14 @@ func (client *serviceManagerClient) ListOfferings() (*types.ServiceOfferings, er
 	}
 	for i, v := range serviceOfferings.ServiceOfferings {
 		plans := &types.ServicePlans{}
-		err := client.list(plans, web.ServicePlansURL + "?fieldQuery=service_offering_id+=+"+v.ID)
+		err := client.list(plans, web.ServicePlansURL+"?fieldQuery=service_offering_id+=+"+v.ID)
 		if err != nil {
 			return nil, err
 		}
 		serviceOfferings.ServiceOfferings[i].Plans = plans.ServicePlans
 
 		broker := &types.Broker{}
-		err = client.list(broker, web.BrokersURL + "/" + v.BrokerID)
+		err = client.list(broker, web.BrokersURL+"/"+v.BrokerID)
 		if err != nil {
 			return nil, err
 		}
@@ -205,6 +212,10 @@ func (client *serviceManagerClient) ListOfferings() (*types.ServiceOfferings, er
 		serviceOfferings.ServiceOfferings[i].BrokerName = broker.Name
 	}
 	return serviceOfferings, nil
+}
+// ListPlatforms returns platforms registered in the Service Manager
+func (client *serviceManagerClient) ListPlatforms() (*types.Platforms, error) {
+	return client.ListPlatformsWithQuery("")
 }
 
 func (client *serviceManagerClient) list(result interface{}, path string) error {

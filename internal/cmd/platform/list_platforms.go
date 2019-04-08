@@ -18,6 +18,7 @@ package platform
 
 import (
 	"github.com/Peripli/service-manager-cli/internal/output"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -29,6 +30,7 @@ type ListPlatformsCmd struct {
 	*cmd.Context
 
 	outputFormat output.Format
+	fieldQuery string
 }
 
 // NewListPlatformsCmd returns new list-brokers command with context
@@ -38,7 +40,9 @@ func NewListPlatformsCmd(context *cmd.Context) *ListPlatformsCmd {
 
 // Run runs the command's logic
 func (lp *ListPlatformsCmd) Run() error {
-	platforms, err := lp.Client.ListPlatforms()
+	replacer := strings.NewReplacer(" ", "+")
+	parsedFieldQuery := replacer.Replace(lp.fieldQuery)
+	platforms, err := lp.Client.ListPlatformsWithQuery(parsedFieldQuery)
 	if err != nil {
 		return err
 	}
@@ -70,6 +74,7 @@ func (lp *ListPlatformsCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		RunE:    cmd.RunE(lp),
 	}
 
+	result.Flags().StringVarP(&lp.fieldQuery, "field-query", "f", "", "Platform filtering based on field querying")
 	cmd.AddFormatFlag(result.Flags())
 
 	return result

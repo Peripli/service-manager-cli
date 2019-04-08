@@ -18,8 +18,8 @@ package broker
 
 import (
 	"github.com/Peripli/service-manager-cli/internal/output"
-
 	"github.com/spf13/cobra"
+	"strings"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 )
@@ -30,6 +30,8 @@ type ListBrokersCmd struct {
 
 	prepare      cmd.PrepareFunc
 	outputFormat output.Format
+	fieldQuery string
+	labelQuery string
 }
 
 // NewListBrokersCmd returns new list-brokers command with context
@@ -39,7 +41,10 @@ func NewListBrokersCmd(context *cmd.Context) *ListBrokersCmd {
 
 // Run runs the command's logic
 func (lb *ListBrokersCmd) Run() error {
-	brokers, err := lb.Client.ListBrokers()
+	replacer := strings.NewReplacer(" ", "+")
+	parsedFieldQuery := replacer.Replace(lb.fieldQuery)
+	parsedLabelQuery := replacer.Replace(lb.labelQuery)
+	brokers, err := lb.Client.ListBrokersWithQuery(parsedFieldQuery, parsedLabelQuery)
 	if err != nil {
 		return err
 	}
@@ -73,6 +78,7 @@ func (lb *ListBrokersCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	}
 
 	cmd.AddFormatFlag(result.Flags())
-
+	result.Flags().StringVarP(&lb.fieldQuery, "field-query", "f", "", "Broker filtering based on field querying")
+	result.Flags().StringVarP(&lb.labelQuery, "label-query", "l", "", "Broker filtering based on label querying")
 	return result
 }

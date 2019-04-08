@@ -7,7 +7,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 
 	"bytes"
 
@@ -53,7 +53,7 @@ var _ = Describe("List brokers command test", func() {
 
 	Context("when no brokers are registered", func() {
 		It("should list empty brokers", func() {
-			client.ListBrokersReturns(&types.Brokers{Brokers: []types.Broker{}}, nil)
+			client.ListBrokersWithQueryReturns(&types.Brokers{Brokers: []types.Broker{}}, nil)
 			err := executeWithArgs([]string{})
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -64,7 +64,7 @@ var _ = Describe("List brokers command test", func() {
 	Context("when brokers are registered", func() {
 		It("should list 1 broker", func() {
 			result := &types.Brokers{Brokers: []types.Broker{broker}}
-			client.ListBrokersReturns(result, nil)
+			client.ListBrokersWithQueryReturns(result, nil)
 			err := executeWithArgs([]string{})
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -73,7 +73,7 @@ var _ = Describe("List brokers command test", func() {
 
 		It("should list more brokers", func() {
 			result := &types.Brokers{Brokers: []types.Broker{broker, broker2}}
-			client.ListBrokersReturns(result, nil)
+			client.ListBrokersWithQueryReturns(result, nil)
 			err := executeWithArgs([]string{})
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -82,10 +82,36 @@ var _ = Describe("List brokers command test", func() {
 		})
 	})
 
+	Context("when field query flag is used", func() {
+		It("should pass it to SM", func() {
+			result := &types.Brokers{Brokers: []types.Broker{broker}}
+			client.ListBrokersWithQueryReturns(result, nil)
+			err := executeWithArgs([]string{"-f","name = broker1"})
+
+			arg1,arg2 := client.ListBrokersWithQueryArgsForCall(0)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect([]string{arg1, arg2}).To(ConsistOf("name+=+broker1", ""))
+		})
+	})
+
+	Context("when label query flag is used", func() {
+		It("should pass it to SM", func() {
+			result := &types.Brokers{Brokers: []types.Broker{broker}}
+			client.ListBrokersWithQueryReturns(result, nil)
+			err := executeWithArgs([]string{"-l","test+=+false"})
+
+			arg1,arg2 := client.ListBrokersWithQueryArgsForCall(0)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect([]string{arg1, arg2}).To(ConsistOf("", "test+=+false"))
+		})
+	})
+
 	Context("when format flag is used", func() {
 		It("should print in json", func() {
 			result := &types.Brokers{Brokers: []types.Broker{broker}}
-			client.ListBrokersReturns(result, nil)
+			client.ListBrokersWithQueryReturns(result, nil)
 
 			executeWithArgs([]string{"-o", "json"})
 
@@ -96,7 +122,7 @@ var _ = Describe("List brokers command test", func() {
 
 		It("should print in yaml", func() {
 			result := &types.Brokers{Brokers: []types.Broker{broker}}
-			client.ListBrokersReturns(result, nil)
+			client.ListBrokersWithQueryReturns(result, nil)
 
 			executeWithArgs([]string{"-o", "yaml"})
 
