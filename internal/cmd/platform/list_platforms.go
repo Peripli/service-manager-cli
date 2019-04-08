@@ -30,7 +30,7 @@ type ListPlatformsCmd struct {
 	*cmd.Context
 
 	outputFormat output.Format
-	fieldQuery string
+	fieldQuery   string
 }
 
 // NewListPlatformsCmd returns new list-brokers command with context

@@ -30,8 +30,8 @@ type ListBrokersCmd struct {
 
 	prepare      cmd.PrepareFunc
 	outputFormat output.Format
-	fieldQuery string
-	labelQuery string
+	fieldQuery   string
+	labelQuery   string
 }
 
 // NewListBrokersCmd returns new list-brokers command with context

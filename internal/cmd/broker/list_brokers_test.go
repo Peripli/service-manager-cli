@@ -86,9 +86,9 @@ var _ = Describe("List brokers command test", func() {
 		It("should pass it to SM", func() {
 			result := &types.Brokers{Brokers: []types.Broker{broker}}
 			client.ListBrokersWithQueryReturns(result, nil)
-			err := executeWithArgs([]string{"-f","name = broker1"})
+			err := executeWithArgs([]string{"-f", "name = broker1"})
 
-			arg1,arg2 := client.ListBrokersWithQueryArgsForCall(0)
+			arg1, arg2 := client.ListBrokersWithQueryArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect([]string{arg1, arg2}).To(ConsistOf("name+=+broker1", ""))
@@ -99,9 +99,9 @@ var _ = Describe("List brokers command test", func() {
 		It("should pass it to SM", func() {
 			result := &types.Brokers{Brokers: []types.Broker{broker}}
 			client.ListBrokersWithQueryReturns(result, nil)
-			err := executeWithArgs([]string{"-l","test+=+false"})
+			err := executeWithArgs([]string{"-l", "test+=+false"})
 
-			arg1,arg2 := client.ListBrokersWithQueryArgsForCall(0)
+			arg1, arg2 := client.ListBrokersWithQueryArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect([]string{arg1, arg2}).To(ConsistOf("", "test+=+false"))

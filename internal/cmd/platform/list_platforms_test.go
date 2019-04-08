@@ -86,7 +86,7 @@ var _ = Describe("List platforms command test", func() {
 		It("should pass it to SM", func() {
 			result := &types.Platforms{Platforms: []types.Platform{platform}}
 			client.ListPlatformsWithQueryReturns(result, nil)
-			err := executeWithArgs([]string{"-f","name = platform1"})
+			err := executeWithArgs([]string{"-f", "name = platform1"})
 
 			arg := client.ListPlatformsWithQueryArgsForCall(0)
 

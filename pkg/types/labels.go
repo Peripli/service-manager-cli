@@ -16,4 +16,5 @@
 
 package types
 
+// Labels represents key values pairs associated with resources
 type Labels map[string][]string
