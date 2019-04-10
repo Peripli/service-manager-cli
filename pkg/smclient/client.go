@@ -19,6 +19,7 @@ package smclient
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/Peripli/service-manager/pkg/web"
 	"io"
 	"net/http"
 
@@ -94,7 +95,7 @@ func NewClient(httpClient auth.Client, URL string) Client {
 }
 
 func (client *serviceManagerClient) GetInfo() (*types.Info, error) {
-	response, err := client.Call(http.MethodGet, "/v1/info", nil)
+	response, err := client.Call(http.MethodGet, web.InfoURL, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +121,7 @@ func (client *serviceManagerClient) RegisterPlatform(platform *types.Platform) (
 	}
 
 	buffer := bytes.NewBuffer(requestBody)
-	response, err := client.Call(http.MethodPost, "/v1/platforms", buffer)
+	response, err := client.Call(http.MethodPost, web.PlatformsURL , buffer)
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +147,7 @@ func (client *serviceManagerClient) RegisterBroker(broker *types.Broker) (*types
 	}
 
 	buffer := bytes.NewBuffer(requestBody)
-	response, err := client.Call(http.MethodPost, "/v1/service_brokers", buffer)
+	response, err := client.Call(http.MethodPost, web.BrokersURL, buffer)
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +168,7 @@ func (client *serviceManagerClient) RegisterBroker(broker *types.Broker) (*types
 // ListBrokers returns brokers registered in the Service Manager
 func (client *serviceManagerClient) ListBrokers() (*types.Brokers, error) {
 	brokers := &types.Brokers{}
-	err := client.list(brokers, "/v1/service_brokers")
+	err := client.list(brokers, web.BrokersURL)
 
 	return brokers, err
 }
@@ -175,7 +176,7 @@ func (client *serviceManagerClient) ListBrokers() (*types.Brokers, error) {
 // ListPlatforms returns platforms registered in the Service Manager
 func (client *serviceManagerClient) ListPlatforms() (*types.Platforms, error) {
 	platforms := &types.Platforms{}
-	err := client.list(platforms, "/v1/platforms")
+	err := client.list(platforms, web.PlatformsURL)
 
 	return platforms, err
 }
@@ -183,20 +184,20 @@ func (client *serviceManagerClient) ListPlatforms() (*types.Platforms, error) {
 // ListOfferings returns service offerings of brokers registered in Service Manager
 func (client *serviceManagerClient) ListOfferings() (*types.ServiceOfferings, error) {
 	serviceOfferings := &types.ServiceOfferings{}
-	err := client.list(serviceOfferings, "/v1/service_offerings")
+	err := client.list(serviceOfferings, web.ServiceOfferingsURL)
 	if err != nil {
 		return nil, err
 	}
 	for i, v := range serviceOfferings.ServiceOfferings {
 		plans := &types.ServicePlans{}
-		err := client.list(plans, "/v1/service_plans?fieldQuery=service_offering_id+=+"+v.ID)
+		err := client.list(plans, web.ServicePlansURL + "?fieldQuery=service_offering_id+=+"+v.ID)
 		if err != nil {
 			return nil, err
 		}
 		serviceOfferings.ServiceOfferings[i].Plans = plans.ServicePlans
 
 		broker := &types.Broker{}
-		err = client.list(broker, "/v1/service_brokers/" + v.BrokerID)
+		err = client.list(broker, web.BrokersURL + "/" + v.BrokerID)
 		if err != nil {
 			return nil, err
 		}
@@ -220,15 +221,15 @@ func (client *serviceManagerClient) list(result interface{}, path string) error 
 }
 
 func (client *serviceManagerClient) DeleteBroker(id string) error {
-	return client.delete(id, "/v1/service_brokers/")
+	return client.delete(id, web.BrokersURL)
 }
 
 func (client *serviceManagerClient) DeletePlatform(id string) error {
-	return client.delete(id, "/v1/platforms/")
+	return client.delete(id, web.PlatformsURL)
 }
 
 func (client *serviceManagerClient) delete(id, path string) error {
-	resp, err := client.Call(http.MethodDelete, path+id, nil)
+	resp, err := client.Call(http.MethodDelete, path + "/" + id, nil)
 	if err != nil {
 		return err
 	}
@@ -247,7 +248,7 @@ func (client *serviceManagerClient) UpdateBroker(id string, updatedBroker *types
 	}
 
 	result := &types.Broker{}
-	return result, client.update(result, requestBody, id, "/v1/service_brokers/")
+	return result, client.update(result, requestBody, id, web.BrokersURL)
 }
 
 func (client *serviceManagerClient) UpdatePlatform(id string, updatedPlatform *types.Platform) (*types.Platform, error) {
@@ -256,12 +257,12 @@ func (client *serviceManagerClient) UpdatePlatform(id string, updatedPlatform *t
 		return nil, err
 	}
 	result := &types.Platform{}
-	return result, client.update(result, requestBody, id, "/v1/platforms/")
+	return result, client.update(result, requestBody, id, web.PlatformsURL)
 }
 
 func (client *serviceManagerClient) update(result interface{}, body []byte, id, path string) error {
 	buffer := bytes.NewBuffer(body)
-	resp, err := client.Call(http.MethodPatch, path+id, buffer)
+	resp, err := client.Call(http.MethodPatch, path + "/" + id, buffer)
 	if err != nil {
 		return err
 	}

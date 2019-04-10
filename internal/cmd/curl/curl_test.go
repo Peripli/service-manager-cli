@@ -3,6 +3,7 @@ package curl
 import (
 	"encoding/json"
 	"errors"
+	"github.com/Peripli/service-manager/pkg/web"
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
@@ -82,7 +83,7 @@ var _ = Describe("Curl command test", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 
 			setCallReturns(200, expectedOutput, nil)
-			err = executeWithArgs([]string{"/v1/service_brokers"})
+			err = executeWithArgs([]string{web.BrokersURL})
 			Expect(err).To(BeNil())
 			Expect(buffer.String()).To(Equal(string(expectedOutput)))
 		})
@@ -91,7 +92,7 @@ var _ = Describe("Curl command test", func() {
 	Context("when curl with path, method and body", func() {
 		It("should do GET method", func() {
 			setCallReturns(200, nil, nil)
-			assertLastCall(http.MethodGet, "/v1/service_brokers", nil, "", nil)
+			assertLastCall(http.MethodGet, web.BrokersURL, nil, "", nil)
 		})
 
 		It("should do PATCH method", func() {
@@ -101,7 +102,7 @@ var _ = Describe("Curl command test", func() {
 			body, err := json.MarshalIndent(&broker, "", "  ")
 			Expect(err).ShouldNot(HaveOccurred())
 			setCallReturns(201, body, nil)
-			assertLastCall(http.MethodPost, "/v1/service_brokers", body, string(body), nil)
+			assertLastCall(http.MethodPost, web.BrokersURL, body, string(body), nil)
 		})
 
 		Context("when body is file", func() {
@@ -119,7 +120,7 @@ var _ = Describe("Curl command test", func() {
 				f.Write([]byte(content))
 
 				setCallReturns(201, []byte(content), nil)
-				assertLastCall(http.MethodPost, "/v1/service_brokers", []byte(`@test.txt`), string(content), nil)
+				assertLastCall(http.MethodPost, web.BrokersURL, []byte(`@test.txt`), string(content), nil)
 			})
 		})
 	})
@@ -128,7 +129,7 @@ var _ = Describe("Curl command test", func() {
 		It("should handle error", func() {
 			err := errors.New("problem during call")
 			setCallReturns(0, nil, err)
-			assertLastCall(http.MethodGet, "/v1/service_brokers", nil, "", err)
+			assertLastCall(http.MethodGet, web.BrokersURL, nil, "", err)
 		})
 	})
 })
