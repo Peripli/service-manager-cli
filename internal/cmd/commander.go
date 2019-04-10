@@ -17,8 +17,10 @@
 package cmd
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -62,6 +64,14 @@ type HiddenUsageCommand interface {
 type FormattedCommand interface {
 	// SetOutputFormat sets the command's output format
 	SetOutputFormat(output.Format)
+}
+
+//ConfirmedCommand should be implemented if the command should ask for user confirmation prior execution
+type ConfirmedCommand interface {
+	// AskForConfirmation asks user to confirm the execution of desired operation
+	AskForConfirmation() (bool, error)
+	// PrintDeclineMessage prints message to the user if the confirmation is declined
+	PrintDeclineMessage()
 }
 
 // PrepareFunc is function type which executes common prepare logic for commands
@@ -139,6 +149,16 @@ func CommonPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) err
 // RunE provides common run logic for SM commands
 func RunE(cmd Command) func(*cobra.Command, []string) error {
 	return func(c *cobra.Command, args []string) error {
+		if confirmedCmd, ok := cmd.(ConfirmedCommand); ok {
+			confirmed, err := confirmedCmd.AskForConfirmation()
+			if err != nil {
+				return err
+			}
+			if !confirmed {
+				confirmedCmd.PrintDeclineMessage()
+				return nil
+			}
+		}
 		return cmd.Run()
 	}
 }
@@ -151,6 +171,35 @@ func AddFormatFlag(flags *pflag.FlagSet) {
 // AddFormatFlagDefault is same as AddFormatFlag but allows to set default value.
 func AddFormatFlagDefault(flags *pflag.FlagSet, defValue string) {
 	flags.StringP("output", "o", defValue, "output format")
+}
+
+//CommonConfirmationPrompt provides common logic for confirmation of an operation
+func CommonConfirmationPrompt(message string, ctx *Context, input io.Reader) (bool, error) {
+	output.PrintMessage(ctx.Output, message)
+
+	positiveResponses := map[string]bool{
+		"y":   true,
+		"Y":   true,
+		"yes": true,
+		"Yes": true,
+		"YES": true,
+	}
+
+	bufReader := bufio.NewReader(input)
+	resp, isPrefix, err := bufReader.ReadLine()
+	if isPrefix {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return positiveResponses[string(resp)], nil
+
+}
+
+//CommonPrintDeclineMessage provides common confirmation declined message
+func CommonPrintDeclineMessage(wr io.Writer) {
+	output.PrintMessage(wr, "Delete declined")
 }
 
 func getOutputFormat(flags *pflag.FlagSet) (output.Format, error) {

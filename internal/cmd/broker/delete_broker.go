@@ -18,6 +18,8 @@ package broker
 
 import (
 	"fmt"
+	"io"
+	"strings"
 
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/internal/util"
@@ -32,12 +34,15 @@ type DeleteBrokerCmd struct {
 	*cmd.Context
 	prepare cmd.PrepareFunc
 
+	input io.Reader
+	force bool
+
 	names []string
 }
 
 // NewDeleteBrokerCmd returns new delete-broker command with context
-func NewDeleteBrokerCmd(context *cmd.Context) *DeleteBrokerCmd {
-	return &DeleteBrokerCmd{Context: context}
+func NewDeleteBrokerCmd(context *cmd.Context, input io.Reader) *DeleteBrokerCmd {
+	return &DeleteBrokerCmd{Context: context, input: input}
 }
 
 // Validate validates command's arguments
@@ -94,6 +99,20 @@ func (dbc *DeleteBrokerCmd) HideUsage() bool {
 	return true
 }
 
+// AskForConfirmation asks the user to confirm deletion
+func (dbc *DeleteBrokerCmd) AskForConfirmation() (bool, error) {
+	if !dbc.force {
+		message := fmt.Sprintf("Do you really want to delete brokers with names [%s] (Y/n): ", strings.Join(dbc.names, ", "))
+		return cmd.CommonConfirmationPrompt(message, dbc.Context, dbc.input)
+	}
+	return true, nil
+}
+
+// PrintDeclineMessage prints confirmation decline message to the user
+func (dbc *DeleteBrokerCmd) PrintDeclineMessage() {
+	cmd.CommonPrintDeclineMessage(dbc.Output)
+}
+
 // Prepare returns cobra command
 func (dbc *DeleteBrokerCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	dbc.prepare = prepare
@@ -105,6 +124,8 @@ func (dbc *DeleteBrokerCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		PreRunE: dbc.prepare(dbc, dbc.Context),
 		RunE:    cmd.RunE(dbc),
 	}
+
+	result.Flags().BoolVarP(&dbc.force, "force", "f", false, "Force delete without confirmation")
 
 	return result
 }
