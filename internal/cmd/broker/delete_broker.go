@@ -62,14 +62,6 @@ func (dbc *DeleteBrokerCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (dbc *DeleteBrokerCmd) Run() error {
-	confirmed, err := dbc.AskForConfirmation()
-	if err != nil {
-		return err
-	}
-	if !confirmed {
-		output.PrintMessage(dbc.Output, "Delete declined")
-		return nil
-	}
 	allBrokers, err := dbc.Client.ListBrokers()
 	if err != nil {
 		return err
@@ -114,6 +106,11 @@ func (dbc *DeleteBrokerCmd) AskForConfirmation() (bool, error) {
 		return cmd.CommonConfirmationPrompt(message, dbc.Context, dbc.input)
 	}
 	return true, nil
+}
+
+// PrintDeclineMessage prints confirmation decline message to the user
+func (dbc *DeleteBrokerCmd) PrintDeclineMessage() {
+	cmd.CommonPrintDeclineMessage(dbc.Output)
 }
 
 // Prepare returns cobra command

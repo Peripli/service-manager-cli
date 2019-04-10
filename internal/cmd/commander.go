@@ -70,6 +70,8 @@ type FormattedCommand interface {
 type ConfirmedCommand interface {
 	// AskForConfirmation asks user to confirm the execution of desired operation
 	AskForConfirmation() (bool, error)
+	// PrintDeclineMessage prints message to the user if the confirmation is declined
+	PrintDeclineMessage()
 }
 
 // PrepareFunc is function type which executes common prepare logic for commands
@@ -147,6 +149,16 @@ func CommonPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) err
 // RunE provides common run logic for SM commands
 func RunE(cmd Command) func(*cobra.Command, []string) error {
 	return func(c *cobra.Command, args []string) error {
+		if confirmedCmd, ok := cmd.(ConfirmedCommand); ok {
+			confirmed, err := confirmedCmd.AskForConfirmation()
+			if err != nil {
+				return err
+			}
+			if !confirmed {
+				confirmedCmd.PrintDeclineMessage()
+				return nil
+			}
+		}
 		return cmd.Run()
 	}
 }
@@ -183,6 +195,11 @@ func CommonConfirmationPrompt(message string, ctx *Context, input io.Reader) (bo
 	}
 	return positiveResponses[string(resp)], nil
 
+}
+
+//CommonPrintDeclineMessage provides common confirmation declined message
+func CommonPrintDeclineMessage(wr io.Writer) {
+	output.PrintMessage(wr, "Delete declined")
 }
 
 func getOutputFormat(flags *pflag.FlagSet) (output.Format, error) {

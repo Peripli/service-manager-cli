@@ -57,14 +57,6 @@ func (dpc *DeletePlatformCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (dpc *DeletePlatformCmd) Run() error {
-	confirmed, err := dpc.AskForConfirmation()
-	if err != nil {
-		return err
-	}
-	if !confirmed {
-		output.PrintMessage(dpc.Output, "Delete declined")
-		return nil
-	}
 	allPlatforms, err := dpc.Client.ListPlatforms()
 	if err != nil {
 		return err
@@ -109,6 +101,11 @@ func (dpc *DeletePlatformCmd) AskForConfirmation() (bool, error) {
 		return cmd.CommonConfirmationPrompt(message, dpc.Context, dpc.input)
 	}
 	return true, nil
+}
+
+// PrintDeclineMessage prints confirmation decline message to the user
+func (dpc *DeletePlatformCmd) PrintDeclineMessage() {
+	cmd.CommonPrintDeclineMessage(dpc.Output)
 }
 
 // Prepare returns cobra command
