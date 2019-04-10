@@ -44,10 +44,6 @@ type OpenIDStrategy struct {
 
 // NewOpenIDStrategy returns OpenId auth strategy
 func NewOpenIDStrategy(options *auth.Options) (*OpenIDStrategy, *auth.Options, error) {
-	if !options.TokenBasicAuth {
-		oauth2.RegisterBrokenAuthHeaderProvider(options.IssuerURL)
-	}
-
 	httpClient := util.BuildHTTPClient(options.SSLDisabled)
 	httpClient.Timeout = options.Timeout
 
@@ -58,20 +54,9 @@ func NewOpenIDStrategy(options *auth.Options) (*OpenIDStrategy, *auth.Options, e
 	options.AuthorizationEndpoint = openIDConfig.AuthorizationEndpoint
 	options.TokenEndpoint = openIDConfig.TokenEndpoint
 
-	oauthConfig := &oauth2.Config{
-		ClientID:     options.ClientID,
-		ClientSecret: options.ClientSecret,
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  options.AuthorizationEndpoint,
-			TokenURL: options.TokenEndpoint,
-		},
-	}
+	oauthConfig := newOauth2Config(options)
 
-	ccConfig := &clientcredentials.Config{
-		ClientID:     options.ClientID,
-		ClientSecret: options.ClientSecret,
-		TokenURL:     options.TokenEndpoint,
-	}
+	ccConfig := newClientCredentialsConfig(options)
 
 	return &OpenIDStrategy{
 		oauth2Config: oauthConfig,
