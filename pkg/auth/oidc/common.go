@@ -33,10 +33,6 @@ import (
 // If token is provided will try to refresh the token if it has expired,
 // otherwise if token is not provided will do client_credentials flow and fetch token
 func NewClient(options *auth.Options, token *auth.Token) auth.Client {
-	if !options.TokenBasicAuth {
-		oauth2.RegisterBrokenAuthHeaderProvider(options.IssuerURL)
-	}
-
 	httpClient := util.BuildHTTPClient(options.SSLDisabled)
 	httpClient.Timeout = options.Timeout
 
@@ -69,23 +65,45 @@ func NewClient(options *auth.Options, token *auth.Token) auth.Client {
 }
 
 func refreshTokenSource(ctx context.Context, options *auth.Options, token oauth2.Token) oauth2.TokenSource {
-	oauthConfig := &oauth2.Config{
-		ClientID:     options.ClientID,
-		ClientSecret: options.ClientSecret,
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  options.AuthorizationEndpoint,
-			TokenURL: options.TokenEndpoint,
-		},
-	}
+	oauthConfig := newOauth2Config(options)
 	return oauthConfig.TokenSource(ctx, &token)
 }
 
-func clientCredentialsTokenSource(ctx context.Context, options *auth.Options, token oauth2.Token) oauth2.TokenSource {
-	oauthConfig := &clientcredentials.Config{
+func newClientCredentialsConfig(options *auth.Options) *clientcredentials.Config {
+	authStyle := authStyle(options)
+
+	return &clientcredentials.Config{
 		ClientID:     options.ClientID,
 		ClientSecret: options.ClientSecret,
 		TokenURL:     options.TokenEndpoint,
+		AuthStyle:    authStyle,
 	}
+}
+
+func newOauth2Config(options *auth.Options) *oauth2.Config {
+	authStyle := authStyle(options)
+
+	return &oauth2.Config{
+		ClientID:     options.ClientID,
+		ClientSecret: options.ClientSecret,
+		Endpoint: oauth2.Endpoint{
+			AuthURL:   options.AuthorizationEndpoint,
+			TokenURL:  options.TokenEndpoint,
+			AuthStyle: authStyle,
+		},
+	}
+}
+
+func authStyle(options *auth.Options) oauth2.AuthStyle {
+	authStyle := oauth2.AuthStyleAutoDetect
+	if !options.TokenBasicAuth {
+		authStyle = oauth2.AuthStyleInParams
+	}
+	return authStyle
+}
+
+func clientCredentialsTokenSource(ctx context.Context, options *auth.Options, token oauth2.Token) oauth2.TokenSource {
+	oauthConfig := newClientCredentialsConfig(options)
 	clientCredentialsSource := oauthConfig.TokenSource(ctx)
 	// The double wrapping of TokenSource objects is needed, because there is no other way
 	// to pass the existing access token and the client will try to fetch a token for each request
