@@ -41,6 +41,7 @@ type Client interface {
 	ListBrokers() (*types.Brokers, error)
 	ListPlatformsWithQuery(string) (*types.Platforms, error)
 	ListPlatforms() (*types.Platforms, error)
+	ListOfferingsWithQuery(string) (*types.ServiceOfferings, error)
 	ListOfferings() (*types.ServiceOfferings, error)
 	DeleteBroker(string) error
 	DeletePlatform(string) error
@@ -188,10 +189,15 @@ func (client *serviceManagerClient) ListPlatformsWithQuery(fieldQuery string) (*
 	return platforms, err
 }
 
-// ListOfferings returns service offerings of brokers registered in Service Manager
-func (client *serviceManagerClient) ListOfferings() (*types.ServiceOfferings, error) {
+// ListPlatforms returns platforms registered in the Service Manager
+func (client *serviceManagerClient) ListPlatforms() (*types.Platforms, error) {
+	return client.ListPlatformsWithQuery("")
+}
+
+// ListOfferings returns service offerings satisfying provided queries
+func (client *serviceManagerClient) ListOfferingsWithQuery(fieldQuery string) (*types.ServiceOfferings, error) {
 	serviceOfferings := &types.ServiceOfferings{}
-	err := client.list(serviceOfferings, web.ServiceOfferingsURL)
+	err := client.list(serviceOfferings, web.ServiceOfferingsURL+"?fieldQuery="+fieldQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -214,9 +220,9 @@ func (client *serviceManagerClient) ListOfferings() (*types.ServiceOfferings, er
 	return serviceOfferings, nil
 }
 
-// ListPlatforms returns platforms registered in the Service Manager
-func (client *serviceManagerClient) ListPlatforms() (*types.Platforms, error) {
-	return client.ListPlatformsWithQuery("")
+// ListOfferings returns service offerings provided of all brokers in SM
+func (client *serviceManagerClient) ListOfferings() (*types.ServiceOfferings, error) {
+	return client.ListOfferingsWithQuery("")
 }
 
 func (client *serviceManagerClient) list(result interface{}, path string) error {

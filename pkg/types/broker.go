@@ -16,7 +16,10 @@
 
 package types
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/Peripli/service-manager/pkg/types"
+)
 
 // Broker defines the data of a service broker.
 type Broker struct {
@@ -27,7 +30,7 @@ type Broker struct {
 	Created     string       `json:"created_at,omitempty" yaml:"created_at,omitempty"`
 	Updated     string       `json:"updated_at,omitempty" yaml:"updated_at,omitempty"`
 	Credentials *Credentials `json:"credentials,omitempty" yaml:"credentials,omitempty"`
-	Labels      Labels       `json:"labels,omitempty" yaml:"labels,omitempty"`
+	Labels      types.Labels `json:"labels,omitempty" yaml:"labels,omitempty"`
 }
 
 // Message title of the table

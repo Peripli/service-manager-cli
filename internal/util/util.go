@@ -23,6 +23,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/Peripli/service-manager-cli/pkg/types"
@@ -99,4 +100,10 @@ func BuildHTTPClient(sslDisabled bool) *http.Client {
 	}
 
 	return client
+}
+
+//ParseQuery change spaces to + in the query
+func ParseQuery(query string) string {
+	replacer := strings.NewReplacer(" ", "+")
+	return replacer.Replace(query)
 }

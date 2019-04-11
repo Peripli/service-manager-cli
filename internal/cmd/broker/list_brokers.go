@@ -17,11 +17,10 @@
 package broker
 
 import (
-	"github.com/Peripli/service-manager-cli/internal/output"
-	"github.com/spf13/cobra"
-	"strings"
-
 	"github.com/Peripli/service-manager-cli/internal/cmd"
+	"github.com/Peripli/service-manager-cli/internal/output"
+	"github.com/Peripli/service-manager-cli/internal/util"
+	"github.com/spf13/cobra"
 )
 
 // ListBrokersCmd wraps the smctl list-brokers command
@@ -41,9 +40,8 @@ func NewListBrokersCmd(context *cmd.Context) *ListBrokersCmd {
 
 // Run runs the command's logic
 func (lb *ListBrokersCmd) Run() error {
-	replacer := strings.NewReplacer(" ", "+")
-	parsedFieldQuery := replacer.Replace(lb.fieldQuery)
-	parsedLabelQuery := replacer.Replace(lb.labelQuery)
+	parsedFieldQuery := util.ParseQuery(lb.fieldQuery)
+	parsedLabelQuery := util.ParseQuery(lb.labelQuery)
 	brokers, err := lb.Client.ListBrokersWithQuery(parsedFieldQuery, parsedLabelQuery)
 	if err != nil {
 		return err

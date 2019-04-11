@@ -98,6 +98,19 @@ type FakeClient struct {
 		result1 *types.ServiceOfferings
 		result2 error
 	}
+	ListOfferingsWithQueryStub        func(string) (*types.ServiceOfferings, error)
+	listOfferingsWithQueryMutex       sync.RWMutex
+	listOfferingsWithQueryArgsForCall []struct {
+		arg1 string
+	}
+	listOfferingsWithQueryReturns struct {
+		result1 *types.ServiceOfferings
+		result2 error
+	}
+	listOfferingsWithQueryReturnsOnCall map[int]struct {
+		result1 *types.ServiceOfferings
+		result2 error
+	}
 	ListPlatformsStub        func() (*types.Platforms, error)
 	listPlatformsMutex       sync.RWMutex
 	listPlatformsArgsForCall []struct {
@@ -595,6 +608,69 @@ func (fake *FakeClient) ListOfferingsReturnsOnCall(i int, result1 *types.Service
 	}{result1, result2}
 }
 
+func (fake *FakeClient) ListOfferingsWithQuery(arg1 string) (*types.ServiceOfferings, error) {
+	fake.listOfferingsWithQueryMutex.Lock()
+	ret, specificReturn := fake.listOfferingsWithQueryReturnsOnCall[len(fake.listOfferingsWithQueryArgsForCall)]
+	fake.listOfferingsWithQueryArgsForCall = append(fake.listOfferingsWithQueryArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("ListOfferingsWithQuery", []interface{}{arg1})
+	fake.listOfferingsWithQueryMutex.Unlock()
+	if fake.ListOfferingsWithQueryStub != nil {
+		return fake.ListOfferingsWithQueryStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.listOfferingsWithQueryReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeClient) ListOfferingsWithQueryCallCount() int {
+	fake.listOfferingsWithQueryMutex.RLock()
+	defer fake.listOfferingsWithQueryMutex.RUnlock()
+	return len(fake.listOfferingsWithQueryArgsForCall)
+}
+
+func (fake *FakeClient) ListOfferingsWithQueryCalls(stub func(string) (*types.ServiceOfferings, error)) {
+	fake.listOfferingsWithQueryMutex.Lock()
+	defer fake.listOfferingsWithQueryMutex.Unlock()
+	fake.ListOfferingsWithQueryStub = stub
+}
+
+func (fake *FakeClient) ListOfferingsWithQueryArgsForCall(i int) string {
+	fake.listOfferingsWithQueryMutex.RLock()
+	defer fake.listOfferingsWithQueryMutex.RUnlock()
+	argsForCall := fake.listOfferingsWithQueryArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeClient) ListOfferingsWithQueryReturns(result1 *types.ServiceOfferings, result2 error) {
+	fake.listOfferingsWithQueryMutex.Lock()
+	defer fake.listOfferingsWithQueryMutex.Unlock()
+	fake.ListOfferingsWithQueryStub = nil
+	fake.listOfferingsWithQueryReturns = struct {
+		result1 *types.ServiceOfferings
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) ListOfferingsWithQueryReturnsOnCall(i int, result1 *types.ServiceOfferings, result2 error) {
+	fake.listOfferingsWithQueryMutex.Lock()
+	defer fake.listOfferingsWithQueryMutex.Unlock()
+	fake.ListOfferingsWithQueryStub = nil
+	if fake.listOfferingsWithQueryReturnsOnCall == nil {
+		fake.listOfferingsWithQueryReturnsOnCall = make(map[int]struct {
+			result1 *types.ServiceOfferings
+			result2 error
+		})
+	}
+	fake.listOfferingsWithQueryReturnsOnCall[i] = struct {
+		result1 *types.ServiceOfferings
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeClient) ListPlatforms() (*types.Platforms, error) {
 	fake.listPlatformsMutex.Lock()
 	ret, specificReturn := fake.listPlatformsReturnsOnCall[len(fake.listPlatformsArgsForCall)]
@@ -984,6 +1060,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.listBrokersWithQueryMutex.RUnlock()
 	fake.listOfferingsMutex.RLock()
 	defer fake.listOfferingsMutex.RUnlock()
+	fake.listOfferingsWithQueryMutex.RLock()
+	defer fake.listOfferingsWithQueryMutex.RUnlock()
 	fake.listPlatformsMutex.RLock()
 	defer fake.listPlatformsMutex.RUnlock()
 	fake.listPlatformsWithQueryMutex.RLock()

@@ -18,8 +18,7 @@ package platform
 
 import (
 	"github.com/Peripli/service-manager-cli/internal/output"
-	"strings"
-
+	"github.com/Peripli/service-manager-cli/internal/util"
 	"github.com/spf13/cobra"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
@@ -40,9 +39,7 @@ func NewListPlatformsCmd(context *cmd.Context) *ListPlatformsCmd {
 
 // Run runs the command's logic
 func (lp *ListPlatformsCmd) Run() error {
-	replacer := strings.NewReplacer(" ", "+")
-	parsedFieldQuery := replacer.Replace(lp.fieldQuery)
-	platforms, err := lp.Client.ListPlatformsWithQuery(parsedFieldQuery)
+	platforms, err := lp.Client.ListPlatformsWithQuery(util.ParseQuery(lp.fieldQuery))
 	if err != nil {
 		return err
 	}
