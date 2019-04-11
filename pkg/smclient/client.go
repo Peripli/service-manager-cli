@@ -123,7 +123,7 @@ func (client *serviceManagerClient) RegisterPlatform(platform *types.Platform) (
 	}
 
 	buffer := bytes.NewBuffer(requestBody)
-	response, err := client.Call(http.MethodPost, web.PlatformsURL , buffer)
+	response, err := client.Call(http.MethodPost, web.PlatformsURL, buffer)
 	if err != nil {
 		return nil, err
 	}
@@ -170,7 +170,7 @@ func (client *serviceManagerClient) RegisterBroker(broker *types.Broker) (*types
 // ListBrokersWithQuery returns brokers registered in the Service Manager satisfying provided queries
 func (client *serviceManagerClient) ListBrokersWithQuery(fieldQuery string, labelQuery string) (*types.Brokers, error) {
 	brokers := &types.Brokers{}
-	err := client.list(brokers, web.BrokersURL + "?fieldQuery="+fieldQuery+"&labelQuery="+labelQuery)
+	err := client.list(brokers, web.BrokersURL+"?fieldQuery="+fieldQuery+"&labelQuery="+labelQuery)
 
 	return brokers, err
 }
@@ -183,7 +183,7 @@ func (client *serviceManagerClient) ListBrokers() (*types.Brokers, error) {
 // ListPlatforms returns platforms registered in the Service Manager satisfying provided queries
 func (client *serviceManagerClient) ListPlatformsWithQuery(fieldQuery string) (*types.Platforms, error) {
 	platforms := &types.Platforms{}
-	err := client.list(platforms, web.PlatformsURL + "?fieldQuery=" + fieldQuery)
+	err := client.list(platforms, web.PlatformsURL+"?fieldQuery="+fieldQuery)
 
 	return platforms, err
 }
@@ -213,6 +213,7 @@ func (client *serviceManagerClient) ListOfferings() (*types.ServiceOfferings, er
 	}
 	return serviceOfferings, nil
 }
+
 // ListPlatforms returns platforms registered in the Service Manager
 func (client *serviceManagerClient) ListPlatforms() (*types.Platforms, error) {
 	return client.ListPlatformsWithQuery("")
@@ -240,7 +241,7 @@ func (client *serviceManagerClient) DeletePlatform(id string) error {
 }
 
 func (client *serviceManagerClient) delete(id, path string) error {
-	resp, err := client.Call(http.MethodDelete, path + "/" + id, nil)
+	resp, err := client.Call(http.MethodDelete, path+"/"+id, nil)
 	if err != nil {
 		return err
 	}
@@ -273,7 +274,7 @@ func (client *serviceManagerClient) UpdatePlatform(id string, updatedPlatform *t
 
 func (client *serviceManagerClient) update(result interface{}, body []byte, id, path string) error {
 	buffer := bytes.NewBuffer(body)
-	resp, err := client.Call(http.MethodPatch, path + "/" + id, buffer)
+	resp, err := client.Call(http.MethodPatch, path+"/"+id, buffer)
 	if err != nil {
 		return err
 	}

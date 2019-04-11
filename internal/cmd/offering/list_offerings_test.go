@@ -25,37 +25,37 @@ var _ = Describe("List offerings command test", func() {
 	var buffer *bytes.Buffer
 
 	plan1 := types.ServicePlan{
-		Name: "plan1",
+		Name:        "plan1",
 		Description: "desc",
 	}
 
 	plan2 := types.ServicePlan{
-		Name: "plan2",
+		Name:        "plan2",
 		Description: "desc",
 	}
 
 	noPlanOffering := types.ServiceOffering{
-		Name: "no-plan-offering",
-		Plans: []types.ServicePlan{},
+		Name:        "no-plan-offering",
+		Plans:       []types.ServicePlan{},
 		Description: "desc",
-		BrokerName: "broker",
-		BrokerID: "id",
+		BrokerName:  "broker",
+		BrokerID:    "id",
 	}
 
 	offering1 := types.ServiceOffering{
-		Name: "offering1",
-		Plans: []types.ServicePlan{plan1},
+		Name:        "offering1",
+		Plans:       []types.ServicePlan{plan1},
 		Description: "desc",
-		BrokerName: "broker1",
-		BrokerID: "id1",
+		BrokerName:  "broker1",
+		BrokerID:    "id1",
 	}
 
 	offering2 := types.ServiceOffering{
-		Name: "offering2",
-		Plans: []types.ServicePlan{plan1, plan2},
+		Name:        "offering2",
+		Plans:       []types.ServicePlan{plan1, plan2},
 		Description: "desc",
-		BrokerName: "broker2",
-		BrokerID: "id2",
+		BrokerName:  "broker2",
+		BrokerID:    "id2",
 	}
 
 	BeforeEach(func() {
@@ -181,7 +181,6 @@ var _ = Describe("List offerings command test", func() {
 			yamlOutputExpected := string(yamlByte) + "\n"
 			Expect(buffer.String()).To(ContainSubstring(yamlOutputExpected))
 		})
-
 
 	})
 

@@ -149,8 +149,8 @@ var _ = Describe("List brokers command test", func() {
 
 	Context("when error is returned by Service manager", func() {
 		It("should handle error", func() {
-			expectedErr :=  errors.New("Http Client Error")
-			client.ListBrokersReturns(nil, expectedErr)
+			expectedErr := errors.New("Http Client Error")
+			client.ListBrokersWithQueryReturns(nil, expectedErr)
 			err := executeWithArgs([]string{})
 
 			Expect(err).Should(HaveOccurred())

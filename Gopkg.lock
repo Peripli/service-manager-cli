@@ -2,9 +2,14 @@
 
 
 [[projects]]
-  digest = "1:03391d802fe15bc93c4f1ccbaeb01102927f0cca479ef155916c64a67b3600bd"
+  digest = "1:2acd58b24b7c7560ef591390897de26fadc4b10d95ea7a865f8a130d2d989d3b"
   name = "github.com/Peripli/service-manager"
-  packages = ["pkg/log"]
+  packages = [
+    "pkg/health",
+    "pkg/log",
+    "pkg/util/slice",
+    "pkg/web",
+  ]
   pruneopts = "UT"
   revision = "0d118c51d27d52c59d40b7af7f061bda3f195c17"
   version = "v0.1.12"
@@ -16,6 +21,23 @@
   pruneopts = "UT"
   revision = "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9"
   version = "v1.4.7"
+
+[[projects]]
+  digest = "1:9ae31ce33b4bab257668963e844d98765b44160be4ee98cafc44637a213e530d"
+  name = "github.com/gobwas/glob"
+  packages = [
+    ".",
+    "compiler",
+    "match",
+    "syntax",
+    "syntax/ast",
+    "syntax/lexer",
+    "util/runes",
+    "util/strings",
+  ]
+  pruneopts = "UT"
+  revision = "5ccd90ef52e1e632236f7326478d4faa74f99438"
+  version = "v0.2.3"
 
 [[projects]]
   digest = "1:26f2ad8a198a88c3605401186a6be538326e7fbf1f14cb3ef4e0027c4f755f2a"
@@ -341,6 +363,7 @@
   analyzer-version = 1
   input-imports = [
     "github.com/Peripli/service-manager/pkg/log",
+    "github.com/Peripli/service-manager/pkg/web",
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",
     "github.com/spf13/afero",

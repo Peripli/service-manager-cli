@@ -24,9 +24,9 @@ func (c *FakeAuthClient) Do(req *http.Request) (*http.Response, error) {
 }
 
 type HandlerDetails struct {
-	Method string
-	Path string
-	ResponseBody []byte
+	Method             string
+	Path               string
+	ResponseBody       []byte
 	ResponseStatusCode int
 }
 
@@ -55,29 +55,27 @@ var _ = Describe("Service Manager Client test", func() {
 	}
 
 	initialOffering := &types.ServiceOffering{
-		ID: "offeringID",
-		Name: "initial-offering",
+		ID:          "offeringID",
+		Name:        "initial-offering",
 		Description: "Some description",
-		BrokerID: "id",
+		BrokerID:    "id",
 	}
 
 	plan := &types.ServicePlan{
-		ID: "planID",
-		Name: "plan-1",
-		Description: "Sample Plan",
+		ID:                "planID",
+		Name:              "plan-1",
+		Description:       "Sample Plan",
 		ServiceOfferingID: "offeringID",
 	}
 
 	resultOffering := &types.ServiceOffering{
-		ID: "offeringID",
-		Name: "initial-offering",
+		ID:          "offeringID",
+		Name:        "initial-offering",
 		Description: "Some description",
-		Plans: []types.ServicePlan{*plan},
-		BrokerID: "id",
-		BrokerName: "test-broker",
+		Plans:       []types.ServicePlan{*plan},
+		BrokerID:    "id",
+		BrokerName:  "test-broker",
 	}
-
-
 
 	createSMHandler := func() http.Handler {
 		mux := http.NewServeMux()
@@ -118,7 +116,7 @@ var _ = Describe("Service Manager Client test", func() {
 				_, err := client.ListBrokers()
 
 				Expect(err).Should(HaveOccurred())
-				Expect(err).To(MatchError(errors.ResponseError{URL: smServer.URL + web.BrokersURL, StatusCode: http.StatusUnauthorized}))
+				Expect(err).To(MatchError(errors.ResponseError{URL: smServer.URL + web.BrokersURL + "?fieldQuery=&labelQuery=", StatusCode: http.StatusUnauthorized}))
 			})
 		})
 	})
@@ -128,7 +126,7 @@ var _ = Describe("Service Manager Client test", func() {
 			BeforeEach(func() {
 				responseBody, _ := json.Marshal(platform)
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodPost, Path: web.PlatformsURL , ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
+					{Method: http.MethodPost, Path: web.PlatformsURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
 				}
 			})
 			It("should register successfully", func() {
@@ -282,7 +280,7 @@ var _ = Describe("Service Manager Client test", func() {
 
 					Expect(err).Should(HaveOccurred())
 					Expect(err).To(MatchError(errors.ResponseError{URL: smServer.URL + web.BrokersURL, Description: "description",
-																	ErrorMessage: "error", StatusCode: handlerDetails[0].ResponseStatusCode}))
+						ErrorMessage: "error", StatusCode: handlerDetails[0].ResponseStatusCode}))
 					Expect(responseBroker).To(BeNil())
 				})
 			})
@@ -449,7 +447,7 @@ var _ = Describe("Service Manager Client test", func() {
 
 				brokerResponseBody, _ := json.Marshal(broker)
 
-				handlerDetails = []HandlerDetails {
+				handlerDetails = []HandlerDetails{
 					{Method: http.MethodGet, Path: web.ServiceOfferingsURL, ResponseBody: offeringResponseBody, ResponseStatusCode: http.StatusOK},
 					{Method: http.MethodGet, Path: web.ServicePlansURL, ResponseBody: plansResponseBody, ResponseStatusCode: http.StatusOK},
 					{Method: http.MethodGet, Path: web.BrokersURL + "/", ResponseBody: brokerResponseBody, ResponseStatusCode: http.StatusOK},
@@ -468,7 +466,7 @@ var _ = Describe("Service Manager Client test", func() {
 				offerings := types.ServiceOfferings{}
 				offeringResponseBody, _ := json.Marshal(offerings)
 
-				handlerDetails = []HandlerDetails {
+				handlerDetails = []HandlerDetails{
 					{Method: http.MethodGet, Path: web.ServiceOfferingsURL, ResponseBody: offeringResponseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
@@ -481,7 +479,7 @@ var _ = Describe("Service Manager Client test", func() {
 
 		Context("when invalid status code is returned", func() {
 			BeforeEach(func() {
-				handlerDetails = []HandlerDetails {
+				handlerDetails = []HandlerDetails{
 					{Method: http.MethodGet, Path: web.ServiceOfferingsURL, ResponseStatusCode: http.StatusCreated},
 				}
 			})
@@ -494,7 +492,7 @@ var _ = Describe("Service Manager Client test", func() {
 
 		Context("when invalid status code is returned", func() {
 			BeforeEach(func() {
-				handlerDetails = []HandlerDetails {
+				handlerDetails = []HandlerDetails{
 					{Method: http.MethodGet, Path: web.ServiceOfferingsURL, ResponseStatusCode: http.StatusBadRequest},
 				}
 			})

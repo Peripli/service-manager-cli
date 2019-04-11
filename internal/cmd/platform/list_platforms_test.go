@@ -136,8 +136,8 @@ var _ = Describe("List platforms command test", func() {
 
 	Context("when error is returned by Service manager", func() {
 		It("should handle error", func() {
-			expectedErr :=  errors.New("Http Client Error")
-			client.ListPlatformsReturns(nil,expectedErr)
+			expectedErr := errors.New("Http Client Error")
+			client.ListPlatformsWithQueryReturns(nil, expectedErr)
 			err := executeWithArgs([]string{})
 
 			Expect(err).Should(HaveOccurred())
