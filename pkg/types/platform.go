@@ -18,6 +18,7 @@ package types
 
 import (
 	"fmt"
+	"github.com/Peripli/service-manager/pkg/types"
 )
 
 // Platform defines the data of a platform.
@@ -29,6 +30,7 @@ type Platform struct {
 	Created     string       `json:"created_at,omitempty" yaml:"created_at,omitempty"`
 	Updated     string       `json:"updated_at,omitempty" yaml:"updated_at,omitempty"`
 	Credentials *Credentials `json:"credentials,omitempty" yaml:"credentials,omitempty"`
+	Labels      types.Labels `json:"labels,omitempty" yaml:"labels,omitempty"`
 }
 
 // Message title of the table

@@ -99,7 +99,7 @@ var _ = Describe("List brokers command test", func() {
 		It("should pass it to SM", func() {
 			result := &types.Brokers{Brokers: []types.Broker{broker}}
 			client.ListBrokersWithQueryReturns(result, nil)
-			err := executeWithArgs([]string{"-l", "test+=+false"})
+			err := executeWithArgs([]string{"-l", "test = false"})
 
 			arg1, arg2 := client.ListBrokersWithQueryArgsForCall(0)
 

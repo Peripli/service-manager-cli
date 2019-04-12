@@ -88,10 +88,23 @@ var _ = Describe("List platforms command test", func() {
 			client.ListPlatformsWithQueryReturns(result, nil)
 			err := executeWithArgs([]string{"-f", "name = platform1"})
 
-			arg := client.ListPlatformsWithQueryArgsForCall(0)
+			arg1, arg2 := client.ListPlatformsWithQueryArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect([]string{arg}).To(ConsistOf("name+=+platform1"))
+			Expect([]string{arg1, arg2}).To(ConsistOf("name+=+platform1", ""))
+		})
+	})
+
+	Context("when label query flag is used", func() {
+		It("should pass it to SM", func() {
+			result := &types.Platforms{Platforms: []types.Platform{platform}}
+			client.ListPlatformsWithQueryReturns(result, nil)
+			err := executeWithArgs([]string{"-l", "test = false"})
+
+			arg1, arg2 := client.ListPlatformsWithQueryArgsForCall(0)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect([]string{arg1, arg2}).To(ConsistOf("", "test+=+false"))
 		})
 	})
 

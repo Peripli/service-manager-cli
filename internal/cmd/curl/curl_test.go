@@ -83,7 +83,7 @@ var _ = Describe("Curl command test", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 
 			setCallReturns(200, expectedOutput, nil)
-			err = executeWithArgs([]string{web.BrokersURL})
+			err = executeWithArgs([]string{web.ServiceBrokersURL})
 			Expect(err).To(BeNil())
 			Expect(buffer.String()).To(Equal(string(expectedOutput)))
 		})
@@ -92,7 +92,7 @@ var _ = Describe("Curl command test", func() {
 	Context("when curl with path, method and body", func() {
 		It("should do GET method", func() {
 			setCallReturns(200, nil, nil)
-			assertLastCall(http.MethodGet, web.BrokersURL, nil, "", nil)
+			assertLastCall(http.MethodGet, web.ServiceBrokersURL, nil, "", nil)
 		})
 
 		It("should do PATCH method", func() {
@@ -102,7 +102,7 @@ var _ = Describe("Curl command test", func() {
 			body, err := json.MarshalIndent(&broker, "", "  ")
 			Expect(err).ShouldNot(HaveOccurred())
 			setCallReturns(201, body, nil)
-			assertLastCall(http.MethodPost, web.BrokersURL, body, string(body), nil)
+			assertLastCall(http.MethodPost, web.ServiceBrokersURL, body, string(body), nil)
 		})
 
 		Context("when body is file", func() {
@@ -120,7 +120,7 @@ var _ = Describe("Curl command test", func() {
 				f.Write([]byte(content))
 
 				setCallReturns(201, []byte(content), nil)
-				assertLastCall(http.MethodPost, web.BrokersURL, []byte(`@test.txt`), string(content), nil)
+				assertLastCall(http.MethodPost, web.ServiceBrokersURL, []byte(`@test.txt`), string(content), nil)
 			})
 		})
 	})
@@ -129,7 +129,7 @@ var _ = Describe("Curl command test", func() {
 		It("should handle error", func() {
 			err := errors.New("problem during call")
 			setCallReturns(0, nil, err)
-			assertLastCall(http.MethodGet, web.BrokersURL, nil, "", err)
+			assertLastCall(http.MethodGet, web.ServiceBrokersURL, nil, "", err)
 		})
 	})
 })

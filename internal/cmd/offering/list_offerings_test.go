@@ -137,16 +137,29 @@ var _ = Describe("List offerings command test", func() {
 		})
 	})
 
-	Context("when field query is used", func() {
+	Context("when field query flag is used", func() {
 		It("should pass it to SM", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1}}
 			client.ListOfferingsWithQueryReturns(result, nil)
 			err := executeWithArgs([]string{"-f", "name = offering1"})
 
-			arg := client.ListOfferingsWithQueryArgsForCall(0)
+			arg1, arg2 := client.ListOfferingsWithQueryArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect([]string{arg}).To(ConsistOf("name+=+offering1"))
+			Expect([]string{arg1, arg2}).To(ConsistOf("name+=+offering1", ""))
+		})
+	})
+
+	Context("when label query flag is used", func() {
+		It("should pass it to SM", func() {
+			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1}}
+			client.ListOfferingsWithQueryReturns(result, nil)
+			err := executeWithArgs([]string{"-l", "test = false"})
+
+			arg1, arg2 := client.ListOfferingsWithQueryArgsForCall(0)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect([]string{arg1, arg2}).To(ConsistOf("", "test+=+false"))
 		})
 	})
 

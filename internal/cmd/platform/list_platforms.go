@@ -30,6 +30,7 @@ type ListPlatformsCmd struct {
 
 	outputFormat output.Format
 	fieldQuery   string
+	labelQuery 	 string
 }
 
 // NewListPlatformsCmd returns new list-brokers command with context
@@ -39,7 +40,9 @@ func NewListPlatformsCmd(context *cmd.Context) *ListPlatformsCmd {
 
 // Run runs the command's logic
 func (lp *ListPlatformsCmd) Run() error {
-	platforms, err := lp.Client.ListPlatformsWithQuery(util.ParseQuery(lp.fieldQuery))
+	parsedFieldQuery := util.ParseQuery(lp.fieldQuery)
+	parsedLabelQuery := util.ParseQuery(lp.labelQuery)
+	platforms, err := lp.Client.ListPlatformsWithQuery(parsedFieldQuery, parsedLabelQuery)
 	if err != nil {
 		return err
 	}
@@ -71,8 +74,8 @@ func (lp *ListPlatformsCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		RunE:    cmd.RunE(lp),
 	}
 
-	result.Flags().StringVarP(&lp.fieldQuery, "field-query", "f", "", "Platform filtering based on field querying")
 	cmd.AddFormatFlag(result.Flags())
+	cmd.AddQueryingFlags(result.Flags(), &lp.fieldQuery, &lp.labelQuery)
 
 	return result
 }

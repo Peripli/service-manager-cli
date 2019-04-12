@@ -33,6 +33,7 @@ type ListOfferingsCmd struct {
 
 	offering   string
 	fieldQuery string
+	labelQuery string
 }
 
 // NewListOfferingsCmd returns new list-offerings command with context
@@ -42,7 +43,9 @@ func NewListOfferingsCmd(context *cmd.Context) *ListOfferingsCmd {
 
 // Run runs the command's logic
 func (lo *ListOfferingsCmd) Run() error {
-	offerings, err := lo.Client.ListOfferingsWithQuery(util.ParseQuery(lo.fieldQuery))
+	parsedFieldQuery := util.ParseQuery(lo.fieldQuery)
+	parsedLabelQuery := util.ParseQuery(lo.labelQuery)
+	offerings, err := lo.Client.ListOfferingsWithQuery(parsedFieldQuery, parsedLabelQuery)
 	if err != nil {
 		return err
 	}
@@ -85,7 +88,7 @@ func (lo *ListOfferingsCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 
 	cmd.AddFormatFlag(result.Flags())
 	result.Flags().StringVarP(&lo.offering, "service", "s", "", "Plan details for a single service offering")
-	result.Flags().StringVarP(&lo.fieldQuery, "field-query", "f", "", "Offering filtering based on field querying")
+	cmd.AddQueryingFlags(result.Flags(), &lo.fieldQuery, &lo.labelQuery)
 
 	return result
 }

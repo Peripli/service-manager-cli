@@ -76,7 +76,6 @@ func (lb *ListBrokersCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	}
 
 	cmd.AddFormatFlag(result.Flags())
-	result.Flags().StringVarP(&lb.fieldQuery, "field-query", "f", "", "Broker filtering based on field querying")
-	result.Flags().StringVarP(&lb.labelQuery, "label-query", "l", "", "Broker filtering based on label querying")
+	cmd.AddQueryingFlags(result.Flags(), &lb.fieldQuery, &lb.labelQuery)
 	return result
 }
