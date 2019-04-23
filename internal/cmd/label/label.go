@@ -15,8 +15,8 @@ import (
 type Cmd struct {
 	*cmd.Context
 
-	resource    string
-	id        string
+	resource     string
+	id           string
 	labelChanges types.LabelChanges
 }
 
@@ -28,7 +28,7 @@ func NewLabelCmd(context *cmd.Context) *Cmd {
 // Prepare returns cobra command
 func (c *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
-		Use:   "label [resource] [name] [operation] [key=value1,value2,...]",
+		Use:   "label [resource] [id] [operation] [key=value1,value2,...]",
 		Short: "Label resource",
 		Long:  "Label resource",
 

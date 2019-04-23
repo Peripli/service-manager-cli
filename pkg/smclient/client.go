@@ -342,7 +342,7 @@ func (client *serviceManagerClient) Label(resource string, id string, change *ty
 		return err
 	}
 	buffer := bytes.NewBuffer(requestBody)
-	response, err := client.Call(http.MethodPatch, "/v1/" + resource + "/" + id, buffer)
+	response, err := client.Call(http.MethodPatch, "/v1/"+resource+"/"+id, buffer)
 	if err != nil {
 		return err
 	}
