@@ -21,6 +21,7 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/cmd/broker"
 	"github.com/Peripli/service-manager-cli/internal/cmd/curl"
 	"github.com/Peripli/service-manager-cli/internal/cmd/info"
+	"github.com/Peripli/service-manager-cli/internal/cmd/label"
 	"github.com/Peripli/service-manager-cli/internal/cmd/login"
 	"github.com/Peripli/service-manager-cli/internal/cmd/offering"
 	"github.com/Peripli/service-manager-cli/internal/cmd/platform"
@@ -70,6 +71,7 @@ func main() {
 			visibility.NewUpdateVisibilityCmd(context),
 			visibility.NewDeleteVisibilityCmd(context, os.Stdin),
 			offering.NewListOfferingsCmd(context),
+			label.NewLabelCmd(context),
 		},
 		PrepareFn: cmd.SmPrepare,
 	}

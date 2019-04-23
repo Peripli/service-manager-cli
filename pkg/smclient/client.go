@@ -54,6 +54,7 @@ type Client interface {
 	UpdateBroker(string, *types.Broker) (*types.Broker, error)
 	UpdatePlatform(string, *types.Platform) (*types.Platform, error)
 	UpdateVisibility(string, *types.Visibility) (*types.Visibility, error)
+	Label(string, string, *types.LabelChanges) error
 
 	// Call makes HTTP request to the Service Manager server with authentication.
 	// It should be used only in case there is no already implemented method for such an operation
@@ -333,6 +334,24 @@ func (client *serviceManagerClient) update(resource interface{}, url string, id 
 	}
 
 	return httputil.UnmarshalResponse(resp, &result)
+}
+
+func (client *serviceManagerClient) Label(resource string, id string, change *types.LabelChanges) error {
+	requestBody, err := json.Marshal(change)
+	if err != nil {
+		return err
+	}
+	buffer := bytes.NewBuffer(requestBody)
+	response, err := client.Call(http.MethodPatch, "/v1/" + resource + "/" + id, buffer)
+	if err != nil {
+		return err
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return errors.ResponseError{StatusCode: response.StatusCode}
+	}
+
+	return nil
 }
 
 func (client *serviceManagerClient) Call(method string, smpath string, body io.Reader) (*http.Response, error) {

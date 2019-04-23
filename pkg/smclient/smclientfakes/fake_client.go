@@ -93,6 +93,19 @@ type FakeClient struct {
 		result1 *types.Info
 		result2 error
 	}
+	LabelStub        func(string, string, *types.LabelChanges) error
+	labelMutex       sync.RWMutex
+	labelArgsForCall []struct {
+		arg1 string
+		arg2 string
+		arg3 *types.LabelChanges
+	}
+	labelReturns struct {
+		result1 error
+	}
+	labelReturnsOnCall map[int]struct {
+		result1 error
+	}
 	ListBrokersStub        func() (*types.Brokers, error)
 	listBrokersMutex       sync.RWMutex
 	listBrokersArgsForCall []struct {
@@ -700,6 +713,68 @@ func (fake *FakeClient) GetInfoReturnsOnCall(i int, result1 *types.Info, result2
 		result1 *types.Info
 		result2 error
 	}{result1, result2}
+}
+
+func (fake *FakeClient) Label(arg1 string, arg2 string, arg3 *types.LabelChanges) error {
+	fake.labelMutex.Lock()
+	ret, specificReturn := fake.labelReturnsOnCall[len(fake.labelArgsForCall)]
+	fake.labelArgsForCall = append(fake.labelArgsForCall, struct {
+		arg1 string
+		arg2 string
+		arg3 *types.LabelChanges
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("Label", []interface{}{arg1, arg2, arg3})
+	fake.labelMutex.Unlock()
+	if fake.LabelStub != nil {
+		return fake.LabelStub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.labelReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeClient) LabelCallCount() int {
+	fake.labelMutex.RLock()
+	defer fake.labelMutex.RUnlock()
+	return len(fake.labelArgsForCall)
+}
+
+func (fake *FakeClient) LabelCalls(stub func(string, string, *types.LabelChanges) error) {
+	fake.labelMutex.Lock()
+	defer fake.labelMutex.Unlock()
+	fake.LabelStub = stub
+}
+
+func (fake *FakeClient) LabelArgsForCall(i int) (string, string, *types.LabelChanges) {
+	fake.labelMutex.RLock()
+	defer fake.labelMutex.RUnlock()
+	argsForCall := fake.labelArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeClient) LabelReturns(result1 error) {
+	fake.labelMutex.Lock()
+	defer fake.labelMutex.Unlock()
+	fake.LabelStub = nil
+	fake.labelReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeClient) LabelReturnsOnCall(i int, result1 error) {
+	fake.labelMutex.Lock()
+	defer fake.labelMutex.Unlock()
+	fake.LabelStub = nil
+	if fake.labelReturnsOnCall == nil {
+		fake.labelReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.labelReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *FakeClient) ListBrokers() (*types.Brokers, error) {
@@ -1576,6 +1651,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.deleteVisibilityMutex.RUnlock()
 	fake.getInfoMutex.RLock()
 	defer fake.getInfoMutex.RUnlock()
+	fake.labelMutex.RLock()
+	defer fake.labelMutex.RUnlock()
 	fake.listBrokersMutex.RLock()
 	defer fake.listBrokersMutex.RUnlock()
 	fake.listBrokersWithQueryMutex.RLock()
