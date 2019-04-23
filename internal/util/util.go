@@ -102,8 +102,10 @@ func BuildHTTPClient(sslDisabled bool) *http.Client {
 	return client
 }
 
-//ParseQuery change spaces to + in the query
-func ParseQuery(query string) string {
-	replacer := strings.NewReplacer(" ", "+")
-	return replacer.Replace(query)
+//ParseQuery url encode queries
+func ParseQuery(query []string) string {
+	for i := range query {
+		query[i] = url.QueryEscape(query[i])
+	}
+	return strings.Join(query, "|")
 }

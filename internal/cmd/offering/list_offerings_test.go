@@ -146,7 +146,7 @@ var _ = Describe("List offerings command test", func() {
 			arg1, arg2 := client.ListOfferingsWithQueryArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect([]string{arg1, arg2}).To(ConsistOf("name+=+offering1", ""))
+			Expect([]string{arg1, arg2}).To(ConsistOf("name+%3D+offering1", ""))
 		})
 	})
 
@@ -159,7 +159,7 @@ var _ = Describe("List offerings command test", func() {
 			arg1, arg2 := client.ListOfferingsWithQueryArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect([]string{arg1, arg2}).To(ConsistOf("", "test+=+false"))
+			Expect([]string{arg1, arg2}).To(ConsistOf("", "test+%3D+false"))
 		})
 	})
 

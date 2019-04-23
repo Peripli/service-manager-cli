@@ -174,9 +174,9 @@ func AddFormatFlagDefault(flags *pflag.FlagSet, defValue string) {
 }
 
 // AddQueryingFlags adds --field-query (-f) and --label-query (-l) flags
-func AddQueryingFlags(flags *pflag.FlagSet, fieldQuery *string, labelQuery* string) {
-	flags.StringVarP(fieldQuery, "field-query", "f", "", "Filtering based on field querying")
-	flags.StringVarP(labelQuery, "label-query", "l", "", "Filtering based on label querying")
+func AddQueryingFlags(flags *pflag.FlagSet, fieldQuery *[]string, labelQuery *[]string) {
+	flags.StringArrayVarP(fieldQuery, "field-query", "f", []string{}, "Filtering based on field querying")
+	flags.StringArrayVarP(labelQuery, "label-query", "l", []string{}, "Filtering based on label querying")
 }
 
 //CommonConfirmationPrompt provides common logic for confirmation of an operation

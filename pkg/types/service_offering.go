@@ -45,7 +45,7 @@ type ServiceOffering struct {
 	BrokerID   string        `json:"broker_id,omitempty" yaml:"broker_id,omitempty"`
 	BrokerName string        `json:"broker_name,omitempty" yaml:"broker_name,omitempty"`
 	Plans      []ServicePlan `json:"plans,omitempty" yaml:"plans,omitempty"`
-	Labels      types.Labels `json:"labels,omitempty" yaml:"labels,omitempty"`
+	Labels     types.Labels  `json:"labels,omitempty" yaml:"labels,omitempty"`
 }
 
 // Message title of the table

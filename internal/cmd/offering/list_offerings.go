@@ -32,8 +32,8 @@ type ListOfferingsCmd struct {
 	outputFormat output.Format
 
 	offering   string
-	fieldQuery string
-	labelQuery string
+	fieldQuery []string
+	labelQuery []string
 }
 
 // NewListOfferingsCmd returns new list-offerings command with context

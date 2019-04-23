@@ -91,7 +91,7 @@ var _ = Describe("List platforms command test", func() {
 			arg1, arg2 := client.ListPlatformsWithQueryArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect([]string{arg1, arg2}).To(ConsistOf("name+=+platform1", ""))
+			Expect([]string{arg1, arg2}).To(ConsistOf("name+%3D+platform1", ""))
 		})
 	})
 
@@ -104,7 +104,7 @@ var _ = Describe("List platforms command test", func() {
 			arg1, arg2 := client.ListPlatformsWithQueryArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect([]string{arg1, arg2}).To(ConsistOf("", "test+=+false"))
+			Expect([]string{arg1, arg2}).To(ConsistOf("", "test+%3D+false"))
 		})
 	})
 

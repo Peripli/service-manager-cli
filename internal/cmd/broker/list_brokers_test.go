@@ -91,7 +91,7 @@ var _ = Describe("List brokers command test", func() {
 			arg1, arg2 := client.ListBrokersWithQueryArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect([]string{arg1, arg2}).To(ConsistOf("name+=+broker1", ""))
+			Expect([]string{arg1, arg2}).To(ConsistOf("name+%3D+broker1", ""))
 		})
 	})
 
@@ -104,7 +104,7 @@ var _ = Describe("List brokers command test", func() {
 			arg1, arg2 := client.ListBrokersWithQueryArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect([]string{arg1, arg2}).To(ConsistOf("", "test+=+false"))
+			Expect([]string{arg1, arg2}).To(ConsistOf("", "test+%3D+false"))
 		})
 	})
 
