@@ -2,6 +2,7 @@ package smclient
 
 import (
 	"encoding/json"
+	"github.com/Peripli/service-manager/pkg/query"
 	"github.com/Peripli/service-manager/pkg/web"
 	"net/http"
 	"net/http/httptest"
@@ -81,6 +82,12 @@ var _ = Describe("Service Manager Client test", func() {
 		ID:            "visibilityID",
 		PlatformID:    "platformID",
 		ServicePlanID: "planID",
+	}
+
+	labelChanges := &types.LabelChanges{
+		LabelChanges: []*query.LabelChange{
+			{Key: "key", Operation: query.LabelOperation("add"), Values: []string{"val1", "val2"}},
+		},
 	}
 
 	createSMHandler := func() http.Handler {
@@ -1006,6 +1013,38 @@ var _ = Describe("Service Manager Client test", func() {
 			})
 			It("should get an error", func() {
 				_, err := client.GetInfo()
+				Expect(err).Should(HaveOccurred())
+			})
+		})
+	})
+
+	Describe("Label", func() {
+		Context("when valid label change is sent", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{{Method: http.MethodPatch, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusOK}}
+			})
+			It("should label resource sucessfully", func() {
+
+				err := client.Label(web.ServiceBrokersURL, "id", labelChanges)
+				Expect(err).ShouldNot(HaveOccurred())
+			})
+		})
+
+		Context("when invalid status code is returned", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{{Method: http.MethodPatch, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusNotFound}}
+			})
+			It("should return error", func() {
+				err := client.Label(web.ServiceBrokersURL, "id", labelChanges)
+				Expect(err).Should(HaveOccurred())
+				Expect(err).To(MatchError(errors.ResponseError{URL: smServer.URL + web.ServiceBrokersURL + "/id", StatusCode: http.StatusNotFound}))
+			})
+		})
+
+		Context("When invalid config is set", func() {
+			It("should return error", func() {
+				client = NewClient(http.DefaultClient, "invalidURL")
+				err := client.Label(web.ServiceBrokersURL, "id", labelChanges)
 				Expect(err).Should(HaveOccurred())
 			})
 		})

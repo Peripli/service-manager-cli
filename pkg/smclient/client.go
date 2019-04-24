@@ -336,13 +336,13 @@ func (client *serviceManagerClient) update(resource interface{}, url string, id 
 	return httputil.UnmarshalResponse(resp, &result)
 }
 
-func (client *serviceManagerClient) Label(resource string, id string, change *types.LabelChanges) error {
+func (client *serviceManagerClient) Label(resourcePath string, id string, change *types.LabelChanges) error {
 	requestBody, err := json.Marshal(change)
 	if err != nil {
 		return err
 	}
 	buffer := bytes.NewBuffer(requestBody)
-	response, err := client.Call(http.MethodPatch, "/v1/"+resource+"/"+id, buffer)
+	response, err := client.Call(http.MethodPatch, resourcePath+"/"+id, buffer)
 	if err != nil {
 		return err
 	}

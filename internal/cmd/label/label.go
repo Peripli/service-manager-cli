@@ -7,6 +7,7 @@ import (
 	resperror "github.com/Peripli/service-manager-cli/pkg/errors"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 	"github.com/Peripli/service-manager/pkg/query"
+	"github.com/Peripli/service-manager/pkg/web"
 	"github.com/spf13/cobra"
 	"strings"
 )
@@ -15,7 +16,7 @@ import (
 type Cmd struct {
 	*cmd.Context
 
-	resource     string
+	resourcePath string
 	id           string
 	labelChanges types.LabelChanges
 }
@@ -43,8 +44,8 @@ func (c *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 func (c *Cmd) Validate(args []string) error {
 
 	resources := map[string]string{
-		"platform": "platforms",
-		"broker":   "brokers",
+		"platform": web.PlatformsURL,
+		"broker":   web.ServiceBrokersURL,
 	}
 
 	operations := map[string]string{
@@ -55,11 +56,11 @@ func (c *Cmd) Validate(args []string) error {
 	}
 
 	if len(args) < 4 {
-		return fmt.Errorf("resource type, name, operation and value are required")
+		return fmt.Errorf("resource type, id, operation and value are required")
 	}
 
 	if v, ok := resources[args[0]]; ok {
-		c.resource = v
+		c.resourcePath = v
 		c.id = args[1]
 	} else {
 		return fmt.Errorf("unknown resource")
@@ -82,7 +83,7 @@ func (c *Cmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (c *Cmd) Run() error {
-	err := c.Client.Label(c.resource, c.id, &c.labelChanges)
+	err := c.Client.Label(c.resourcePath, c.id, &c.labelChanges)
 	if responseErr, ok := err.(resperror.ResponseError); ok {
 		return fmt.Errorf(responseErr.Description)
 	} else if err != nil {
