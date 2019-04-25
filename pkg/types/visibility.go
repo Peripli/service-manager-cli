@@ -19,6 +19,7 @@ package types
 import (
 	"fmt"
 	"github.com/Peripli/service-manager/pkg/types"
+	"strings"
 )
 
 // Visibility defines the data of a visibility
@@ -45,9 +46,8 @@ func (v *Visibility) IsEmpty() bool {
 func (v *Visibility) TableData() *TableData {
 	result := &TableData{}
 	result.Headers = []string{"ID", "Platform ID", "Service Plan ID", "Labels"}
-	labels := fmt.Sprintf("%v", v.Labels)
 
-	row := []string{v.ID, v.PlatformID, v.ServicePlanID, labels}
+	row := []string{v.ID, v.PlatformID, v.ServicePlanID, formatLabels(v.Labels)}
 	result.Data = append(result.Data, row)
 
 	return result
@@ -84,10 +84,17 @@ func (v *Visibilities) TableData() *TableData {
 	result.Headers = []string{"ID", "Platform ID", "Service Plan ID", "Labels"}
 
 	for _, visibility := range v.Visibilities {
-		labels := fmt.Sprintf("%v", visibility.Labels)
-		row := []string{visibility.ID, visibility.PlatformID, visibility.ServicePlanID, labels}
+		row := []string{visibility.ID, visibility.PlatformID, visibility.ServicePlanID, formatLabels(visibility.Labels)}
 		result.Data = append(result.Data, row)
 	}
 
 	return result
+}
+
+func formatLabels(labels types.Labels) string {
+	formattedLabels := make([]string, 0, len(labels))
+	for i, v := range labels {
+		formattedLabels = append(formattedLabels, i+"="+strings.Join(v, ","))
+	}
+	return strings.Join(formattedLabels, " ")
 }

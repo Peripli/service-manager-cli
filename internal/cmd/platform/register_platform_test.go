@@ -15,8 +15,6 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
-
-	"github.com/spf13/cobra"
 )
 
 func TestRegisterPlatformCmd(t *testing.T) {
@@ -38,7 +36,7 @@ var _ = Describe("Register Platform Command test", func() {
 		command = NewRegisterPlatformCmd(context)
 	})
 
-	validRegisterPlatformExecution := func(args []string) *cobra.Command {
+	validRegisterPlatformExecution := func(args []string) error {
 		platform = &types.Platform{
 			ID:   "1234",
 			Name: args[0],
@@ -54,9 +52,7 @@ var _ = Describe("Register Platform Command test", func() {
 
 		rpcCmd := command.Prepare(cmd.SmPrepare)
 		rpcCmd.SetArgs(args)
-		rpcCmd.Execute()
-
-		return rpcCmd
+		return rpcCmd.Execute()
 	}
 
 	invalidRegisterPlatformCommandExecution := func(args []string) error {
@@ -68,59 +64,65 @@ var _ = Describe("Register Platform Command test", func() {
 	Describe("Valid request", func() {
 		Context("With necessary arguments provided", func() {
 			It("Platform should be registered", func() {
-				validRegisterPlatformExecution([]string{"platform", "cf"})
+				err := validRegisterPlatformExecution([]string{"platform", "cf"})
 				tableOutputExpected := platform.TableData().String()
 
+				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buffer.String()).To(ContainSubstring(tableOutputExpected))
 			})
 
 			It("Argument values should be as expected", func() {
-				validRegisterPlatformExecution([]string{"validName", "validType"})
+				err := validRegisterPlatformExecution([]string{"validName", "validType"})
 
-				Expect(command.platform.Name).To(Equal("validName"))
-				Expect(command.platform.Type).To(Equal("validType"))
+				p := client.RegisterPlatformArgsForCall(0)
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(p.Name).To(Equal("validName"))
+				Expect(p.Type).To(Equal("validType"))
 			})
 		})
 
 		Context("With id flag provided", func() {
 			It("Flag value should be as expected", func() {
-				args := []string{"validName", "validType"}
-				args = append(args, "--id", "1234")
+				args := []string{"validName", "validType", "--id", "1234"}
 
-				rpcCmd := validRegisterPlatformExecution(args)
-				idFlag := rpcCmd.Flag("id")
+				err := validRegisterPlatformExecution(args)
+				platform := client.RegisterPlatformArgsForCall(0)
 
-				Expect(idFlag.Value.String()).To(Equal("1234"))
-				Expect(idFlag.DefValue).To(Equal(""))
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(platform.ID).To(Equal("1234"))
 			})
 		})
 
 		Context("With description provided", func() {
 			It("Description value should be as expected", func() {
-				validRegisterPlatformExecution([]string{"validName", "validType", "validDescription"})
+				err := validRegisterPlatformExecution([]string{"validName", "validType", "validDescription"})
 
+				Expect(err).ShouldNot(HaveOccurred())
 				Expect(command.platform.Description).To(Equal("validDescription"))
 			})
 		})
 
 		Context("With json format flag", func() {
 			It("should be printed in json format", func() {
-				validRegisterPlatformExecution([]string{"platform", "cf", "--output", "json"})
+				err := validRegisterPlatformExecution([]string{"platform", "cf", "--output", "json"})
 
 				jsonByte, _ := json.MarshalIndent(platform, "", "  ")
 				jsonOutputExpected := string(jsonByte) + "\n"
 
+				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buffer.String()).To(Equal(jsonOutputExpected))
 			})
 		})
 
 		Context("With yaml format flag", func() {
 			It("should be printed in yaml format", func() {
-				validRegisterPlatformExecution([]string{"platform", "cf", "--output", "yaml"})
+				err := validRegisterPlatformExecution([]string{"platform", "cf", "--output", "yaml"})
 
 				yamlByte, _ := yaml.Marshal(platform)
 				yamlOutputExpected := string(yamlByte) + "\n"
 
+				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buffer.String()).To(Equal(yamlOutputExpected))
 			})
 		})

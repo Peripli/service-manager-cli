@@ -25,6 +25,7 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/cmd/offering"
 	"github.com/Peripli/service-manager-cli/internal/cmd/platform"
 	"github.com/Peripli/service-manager-cli/internal/cmd/version"
+	"github.com/Peripli/service-manager-cli/internal/cmd/visibility"
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
 	"github.com/spf13/afero"
@@ -64,6 +65,8 @@ func main() {
 			platform.NewListPlatformsCmd(context),
 			platform.NewDeletePlatformCmd(context, os.Stdin),
 			platform.NewUpdatePlatformCmd(context),
+			visibility.NewRegisterVisibilityCmd(context),
+			visibility.NewListVisibilitiesCmd(context),
 			offering.NewListOfferingsCmd(context),
 		},
 		PrepareFn: cmd.SmPrepare,

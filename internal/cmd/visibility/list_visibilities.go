@@ -15,3 +15,59 @@
  */
 
 package visibility
+
+import (
+	"github.com/Peripli/service-manager-cli/internal/cmd"
+	"github.com/Peripli/service-manager-cli/internal/output"
+	"github.com/spf13/cobra"
+)
+
+// ListVisibilityCmd wraps the smctl list-visibilities command
+type ListVisibilitiesCmd struct {
+	*cmd.Context
+
+	outputFormat output.Format
+}
+
+// NewListVisibilitiesCmd returns new list-visibilities command with context
+func NewListVisibilitiesCmd(context *cmd.Context) *ListVisibilitiesCmd {
+	return &ListVisibilitiesCmd{Context: context}
+}
+
+//Run runs the command's logic
+func (lv *ListVisibilitiesCmd) Run() error {
+	visibilities, err := lv.Client.ListVisibilities()
+	if err != nil {
+		return err
+	}
+
+	output.PrintServiceManagerObject(lv.Output, lv.outputFormat, visibilities)
+	output.Println(lv.Output)
+	return nil
+}
+
+// SetOutputFormat sets output format
+func (lv *ListVisibilitiesCmd) SetOutputFormat(format output.Format) {
+	lv.outputFormat = format
+}
+
+// HideUsage hides command's usage
+func (lv *ListVisibilitiesCmd) HideUsage() bool {
+	return true
+}
+
+// Prepare returns cobra command
+func (lv *ListVisibilitiesCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
+	result := &cobra.Command{
+		Use:     "list-visibilities",
+		Aliases: []string{"lv"},
+		Short:   "List visibilities",
+		Long:    "List all visibilities.",
+		PreRunE: prepare(lv, lv.Context),
+		RunE:    cmd.RunE(lv),
+	}
+
+	cmd.AddFormatFlag(result.Flags())
+
+	return result
+}
