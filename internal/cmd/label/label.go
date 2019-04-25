@@ -59,6 +59,10 @@ func (c *Cmd) Validate(args []string) error {
 		return fmt.Errorf("resource type, id, operation and value are required")
 	}
 
+	if len(args) > 4 {
+		return fmt.Errorf("too much arguments, in case you have whitespaces in some of the arguments consider enclosig it with single quotes")
+	}
+
 	if v, ok := resources[args[0]]; ok {
 		c.resourcePath = v
 		c.id = args[1]

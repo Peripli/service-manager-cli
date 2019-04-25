@@ -85,6 +85,21 @@ var _ = Describe("Label Command test", func() {
 			})
 		})
 
+		Context("with more than 4 arguments", func() {
+			It("should return error", func() {
+				err := invalidLabelExecution("platform", "id", "add-values", "key=value", "redundant")
+				Expect(err).Should(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("too much arguments, in case you have whitespaces in some of the arguments consider enclosig it with single quotes"))
+			})
+
+			It("should not call SM", func() {
+				err := invalidLabelExecution("platform", "id", "add-values", "key=value", "redundant")
+				c := client.LabelCallCount()
+				Expect(err).Should(HaveOccurred())
+				Expect(c).To(Equal(0))
+			})
+		})
+
 		Context("with unknown resource provided", func() {
 			It("should return error", func() {
 				err := invalidLabelExecution("invalid resource", "id", "add", "key=val")
