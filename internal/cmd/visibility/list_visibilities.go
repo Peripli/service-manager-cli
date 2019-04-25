@@ -23,13 +23,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// ListVisibilityCmd wraps the smctl list-visibilities command
+// ListVisibilitiesCmd wraps the smctl list-visibilities command
 type ListVisibilitiesCmd struct {
 	*cmd.Context
 
 	outputFormat output.Format
-	fieldQuery []string
-	labelQuery []string
+	fieldQuery   []string
+	labelQuery   []string
 }
 
 // NewListVisibilitiesCmd returns new list-visibilities command with context

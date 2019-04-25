@@ -67,6 +67,7 @@ func main() {
 			platform.NewUpdatePlatformCmd(context),
 			visibility.NewRegisterVisibilityCmd(context),
 			visibility.NewListVisibilitiesCmd(context),
+			visibility.NewUpdateVisibilityCmd(context),
 			offering.NewListOfferingsCmd(context),
 		},
 		PrepareFn: cmd.SmPrepare,

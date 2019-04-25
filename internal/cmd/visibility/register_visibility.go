@@ -33,7 +33,7 @@ type RegisterVisibilityCmd struct {
 	outputFormat output.Format
 }
 
-// NewRegisterVisibility returns new smctl register-visibility command with context
+// NewRegisterVisibilityCmd returns new smctl register-visibility command with context
 func NewRegisterVisibilityCmd(ctx *cmd.Context) *RegisterVisibilityCmd {
 	return &RegisterVisibilityCmd{Context: ctx}
 }

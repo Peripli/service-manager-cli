@@ -597,7 +597,7 @@ var _ = Describe("Service Manager Client test", func() {
 			It("should handle status code > 299", func() {
 				_, err := client.ListVisibilities()
 				Expect(err).Should(HaveOccurred())
-				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: smServer.URL + web.VisibilitiesURL+"?fieldQuery=&labelQuery="}))
+				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: smServer.URL + web.VisibilitiesURL + "?fieldQuery=&labelQuery="}))
 			})
 		})
 	})

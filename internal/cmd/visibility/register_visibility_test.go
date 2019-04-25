@@ -32,7 +32,7 @@ var _ = Describe("Register visibility command test", func() {
 		command = NewRegisterVisibilityCmd(context)
 	})
 
-	validRegisterVisibilityExecution := func(args []string) error {
+	validRegisterVisibilityExecution := func(args... string) error {
 		visibility = &types.Visibility{
 			ID:            "visibilityID",
 			PlatformID:    args[0],
@@ -44,7 +44,7 @@ var _ = Describe("Register visibility command test", func() {
 		return rvCmd.Execute()
 	}
 
-	invalidRegisterVisibilityExecution := func(args []string) error {
+	invalidRegisterVisibilityExecution := func(args... string) error {
 		rvCmd := command.Prepare(cmd.SmPrepare)
 		rvCmd.SetArgs(args)
 		return rvCmd.Execute()
@@ -53,7 +53,7 @@ var _ = Describe("Register visibility command test", func() {
 	Describe("Valid request", func() {
 		Context("With necessary arguments provided", func() {
 			It("visibility should be registered", func() {
-				err := validRegisterVisibilityExecution([]string{"platformId", "planId"})
+				err := validRegisterVisibilityExecution("platformId", "planId")
 				tableOutputExpected := visibility.TableData().String()
 
 				Expect(err).ShouldNot(HaveOccurred())
@@ -61,7 +61,7 @@ var _ = Describe("Register visibility command test", func() {
 			})
 
 			It("argument values should be as expected", func() {
-				err := validRegisterVisibilityExecution([]string{"platformId", "planId"})
+				err := validRegisterVisibilityExecution("platformId", "planId")
 
 				v := client.RegisterVisibilityArgsForCall(0)
 
@@ -75,7 +75,7 @@ var _ = Describe("Register visibility command test", func() {
 			It("visibility id should be as expected", func() {
 				args := []string{"platformId", "planId", "--id", "id"}
 
-				err := validRegisterVisibilityExecution(args)
+				err := validRegisterVisibilityExecution(args...)
 				v := client.RegisterVisibilityArgsForCall(0)
 
 				Expect(err).ShouldNot(HaveOccurred())
@@ -85,7 +85,7 @@ var _ = Describe("Register visibility command test", func() {
 
 		Context("With json format flag", func() {
 			It("should be printed in json format", func() {
-				err := validRegisterVisibilityExecution([]string{"platformId", "planId", "--output", "json"})
+				err := validRegisterVisibilityExecution("platformId", "planId", "--output", "json")
 
 				jsonByte, _ := json.MarshalIndent(visibility, "", "  ")
 				jsonOutputExpected := string(jsonByte) + "\n"
@@ -97,7 +97,7 @@ var _ = Describe("Register visibility command test", func() {
 
 		Context("With yaml format flag", func() {
 			It("should be printed in yaml format", func() {
-				err := validRegisterVisibilityExecution([]string{"platformId", "planId", "--output", "yaml"})
+				err := validRegisterVisibilityExecution("platformId", "planId", "--output", "yaml")
 
 				yamlByte, _ := yaml.Marshal(visibility)
 				yamlOutputExpected := string(yamlByte) + "\n"
@@ -111,7 +111,7 @@ var _ = Describe("Register visibility command test", func() {
 	Describe("Invalid request", func() {
 		Context("With not enough arguments provided", func() {
 			It("Should return error", func() {
-				err := invalidRegisterVisibilityExecution([]string{"platformId"})
+				err := invalidRegisterVisibilityExecution("platformId")
 
 				Expect(err).Should(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("platform-id and service-plan-id required but not provided"))
@@ -123,7 +123,7 @@ var _ = Describe("Register visibility command test", func() {
 				expectedErr := errors.New("http client error")
 				client.RegisterVisibilityReturns(nil, expectedErr)
 
-				err := invalidRegisterVisibilityExecution([]string{"platformId", "planId"})
+				err := invalidRegisterVisibilityExecution("platformId", "planId")
 
 				Expect(err).Should(HaveOccurred())
 				Expect(err).To(MatchError(expectedErr.Error()))
@@ -133,7 +133,7 @@ var _ = Describe("Register visibility command test", func() {
 		Context("With invalid output format", func() {
 			It("should return error", func() {
 				invFormat := "invalid-format"
-				err := invalidRegisterVisibilityExecution([]string{"platformId", "planId", "--output", invFormat})
+				err := invalidRegisterVisibilityExecution("platformId", "planId", "--output", invFormat)
 
 				Expect(err).Should(HaveOccurred())
 				Expect(err.Error()).To(Equal("unknown output: " + invFormat))
