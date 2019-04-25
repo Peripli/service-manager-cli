@@ -48,6 +48,17 @@ type FakeClient struct {
 	deletePlatformReturnsOnCall map[int]struct {
 		result1 error
 	}
+	DeleteVisibilityStub        func(string) error
+	deleteVisibilityMutex       sync.RWMutex
+	deleteVisibilityArgsForCall []struct {
+		arg1 string
+	}
+	deleteVisibilityReturns struct {
+		result1 error
+	}
+	deleteVisibilityReturnsOnCall map[int]struct {
+		result1 error
+	}
 	GetInfoStub        func() (*types.Info, error)
 	getInfoMutex       sync.RWMutex
 	getInfoArgsForCall []struct {
@@ -138,6 +149,18 @@ type FakeClient struct {
 		result1 *types.Platforms
 		result2 error
 	}
+	ListVisibilitiesStub        func() (*types.Visibilities, error)
+	listVisibilitiesMutex       sync.RWMutex
+	listVisibilitiesArgsForCall []struct {
+	}
+	listVisibilitiesReturns struct {
+		result1 *types.Visibilities
+		result2 error
+	}
+	listVisibilitiesReturnsOnCall map[int]struct {
+		result1 *types.Visibilities
+		result2 error
+	}
 	RegisterBrokerStub        func(*types.Broker) (*types.Broker, error)
 	registerBrokerMutex       sync.RWMutex
 	registerBrokerArgsForCall []struct {
@@ -162,6 +185,19 @@ type FakeClient struct {
 	}
 	registerPlatformReturnsOnCall map[int]struct {
 		result1 *types.Platform
+		result2 error
+	}
+	RegisterVisibilityStub        func(*types.Visibility) (*types.Visibility, error)
+	registerVisibilityMutex       sync.RWMutex
+	registerVisibilityArgsForCall []struct {
+		arg1 *types.Visibility
+	}
+	registerVisibilityReturns struct {
+		result1 *types.Visibility
+		result2 error
+	}
+	registerVisibilityReturnsOnCall map[int]struct {
+		result1 *types.Visibility
 		result2 error
 	}
 	UpdateBrokerStub        func(string, *types.Broker) (*types.Broker, error)
@@ -190,6 +226,20 @@ type FakeClient struct {
 	}
 	updatePlatformReturnsOnCall map[int]struct {
 		result1 *types.Platform
+		result2 error
+	}
+	UpdateVisibilityStub        func(string, *types.Visibility) (*types.Visibility, error)
+	updateVisibilityMutex       sync.RWMutex
+	updateVisibilityArgsForCall []struct {
+		arg1 string
+		arg2 *types.Visibility
+	}
+	updateVisibilityReturns struct {
+		result1 *types.Visibility
+		result2 error
+	}
+	updateVisibilityReturnsOnCall map[int]struct {
+		result1 *types.Visibility
 		result2 error
 	}
 	invocations      map[string][][]interface{}
@@ -377,6 +427,66 @@ func (fake *FakeClient) DeletePlatformReturnsOnCall(i int, result1 error) {
 		})
 	}
 	fake.deletePlatformReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeClient) DeleteVisibility(arg1 string) error {
+	fake.deleteVisibilityMutex.Lock()
+	ret, specificReturn := fake.deleteVisibilityReturnsOnCall[len(fake.deleteVisibilityArgsForCall)]
+	fake.deleteVisibilityArgsForCall = append(fake.deleteVisibilityArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("DeleteVisibility", []interface{}{arg1})
+	fake.deleteVisibilityMutex.Unlock()
+	if fake.DeleteVisibilityStub != nil {
+		return fake.DeleteVisibilityStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.deleteVisibilityReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeClient) DeleteVisibilityCallCount() int {
+	fake.deleteVisibilityMutex.RLock()
+	defer fake.deleteVisibilityMutex.RUnlock()
+	return len(fake.deleteVisibilityArgsForCall)
+}
+
+func (fake *FakeClient) DeleteVisibilityCalls(stub func(string) error) {
+	fake.deleteVisibilityMutex.Lock()
+	defer fake.deleteVisibilityMutex.Unlock()
+	fake.DeleteVisibilityStub = stub
+}
+
+func (fake *FakeClient) DeleteVisibilityArgsForCall(i int) string {
+	fake.deleteVisibilityMutex.RLock()
+	defer fake.deleteVisibilityMutex.RUnlock()
+	argsForCall := fake.deleteVisibilityArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeClient) DeleteVisibilityReturns(result1 error) {
+	fake.deleteVisibilityMutex.Lock()
+	defer fake.deleteVisibilityMutex.Unlock()
+	fake.DeleteVisibilityStub = nil
+	fake.deleteVisibilityReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeClient) DeleteVisibilityReturnsOnCall(i int, result1 error) {
+	fake.deleteVisibilityMutex.Lock()
+	defer fake.deleteVisibilityMutex.Unlock()
+	fake.DeleteVisibilityStub = nil
+	if fake.deleteVisibilityReturnsOnCall == nil {
+		fake.deleteVisibilityReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.deleteVisibilityReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -793,6 +903,61 @@ func (fake *FakeClient) ListPlatformsWithQueryReturnsOnCall(i int, result1 *type
 	}{result1, result2}
 }
 
+func (fake *FakeClient) ListVisibilities() (*types.Visibilities, error) {
+	fake.listVisibilitiesMutex.Lock()
+	ret, specificReturn := fake.listVisibilitiesReturnsOnCall[len(fake.listVisibilitiesArgsForCall)]
+	fake.listVisibilitiesArgsForCall = append(fake.listVisibilitiesArgsForCall, struct {
+	}{})
+	fake.recordInvocation("ListVisibilities", []interface{}{})
+	fake.listVisibilitiesMutex.Unlock()
+	if fake.ListVisibilitiesStub != nil {
+		return fake.ListVisibilitiesStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.listVisibilitiesReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeClient) ListVisibilitiesCallCount() int {
+	fake.listVisibilitiesMutex.RLock()
+	defer fake.listVisibilitiesMutex.RUnlock()
+	return len(fake.listVisibilitiesArgsForCall)
+}
+
+func (fake *FakeClient) ListVisibilitiesCalls(stub func() (*types.Visibilities, error)) {
+	fake.listVisibilitiesMutex.Lock()
+	defer fake.listVisibilitiesMutex.Unlock()
+	fake.ListVisibilitiesStub = stub
+}
+
+func (fake *FakeClient) ListVisibilitiesReturns(result1 *types.Visibilities, result2 error) {
+	fake.listVisibilitiesMutex.Lock()
+	defer fake.listVisibilitiesMutex.Unlock()
+	fake.ListVisibilitiesStub = nil
+	fake.listVisibilitiesReturns = struct {
+		result1 *types.Visibilities
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) ListVisibilitiesReturnsOnCall(i int, result1 *types.Visibilities, result2 error) {
+	fake.listVisibilitiesMutex.Lock()
+	defer fake.listVisibilitiesMutex.Unlock()
+	fake.ListVisibilitiesStub = nil
+	if fake.listVisibilitiesReturnsOnCall == nil {
+		fake.listVisibilitiesReturnsOnCall = make(map[int]struct {
+			result1 *types.Visibilities
+			result2 error
+		})
+	}
+	fake.listVisibilitiesReturnsOnCall[i] = struct {
+		result1 *types.Visibilities
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeClient) RegisterBroker(arg1 *types.Broker) (*types.Broker, error) {
 	fake.registerBrokerMutex.Lock()
 	ret, specificReturn := fake.registerBrokerReturnsOnCall[len(fake.registerBrokerArgsForCall)]
@@ -915,6 +1080,69 @@ func (fake *FakeClient) RegisterPlatformReturnsOnCall(i int, result1 *types.Plat
 	}
 	fake.registerPlatformReturnsOnCall[i] = struct {
 		result1 *types.Platform
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) RegisterVisibility(arg1 *types.Visibility) (*types.Visibility, error) {
+	fake.registerVisibilityMutex.Lock()
+	ret, specificReturn := fake.registerVisibilityReturnsOnCall[len(fake.registerVisibilityArgsForCall)]
+	fake.registerVisibilityArgsForCall = append(fake.registerVisibilityArgsForCall, struct {
+		arg1 *types.Visibility
+	}{arg1})
+	fake.recordInvocation("RegisterVisibility", []interface{}{arg1})
+	fake.registerVisibilityMutex.Unlock()
+	if fake.RegisterVisibilityStub != nil {
+		return fake.RegisterVisibilityStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.registerVisibilityReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeClient) RegisterVisibilityCallCount() int {
+	fake.registerVisibilityMutex.RLock()
+	defer fake.registerVisibilityMutex.RUnlock()
+	return len(fake.registerVisibilityArgsForCall)
+}
+
+func (fake *FakeClient) RegisterVisibilityCalls(stub func(*types.Visibility) (*types.Visibility, error)) {
+	fake.registerVisibilityMutex.Lock()
+	defer fake.registerVisibilityMutex.Unlock()
+	fake.RegisterVisibilityStub = stub
+}
+
+func (fake *FakeClient) RegisterVisibilityArgsForCall(i int) *types.Visibility {
+	fake.registerVisibilityMutex.RLock()
+	defer fake.registerVisibilityMutex.RUnlock()
+	argsForCall := fake.registerVisibilityArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeClient) RegisterVisibilityReturns(result1 *types.Visibility, result2 error) {
+	fake.registerVisibilityMutex.Lock()
+	defer fake.registerVisibilityMutex.Unlock()
+	fake.RegisterVisibilityStub = nil
+	fake.registerVisibilityReturns = struct {
+		result1 *types.Visibility
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) RegisterVisibilityReturnsOnCall(i int, result1 *types.Visibility, result2 error) {
+	fake.registerVisibilityMutex.Lock()
+	defer fake.registerVisibilityMutex.Unlock()
+	fake.RegisterVisibilityStub = nil
+	if fake.registerVisibilityReturnsOnCall == nil {
+		fake.registerVisibilityReturnsOnCall = make(map[int]struct {
+			result1 *types.Visibility
+			result2 error
+		})
+	}
+	fake.registerVisibilityReturnsOnCall[i] = struct {
+		result1 *types.Visibility
 		result2 error
 	}{result1, result2}
 }
@@ -1047,6 +1275,70 @@ func (fake *FakeClient) UpdatePlatformReturnsOnCall(i int, result1 *types.Platfo
 	}{result1, result2}
 }
 
+func (fake *FakeClient) UpdateVisibility(arg1 string, arg2 *types.Visibility) (*types.Visibility, error) {
+	fake.updateVisibilityMutex.Lock()
+	ret, specificReturn := fake.updateVisibilityReturnsOnCall[len(fake.updateVisibilityArgsForCall)]
+	fake.updateVisibilityArgsForCall = append(fake.updateVisibilityArgsForCall, struct {
+		arg1 string
+		arg2 *types.Visibility
+	}{arg1, arg2})
+	fake.recordInvocation("UpdateVisibility", []interface{}{arg1, arg2})
+	fake.updateVisibilityMutex.Unlock()
+	if fake.UpdateVisibilityStub != nil {
+		return fake.UpdateVisibilityStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.updateVisibilityReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeClient) UpdateVisibilityCallCount() int {
+	fake.updateVisibilityMutex.RLock()
+	defer fake.updateVisibilityMutex.RUnlock()
+	return len(fake.updateVisibilityArgsForCall)
+}
+
+func (fake *FakeClient) UpdateVisibilityCalls(stub func(string, *types.Visibility) (*types.Visibility, error)) {
+	fake.updateVisibilityMutex.Lock()
+	defer fake.updateVisibilityMutex.Unlock()
+	fake.UpdateVisibilityStub = stub
+}
+
+func (fake *FakeClient) UpdateVisibilityArgsForCall(i int) (string, *types.Visibility) {
+	fake.updateVisibilityMutex.RLock()
+	defer fake.updateVisibilityMutex.RUnlock()
+	argsForCall := fake.updateVisibilityArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeClient) UpdateVisibilityReturns(result1 *types.Visibility, result2 error) {
+	fake.updateVisibilityMutex.Lock()
+	defer fake.updateVisibilityMutex.Unlock()
+	fake.UpdateVisibilityStub = nil
+	fake.updateVisibilityReturns = struct {
+		result1 *types.Visibility
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) UpdateVisibilityReturnsOnCall(i int, result1 *types.Visibility, result2 error) {
+	fake.updateVisibilityMutex.Lock()
+	defer fake.updateVisibilityMutex.Unlock()
+	fake.UpdateVisibilityStub = nil
+	if fake.updateVisibilityReturnsOnCall == nil {
+		fake.updateVisibilityReturnsOnCall = make(map[int]struct {
+			result1 *types.Visibility
+			result2 error
+		})
+	}
+	fake.updateVisibilityReturnsOnCall[i] = struct {
+		result1 *types.Visibility
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -1056,6 +1348,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.deleteBrokerMutex.RUnlock()
 	fake.deletePlatformMutex.RLock()
 	defer fake.deletePlatformMutex.RUnlock()
+	fake.deleteVisibilityMutex.RLock()
+	defer fake.deleteVisibilityMutex.RUnlock()
 	fake.getInfoMutex.RLock()
 	defer fake.getInfoMutex.RUnlock()
 	fake.listBrokersMutex.RLock()
@@ -1070,14 +1364,20 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.listPlatformsMutex.RUnlock()
 	fake.listPlatformsWithQueryMutex.RLock()
 	defer fake.listPlatformsWithQueryMutex.RUnlock()
+	fake.listVisibilitiesMutex.RLock()
+	defer fake.listVisibilitiesMutex.RUnlock()
 	fake.registerBrokerMutex.RLock()
 	defer fake.registerBrokerMutex.RUnlock()
 	fake.registerPlatformMutex.RLock()
 	defer fake.registerPlatformMutex.RUnlock()
+	fake.registerVisibilityMutex.RLock()
+	defer fake.registerVisibilityMutex.RUnlock()
 	fake.updateBrokerMutex.RLock()
 	defer fake.updateBrokerMutex.RUnlock()
 	fake.updatePlatformMutex.RLock()
 	defer fake.updatePlatformMutex.RUnlock()
+	fake.updateVisibilityMutex.RLock()
+	defer fake.updateVisibilityMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
