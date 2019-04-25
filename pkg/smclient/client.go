@@ -37,8 +37,11 @@ type Client interface {
 	GetInfo() (*types.Info, error)
 	RegisterPlatform(*types.Platform) (*types.Platform, error)
 	RegisterBroker(*types.Broker) (*types.Broker, error)
+	ListBrokersWithQuery(string, string) (*types.Brokers, error)
 	ListBrokers() (*types.Brokers, error)
+	ListPlatformsWithQuery(string, string) (*types.Platforms, error)
 	ListPlatforms() (*types.Platforms, error)
+	ListOfferingsWithQuery(string, string) (*types.ServiceOfferings, error)
 	ListOfferings() (*types.ServiceOfferings, error)
 	DeleteBroker(string) error
 	DeletePlatform(string) error
@@ -121,7 +124,7 @@ func (client *serviceManagerClient) RegisterPlatform(platform *types.Platform) (
 	}
 
 	buffer := bytes.NewBuffer(requestBody)
-	response, err := client.Call(http.MethodPost, web.PlatformsURL , buffer)
+	response, err := client.Call(http.MethodPost, web.PlatformsURL, buffer)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +150,7 @@ func (client *serviceManagerClient) RegisterBroker(broker *types.Broker) (*types
 	}
 
 	buffer := bytes.NewBuffer(requestBody)
-	response, err := client.Call(http.MethodPost, web.BrokersURL, buffer)
+	response, err := client.Call(http.MethodPost, web.ServiceBrokersURL, buffer)
 	if err != nil {
 		return nil, err
 	}
@@ -165,39 +168,49 @@ func (client *serviceManagerClient) RegisterBroker(broker *types.Broker) (*types
 	return newBroker, nil
 }
 
-// ListBrokers returns brokers registered in the Service Manager
-func (client *serviceManagerClient) ListBrokers() (*types.Brokers, error) {
+// ListBrokersWithQuery returns brokers registered in the Service Manager satisfying provided queries
+func (client *serviceManagerClient) ListBrokersWithQuery(fieldQuery string, labelQuery string) (*types.Brokers, error) {
 	brokers := &types.Brokers{}
-	err := client.list(brokers, web.BrokersURL)
+	err := client.list(brokers, web.ServiceBrokersURL+"?fieldQuery="+fieldQuery+"&labelQuery="+labelQuery)
 
 	return brokers, err
 }
 
-// ListPlatforms returns platforms registered in the Service Manager
-func (client *serviceManagerClient) ListPlatforms() (*types.Platforms, error) {
+// ListBrokers returns brokers registered in the Service Manager
+func (client *serviceManagerClient) ListBrokers() (*types.Brokers, error) {
+	return client.ListBrokersWithQuery("", "")
+}
+
+// ListPlatforms returns platforms registered in the Service Manager satisfying provided queries
+func (client *serviceManagerClient) ListPlatformsWithQuery(fieldQuery string, labelQuery string) (*types.Platforms, error) {
 	platforms := &types.Platforms{}
-	err := client.list(platforms, web.PlatformsURL)
+	err := client.list(platforms, web.PlatformsURL+"?fieldQuery="+fieldQuery+"&labelQuery="+labelQuery)
 
 	return platforms, err
 }
 
-// ListOfferings returns service offerings of brokers registered in Service Manager
-func (client *serviceManagerClient) ListOfferings() (*types.ServiceOfferings, error) {
+// ListPlatforms returns platforms registered in the Service Manager
+func (client *serviceManagerClient) ListPlatforms() (*types.Platforms, error) {
+	return client.ListPlatformsWithQuery("", "")
+}
+
+// ListOfferings returns service offerings satisfying provided queries
+func (client *serviceManagerClient) ListOfferingsWithQuery(fieldQuery string, labelQuery string) (*types.ServiceOfferings, error) {
 	serviceOfferings := &types.ServiceOfferings{}
-	err := client.list(serviceOfferings, web.ServiceOfferingsURL)
+	err := client.list(serviceOfferings, web.ServiceOfferingsURL+"?fieldQuery="+fieldQuery+"&labelQuery="+labelQuery)
 	if err != nil {
 		return nil, err
 	}
-	for i, v := range serviceOfferings.ServiceOfferings {
+	for i, so := range serviceOfferings.ServiceOfferings {
 		plans := &types.ServicePlans{}
-		err := client.list(plans, web.ServicePlansURL + "?fieldQuery=service_offering_id+=+"+v.ID)
+		err := client.list(plans, web.ServicePlansURL+"?fieldQuery=service_offering_id+=+"+so.ID)
 		if err != nil {
 			return nil, err
 		}
 		serviceOfferings.ServiceOfferings[i].Plans = plans.ServicePlans
 
 		broker := &types.Broker{}
-		err = client.list(broker, web.BrokersURL + "/" + v.BrokerID)
+		err = client.list(broker, web.ServiceBrokersURL+"/"+so.BrokerID)
 		if err != nil {
 			return nil, err
 		}
@@ -205,6 +218,11 @@ func (client *serviceManagerClient) ListOfferings() (*types.ServiceOfferings, er
 		serviceOfferings.ServiceOfferings[i].BrokerName = broker.Name
 	}
 	return serviceOfferings, nil
+}
+
+// ListOfferings returns service offerings provided of all brokers in SM
+func (client *serviceManagerClient) ListOfferings() (*types.ServiceOfferings, error) {
+	return client.ListOfferingsWithQuery("", "")
 }
 
 func (client *serviceManagerClient) list(result interface{}, path string) error {
@@ -221,7 +239,7 @@ func (client *serviceManagerClient) list(result interface{}, path string) error 
 }
 
 func (client *serviceManagerClient) DeleteBroker(id string) error {
-	return client.delete(id, web.BrokersURL)
+	return client.delete(id, web.ServiceBrokersURL)
 }
 
 func (client *serviceManagerClient) DeletePlatform(id string) error {
@@ -229,7 +247,7 @@ func (client *serviceManagerClient) DeletePlatform(id string) error {
 }
 
 func (client *serviceManagerClient) delete(id, path string) error {
-	resp, err := client.Call(http.MethodDelete, path + "/" + id, nil)
+	resp, err := client.Call(http.MethodDelete, path+"/"+id, nil)
 	if err != nil {
 		return err
 	}
@@ -248,7 +266,7 @@ func (client *serviceManagerClient) UpdateBroker(id string, updatedBroker *types
 	}
 
 	result := &types.Broker{}
-	return result, client.update(result, requestBody, id, web.BrokersURL)
+	return result, client.update(result, requestBody, id, web.ServiceBrokersURL)
 }
 
 func (client *serviceManagerClient) UpdatePlatform(id string, updatedPlatform *types.Platform) (*types.Platform, error) {
@@ -262,7 +280,7 @@ func (client *serviceManagerClient) UpdatePlatform(id string, updatedPlatform *t
 
 func (client *serviceManagerClient) update(result interface{}, body []byte, id, path string) error {
 	buffer := bytes.NewBuffer(body)
-	resp, err := client.Call(http.MethodPatch, path + "/" + id, buffer)
+	resp, err := client.Call(http.MethodPatch, path+"/"+id, buffer)
 	if err != nil {
 		return err
 	}

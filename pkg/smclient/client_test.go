@@ -24,9 +24,9 @@ func (c *FakeAuthClient) Do(req *http.Request) (*http.Response, error) {
 }
 
 type HandlerDetails struct {
-	Method string
-	Path string
-	ResponseBody []byte
+	Method             string
+	Path               string
+	ResponseBody       []byte
 	ResponseStatusCode int
 }
 
@@ -55,29 +55,27 @@ var _ = Describe("Service Manager Client test", func() {
 	}
 
 	initialOffering := &types.ServiceOffering{
-		ID: "offeringID",
-		Name: "initial-offering",
+		ID:          "offeringID",
+		Name:        "initial-offering",
 		Description: "Some description",
-		BrokerID: "id",
+		BrokerID:    "id",
 	}
 
 	plan := &types.ServicePlan{
-		ID: "planID",
-		Name: "plan-1",
-		Description: "Sample Plan",
+		ID:                "planID",
+		Name:              "plan-1",
+		Description:       "Sample Plan",
 		ServiceOfferingID: "offeringID",
 	}
 
 	resultOffering := &types.ServiceOffering{
-		ID: "offeringID",
-		Name: "initial-offering",
+		ID:          "offeringID",
+		Name:        "initial-offering",
 		Description: "Some description",
-		Plans: []types.ServicePlan{*plan},
-		BrokerID: "id",
-		BrokerName: "test-broker",
+		Plans:       []types.ServicePlan{*plan},
+		BrokerID:    "id",
+		BrokerName:  "test-broker",
 	}
-
-
 
 	createSMHandler := func() http.Handler {
 		mux := http.NewServeMux()
@@ -110,7 +108,7 @@ var _ = Describe("Service Manager Client test", func() {
 		Context("When wrong token is used", func() {
 			BeforeEach(func() {
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodGet, Path: web.BrokersURL},
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL},
 				}
 			})
 			It("should fail to authentication", func() {
@@ -118,7 +116,7 @@ var _ = Describe("Service Manager Client test", func() {
 				_, err := client.ListBrokers()
 
 				Expect(err).Should(HaveOccurred())
-				Expect(err).To(MatchError(errors.ResponseError{URL: smServer.URL + web.BrokersURL, StatusCode: http.StatusUnauthorized}))
+				Expect(err).To(MatchError(errors.ResponseError{URL: smServer.URL + web.ServiceBrokersURL + "?fieldQuery=&labelQuery=", StatusCode: http.StatusUnauthorized}))
 			})
 		})
 	})
@@ -128,7 +126,7 @@ var _ = Describe("Service Manager Client test", func() {
 			BeforeEach(func() {
 				responseBody, _ := json.Marshal(platform)
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodPost, Path: web.PlatformsURL , ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
+					{Method: http.MethodPost, Path: web.PlatformsURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
 				}
 			})
 			It("should register successfully", func() {
@@ -223,7 +221,7 @@ var _ = Describe("Service Manager Client test", func() {
 			BeforeEach(func() {
 				responseBody, _ := json.Marshal(broker)
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodPost, Path: web.BrokersURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
+					{Method: http.MethodPost, Path: web.ServiceBrokersURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
 				}
 			})
 			It("should register successfully", func() {
@@ -242,7 +240,7 @@ var _ = Describe("Service Manager Client test", func() {
 					Name: true,
 				})
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodPost, Path: web.BrokersURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
+					{Method: http.MethodPost, Path: web.ServiceBrokersURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
 				}
 			})
 			It("should return error", func() {
@@ -258,7 +256,7 @@ var _ = Describe("Service Manager Client test", func() {
 				BeforeEach(func() {
 					responseBody, _ := json.Marshal(broker)
 					handlerDetails = []HandlerDetails{
-						{Method: http.MethodPost, Path: web.BrokersURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+						{Method: http.MethodPost, Path: web.ServiceBrokersURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
 					}
 				})
 				It("should return error with status code", func() {
@@ -274,15 +272,15 @@ var _ = Describe("Service Manager Client test", func() {
 				BeforeEach(func() {
 					responseBody := []byte(`{ "description": "description", "error": "error"}`)
 					handlerDetails = []HandlerDetails{
-						{Method: http.MethodPost, Path: web.BrokersURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusBadRequest},
+						{Method: http.MethodPost, Path: web.ServiceBrokersURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusBadRequest},
 					}
 				})
 				It("should return error with url and description", func() {
 					responseBroker, err := client.RegisterBroker(broker)
 
 					Expect(err).Should(HaveOccurred())
-					Expect(err).To(MatchError(errors.ResponseError{URL: smServer.URL + web.BrokersURL, Description: "description",
-																	ErrorMessage: "error", StatusCode: handlerDetails[0].ResponseStatusCode}))
+					Expect(err).To(MatchError(errors.ResponseError{URL: smServer.URL + web.ServiceBrokersURL, Description: "description",
+						ErrorMessage: "error", StatusCode: handlerDetails[0].ResponseStatusCode}))
 					Expect(responseBroker).To(BeNil())
 				})
 			})
@@ -291,14 +289,14 @@ var _ = Describe("Service Manager Client test", func() {
 				BeforeEach(func() {
 					responseBody := []byte(`{ "description": description", "error": "error"}`)
 					handlerDetails = []HandlerDetails{
-						{Method: http.MethodPost, Path: web.BrokersURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusBadRequest},
+						{Method: http.MethodPost, Path: web.ServiceBrokersURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusBadRequest},
 					}
 				})
 				It("should return error without url and description if invalid response body", func() {
 					responseBroker, err := client.RegisterBroker(broker)
 
 					Expect(err).Should(HaveOccurred())
-					Expect(err).To(MatchError(errors.ResponseError{URL: smServer.URL + web.BrokersURL, StatusCode: handlerDetails[0].ResponseStatusCode}))
+					Expect(err).To(MatchError(errors.ResponseError{URL: smServer.URL + web.ServiceBrokersURL, StatusCode: handlerDetails[0].ResponseStatusCode}))
 					Expect(responseBroker).To(BeNil())
 				})
 			})
@@ -322,7 +320,7 @@ var _ = Describe("Service Manager Client test", func() {
 				brokers := types.Brokers{Brokers: brokersArray}
 				responseBody, _ := json.Marshal(brokers)
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodGet, Path: web.BrokersURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
 			It("should return all", func() {
@@ -339,7 +337,7 @@ var _ = Describe("Service Manager Client test", func() {
 				brokers := types.Brokers{Brokers: brokersArray}
 				responseBody, _ := json.Marshal(brokers)
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodGet, Path: web.BrokersURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
 			It("should return empty array", func() {
@@ -352,7 +350,7 @@ var _ = Describe("Service Manager Client test", func() {
 		Context("when invalid status code is returned", func() {
 			BeforeEach(func() {
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodGet, Path: web.BrokersURL, ResponseStatusCode: http.StatusCreated},
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL, ResponseStatusCode: http.StatusCreated},
 				}
 			})
 			It("should handle status code != 200", func() {
@@ -365,13 +363,13 @@ var _ = Describe("Service Manager Client test", func() {
 		Context("when invalid status code is returned", func() {
 			BeforeEach(func() {
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodGet, Path: web.BrokersURL, ResponseStatusCode: http.StatusBadRequest},
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL, ResponseStatusCode: http.StatusBadRequest},
 				}
 			})
 			It("should handle status code > 299", func() {
 				_, err := client.ListBrokers()
 				Expect(err).Should(HaveOccurred())
-				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: smServer.URL + web.BrokersURL}))
+				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: smServer.URL + web.ServiceBrokersURL + "?fieldQuery=&labelQuery="}))
 			})
 		})
 	})
@@ -433,7 +431,7 @@ var _ = Describe("Service Manager Client test", func() {
 			It("should handle status code > 299", func() {
 				_, err := client.ListPlatforms()
 				Expect(err).Should(HaveOccurred())
-				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: smServer.URL + web.PlatformsURL}))
+				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: smServer.URL + web.PlatformsURL + "?fieldQuery=&labelQuery="}))
 			})
 		})
 	})
@@ -449,10 +447,10 @@ var _ = Describe("Service Manager Client test", func() {
 
 				brokerResponseBody, _ := json.Marshal(broker)
 
-				handlerDetails = []HandlerDetails {
+				handlerDetails = []HandlerDetails{
 					{Method: http.MethodGet, Path: web.ServiceOfferingsURL, ResponseBody: offeringResponseBody, ResponseStatusCode: http.StatusOK},
 					{Method: http.MethodGet, Path: web.ServicePlansURL, ResponseBody: plansResponseBody, ResponseStatusCode: http.StatusOK},
-					{Method: http.MethodGet, Path: web.BrokersURL + "/", ResponseBody: brokerResponseBody, ResponseStatusCode: http.StatusOK},
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseBody: brokerResponseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
 			It("should return all with plans and broker name populated", func() {
@@ -468,7 +466,7 @@ var _ = Describe("Service Manager Client test", func() {
 				offerings := types.ServiceOfferings{}
 				offeringResponseBody, _ := json.Marshal(offerings)
 
-				handlerDetails = []HandlerDetails {
+				handlerDetails = []HandlerDetails{
 					{Method: http.MethodGet, Path: web.ServiceOfferingsURL, ResponseBody: offeringResponseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
@@ -481,7 +479,7 @@ var _ = Describe("Service Manager Client test", func() {
 
 		Context("when invalid status code is returned", func() {
 			BeforeEach(func() {
-				handlerDetails = []HandlerDetails {
+				handlerDetails = []HandlerDetails{
 					{Method: http.MethodGet, Path: web.ServiceOfferingsURL, ResponseStatusCode: http.StatusCreated},
 				}
 			})
@@ -494,14 +492,14 @@ var _ = Describe("Service Manager Client test", func() {
 
 		Context("when invalid status code is returned", func() {
 			BeforeEach(func() {
-				handlerDetails = []HandlerDetails {
+				handlerDetails = []HandlerDetails{
 					{Method: http.MethodGet, Path: web.ServiceOfferingsURL, ResponseStatusCode: http.StatusBadRequest},
 				}
 			})
 			It("should handle status code > 299", func() {
 				_, err := client.ListOfferings()
 				Expect(err).Should(HaveOccurred())
-				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: smServer.URL + web.ServiceOfferingsURL}))
+				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: smServer.URL + web.ServiceOfferingsURL + "?fieldQuery=&labelQuery="}))
 			})
 		})
 
@@ -513,7 +511,7 @@ var _ = Describe("Service Manager Client test", func() {
 				responseBody := []byte("{}")
 
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.BrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+					{Method: http.MethodDelete, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
 			It("should be successfully removed", func() {
@@ -527,7 +525,7 @@ var _ = Describe("Service Manager Client test", func() {
 				responseBody := []byte("{}")
 
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.BrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
+					{Method: http.MethodDelete, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
 				}
 			})
 			It("should handle error", func() {
@@ -542,13 +540,13 @@ var _ = Describe("Service Manager Client test", func() {
 				responseBody := []byte(`{ "description": "Broker not found" }`)
 
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.BrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
+					{Method: http.MethodDelete, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
 				}
 			})
 			It("should handle error", func() {
 				err := client.DeleteBroker("id")
 				Expect(err).Should(HaveOccurred())
-				Expect(err).Should(MatchError(errors.ResponseError{Description: "Broker not found", URL: smServer.URL + web.BrokersURL + "/id", StatusCode: http.StatusNotFound}))
+				Expect(err).Should(MatchError(errors.ResponseError{Description: "Broker not found", URL: smServer.URL + web.ServiceBrokersURL + "/id", StatusCode: http.StatusNotFound}))
 			})
 		})
 	})
@@ -609,7 +607,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}`)
 
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodPatch, Path: web.BrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+					{Method: http.MethodPatch, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
 			It("should be successfully removed", func() {
@@ -624,7 +622,7 @@ var _ = Describe("Service Manager Client test", func() {
 				responseBody := []byte(`{}`)
 
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodPatch, Path: web.BrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
+					{Method: http.MethodPatch, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
 				}
 			})
 			It("should handle error", func() {

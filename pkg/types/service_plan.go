@@ -19,6 +19,7 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Peripli/service-manager/pkg/types"
 )
 
 // ServicePlan defines the data of a service plan.
@@ -38,7 +39,8 @@ type ServicePlan struct {
 	Metadata json.RawMessage `json:"metadata,omitempty" yaml:"-"`
 	Schemas  json.RawMessage `json:"schemas,omitempty" yaml:"-"`
 
-	ServiceOfferingID string `json:"service_offering_id,omitempty" yaml:"service_offering_id,omitempty"`
+	ServiceOfferingID string       `json:"service_offering_id,omitempty" yaml:"service_offering_id,omitempty"`
+	Labels            types.Labels `json:"labels,omitempty" yaml:"labels,omitempty"`
 }
 
 // Message title of the table
