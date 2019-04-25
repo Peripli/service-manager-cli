@@ -68,6 +68,7 @@ func main() {
 			visibility.NewRegisterVisibilityCmd(context),
 			visibility.NewListVisibilitiesCmd(context),
 			visibility.NewUpdateVisibilityCmd(context),
+			visibility.NewDeleteVisibilityCmd(context, os.Stdin),
 			offering.NewListOfferingsCmd(context),
 		},
 		PrepareFn: cmd.SmPrepare,

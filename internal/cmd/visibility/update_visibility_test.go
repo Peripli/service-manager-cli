@@ -32,7 +32,7 @@ var _ = Describe("Update visibility command test", func() {
 		command = NewUpdateVisibilityCmd(context)
 	})
 
-	validUpdateVisibilityExecution := func(args... string) error {
+	validUpdateVisibilityExecution := func(args ...string) error {
 		visibility = &types.Visibility{
 			ID:            "visibilityID",
 			PlatformID:    "platformID",
@@ -45,7 +45,7 @@ var _ = Describe("Update visibility command test", func() {
 		return uvCmd.Execute()
 	}
 
-	invalidUpdateVisibilityExecution := func(args... string) error {
+	invalidUpdateVisibilityExecution := func(args ...string) error {
 		uvCmd := command.Prepare(cmd.SmPrepare)
 		uvCmd.SetArgs(args)
 		return uvCmd.Execute()
@@ -119,7 +119,7 @@ var _ = Describe("Update visibility command test", func() {
 			expectedErr := errors.New("http client error")
 			client.UpdateVisibilityReturns(nil, expectedErr)
 
-			err := invalidUpdateVisibilityExecution("id",`{"platform_id":"newPlatformID"}`)
+			err := invalidUpdateVisibilityExecution("id", `{"platform_id":"newPlatformID"}`)
 
 			Expect(err).Should(HaveOccurred())
 			Expect(err).To(MatchError(expectedErr.Error()))
@@ -129,7 +129,7 @@ var _ = Describe("Update visibility command test", func() {
 	Context("With invalid output format", func() {
 		It("should return error", func() {
 			invFormat := "invalid-format"
-			err := invalidUpdateVisibilityExecution("id",`{"platform_id":"newPlatformID"}`, "--output", invFormat)
+			err := invalidUpdateVisibilityExecution("id", `{"platform_id":"newPlatformID"}`, "--output", invFormat)
 
 			Expect(err).Should(HaveOccurred())
 			Expect(err.Error()).To(Equal("unknown output: " + invFormat))

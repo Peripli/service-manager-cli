@@ -36,7 +36,7 @@ var _ = Describe("Register Platform Command test", func() {
 		command = NewRegisterPlatformCmd(context)
 	})
 
-	validRegisterPlatformExecution := func(args... string) error {
+	validRegisterPlatformExecution := func(args ...string) error {
 		platform = &types.Platform{
 			ID:   "1234",
 			Name: args[0],
@@ -55,7 +55,7 @@ var _ = Describe("Register Platform Command test", func() {
 		return rpcCmd.Execute()
 	}
 
-	invalidRegisterPlatformCommandExecution := func(args... string) error {
+	invalidRegisterPlatformCommandExecution := func(args ...string) error {
 		rpcCmd := command.Prepare(cmd.SmPrepare)
 		rpcCmd.SetArgs(args)
 		return rpcCmd.Execute()

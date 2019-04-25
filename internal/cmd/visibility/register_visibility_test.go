@@ -32,7 +32,7 @@ var _ = Describe("Register visibility command test", func() {
 		command = NewRegisterVisibilityCmd(context)
 	})
 
-	validRegisterVisibilityExecution := func(args... string) error {
+	validRegisterVisibilityExecution := func(args ...string) error {
 		visibility = &types.Visibility{
 			ID:            "visibilityID",
 			PlatformID:    args[0],
@@ -44,7 +44,7 @@ var _ = Describe("Register visibility command test", func() {
 		return rvCmd.Execute()
 	}
 
-	invalidRegisterVisibilityExecution := func(args... string) error {
+	invalidRegisterVisibilityExecution := func(args ...string) error {
 		rvCmd := command.Prepare(cmd.SmPrepare)
 		rvCmd.SetArgs(args)
 		return rvCmd.Execute()
