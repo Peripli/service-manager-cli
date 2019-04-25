@@ -201,16 +201,16 @@ func (client *serviceManagerClient) ListOfferingsWithQuery(fieldQuery string, la
 	if err != nil {
 		return nil, err
 	}
-	for i, v := range serviceOfferings.ServiceOfferings {
+	for i, so := range serviceOfferings.ServiceOfferings {
 		plans := &types.ServicePlans{}
-		err := client.list(plans, web.ServicePlansURL+"?fieldQuery=service_offering_id+=+"+v.ID)
+		err := client.list(plans, web.ServicePlansURL+"?fieldQuery=service_offering_id+=+"+so.ID)
 		if err != nil {
 			return nil, err
 		}
 		serviceOfferings.ServiceOfferings[i].Plans = plans.ServicePlans
 
 		broker := &types.Broker{}
-		err = client.list(broker, web.ServiceBrokersURL+"/"+v.BrokerID)
+		err = client.list(broker, web.ServiceBrokersURL+"/"+so.BrokerID)
 		if err != nil {
 			return nil, err
 		}
