@@ -37,13 +37,14 @@ type Client interface {
 	GetInfo() (*types.Info, error)
 	RegisterPlatform(*types.Platform) (*types.Platform, error)
 	RegisterBroker(*types.Broker) (*types.Broker, error)
-	ListBrokersWithQuery(string, string) (*types.Brokers, error)
 	RegisterVisibility(*types.Visibility) (*types.Visibility, error)
+	ListBrokersWithQuery(string, string) (*types.Brokers, error)
 	ListBrokers() (*types.Brokers, error)
 	ListPlatformsWithQuery(string, string) (*types.Platforms, error)
 	ListPlatforms() (*types.Platforms, error)
 	ListOfferingsWithQuery(string, string) (*types.ServiceOfferings, error)
 	ListOfferings() (*types.ServiceOfferings, error)
+	ListVisibilitiesWithQuery(string, string) (*types.Visibilities, error)
 	ListVisibilities() (*types.Visibilities, error)
 	DeleteBroker(string) error
 	DeletePlatform(string) error
@@ -195,12 +196,16 @@ func (client *serviceManagerClient) ListPlatforms() (*types.Platforms, error) {
 	return client.ListPlatformsWithQuery("", "")
 }
 
-// ListVisibilities returns visibilities registered in the Service Manager
-func (client *serviceManagerClient) ListVisibilities() (*types.Visibilities, error) {
+func (client *serviceManagerClient) ListVisibilitiesWithQuery(fieldQuery string, labelQuery string) (*types.Visibilities, error) {
 	visibilities := &types.Visibilities{}
-	err := client.list(visibilities, web.VisibilitiesURL)
+	err := client.list(visibilities, web.VisibilitiesURL+"?fieldQuery="+fieldQuery+"&labelQuery="+labelQuery)
 
 	return visibilities, err
+}
+
+// ListVisibilities returns visibilities registered in the Service Manager
+func (client *serviceManagerClient) ListVisibilities() (*types.Visibilities, error) {
+	return client.ListVisibilitiesWithQuery("", "")
 }
 
 // ListOfferings returns service offerings satisfying provided queries

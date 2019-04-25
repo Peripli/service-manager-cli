@@ -161,6 +161,20 @@ type FakeClient struct {
 		result1 *types.Visibilities
 		result2 error
 	}
+	ListVisibilitiesWithQueryStub        func(string, string) (*types.Visibilities, error)
+	listVisibilitiesWithQueryMutex       sync.RWMutex
+	listVisibilitiesWithQueryArgsForCall []struct {
+		arg1 string
+		arg2 string
+	}
+	listVisibilitiesWithQueryReturns struct {
+		result1 *types.Visibilities
+		result2 error
+	}
+	listVisibilitiesWithQueryReturnsOnCall map[int]struct {
+		result1 *types.Visibilities
+		result2 error
+	}
 	RegisterBrokerStub        func(*types.Broker) (*types.Broker, error)
 	registerBrokerMutex       sync.RWMutex
 	registerBrokerArgsForCall []struct {
@@ -958,6 +972,70 @@ func (fake *FakeClient) ListVisibilitiesReturnsOnCall(i int, result1 *types.Visi
 	}{result1, result2}
 }
 
+func (fake *FakeClient) ListVisibilitiesWithQuery(arg1 string, arg2 string) (*types.Visibilities, error) {
+	fake.listVisibilitiesWithQueryMutex.Lock()
+	ret, specificReturn := fake.listVisibilitiesWithQueryReturnsOnCall[len(fake.listVisibilitiesWithQueryArgsForCall)]
+	fake.listVisibilitiesWithQueryArgsForCall = append(fake.listVisibilitiesWithQueryArgsForCall, struct {
+		arg1 string
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("ListVisibilitiesWithQuery", []interface{}{arg1, arg2})
+	fake.listVisibilitiesWithQueryMutex.Unlock()
+	if fake.ListVisibilitiesWithQueryStub != nil {
+		return fake.ListVisibilitiesWithQueryStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.listVisibilitiesWithQueryReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeClient) ListVisibilitiesWithQueryCallCount() int {
+	fake.listVisibilitiesWithQueryMutex.RLock()
+	defer fake.listVisibilitiesWithQueryMutex.RUnlock()
+	return len(fake.listVisibilitiesWithQueryArgsForCall)
+}
+
+func (fake *FakeClient) ListVisibilitiesWithQueryCalls(stub func(string, string) (*types.Visibilities, error)) {
+	fake.listVisibilitiesWithQueryMutex.Lock()
+	defer fake.listVisibilitiesWithQueryMutex.Unlock()
+	fake.ListVisibilitiesWithQueryStub = stub
+}
+
+func (fake *FakeClient) ListVisibilitiesWithQueryArgsForCall(i int) (string, string) {
+	fake.listVisibilitiesWithQueryMutex.RLock()
+	defer fake.listVisibilitiesWithQueryMutex.RUnlock()
+	argsForCall := fake.listVisibilitiesWithQueryArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeClient) ListVisibilitiesWithQueryReturns(result1 *types.Visibilities, result2 error) {
+	fake.listVisibilitiesWithQueryMutex.Lock()
+	defer fake.listVisibilitiesWithQueryMutex.Unlock()
+	fake.ListVisibilitiesWithQueryStub = nil
+	fake.listVisibilitiesWithQueryReturns = struct {
+		result1 *types.Visibilities
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) ListVisibilitiesWithQueryReturnsOnCall(i int, result1 *types.Visibilities, result2 error) {
+	fake.listVisibilitiesWithQueryMutex.Lock()
+	defer fake.listVisibilitiesWithQueryMutex.Unlock()
+	fake.ListVisibilitiesWithQueryStub = nil
+	if fake.listVisibilitiesWithQueryReturnsOnCall == nil {
+		fake.listVisibilitiesWithQueryReturnsOnCall = make(map[int]struct {
+			result1 *types.Visibilities
+			result2 error
+		})
+	}
+	fake.listVisibilitiesWithQueryReturnsOnCall[i] = struct {
+		result1 *types.Visibilities
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeClient) RegisterBroker(arg1 *types.Broker) (*types.Broker, error) {
 	fake.registerBrokerMutex.Lock()
 	ret, specificReturn := fake.registerBrokerReturnsOnCall[len(fake.registerBrokerArgsForCall)]
@@ -1366,6 +1444,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.listPlatformsWithQueryMutex.RUnlock()
 	fake.listVisibilitiesMutex.RLock()
 	defer fake.listVisibilitiesMutex.RUnlock()
+	fake.listVisibilitiesWithQueryMutex.RLock()
+	defer fake.listVisibilitiesWithQueryMutex.RUnlock()
 	fake.registerBrokerMutex.RLock()
 	defer fake.registerBrokerMutex.RUnlock()
 	fake.registerPlatformMutex.RLock()
