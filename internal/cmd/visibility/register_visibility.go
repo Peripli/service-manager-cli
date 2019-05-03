@@ -81,7 +81,6 @@ func (rv *RegisterVisibilityCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command
 		RunE:    cmd.RunE(rv),
 	}
 
-	result.Flags().StringVarP(&rv.visibility.ID, "id", "i", "", "external visibility ID")
 	cmd.AddFormatFlag(result.Flags())
 
 	return result

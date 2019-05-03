@@ -71,18 +71,6 @@ var _ = Describe("Register visibility command test", func() {
 			})
 		})
 
-		Context("With id flag provided", func() {
-			It("visibility id should be as expected", func() {
-				args := []string{"platformId", "planId", "--id", "id"}
-
-				err := validRegisterVisibilityExecution(args...)
-				v := client.RegisterVisibilityArgsForCall(0)
-
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(v.ID).To(Equal("id"))
-			})
-		})
-
 		Context("With json format flag", func() {
 			It("should be printed in json format", func() {
 				err := validRegisterVisibilityExecution("platformId", "planId", "--output", "json")

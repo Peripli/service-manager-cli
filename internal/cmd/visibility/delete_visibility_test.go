@@ -31,7 +31,7 @@ var _ = Describe("Delete visibility command test", func() {
 		command = NewDeleteVisibilityCmd(context, promptBuffer)
 	})
 
-	executeWithArgs := func(args... string) error {
+	executeWithArgs := func(args ...string) error {
 		commandToRun := command.Prepare(cmd.SmPrepare)
 		commandToRun.SetArgs(args)
 
