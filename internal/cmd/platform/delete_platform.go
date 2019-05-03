@@ -57,20 +57,20 @@ func (dpc *DeletePlatformCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (dpc *DeletePlatformCmd) Run() error {
-	allPlatforms, err := dpc.Client.ListPlatforms()
+	fieldQuery := util.GetResourceByNamesQuery(dpc.names)
+	toDeletePlatforms, err := dpc.Client.ListPlatformsWithQuery(fieldQuery, "")
 	if err != nil {
 		return err
 	}
 
-	toDeletePlatforms := util.GetPlatformsByName(allPlatforms, dpc.names)
-	if len(toDeletePlatforms) < 1 {
+	if len(toDeletePlatforms.Platforms) < 1 {
 		output.PrintMessage(dpc.Output, "Platform(s) not found\n")
 		return nil
 	}
 
 	deletedPlatforms := make(map[string]bool)
 
-	for _, toDelete := range toDeletePlatforms {
+	for _, toDelete := range toDeletePlatforms.Platforms {
 		err := dpc.Client.DeletePlatform(toDelete.ID)
 		if err != nil {
 			output.PrintMessage(dpc.Output, "Could not delete platform %s. Reason %s\n", toDelete.Name, err)

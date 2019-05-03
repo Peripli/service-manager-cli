@@ -62,20 +62,19 @@ func (dbc *DeleteBrokerCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (dbc *DeleteBrokerCmd) Run() error {
-	allBrokers, err := dbc.Client.ListBrokers()
+	fieldQuery := util.GetResourceByNamesQuery(dbc.names)
+	toDeleteBrokers, err := dbc.Client.ListBrokersWithQuery(fieldQuery, "")
 	if err != nil {
 		return err
 	}
-
-	toDeleteBrokers := util.GetBrokersByName(allBrokers, dbc.names)
-	if len(toDeleteBrokers) < 1 {
+	if len(toDeleteBrokers.Brokers) < 1 {
 		output.PrintMessage(dbc.Output, "Service Broker(s) not found\n")
 		return nil
 	}
 
 	deletedBrokers := make(map[string]bool)
 
-	for _, toDelete := range toDeleteBrokers {
+	for _, toDelete := range toDeleteBrokers.Brokers {
 		err := dbc.Client.DeleteBroker(toDelete.ID)
 		if err != nil {
 			output.PrintMessage(dbc.Output, "Could not delete broker %s. Reason: %s\n", toDelete.Name, err)
@@ -86,7 +85,7 @@ func (dbc *DeleteBrokerCmd) Run() error {
 	}
 
 	for _, brokerName := range dbc.names {
-		if _, deleted := deletedBrokers[brokerName]; !deleted {
+		if !deletedBrokers[brokerName] {
 			output.PrintError(dbc.Output, fmt.Errorf("broker with name: %s was not found", brokerName))
 		}
 	}
