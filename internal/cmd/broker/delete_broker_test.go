@@ -20,7 +20,7 @@ func TestDeleteBrokerCmd(t *testing.T) {
 	RunSpecs(t, "")
 }
 
-var _ = Describe("List brokers command test", func() {
+var _ = Describe("Delete brokers command test", func() {
 
 	var client *smclientfakes.FakeClient
 	var command *DeleteBrokerCmd
@@ -34,9 +34,9 @@ var _ = Describe("List brokers command test", func() {
 		context := &cmd.Context{Output: buffer, Client: client}
 		command = NewDeleteBrokerCmd(context, promptBuffer)
 
-		var brokers *types.Brokers = &types.Brokers{}
+		brokers := &types.Brokers{}
 		brokers.Brokers = []types.Broker{{ID: "1234", Name: "broker-name"}, {ID: "456", Name: "broker2"}}
-		client.ListBrokersReturns(brokers, nil)
+		client.ListBrokersWithQueryReturns(brokers, nil)
 	})
 
 	executeWithArgs := func(args []string) error {
@@ -113,9 +113,11 @@ var _ = Describe("List brokers command test", func() {
 	Context("when non-existing broker is being deleted", func() {
 		It("should return error message", func() {
 			expectedError := errors.ResponseError{StatusCode: http.StatusNotFound}
+			client.ListBrokersWithQueryReturns(&types.Brokers{}, nil)
 			client.DeleteBrokerReturns(expectedError)
-			executeWithArgs([]string{"non-existing-name", "-f"})
+			err := executeWithArgs([]string{"non-existing-name", "-f"})
 
+			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring("Service Broker(s) not found"))
 		})
 	})

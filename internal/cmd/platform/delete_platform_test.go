@@ -36,7 +36,7 @@ var _ = Describe("Delete platforms command test", func() {
 
 		platforms := &types.Platforms{}
 		platforms.Platforms = []types.Platform{{ID: "1234", Name: "platform-name"}, {ID: "456", Name: "platform2"}}
-		client.ListPlatformsReturns(platforms, nil)
+		client.ListPlatformsWithQueryReturns(platforms, nil)
 	})
 
 	executeWithArgs := func(args []string) error {
@@ -102,6 +102,7 @@ var _ = Describe("Delete platforms command test", func() {
 	Context("when non-existing platform is being deleted", func() {
 		It("should return error message", func() {
 			expectedError := errors.ResponseError{StatusCode: http.StatusNotFound}
+			client.ListPlatformsWithQueryReturns(&types.Platforms{}, nil)
 			client.DeletePlatformReturns(expectedError)
 			err := executeWithArgs([]string{"non-existing-name", "-f"})
 
