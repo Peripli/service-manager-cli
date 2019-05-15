@@ -19,6 +19,7 @@ package platform
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/spf13/cobra"
@@ -62,7 +63,7 @@ func (upc *UpdatePlatformCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (upc *UpdatePlatformCmd) Run() error {
-	fieldQuery := "name+=+" + upc.name
+	fieldQuery := "name+=+" + url.QueryEscape(upc.name)
 	toUpdatePlatforms, err := upc.Client.ListPlatformsWithQuery(fieldQuery, "")
 	if err != nil {
 		return err

@@ -37,6 +37,17 @@ type FakeClient struct {
 	deleteBrokerReturnsOnCall map[int]struct {
 		result1 error
 	}
+	DeleteBrokersByFieldQueryStub        func(string) error
+	deleteBrokersByFieldQueryMutex       sync.RWMutex
+	deleteBrokersByFieldQueryArgsForCall []struct {
+		arg1 string
+	}
+	deleteBrokersByFieldQueryReturns struct {
+		result1 error
+	}
+	deleteBrokersByFieldQueryReturnsOnCall map[int]struct {
+		result1 error
+	}
 	DeletePlatformStub        func(string) error
 	deletePlatformMutex       sync.RWMutex
 	deletePlatformArgsForCall []struct {
@@ -46,6 +57,17 @@ type FakeClient struct {
 		result1 error
 	}
 	deletePlatformReturnsOnCall map[int]struct {
+		result1 error
+	}
+	DeletePlatformsByFieldQueryStub        func(string) error
+	deletePlatformsByFieldQueryMutex       sync.RWMutex
+	deletePlatformsByFieldQueryArgsForCall []struct {
+		arg1 string
+	}
+	deletePlatformsByFieldQueryReturns struct {
+		result1 error
+	}
+	deletePlatformsByFieldQueryReturnsOnCall map[int]struct {
 		result1 error
 	}
 	DeleteVisibilityStub        func(string) error
@@ -385,6 +407,66 @@ func (fake *FakeClient) DeleteBrokerReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeClient) DeleteBrokersByFieldQuery(arg1 string) error {
+	fake.deleteBrokersByFieldQueryMutex.Lock()
+	ret, specificReturn := fake.deleteBrokersByFieldQueryReturnsOnCall[len(fake.deleteBrokersByFieldQueryArgsForCall)]
+	fake.deleteBrokersByFieldQueryArgsForCall = append(fake.deleteBrokersByFieldQueryArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("DeleteBrokersByFieldQuery", []interface{}{arg1})
+	fake.deleteBrokersByFieldQueryMutex.Unlock()
+	if fake.DeleteBrokersByFieldQueryStub != nil {
+		return fake.DeleteBrokersByFieldQueryStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.deleteBrokersByFieldQueryReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeClient) DeleteBrokersByFieldQueryCallCount() int {
+	fake.deleteBrokersByFieldQueryMutex.RLock()
+	defer fake.deleteBrokersByFieldQueryMutex.RUnlock()
+	return len(fake.deleteBrokersByFieldQueryArgsForCall)
+}
+
+func (fake *FakeClient) DeleteBrokersByFieldQueryCalls(stub func(string) error) {
+	fake.deleteBrokersByFieldQueryMutex.Lock()
+	defer fake.deleteBrokersByFieldQueryMutex.Unlock()
+	fake.DeleteBrokersByFieldQueryStub = stub
+}
+
+func (fake *FakeClient) DeleteBrokersByFieldQueryArgsForCall(i int) string {
+	fake.deleteBrokersByFieldQueryMutex.RLock()
+	defer fake.deleteBrokersByFieldQueryMutex.RUnlock()
+	argsForCall := fake.deleteBrokersByFieldQueryArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeClient) DeleteBrokersByFieldQueryReturns(result1 error) {
+	fake.deleteBrokersByFieldQueryMutex.Lock()
+	defer fake.deleteBrokersByFieldQueryMutex.Unlock()
+	fake.DeleteBrokersByFieldQueryStub = nil
+	fake.deleteBrokersByFieldQueryReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeClient) DeleteBrokersByFieldQueryReturnsOnCall(i int, result1 error) {
+	fake.deleteBrokersByFieldQueryMutex.Lock()
+	defer fake.deleteBrokersByFieldQueryMutex.Unlock()
+	fake.DeleteBrokersByFieldQueryStub = nil
+	if fake.deleteBrokersByFieldQueryReturnsOnCall == nil {
+		fake.deleteBrokersByFieldQueryReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.deleteBrokersByFieldQueryReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeClient) DeletePlatform(arg1 string) error {
 	fake.deletePlatformMutex.Lock()
 	ret, specificReturn := fake.deletePlatformReturnsOnCall[len(fake.deletePlatformArgsForCall)]
@@ -441,6 +523,66 @@ func (fake *FakeClient) DeletePlatformReturnsOnCall(i int, result1 error) {
 		})
 	}
 	fake.deletePlatformReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeClient) DeletePlatformsByFieldQuery(arg1 string) error {
+	fake.deletePlatformsByFieldQueryMutex.Lock()
+	ret, specificReturn := fake.deletePlatformsByFieldQueryReturnsOnCall[len(fake.deletePlatformsByFieldQueryArgsForCall)]
+	fake.deletePlatformsByFieldQueryArgsForCall = append(fake.deletePlatformsByFieldQueryArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("DeletePlatformsByFieldQuery", []interface{}{arg1})
+	fake.deletePlatformsByFieldQueryMutex.Unlock()
+	if fake.DeletePlatformsByFieldQueryStub != nil {
+		return fake.DeletePlatformsByFieldQueryStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.deletePlatformsByFieldQueryReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeClient) DeletePlatformsByFieldQueryCallCount() int {
+	fake.deletePlatformsByFieldQueryMutex.RLock()
+	defer fake.deletePlatformsByFieldQueryMutex.RUnlock()
+	return len(fake.deletePlatformsByFieldQueryArgsForCall)
+}
+
+func (fake *FakeClient) DeletePlatformsByFieldQueryCalls(stub func(string) error) {
+	fake.deletePlatformsByFieldQueryMutex.Lock()
+	defer fake.deletePlatformsByFieldQueryMutex.Unlock()
+	fake.DeletePlatformsByFieldQueryStub = stub
+}
+
+func (fake *FakeClient) DeletePlatformsByFieldQueryArgsForCall(i int) string {
+	fake.deletePlatformsByFieldQueryMutex.RLock()
+	defer fake.deletePlatformsByFieldQueryMutex.RUnlock()
+	argsForCall := fake.deletePlatformsByFieldQueryArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeClient) DeletePlatformsByFieldQueryReturns(result1 error) {
+	fake.deletePlatformsByFieldQueryMutex.Lock()
+	defer fake.deletePlatformsByFieldQueryMutex.Unlock()
+	fake.DeletePlatformsByFieldQueryStub = nil
+	fake.deletePlatformsByFieldQueryReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeClient) DeletePlatformsByFieldQueryReturnsOnCall(i int, result1 error) {
+	fake.deletePlatformsByFieldQueryMutex.Lock()
+	defer fake.deletePlatformsByFieldQueryMutex.Unlock()
+	fake.DeletePlatformsByFieldQueryStub = nil
+	if fake.deletePlatformsByFieldQueryReturnsOnCall == nil {
+		fake.deletePlatformsByFieldQueryReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.deletePlatformsByFieldQueryReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -1424,8 +1566,12 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.callMutex.RUnlock()
 	fake.deleteBrokerMutex.RLock()
 	defer fake.deleteBrokerMutex.RUnlock()
+	fake.deleteBrokersByFieldQueryMutex.RLock()
+	defer fake.deleteBrokersByFieldQueryMutex.RUnlock()
 	fake.deletePlatformMutex.RLock()
 	defer fake.deletePlatformMutex.RUnlock()
+	fake.deletePlatformsByFieldQueryMutex.RLock()
+	defer fake.deletePlatformsByFieldQueryMutex.RUnlock()
 	fake.deleteVisibilityMutex.RLock()
 	defer fake.deleteVisibilityMutex.RUnlock()
 	fake.getInfoMutex.RLock()
