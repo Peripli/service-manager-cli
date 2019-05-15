@@ -19,10 +19,9 @@ package platform
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 
 	"github.com/Peripli/service-manager-cli/internal/output"
-	"github.com/Peripli/service-manager-cli/internal/util"
-
 	"github.com/spf13/cobra"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
@@ -64,16 +63,15 @@ func (upc *UpdatePlatformCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (upc *UpdatePlatformCmd) Run() error {
-	allPlatforms, err := upc.Client.ListPlatforms()
+	fieldQuery := "name+=+" + url.QueryEscape(upc.name)
+	toUpdatePlatforms, err := upc.Client.ListPlatformsWithQuery(fieldQuery, "")
 	if err != nil {
 		return err
 	}
-
-	platformWithName := util.GetPlatformsByName(allPlatforms, []string{upc.name})
-	if len(platformWithName) < 1 {
+	if len(toUpdatePlatforms.Platforms) < 1 {
 		return fmt.Errorf("platform with name %s not found", upc.name)
 	}
-	toUpdatePlatform := platformWithName[0]
+	toUpdatePlatform := toUpdatePlatforms.Platforms[0]
 	result, err := upc.Client.UpdatePlatform(toUpdatePlatform.ID, upc.updatedPlatform)
 	if err != nil {
 		return err

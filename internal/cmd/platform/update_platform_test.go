@@ -3,13 +3,12 @@ package platform
 import (
 	"encoding/json"
 	"errors"
+	"gopkg.in/yaml.v2"
 	"testing"
 
+	"bytes"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	yaml "gopkg.in/yaml.v2"
-
-	"bytes"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
@@ -26,17 +25,7 @@ var _ = Describe("Update platform command test", func() {
 	var client *smclientfakes.FakeClient
 	var command *UpdatePlatformCmd
 	var buffer *bytes.Buffer
-	platform := types.Platform{
-		Name: "platform",
-		ID:   "id1",
-		Type: "type1",
-		Credentials: &types.Credentials{
-			Basic: types.Basic{
-				User:     "admin",
-				Password: "admin",
-			},
-		},
-	}
+	var platform types.Platform
 
 	BeforeEach(func() {
 		buffer = &bytes.Buffer{}
@@ -45,89 +34,132 @@ var _ = Describe("Update platform command test", func() {
 		command = NewUpdatePlatformCmd(context)
 	})
 
-	executeWithArgs := func(args []string) error {
-		commandToRun := command.Prepare(cmd.SmPrepare)
-		commandToRun.SetArgs(args)
-
-		return commandToRun.Execute()
+	validUpdatePlatformExecution := func(args ...string) error {
+		platform = types.Platform{
+			Name: "platform",
+			ID:   "id",
+			Type: "type",
+		}
+		platforms := &types.Platforms{Platforms: []types.Platform{platform}}
+		client.ListPlatformsWithQueryReturns(platforms, nil)
+		_ = json.Unmarshal([]byte(args[1]), platform)
+		client.UpdatePlatformReturns(&platform, nil)
+		ubCmd := command.Prepare(cmd.SmPrepare)
+		ubCmd.SetArgs(args)
+		return ubCmd.Execute()
 	}
 
-	Context("when existing platform is being updated", func() {
-		It("should print updated platform", func() {
-			updatedPlatform := platform
-			updatedPlatform.Name = "updated-name"
-			client.UpdatePlatformReturns(&updatedPlatform, nil)
-			client.ListPlatformsReturns(&types.Platforms{Platforms: []types.Platform{platform}}, nil)
-			err := executeWithArgs([]string{platform.Name, `{"name": "` + updatedPlatform.Name + `"}`})
+	invalidUpdatePlatformExecution := func(args ...string) error {
+		ubCmd := command.Prepare(cmd.SmPrepare)
+		ubCmd.SetArgs(args)
+		return ubCmd.Execute()
+	}
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buffer.String()).To(ContainSubstring(updatedPlatform.TableData().String()))
+	Describe("Valid request", func() {
+		Context("With necessary arguments provided", func() {
+			It("platform should be updated", func() {
+
+				err := validUpdatePlatformExecution("platform", `{"type":"newType"}`)
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buffer.String()).To(ContainSubstring(platform.TableData().String()))
+			})
+
+			It("argument values should be as expected", func() {
+				err := validUpdatePlatformExecution("platform", `{"type":"newType"}`)
+
+				id, platform := client.UpdatePlatformArgsForCall(0)
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(id).To(Equal("id"))
+				Expect(platform).To(Equal(&types.Platform{Type: "newType"}))
+			})
+		})
+
+		Context("With json format flag", func() {
+			It("should be printed in json format", func() {
+				err := validUpdatePlatformExecution("platform", `{"type":"newType"}`, "--output", "json")
+
+				jsonByte, _ := json.MarshalIndent(platform, "", "  ")
+				jsonOutputExpected := string(jsonByte) + "\n"
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buffer.String()).To(Equal(jsonOutputExpected))
+			})
+		})
+
+		Context("With yaml format flag", func() {
+			It("should be printed in yaml format", func() {
+				err := validUpdatePlatformExecution("platform", `{"type":"newType"}`, "--output", "yaml")
+
+				yamlByte, _ := yaml.Marshal(platform)
+				yamlOutputExpected := string(yamlByte) + "\n"
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buffer.String()).To(Equal(yamlOutputExpected))
+			})
 		})
 	})
 
-	Context("when non-existing platform is being updated", func() {
-		It("should throw error", func() {
-			client.ListPlatformsReturns(&types.Platforms{Platforms: []types.Platform{platform}}, nil)
-			err := executeWithArgs([]string{"non-existing", "{}"})
+	Describe("Invalid request", func() {
+		Context("With missing arguments", func() {
+			It("Should return error missing name", func() {
+				err := invalidUpdatePlatformExecution([]string{}...)
 
-			Expect(err).Should(HaveOccurred())
-			Expect(err).To(MatchError("platform with name non-existing not found"))
+				Expect(err).Should(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("[name] is required"))
+			})
+			It("Should return error missing json", func() {
+				err := invalidUpdatePlatformExecution("platform")
+
+				Expect(err).Should(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("nothing to update. Platform JSON is not provided"))
+			})
 		})
 	})
 
-	Context("when list platforms returns an error", func() {
-		It("should be handled", func() {
-			client.ListPlatformsReturns(nil, errors.New("error retrieving platforms"))
-			err := executeWithArgs([]string{"non-existing", "{}"})
+	Context("When non existing platform updated", func() {
+		It("should return error", func() {
+			client.ListPlatformsWithQueryReturns(&types.Platforms{}, nil)
+
+			err := invalidUpdatePlatformExecution("platform", `{"type":"newType"}`)
 
 			Expect(err).Should(HaveOccurred())
-			Expect(err).To(MatchError("error retrieving platforms"))
+			Expect(err.Error()).To(Equal("platform with name platform not found"))
 		})
 	})
 
-	Context("when name is not provided", func() {
-		It("should throw error", func() {
-			err := executeWithArgs([]string{})
+	Context("With error from http client", func() {
+		It("Should return error", func() {
+			expectedErr := errors.New("http client error")
+			platforms := &types.Platforms{Platforms: []types.Platform{platform}}
+			client.ListPlatformsWithQueryReturns(platforms, nil)
+			client.UpdatePlatformReturns(nil, expectedErr)
+
+			err := invalidUpdatePlatformExecution("platform", `{"type":"newType"}`)
+
 			Expect(err).Should(HaveOccurred())
-			Expect(err).To(MatchError("[name] is required"))
+			Expect(err).To(MatchError(expectedErr.Error()))
 		})
 	})
 
-	Context("when json is not provided", func() {
-		It("should throw error", func() {
-			err := executeWithArgs([]string{"platform"})
+	Context("With invalid output format", func() {
+		It("should return error", func() {
+			invFormat := "invalid-format"
+			err := invalidUpdatePlatformExecution("platform", `{"type":"newType"}`, "--output", invFormat)
+
 			Expect(err).Should(HaveOccurred())
-			Expect(err).To(MatchError("nothing to update. Platform JSON is not provided"))
+			Expect(err.Error()).To(Equal("unknown output: " + invFormat))
 		})
 	})
 
 	Context("when json is invalid", func() {
 		It("should throw error", func() {
-			err := executeWithArgs([]string{"platform", "{name: none}"})
+			err := invalidUpdatePlatformExecution("platform", "{name: none}")
+
 			Expect(err).Should(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("platform JSON is invalid"))
 		})
 	})
 
-	Context("when format flag is used", func() {
-		It("should print in json", func() {
-			client.UpdatePlatformReturns(&platform, nil)
-			client.ListPlatformsReturns(&types.Platforms{Platforms: []types.Platform{platform}}, nil)
-			executeWithArgs([]string{platform.Name, `{"name": "platform"}`, "-o", "json"})
-
-			jsonByte, _ := json.MarshalIndent(platform, "", "  ")
-			jsonOutputExpected := string(jsonByte) + "\n"
-			Expect(buffer.String()).To(ContainSubstring(jsonOutputExpected))
-		})
-
-		It("should print in yaml", func() {
-			client.UpdatePlatformReturns(&platform, nil)
-			client.ListPlatformsReturns(&types.Platforms{Platforms: []types.Platform{platform}}, nil)
-			executeWithArgs([]string{platform.Name, `{"name": "platform"}`, "-o", "yaml"})
-
-			yamlByte, _ := yaml.Marshal(platform)
-			yamlOutputExpected := string(yamlByte) + "\n"
-			Expect(buffer.String()).To(ContainSubstring(yamlOutputExpected))
-		})
-	})
 })

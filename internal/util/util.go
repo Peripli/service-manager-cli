@@ -25,8 +25,6 @@ import (
 	"net/url"
 	"strings"
 	"time"
-
-	"github.com/Peripli/service-manager-cli/pkg/types"
 )
 
 // ValidateURL validates a URL
@@ -47,35 +45,12 @@ func ValidateURL(URL string) error {
 	return nil
 }
 
-// GetBrokersByName returns array of brokers with the searched names
-func GetBrokersByName(brokers *types.Brokers, names []string) []types.Broker {
-	result := make([]types.Broker, 0)
-	brokersMap := make(map[string]types.Broker)
-	for _, broker := range brokers.Brokers {
-		brokersMap[broker.Name] = broker
+// GetResourceByNamesQuery returns field query for retrieving all instances of resource with given names
+func GetResourceByNamesQuery(names []string) string {
+	for i := range names {
+		names[i] = url.QueryEscape(names[i])
 	}
-
-	for _, name := range names {
-		if _, exists := brokersMap[name]; exists {
-			result = append(result, brokersMap[name])
-		}
-	}
-	return result
-}
-
-// GetPlatformsByName returns array of platforms with the searched names
-func GetPlatformsByName(platforms *types.Platforms, names []string) []types.Platform {
-	result := make([]types.Platform, 0)
-	platformsMap := make(map[string]types.Platform)
-	for _, platform := range platforms.Platforms {
-		platformsMap[platform.Name] = platform
-	}
-	for _, name := range names {
-		if _, exists := platformsMap[name]; exists {
-			result = append(result, platformsMap[name])
-		}
-	}
-	return result
+	return "name+in+[" + strings.Join(names, "||") + "]"
 }
 
 // BuildHTTPClient builds custom http client with configured ssl validation

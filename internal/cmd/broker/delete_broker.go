@@ -18,10 +18,10 @@ package broker
 
 import (
 	"fmt"
+	"github.com/Peripli/service-manager-cli/internal/output"
 	"io"
 	"strings"
 
-	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/internal/util"
 
 	"github.com/spf13/cobra"
@@ -62,35 +62,13 @@ func (dbc *DeleteBrokerCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (dbc *DeleteBrokerCmd) Run() error {
-	allBrokers, err := dbc.Client.ListBrokers()
+	fieldQuery := util.GetResourceByNamesQuery(dbc.names)
+	err := dbc.Client.DeleteBrokersByFieldQuery(fieldQuery)
 	if err != nil {
+		output.PrintMessage(dbc.Output, "Could not delete broker(s). Reason: ")
 		return err
 	}
-
-	toDeleteBrokers := util.GetBrokersByName(allBrokers, dbc.names)
-	if len(toDeleteBrokers) < 1 {
-		output.PrintMessage(dbc.Output, "Service Broker(s) not found\n")
-		return nil
-	}
-
-	deletedBrokers := make(map[string]bool)
-
-	for _, toDelete := range toDeleteBrokers {
-		err := dbc.Client.DeleteBroker(toDelete.ID)
-		if err != nil {
-			output.PrintMessage(dbc.Output, "Could not delete broker %s. Reason: %s\n", toDelete.Name, err)
-		} else {
-			output.PrintMessage(dbc.Output, "Broker with name: %s successfully deleted\n", toDelete.Name)
-			deletedBrokers[toDelete.Name] = true
-		}
-	}
-
-	for _, brokerName := range dbc.names {
-		if _, deleted := deletedBrokers[brokerName]; !deleted {
-			output.PrintError(dbc.Output, fmt.Errorf("broker with name: %s was not found", brokerName))
-		}
-	}
-
+	output.PrintMessage(dbc.Output, "Service Broker(s) successfully deleted.\n")
 	return nil
 }
 

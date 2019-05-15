@@ -24,9 +24,9 @@ import (
 // Platform defines the data of a platform.
 type Platform struct {
 	ID          string       `json:"id,omitempty" yaml:"id,omitempty"`
-	Name        string       `json:"name" yaml:"name"`
+	Name        string       `json:"name,omitempty" yaml:"name,omitempty"`
 	Description string       `json:"description,omitempty" yaml:"description,omitempty"`
-	Type        string       `json:"type" yaml:"type"`
+	Type        string       `json:"type,omitempty" yaml:"type,omitempty"`
 	Created     string       `json:"created_at,omitempty" yaml:"created_at,omitempty"`
 	Updated     string       `json:"updated_at,omitempty" yaml:"updated_at,omitempty"`
 	Credentials *Credentials `json:"credentials,omitempty" yaml:"credentials,omitempty"`

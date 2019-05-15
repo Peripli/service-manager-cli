@@ -47,8 +47,10 @@ type Client interface {
 	ListVisibilitiesWithQuery(string, string) (*types.Visibilities, error)
 	ListVisibilities() (*types.Visibilities, error)
 	DeleteBroker(string) error
+	DeleteBrokersByFieldQuery(string) error
 	DeletePlatform(string) error
 	DeleteVisibility(string) error
+	DeletePlatformsByFieldQuery(string) error
 	UpdateBroker(string, *types.Broker) (*types.Broker, error)
 	UpdatePlatform(string, *types.Platform) (*types.Platform, error)
 	UpdateVisibility(string, *types.Visibility) (*types.Visibility, error)
@@ -252,23 +254,31 @@ func (client *serviceManagerClient) list(result interface{}, path string) error 
 	return httputil.UnmarshalResponse(resp, &result)
 }
 
+func (client *serviceManagerClient) DeleteBrokersByFieldQuery(query string) error {
+	return client.delete(web.ServiceBrokersURL + "?fieldQuery=" + query)
+}
+
 // DeleteBroker deletes a broker with given id from service manager
 func (client *serviceManagerClient) DeleteBroker(id string) error {
-	return client.delete(id, web.ServiceBrokersURL)
+	return client.delete(web.ServiceBrokersURL + "/" + id)
+}
+
+func (client *serviceManagerClient) DeletePlatformsByFieldQuery(query string) error {
+	return client.delete(web.PlatformsURL + "?fieldQuery=" + query)
 }
 
 // DeletePlatform deletes a platform with given id from service manager
 func (client *serviceManagerClient) DeletePlatform(id string) error {
-	return client.delete(id, web.PlatformsURL)
+	return client.delete(web.PlatformsURL + "/" + id)
 }
 
 // DeleteVisibility deletes a visibility with given id from service manager
 func (client *serviceManagerClient) DeleteVisibility(id string) error {
-	return client.delete(id, web.VisibilitiesURL)
+	return client.delete(web.VisibilitiesURL + "/" + id)
 }
 
-func (client *serviceManagerClient) delete(id, path string) error {
-	resp, err := client.Call(http.MethodDelete, path+"/"+id, nil)
+func (client *serviceManagerClient) delete(path string) error {
+	resp, err := client.Call(http.MethodDelete, path, nil)
 	if err != nil {
 		return err
 	}
