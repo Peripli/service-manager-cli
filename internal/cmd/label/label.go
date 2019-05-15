@@ -9,7 +9,6 @@ import (
 	"github.com/Peripli/service-manager/pkg/query"
 	"github.com/Peripli/service-manager/pkg/web"
 	"github.com/spf13/cobra"
-	"strings"
 )
 
 // Cmd wraps smctl label command
@@ -18,6 +17,7 @@ type Cmd struct {
 
 	resourcePath string
 	id           string
+	values       []string
 	labelChanges types.LabelChanges
 }
 
@@ -29,13 +29,15 @@ func NewLabelCmd(context *cmd.Context) *Cmd {
 // Prepare returns cobra command
 func (c *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
-		Use:   "label [resource] [id] [operation] [key=value1,value2,...]",
+		Use:   "label [resource] [id] [operation] [key] [--val value1 --val value2 ...]",
 		Short: "Label resource",
 		Long:  "Label resource",
 
 		PreRunE: prepare(c, c.Context),
 		RunE:    cmd.RunE(c),
 	}
+
+	result.Flags().StringArrayVar(&c.values, "val", []string{}, "Label value to be used")
 
 	return result
 }
@@ -56,7 +58,7 @@ func (c *Cmd) Validate(args []string) error {
 	}
 
 	if len(args) < 4 {
-		return fmt.Errorf("resource type, id, operation and value are required")
+		return fmt.Errorf("resource type, id, operation, key and values are required")
 	}
 
 	if len(args) > 4 {
@@ -77,10 +79,14 @@ func (c *Cmd) Validate(args []string) error {
 	} else {
 		return fmt.Errorf("unknown operation")
 	}
-	keyValueSeparatorIndex := strings.Index(args[3], "=")
-	labelChange.Key = args[3][:keyValueSeparatorIndex]
-	values := args[3][keyValueSeparatorIndex+1:]
-	labelChange.Values = strings.Split(values, ",")
+
+	labelChange.Key = args[3]
+
+	if len(c.values) < 1 {
+		return fmt.Errorf("at least one value is required")
+	}
+
+	labelChange.Values = c.values
 	c.labelChanges.LabelChanges = append(c.labelChanges.LabelChanges, labelChange)
 	return nil
 }

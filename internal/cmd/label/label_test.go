@@ -49,7 +49,7 @@ var _ = Describe("Label Command test", func() {
 	Describe("Valid Invocation", func() {
 		Context("with valid arguments provided", func() {
 			It("should label resource successfully", func() {
-				err := validLabelExecution("platform", "id", "add", "key=val1,val2,val3")
+				err := validLabelExecution("platform", "id", "add", "key", "--val", "val1", "--val", "val2", "--val", "val3")
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buffer.String()).To(ContainSubstring("Resource labeled successfully!"))
 			})
@@ -58,7 +58,7 @@ var _ = Describe("Label Command test", func() {
 				labelChanges = &types.LabelChanges{
 					LabelChanges: []*query.LabelChange{{Key: "key", Operation: "add_values", Values: []string{"val1", "val2", "val3"}}},
 				}
-				err := validLabelExecution("platform", "id", "add-values", "key=val1,val2,val3")
+				err := validLabelExecution("platform", "id", "add-values", "key", "--val", "val1","--val", "val2","--val", "val3")
 
 				Expect(err).ShouldNot(HaveOccurred())
 				resourcePath, id, changes := client.LabelArgsForCall(0)
@@ -74,7 +74,7 @@ var _ = Describe("Label Command test", func() {
 			It("should return error", func() {
 				err := invalidLabelExecution()
 				Expect(err).Should(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("resource type, id, operation and value are required"))
+				Expect(err.Error()).To(ContainSubstring("resource type, id, operation, key and values are required"))
 			})
 
 			It("should not call SM", func() {
@@ -87,13 +87,13 @@ var _ = Describe("Label Command test", func() {
 
 		Context("with more than 4 arguments", func() {
 			It("should return error", func() {
-				err := invalidLabelExecution("platform", "id", "add-values", "key=value", "redundant")
+				err := invalidLabelExecution("platform", "id", "add-values", "key", "--val", "value", "redundant")
 				Expect(err).Should(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("too much arguments, in case you have whitespaces in some of the arguments consider enclosig it with single quotes"))
 			})
 
 			It("should not call SM", func() {
-				err := invalidLabelExecution("platform", "id", "add-values", "key=value", "redundant")
+				err := invalidLabelExecution("platform", "id", "add-values", "key", "--val", "value", "redundant")
 				c := client.LabelCallCount()
 				Expect(err).Should(HaveOccurred())
 				Expect(c).To(Equal(0))
@@ -102,12 +102,12 @@ var _ = Describe("Label Command test", func() {
 
 		Context("with unknown resource provided", func() {
 			It("should return error", func() {
-				err := invalidLabelExecution("invalid resource", "id", "add", "key=val")
+				err := invalidLabelExecution("invalid resource", "id", "add", "key", "--val", "value")
 				Expect(err).Should(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("unknown resource"))
 			})
 			It("should not call SM", func() {
-				err := invalidLabelExecution("invalid resource", "id", "add", "key=val")
+				err := invalidLabelExecution("invalid resource", "id", "add", "key", "--val", "value")
 				c := client.LabelCallCount()
 				Expect(err).Should(HaveOccurred())
 				Expect(c).To(Equal(0))
@@ -116,12 +116,12 @@ var _ = Describe("Label Command test", func() {
 
 		Context("with unknown operation provided", func() {
 			It("should return error", func() {
-				err := invalidLabelExecution("platform", "id", "invalid", "key=val")
+				err := invalidLabelExecution("platform", "id", "invalid", "key", "--val", "value")
 				Expect(err).Should(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("unknown operation"))
 			})
 			It("should not call SM", func() {
-				err := invalidLabelExecution("platform", "id", "invalid", "key=val")
+				err := invalidLabelExecution("platform", "id", "invalid", "key", "--val", "value")
 				c := client.LabelCallCount()
 				Expect(err).Should(HaveOccurred())
 				Expect(c).To(Equal(0))
@@ -133,7 +133,7 @@ var _ = Describe("Label Command test", func() {
 				expectedErr := errors.New("http client error")
 				client.LabelReturns(expectedErr)
 
-				err := invalidLabelExecution("platform", "id", "add", "key=val")
+				err := invalidLabelExecution("platform", "id", "add", "key", "--val", "value")
 
 				Expect(err).To(MatchError(expectedErr))
 			})
@@ -143,7 +143,7 @@ var _ = Describe("Label Command test", func() {
 			It("should return error's description", func() {
 				description := "HTTP response error"
 				client.LabelReturns(resperrors.ResponseError{Description: description})
-				err := invalidLabelExecution("platform", "id", "add", "key=val")
+				err := invalidLabelExecution("platform", "id", "add", "key", "--val", "value")
 				Expect(err).To(MatchError(description))
 
 			})
