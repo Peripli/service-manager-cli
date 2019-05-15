@@ -46,9 +46,9 @@ func (b *Broker) IsEmpty() bool {
 // TableData returns the data to populate a table
 func (b *Broker) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"ID", "Name", "URL", "Description", "Created", "Updated"}
+	result.Headers = []string{"ID", "Name", "URL", "Description", "Created", "Updated", "Labels"}
 
-	row := []string{b.ID, b.Name, b.URL, b.Description, b.Created, b.Updated}
+	row := []string{b.ID, b.Name, b.URL, b.Description, b.Created, b.Updated, formatLabels(b.Labels)}
 	result.Data = append(result.Data, row)
 
 	return result
@@ -82,10 +82,10 @@ func (b *Brokers) Message() string {
 // TableData returns the data to populate a table
 func (b *Brokers) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"ID", "Name", "URL", "Description", "Created", "Updated"}
+	result.Headers = []string{"ID", "Name", "URL", "Description", "Created", "Updated", "Labels"}
 
 	for _, broker := range b.Brokers {
-		row := []string{broker.ID, broker.Name, broker.URL, broker.Description, broker.Created, broker.Updated}
+		row := []string{broker.ID, broker.Name, broker.URL, broker.Description, broker.Created, broker.Updated, formatLabels(broker.Labels)}
 		result.Data = append(result.Data, row)
 	}
 

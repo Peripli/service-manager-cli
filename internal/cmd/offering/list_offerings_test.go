@@ -168,10 +168,11 @@ var _ = Describe("List offerings command test", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1}}
 			client.ListOfferingsWithQueryReturns(result, nil)
 
-			executeWithArgs([]string{"-o", "json"})
+			err := executeWithArgs([]string{"-o", "json"})
 
 			jsonByte, _ := json.MarshalIndent(result, "", "  ")
 			jsonOutputExpected := string(jsonByte) + "\n"
+			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring(jsonOutputExpected))
 		})
 
@@ -179,10 +180,11 @@ var _ = Describe("List offerings command test", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1}}
 			client.ListOfferingsWithQueryReturns(result, nil)
 
-			executeWithArgs([]string{"-o", "yaml"})
+			err := executeWithArgs([]string{"-o", "yaml"})
 
 			yamlByte, _ := yaml.Marshal(result)
 			yamlOutputExpected := string(yamlByte) + "\n"
+			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring(yamlOutputExpected))
 		})
 
@@ -190,10 +192,11 @@ var _ = Describe("List offerings command test", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1}}
 			client.ListOfferingsWithQueryReturns(result, nil)
 
-			executeWithArgs([]string{"-s", "offering1", "-o", "json"})
+			err := executeWithArgs([]string{"-s", "offering1", "-o", "json"})
 
 			jsonByte, _ := json.MarshalIndent(&types.ServicePlans{ServicePlans: result.ServiceOfferings[0].Plans}, "", "  ")
 			jsonOutputExpected := string(jsonByte) + "\n"
+			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring(jsonOutputExpected))
 		})
 
@@ -201,10 +204,11 @@ var _ = Describe("List offerings command test", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1}}
 			client.ListOfferingsWithQueryReturns(result, nil)
 
-			executeWithArgs([]string{"-s", "offering1", "-o", "yaml"})
+			err := executeWithArgs([]string{"-s", "offering1", "-o", "yaml"})
 
 			yamlByte, _ := yaml.Marshal(&types.ServicePlans{ServicePlans: result.ServiceOfferings[0].Plans})
 			yamlOutputExpected := string(yamlByte) + "\n"
+			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring(yamlOutputExpected))
 		})
 

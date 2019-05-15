@@ -29,7 +29,7 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 )
 
-// DeletePlatformCmd wraps the smctl list-brokers command
+// DeletePlatformCmd wraps the smctl delete-platform command
 type DeletePlatformCmd struct {
 	*cmd.Context
 
@@ -39,7 +39,7 @@ type DeletePlatformCmd struct {
 	names []string
 }
 
-// NewDeletePlatformCmd returns new list-brokers command with context
+// NewDeletePlatformCmd returns new delete-platform command with context
 func NewDeletePlatformCmd(context *cmd.Context, input io.Reader) *DeletePlatformCmd {
 	return &DeletePlatformCmd{Context: context, input: input}
 }

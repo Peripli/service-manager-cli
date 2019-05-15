@@ -1,47 +1,46 @@
-package platform
+package visibility
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
-	"testing"
-
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	yaml "gopkg.in/yaml.v2"
-
-	"bytes"
-
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"gopkg.in/yaml.v2"
+	"testing"
 )
 
-func TestListPlatformsCmd(t *testing.T) {
+func TestListVisibilitiesCmd(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "")
 }
 
-var _ = Describe("List platforms command test", func() {
+var _ = Describe("List visibilities command test", func() {
 
 	var client *smclientfakes.FakeClient
-	var command *ListPlatformsCmd
+	var command *ListVisibilitiesCmd
 	var buffer *bytes.Buffer
-	platform := types.Platform{
-		Name: "platform1",
-		Type: "type1",
-		ID:   "id1",
+
+	visibility := types.Visibility{
+		ID:            "visibilityID",
+		PlatformID:    "platformID",
+		ServicePlanID: "planID",
 	}
-	platform2 := types.Platform{
-		Name: "platform2",
-		Type: "type2",
-		ID:   "id2",
+
+	visibility2 := types.Visibility{
+		ID:            "visibilityID2",
+		PlatformID:    "platformID2",
+		ServicePlanID: "planID2",
 	}
 
 	BeforeEach(func() {
 		buffer = &bytes.Buffer{}
 		client = &smclientfakes.FakeClient{}
 		context := &cmd.Context{Output: buffer, Client: client}
-		command = NewListPlatformsCmd(context)
+		command = NewListVisibilitiesCmd(context)
 	})
 
 	executeWithArgs := func(args []string) error {
@@ -51,29 +50,29 @@ var _ = Describe("List platforms command test", func() {
 		return commandToRun.Execute()
 	}
 
-	Context("when no platforms are registered", func() {
-		It("should list empty platforms", func() {
-			client.ListPlatformsWithQueryReturns(&types.Platforms{Platforms: []types.Platform{}}, nil)
+	Context("when no visibilities are registered", func() {
+		It("should list empty visibilities", func() {
+			client.ListVisibilitiesWithQueryReturns(&types.Visibilities{Visibilities: []types.Visibility{}}, nil)
 			err := executeWithArgs([]string{})
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buffer.String()).To(ContainSubstring("No platforms registered"))
+			Expect(buffer.String()).To(ContainSubstring("No visibilities registered"))
 		})
 	})
 
-	Context("when platforms are registered", func() {
-		It("should list 1 platform", func() {
-			result := &types.Platforms{Platforms: []types.Platform{platform}}
-			client.ListPlatformsWithQueryReturns(result, nil)
+	Context("when visibilities are registered", func() {
+		It("should list 1 visibility", func() {
+			result := &types.Visibilities{Visibilities: []types.Visibility{visibility}}
+			client.ListVisibilitiesWithQueryReturns(result, nil)
 			err := executeWithArgs([]string{})
 
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring(result.TableData().String()))
 		})
 
-		It("should list more platforms", func() {
-			result := &types.Platforms{Platforms: []types.Platform{platform, platform2}}
-			client.ListPlatformsWithQueryReturns(result, nil)
+		It("should list more visibilities", func() {
+			result := &types.Visibilities{Visibilities: []types.Visibility{visibility, visibility2}}
+			client.ListVisibilitiesWithQueryReturns(result, nil)
 			err := executeWithArgs([]string{})
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -84,24 +83,24 @@ var _ = Describe("List platforms command test", func() {
 
 	Context("when field query flag is used", func() {
 		It("should pass it to SM", func() {
-			result := &types.Platforms{Platforms: []types.Platform{platform}}
-			client.ListPlatformsWithQueryReturns(result, nil)
-			err := executeWithArgs([]string{"-f", "name = platform1"})
+			result := &types.Visibilities{Visibilities: []types.Visibility{visibility}}
+			client.ListVisibilitiesWithQueryReturns(result, nil)
+			err := executeWithArgs([]string{"-f", "planId = plan1"})
 
-			arg1, arg2 := client.ListPlatformsWithQueryArgsForCall(0)
+			arg1, arg2 := client.ListVisibilitiesWithQueryArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect([]string{arg1, arg2}).To(ConsistOf("name+%3D+platform1", ""))
+			Expect([]string{arg1, arg2}).To(ConsistOf("planId+%3D+plan1", ""))
 		})
 	})
 
 	Context("when label query flag is used", func() {
 		It("should pass it to SM", func() {
-			result := &types.Platforms{Platforms: []types.Platform{platform}}
-			client.ListPlatformsWithQueryReturns(result, nil)
+			result := &types.Visibilities{Visibilities: []types.Visibility{visibility}}
+			client.ListVisibilitiesWithQueryReturns(result, nil)
 			err := executeWithArgs([]string{"-l", "test = false"})
 
-			arg1, arg2 := client.ListPlatformsWithQueryArgsForCall(0)
+			arg1, arg2 := client.ListVisibilitiesWithQueryArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect([]string{arg1, arg2}).To(ConsistOf("", "test+%3D+false"))
@@ -110,8 +109,8 @@ var _ = Describe("List platforms command test", func() {
 
 	Context("when format flag is used", func() {
 		It("should print in json", func() {
-			result := &types.Platforms{Platforms: []types.Platform{platform}}
-			client.ListPlatformsWithQueryReturns(result, nil)
+			result := &types.Visibilities{Visibilities: []types.Visibility{visibility}}
+			client.ListVisibilitiesWithQueryReturns(result, nil)
 
 			err := executeWithArgs([]string{"-o", "json"})
 
@@ -122,8 +121,8 @@ var _ = Describe("List platforms command test", func() {
 		})
 
 		It("should print in yaml", func() {
-			result := &types.Platforms{Platforms: []types.Platform{platform}}
-			client.ListPlatformsWithQueryReturns(result, nil)
+			result := &types.Visibilities{Visibilities: []types.Visibility{visibility}}
+			client.ListVisibilitiesWithQueryReturns(result, nil)
 
 			err := executeWithArgs([]string{"-o", "yaml"})
 
@@ -152,7 +151,7 @@ var _ = Describe("List platforms command test", func() {
 	Context("when error is returned by Service manager", func() {
 		It("should handle error", func() {
 			expectedErr := errors.New("Http Client Error")
-			client.ListPlatformsWithQueryReturns(nil, expectedErr)
+			client.ListVisibilitiesWithQueryReturns(nil, expectedErr)
 			err := executeWithArgs([]string{})
 
 			Expect(err).Should(HaveOccurred())

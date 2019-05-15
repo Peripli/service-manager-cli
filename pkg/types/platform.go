@@ -47,8 +47,8 @@ func (p *Platform) IsEmpty() bool {
 func (p *Platform) TableData() *TableData {
 	result := &TableData{}
 
-	result.Headers = []string{"ID", "Name", "Type", "Description", "Created", "Updated"}
-	row := []string{p.ID, p.Name, p.Type, p.Description, p.Created, p.Updated}
+	result.Headers = []string{"ID", "Name", "Type", "Description", "Created", "Updated", "Labels"}
+	row := []string{p.ID, p.Name, p.Type, p.Description, p.Created, p.Updated, formatLabels(p.Labels)}
 
 	if p.Credentials != nil {
 		result.Headers = append(result.Headers, "Username", "Password")
@@ -88,10 +88,10 @@ func (p *Platforms) Message() string {
 // TableData returns the data to populate a table
 func (p *Platforms) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"ID", "Name", "Type", "Description", "Created", "Updated"}
+	result.Headers = []string{"ID", "Name", "Type", "Description", "Created", "Updated", "Labels"}
 
 	for _, platform := range p.Platforms {
-		row := []string{platform.ID, platform.Name, platform.Type, platform.Description, platform.Created, platform.Updated}
+		row := []string{platform.ID, platform.Name, platform.Type, platform.Description, platform.Created, platform.Updated, formatLabels(platform.Labels)}
 		result.Data = append(result.Data, row)
 	}
 

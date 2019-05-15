@@ -113,10 +113,11 @@ var _ = Describe("List brokers command test", func() {
 			result := &types.Brokers{Brokers: []types.Broker{broker}}
 			client.ListBrokersWithQueryReturns(result, nil)
 
-			executeWithArgs([]string{"-o", "json"})
+			err := executeWithArgs([]string{"-o", "json"})
 
 			jsonByte, _ := json.MarshalIndent(result, "", "  ")
 			jsonOutputExpected := string(jsonByte) + "\n"
+			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring(jsonOutputExpected))
 		})
 
@@ -124,10 +125,11 @@ var _ = Describe("List brokers command test", func() {
 			result := &types.Brokers{Brokers: []types.Broker{broker}}
 			client.ListBrokersWithQueryReturns(result, nil)
 
-			executeWithArgs([]string{"-o", "yaml"})
+			err := executeWithArgs([]string{"-o", "yaml"})
 
 			yamlByte, _ := yaml.Marshal(result)
 			yamlOutputExpected := string(yamlByte) + "\n"
+			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring(yamlOutputExpected))
 		})
 	})
