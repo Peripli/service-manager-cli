@@ -76,14 +76,25 @@ var _ = Describe("Delete brokers command test", func() {
 	})
 
 	Context("when non-existing brokers are being deleted", func() {
-		It("should return error message", func() {
+		It("should return message", func() {
 			expectedError := errors.ResponseError{StatusCode: http.StatusNotFound}
-			client.ListBrokersWithQueryReturns(&types.Brokers{}, nil)
 			client.DeleteBrokersByFieldQueryReturns(expectedError)
 			err := executeWithArgs([]string{"non-existing-name", "-f"})
 
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring("Service Broker(s) not found"))
+		})
+	})
+
+	Context("when SM returns error", func() {
+		It("should return error message", func() {
+			expectedError := errors.ResponseError{StatusCode: http.StatusInternalServerError}
+			client.DeleteBrokersByFieldQueryReturns(expectedError)
+			err := executeWithArgs([]string{"name", "-f"})
+
+			Expect(err).Should(HaveOccurred())
+			Expect(buffer.String()).To(ContainSubstring("Could not delete broker(s). Reason:"))
+
 		})
 	})
 

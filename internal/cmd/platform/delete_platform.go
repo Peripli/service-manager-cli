@@ -64,6 +64,7 @@ func (dpc *DeletePlatformCmd) Run() error {
 	if respErr, ok := err.(errors.ResponseError); ok && respErr.StatusCode == http.StatusNotFound{
 		output.PrintMessage(dpc.Output, "Platform(s) not found.\n")
 	} else if err != nil {
+		output.PrintMessage(dpc.Output, "Could not delete platform(s). Reason: ")
 		return err
 	}
 	output.PrintMessage(dpc.Output, "Platform(s) successfully deleted.\n")

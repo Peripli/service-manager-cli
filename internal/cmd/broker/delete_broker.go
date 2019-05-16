@@ -69,6 +69,7 @@ func (dbc *DeleteBrokerCmd) Run() error {
 	if respErr, ok := err.(errors.ResponseError); ok && respErr.StatusCode == http.StatusNotFound{
 		output.PrintMessage(dbc.Output, "Service Broker(s) not found.\n")
 	} else if err != nil {
+		output.PrintMessage(dbc.Output, "Could not delete broker(s). Reason: ")
 		return err
 	}
 	output.PrintMessage(dbc.Output, "Service Broker(s) successfully deleted.\n")
