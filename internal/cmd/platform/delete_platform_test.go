@@ -83,8 +83,8 @@ var _ = Describe("Delete platforms command test", func() {
 			client.DeletePlatformsByFieldQueryReturns(expectedError)
 			err := executeWithArgs([]string{"non-existing-name", "-f"})
 
-			Expect(err).Should(HaveOccurred())
-			Expect(buffer.String()).To(ContainSubstring("Could not delete platform(s)."))
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(buffer.String()).To(ContainSubstring("Platform(s) not found."))
 		})
 	})
 

@@ -82,8 +82,8 @@ var _ = Describe("Delete brokers command test", func() {
 			client.DeleteBrokersByFieldQueryReturns(expectedError)
 			err := executeWithArgs([]string{"non-existing-name", "-f"})
 
-			Expect(err).Should(HaveOccurred())
-			Expect(buffer.String()).To(ContainSubstring("Could not delete broker(s)."))
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(buffer.String()).To(ContainSubstring("Service Broker(s) not found"))
 		})
 	})
 
