@@ -19,7 +19,9 @@ package broker
 import (
 	"fmt"
 	"github.com/Peripli/service-manager-cli/internal/output"
+	"github.com/Peripli/service-manager-cli/pkg/errors"
 	"io"
+	"net/http"
 	"strings"
 
 	"github.com/Peripli/service-manager-cli/internal/util"
@@ -64,7 +66,9 @@ func (dbc *DeleteBrokerCmd) Validate(args []string) error {
 func (dbc *DeleteBrokerCmd) Run() error {
 	fieldQuery := util.GetResourceByNamesQuery(dbc.names)
 	err := dbc.Client.DeleteBrokersByFieldQuery(fieldQuery)
-	if err != nil {
+	if respErr, ok := err.(errors.ResponseError); ok && respErr.StatusCode == http.StatusNotFound{
+		output.PrintMessage(dbc.Output, "Service Broker(s) not found.\n")
+	} else if err != nil {
 		output.PrintMessage(dbc.Output, "Could not delete broker(s). Reason: ")
 		return err
 	}

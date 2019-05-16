@@ -77,14 +77,25 @@ var _ = Describe("Delete platforms command test", func() {
 	})
 
 	Context("when non-existing platform is being deleted", func() {
-		It("should return error message", func() {
+		It("should return message", func() {
 			expectedError := errors.ResponseError{StatusCode: http.StatusNotFound}
-			client.ListPlatformsWithQueryReturns(&types.Platforms{}, nil)
 			client.DeletePlatformsByFieldQueryReturns(expectedError)
 			err := executeWithArgs([]string{"non-existing-name", "-f"})
 
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(buffer.String()).To(ContainSubstring("Platform(s) not found."))
+		})
+	})
+
+	Context("when SM returns error", func() {
+		It("should return error message", func() {
+			expectedError := errors.ResponseError{StatusCode: http.StatusInternalServerError}
+			client.DeletePlatformsByFieldQueryReturns(expectedError)
+			err := executeWithArgs([]string{"name", "-f"})
+
 			Expect(err).Should(HaveOccurred())
-			Expect(buffer.String()).To(ContainSubstring("Could not delete platform(s)."))
+			Expect(buffer.String()).To(ContainSubstring("Could not delete platform(s). Reason:"))
+
 		})
 	})
 
