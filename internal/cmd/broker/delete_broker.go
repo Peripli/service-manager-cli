@@ -68,6 +68,7 @@ func (dbc *DeleteBrokerCmd) Run() error {
 	err := dbc.Client.DeleteBrokersByFieldQuery(fieldQuery)
 	if respErr, ok := err.(errors.ResponseError); ok && respErr.StatusCode == http.StatusNotFound{
 		output.PrintMessage(dbc.Output, "Service Broker(s) not found.\n")
+		return nil
 	} else if err != nil {
 		output.PrintMessage(dbc.Output, "Could not delete broker(s). Reason: ")
 		return err
