@@ -30,7 +30,7 @@ var _ = Describe("Update broker command test", func() {
 	BeforeEach(func() {
 		buffer = &bytes.Buffer{}
 		client = &smclientfakes.FakeClient{}
-		context := &cmd.Context{Output: buffer, Client: client}
+		context := &cmd.Context{Output: buffer, Client: client, Parameters: map[string]*[]string{}}
 		command = NewUpdateBrokerCmd(context)
 	})
 

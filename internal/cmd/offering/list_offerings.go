@@ -19,7 +19,6 @@ package offering
 import (
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
-	"github.com/Peripli/service-manager-cli/internal/util"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 	"github.com/spf13/cobra"
 )
@@ -31,9 +30,7 @@ type ListOfferingsCmd struct {
 	prepare      cmd.PrepareFunc
 	outputFormat output.Format
 
-	offering   string
-	fieldQuery []string
-	labelQuery []string
+	offering string
 }
 
 // NewListOfferingsCmd returns new list-offerings command with context
@@ -43,9 +40,7 @@ func NewListOfferingsCmd(context *cmd.Context) *ListOfferingsCmd {
 
 // Run runs the command's logic
 func (lo *ListOfferingsCmd) Run() error {
-	parsedFieldQuery := util.ParseQuery(lo.fieldQuery)
-	parsedLabelQuery := util.ParseQuery(lo.labelQuery)
-	offerings, err := lo.Client.ListOfferingsWithQuery(parsedFieldQuery, parsedLabelQuery)
+	offerings, err := lo.Client.ListOfferingsWithQuery(lo.Parameters.Copy())
 	if err != nil {
 		return err
 	}
@@ -88,7 +83,7 @@ func (lo *ListOfferingsCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 
 	cmd.AddFormatFlag(result.Flags())
 	result.Flags().StringVarP(&lo.offering, "service", "s", "", "Plan details for a single service offering")
-	cmd.AddQueryingFlags(result.Flags(), &lo.fieldQuery, &lo.labelQuery)
+	cmd.AddQueryingFlags(result.Flags(), lo.Parameters)
 
 	return result
 }

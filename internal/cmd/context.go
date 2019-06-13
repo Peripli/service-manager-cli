@@ -17,6 +17,7 @@
 package cmd
 
 import (
+	"github.com/Peripli/service-manager-cli/pkg/query"
 	"io"
 
 	"github.com/Peripli/service-manager-cli/internal/configuration"
@@ -33,4 +34,6 @@ type Context struct {
 	Verbose bool
 
 	Configuration configuration.Configuration
+
+	Parameters query.Parameters
 }

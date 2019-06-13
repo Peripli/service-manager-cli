@@ -7,6 +7,7 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
+	"github.com/Peripli/service-manager/pkg/query"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"gopkg.in/yaml.v2"
@@ -61,7 +62,7 @@ var _ = Describe("List offerings command test", func() {
 	BeforeEach(func() {
 		buffer = &bytes.Buffer{}
 		client = &smclientfakes.FakeClient{}
-		context := &cmd.Context{Output: buffer, Client: client}
+		context := &cmd.Context{Output: buffer, Client: client, Parameters: map[string]*[]string{}}
 		command = NewListOfferingsCmd(context)
 	})
 
@@ -141,12 +142,14 @@ var _ = Describe("List offerings command test", func() {
 		It("should pass it to SM", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1}}
 			client.ListOfferingsWithQueryReturns(result, nil)
-			err := executeWithArgs([]string{"-f", "name = offering1"})
+			param := "name = offering1"
+			err := executeWithArgs([]string{"-f", param})
 
-			arg1, arg2 := client.ListOfferingsWithQueryArgsForCall(0)
+			args := client.ListOfferingsWithQueryArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect([]string{arg1, arg2}).To(ConsistOf("name+%3D+offering1", ""))
+			Expect(args[string(query.FieldQuery)]).To(ConsistOf(param))
+			Expect(args[string(query.LabelQuery)]).To(BeEmpty())
 		})
 	})
 
@@ -154,12 +157,14 @@ var _ = Describe("List offerings command test", func() {
 		It("should pass it to SM", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1}}
 			client.ListOfferingsWithQueryReturns(result, nil)
-			err := executeWithArgs([]string{"-l", "test = false"})
+			param := "test = false"
+			err := executeWithArgs([]string{"-l", param})
 
-			arg1, arg2 := client.ListOfferingsWithQueryArgsForCall(0)
+			args := client.ListOfferingsWithQueryArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect([]string{arg1, arg2}).To(ConsistOf("", "test+%3D+false"))
+			Expect(args[string(query.LabelQuery)]).To(ConsistOf(param))
+			Expect(args[string(query.FieldQuery)]).To(BeEmpty())
 		})
 	})
 

@@ -137,7 +137,7 @@ func (lc *Cmd) Run() error {
 		lc.Client = smclient.NewClient(httpClient, lc.serviceManagerURL)
 	}
 
-	info, err := lc.Client.GetInfo()
+	info, err := lc.Client.GetInfo(lc.Parameters.Copy())
 	if err != nil {
 		return cliErr.New("Could not get Service Manager info", err)
 	}

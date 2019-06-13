@@ -19,7 +19,6 @@ package visibility
 import (
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
-	"github.com/Peripli/service-manager-cli/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -28,8 +27,6 @@ type ListVisibilitiesCmd struct {
 	*cmd.Context
 
 	outputFormat output.Format
-	fieldQuery   []string
-	labelQuery   []string
 }
 
 // NewListVisibilitiesCmd returns new list-visibilities command with context
@@ -39,9 +36,7 @@ func NewListVisibilitiesCmd(context *cmd.Context) *ListVisibilitiesCmd {
 
 //Run runs the command's logic
 func (lv *ListVisibilitiesCmd) Run() error {
-	parsedFieldQuery := util.ParseQuery(lv.fieldQuery)
-	parsedLabelQuery := util.ParseQuery(lv.labelQuery)
-	visibilities, err := lv.Client.ListVisibilitiesWithQuery(parsedFieldQuery, parsedLabelQuery)
+	visibilities, err := lv.Client.ListVisibilitiesWithQuery(lv.Parameters.Copy())
 	if err != nil {
 		return err
 	}
@@ -73,7 +68,7 @@ func (lv *ListVisibilitiesCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	}
 
 	cmd.AddFormatFlag(result.Flags())
-	cmd.AddQueryingFlags(result.Flags(), &lv.fieldQuery, &lv.labelQuery)
+	cmd.AddQueryingFlags(result.Flags(), lv.Parameters)
 
 	return result
 }

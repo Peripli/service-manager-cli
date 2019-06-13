@@ -3,11 +3,12 @@ package platform
 import (
 	"encoding/json"
 	"errors"
+	"github.com/Peripli/service-manager/pkg/query"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 
 	"bytes"
 
@@ -40,7 +41,7 @@ var _ = Describe("List platforms command test", func() {
 	BeforeEach(func() {
 		buffer = &bytes.Buffer{}
 		client = &smclientfakes.FakeClient{}
-		context := &cmd.Context{Output: buffer, Client: client}
+		context := &cmd.Context{Output: buffer, Client: client, Parameters: map[string]*[]string{}}
 		command = NewListPlatformsCmd(context)
 	})
 
@@ -86,12 +87,14 @@ var _ = Describe("List platforms command test", func() {
 		It("should pass it to SM", func() {
 			result := &types.Platforms{Platforms: []types.Platform{platform}}
 			client.ListPlatformsWithQueryReturns(result, nil)
-			err := executeWithArgs([]string{"-f", "name = platform1"})
+			param := "name = platform1"
+			err := executeWithArgs([]string{"-f", param})
 
-			arg1, arg2 := client.ListPlatformsWithQueryArgsForCall(0)
+			args := client.ListPlatformsWithQueryArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect([]string{arg1, arg2}).To(ConsistOf("name+%3D+platform1", ""))
+			Expect(args[string(query.FieldQuery)]).To(ConsistOf(param))
+			Expect(args[string(query.LabelQuery)]).To(BeEmpty())
 		})
 	})
 
@@ -99,12 +102,14 @@ var _ = Describe("List platforms command test", func() {
 		It("should pass it to SM", func() {
 			result := &types.Platforms{Platforms: []types.Platform{platform}}
 			client.ListPlatformsWithQueryReturns(result, nil)
-			err := executeWithArgs([]string{"-l", "test = false"})
+			param := "test = false"
+			err := executeWithArgs([]string{"-l", param})
 
-			arg1, arg2 := client.ListPlatformsWithQueryArgsForCall(0)
+			args := client.ListPlatformsWithQueryArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect([]string{arg1, arg2}).To(ConsistOf("", "test+%3D+false"))
+			Expect(args[string(query.LabelQuery)]).To(ConsistOf(param))
+			Expect(args[string(query.FieldQuery)]).To(BeEmpty())
 		})
 	})
 

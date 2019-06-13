@@ -20,6 +20,8 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"github.com/Peripli/service-manager-cli/pkg/query"
+	smquery "github.com/Peripli/service-manager/pkg/query"
 	"io"
 	"strings"
 
@@ -174,9 +176,16 @@ func AddFormatFlagDefault(flags *pflag.FlagSet, defValue string) {
 }
 
 // AddQueryingFlags adds --field-query (-f) and --label-query (-l) flags
-func AddQueryingFlags(flags *pflag.FlagSet, fieldQuery *[]string, labelQuery *[]string) {
+func AddQueryingFlags(flags *pflag.FlagSet, parameters query.Parameters) {
+	fieldQuery := parameters.Get(string(smquery.FieldQuery))
+	labelQuery := parameters.Get(string(smquery.LabelQuery))
 	flags.StringArrayVarP(fieldQuery, "field-query", "f", []string{}, "Filtering based on field querying")
 	flags.StringArrayVarP(labelQuery, "label-query", "l", []string{}, "Filtering based on label querying")
+}
+
+func AddCommonQueryFlag(flags *pflag.FlagSet, parameters query.Parameters) {
+	param := parameters.Get(query.GeneralParameter)
+	flags.StringArrayVarP(param, "param", "", []string{}, "Additional query parameters")
 }
 
 //CommonConfirmationPrompt provides common logic for confirmation of an operation

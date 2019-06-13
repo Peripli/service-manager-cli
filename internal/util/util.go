@@ -76,11 +76,3 @@ func BuildHTTPClient(sslDisabled bool) *http.Client {
 
 	return client
 }
-
-//ParseQuery url encodes queries
-func ParseQuery(query []string) string {
-	for i := range query {
-		query[i] = url.QueryEscape(query[i])
-	}
-	return strings.Join(query, "|")
-}

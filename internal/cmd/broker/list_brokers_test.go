@@ -3,6 +3,7 @@ package broker
 import (
 	"encoding/json"
 	"errors"
+	"github.com/Peripli/service-manager/pkg/query"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -40,7 +41,7 @@ var _ = Describe("List brokers command test", func() {
 	BeforeEach(func() {
 		buffer = &bytes.Buffer{}
 		client = &smclientfakes.FakeClient{}
-		context := &cmd.Context{Output: buffer, Client: client}
+		context := &cmd.Context{Output: buffer, Client: client, Parameters: map[string]*[]string{}}
 		command = NewListBrokersCmd(context)
 	})
 
@@ -86,12 +87,14 @@ var _ = Describe("List brokers command test", func() {
 		It("should pass it to SM", func() {
 			result := &types.Brokers{Brokers: []types.Broker{broker}}
 			client.ListBrokersWithQueryReturns(result, nil)
-			err := executeWithArgs([]string{"-f", "name = broker1"})
+			param := "name = broker1"
+			err := executeWithArgs([]string{"-f", param})
 
-			arg1, arg2 := client.ListBrokersWithQueryArgsForCall(0)
+			args := client.ListBrokersWithQueryArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect([]string{arg1, arg2}).To(ConsistOf("name+%3D+broker1", ""))
+			Expect(args[string(query.FieldQuery)]).To(ConsistOf(param))
+			Expect(args[string(query.LabelQuery)]).To(BeEmpty())
 		})
 	})
 
@@ -99,12 +102,14 @@ var _ = Describe("List brokers command test", func() {
 		It("should pass it to SM", func() {
 			result := &types.Brokers{Brokers: []types.Broker{broker}}
 			client.ListBrokersWithQueryReturns(result, nil)
-			err := executeWithArgs([]string{"-l", "test = false"})
+			param := "test = false"
+			err := executeWithArgs([]string{"-l", param})
 
-			arg1, arg2 := client.ListBrokersWithQueryArgsForCall(0)
+			args := client.ListBrokersWithQueryArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect([]string{arg1, arg2}).To(ConsistOf("", "test+%3D+false"))
+			Expect(args[string(query.LabelQuery)]).To(ConsistOf(param))
+			Expect(args[string(query.FieldQuery)]).To(BeEmpty())
 		})
 	})
 

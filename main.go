@@ -29,6 +29,7 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/cmd/visibility"
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
+	"github.com/Peripli/service-manager-cli/pkg/query"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
@@ -42,7 +43,8 @@ func oidcAuthBuilder(options *auth.Options) (auth.Authenticator, *auth.Options, 
 func main() {
 	clientVersion := "0.0.1"
 
-	context := &cmd.Context{}
+	parameters := query.Parameters{}
+	context := &cmd.Context{Parameters: parameters}
 	rootCmd := cmd.BuildRootCommand(context)
 	fs := afero.NewOsFs()
 
@@ -76,15 +78,16 @@ func main() {
 		PrepareFn: cmd.SmPrepare,
 	}
 
-	registerGroups(rootCmd, normalCommandsGroup, smCommandsGroup)
+	registerGroups(parameters, rootCmd, normalCommandsGroup, smCommandsGroup)
 
 	cmd.Execute(rootCmd)
 }
 
-func registerGroups(rootCmd *cobra.Command, groups ...cmd.Group) {
+func registerGroups(parameters query.Parameters, rootCmd *cobra.Command, groups ...cmd.Group) {
 	for _, group := range groups {
 		for _, command := range group.Commands {
 			cobraCmd := command.Prepare(group.PrepareFn)
+			cmd.AddCommonQueryFlag(cobraCmd.Flags(), parameters)
 			rootCmd.AddCommand(cobraCmd)
 		}
 	}
