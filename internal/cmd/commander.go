@@ -183,6 +183,7 @@ func AddQueryingFlags(flags *pflag.FlagSet, parameters query.Parameters) {
 	flags.StringArrayVarP(labelQuery, "label-query", "l", []string{}, "Filtering based on label querying")
 }
 
+// AddCommonQueryFlag adds the CLI param that provides general query parameters
 func AddCommonQueryFlag(flags *pflag.FlagSet, parameters query.Parameters) {
 	param := parameters.Get(query.GeneralParameter)
 	flags.StringArrayVarP(param, "param", "", []string{}, "Additional query parameters")

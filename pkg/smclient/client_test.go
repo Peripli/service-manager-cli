@@ -152,7 +152,7 @@ var _ = Describe("Service Manager Client test", func() {
 					{Method: http.MethodGet, Path: web.InfoURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
-			FIt("should make request with these parameters", func() {
+			It("should make request with these parameters", func() {
 				param := cliquery.Parameters{}
 				param.Add(cliquery.GeneralParameter, "key=val")
 				info, err := client.GetInfo(param.Copy())

@@ -409,9 +409,9 @@ func buildQueryPath(baseURL string, queryParams map[string][]string) string {
 	builder.WriteRune('?')
 	if generalParameters, exists := queryParams[query.GeneralParameter]; exists {
 		for _, param := range generalParameters {
-			builder.WriteString(param)
+			split := strings.Split(param, "=") // cover case where user provides fieldQuery or labelQuery as param
+			queryParams[split[0]] = append(queryParams[split[0]], strings.Join(split[1:], "="))
 		}
-		builder.WriteRune('&')
 	}
 	for k, v := range queryParams {
 		if len(v) == 0 || k == query.GeneralParameter {
