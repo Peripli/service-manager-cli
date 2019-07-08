@@ -26,13 +26,17 @@ import (
 // Cmd wraps the smctl version command
 type Cmd struct {
 	*cmd.Context
-
-	clientVersion string
 }
 
-// NewVersionCmd returns new version command with context and client version
-func NewVersionCmd(context *cmd.Context, clientVersion string) *Cmd {
-	return &Cmd{context, clientVersion}
+// Version is the tool version, injected by the build
+var Version = "local.build"
+
+// GitCommit is the git commit id, injected by the build
+var GitCommit string
+
+// NewVersionCmd returns new version command
+func NewVersionCmd(context *cmd.Context) *Cmd {
+	return &Cmd{context}
 }
 
 // Prepare returns cobra command
@@ -52,7 +56,7 @@ func (vc *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 
 // Run runs command's logic
 func (vc *Cmd) Run() error {
-	output.PrintMessage(vc.Output, "Service Manager Client %s\n", vc.clientVersion)
+	output.PrintMessage(vc.Output, "Service Manager Client %s (%s)\n", Version, GitCommit)
 
 	return nil
 }
