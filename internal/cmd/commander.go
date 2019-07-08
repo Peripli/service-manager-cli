@@ -17,8 +17,10 @@
 package cmd
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -64,6 +66,14 @@ type FormattedCommand interface {
 	SetOutputFormat(output.Format)
 }
 
+//ConfirmedCommand should be implemented if the command should ask for user confirmation prior execution
+type ConfirmedCommand interface {
+	// AskForConfirmation asks user to confirm the execution of desired operation
+	AskForConfirmation() (bool, error)
+	// PrintDeclineMessage prints message to the user if the confirmation is declined
+	PrintDeclineMessage()
+}
+
 // PrepareFunc is function type which executes common prepare logic for commands
 type PrepareFunc func(cmd Command, ctx *Context) func(*cobra.Command, []string) error
 
@@ -75,35 +85,36 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 		}
 
 		if ctx.Client == nil {
-			clientConfig, err := ctx.Configuration.Load()
+			settings, err := ctx.Configuration.Load()
 			if err != nil {
 				return fmt.Errorf("no logged user. Use \"smctl login\" to log in. Reason: %s", err)
 			}
 
 			oidcClient := oidc.NewClient(&auth.Options{
-				AuthorizationEndpoint: clientConfig.AuthorizationEndpoint,
-				TokenEndpoint:         clientConfig.TokenEndpoint,
-				ClientID:              clientConfig.ClientID,
-				ClientSecret:          clientConfig.ClientSecret,
-				IssuerURL:             clientConfig.IssuerURL,
-				SSLDisabled:           clientConfig.SSLDisabled,
-			}, &clientConfig.Token)
+				AuthorizationEndpoint: settings.AuthorizationEndpoint,
+				TokenEndpoint:         settings.TokenEndpoint,
+				ClientID:              settings.ClientID,
+				ClientSecret:          settings.ClientSecret,
+				IssuerURL:             settings.IssuerURL,
+				SSLDisabled:           settings.SSLDisabled,
+				TokenBasicAuth:        settings.TokenBasicAuth,
+			}, &settings.Token)
 
 			refresher, isRefresher := oidcClient.(auth.Refresher)
 			if isRefresher {
 				token, err := refresher.Token()
 				if err != nil {
-					return fmt.Errorf("Error refreshing token. Reason: %s", err)
+					return fmt.Errorf("error refreshing token. Reason: %s", err)
 				}
-				if clientConfig.AccessToken != token.AccessToken {
-					clientConfig.Token = *token
-					if saveErr := ctx.Configuration.Save(clientConfig); saveErr != nil {
-						return fmt.Errorf("Error saving config file. Reason: %s", saveErr)
+				if settings.AccessToken != token.AccessToken {
+					settings.Token = *token
+					if saveErr := ctx.Configuration.Save(settings); saveErr != nil {
+						return fmt.Errorf("error saving config file. Reason: %s", saveErr)
 					}
 				}
 			}
 
-			ctx.Client = smclient.NewClient(oidcClient, clientConfig)
+			ctx.Client = smclient.NewClient(oidcClient, settings.URL)
 		}
 
 		return nil
@@ -138,13 +149,63 @@ func CommonPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) err
 // RunE provides common run logic for SM commands
 func RunE(cmd Command) func(*cobra.Command, []string) error {
 	return func(c *cobra.Command, args []string) error {
+		if confirmedCmd, ok := cmd.(ConfirmedCommand); ok {
+			confirmed, err := confirmedCmd.AskForConfirmation()
+			if err != nil {
+				return err
+			}
+			if !confirmed {
+				confirmedCmd.PrintDeclineMessage()
+				return nil
+			}
+		}
 		return cmd.Run()
 	}
 }
 
-// AddFormatFlag adds the --format (-f) flag.
+// AddFormatFlag adds the --output (-o) flag.
 func AddFormatFlag(flags *pflag.FlagSet) {
 	flags.StringP("output", "o", "", "output format")
+}
+
+// AddFormatFlagDefault is same as AddFormatFlag but allows to set default value.
+func AddFormatFlagDefault(flags *pflag.FlagSet, defValue string) {
+	flags.StringP("output", "o", defValue, "output format")
+}
+
+// AddQueryingFlags adds --field-query (-f) and --label-query (-l) flags
+func AddQueryingFlags(flags *pflag.FlagSet, fieldQuery *[]string, labelQuery *[]string) {
+	flags.StringArrayVarP(fieldQuery, "field-query", "f", []string{}, "Filtering based on field querying")
+	flags.StringArrayVarP(labelQuery, "label-query", "l", []string{}, "Filtering based on label querying")
+}
+
+//CommonConfirmationPrompt provides common logic for confirmation of an operation
+func CommonConfirmationPrompt(message string, ctx *Context, input io.Reader) (bool, error) {
+	output.PrintMessage(ctx.Output, message)
+
+	positiveResponses := map[string]bool{
+		"y":   true,
+		"Y":   true,
+		"yes": true,
+		"Yes": true,
+		"YES": true,
+	}
+
+	bufReader := bufio.NewReader(input)
+	resp, isPrefix, err := bufReader.ReadLine()
+	if isPrefix {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return positiveResponses[string(resp)], nil
+
+}
+
+//CommonPrintDeclineMessage provides common confirmation declined message
+func CommonPrintDeclineMessage(wr io.Writer) {
+	output.PrintMessage(wr, "Delete declined")
 }
 
 func getOutputFormat(flags *pflag.FlagSet) (output.Format, error) {

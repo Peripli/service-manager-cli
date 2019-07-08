@@ -19,24 +19,30 @@ package main
 import (
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/cmd/broker"
+	"github.com/Peripli/service-manager-cli/internal/cmd/curl"
 	"github.com/Peripli/service-manager-cli/internal/cmd/info"
+	"github.com/Peripli/service-manager-cli/internal/cmd/label"
 	"github.com/Peripli/service-manager-cli/internal/cmd/login"
+	"github.com/Peripli/service-manager-cli/internal/cmd/offering"
 	"github.com/Peripli/service-manager-cli/internal/cmd/platform"
 	"github.com/Peripli/service-manager-cli/internal/cmd/version"
+	"github.com/Peripli/service-manager-cli/internal/cmd/visibility"
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
 	"os"
 )
 
-func oidcAuthBuilder(options *auth.Options) (auth.AuthenticationStrategy, *auth.Options, error) {
+func oidcAuthBuilder(options *auth.Options) (auth.Authenticator, *auth.Options, error) {
 	return oidc.NewOpenIDStrategy(options)
 }
 
 func main() {
 	context := &cmd.Context{}
 	rootCmd := cmd.BuildRootCommand(context)
+	fs := afero.NewOsFs()
 
 	normalCommandsGroup := cmd.Group{
 		Commands: []cmd.CommandPreparator{
@@ -49,14 +55,21 @@ func main() {
 
 	smCommandsGroup := cmd.Group{
 		Commands: []cmd.CommandPreparator{
+			curl.NewCurlCmd(context, fs),
 			broker.NewRegisterBrokerCmd(context),
 			broker.NewListBrokersCmd(context),
-			broker.NewDeleteBrokerCmd(context),
+			broker.NewDeleteBrokerCmd(context, os.Stdin),
 			broker.NewUpdateBrokerCmd(context),
 			platform.NewRegisterPlatformCmd(context),
 			platform.NewListPlatformsCmd(context),
-			platform.NewDeletePlatformCmd(context),
+			platform.NewDeletePlatformCmd(context, os.Stdin),
 			platform.NewUpdatePlatformCmd(context),
+			visibility.NewRegisterVisibilityCmd(context),
+			visibility.NewListVisibilitiesCmd(context),
+			visibility.NewUpdateVisibilityCmd(context),
+			visibility.NewDeleteVisibilityCmd(context, os.Stdin),
+			offering.NewListOfferingsCmd(context),
+			label.NewLabelCmd(context),
 		},
 		PrepareFn: cmd.SmPrepare,
 	}

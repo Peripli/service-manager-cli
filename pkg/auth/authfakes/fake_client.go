@@ -2,10 +2,10 @@
 package authfakes
 
 import (
-	"net/http"
-	"sync"
+	http "net/http"
+	sync "sync"
 
-	"github.com/Peripli/service-manager-cli/pkg/auth"
+	auth "github.com/Peripli/service-manager-cli/pkg/auth"
 )
 
 type FakeClient struct {
@@ -40,7 +40,8 @@ func (fake *FakeClient) Do(arg1 *http.Request) (*http.Response, error) {
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.doReturns.result1, fake.doReturns.result2
+	fakeReturns := fake.doReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *FakeClient) DoCallCount() int {
@@ -49,13 +50,22 @@ func (fake *FakeClient) DoCallCount() int {
 	return len(fake.doArgsForCall)
 }
 
+func (fake *FakeClient) DoCalls(stub func(*http.Request) (*http.Response, error)) {
+	fake.doMutex.Lock()
+	defer fake.doMutex.Unlock()
+	fake.DoStub = stub
+}
+
 func (fake *FakeClient) DoArgsForCall(i int) *http.Request {
 	fake.doMutex.RLock()
 	defer fake.doMutex.RUnlock()
-	return fake.doArgsForCall[i].arg1
+	argsForCall := fake.doArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *FakeClient) DoReturns(result1 *http.Response, result2 error) {
+	fake.doMutex.Lock()
+	defer fake.doMutex.Unlock()
 	fake.DoStub = nil
 	fake.doReturns = struct {
 		result1 *http.Response
@@ -64,6 +74,8 @@ func (fake *FakeClient) DoReturns(result1 *http.Response, result2 error) {
 }
 
 func (fake *FakeClient) DoReturnsOnCall(i int, result1 *http.Response, result2 error) {
+	fake.doMutex.Lock()
+	defer fake.doMutex.Unlock()
 	fake.DoStub = nil
 	if fake.doReturnsOnCall == nil {
 		fake.doReturnsOnCall = make(map[int]struct {

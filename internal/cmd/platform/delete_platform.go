@@ -18,6 +18,11 @@ package platform
 
 import (
 	"fmt"
+	"io"
+	"net/http"
+	"strings"
+
+	"github.com/Peripli/service-manager-cli/pkg/errors"
 
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/internal/util"
@@ -27,16 +32,19 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 )
 
-// DeletePlatformCmd wraps the smctl list-brokers command
+// DeletePlatformCmd wraps the smctl delete-platform command
 type DeletePlatformCmd struct {
 	*cmd.Context
+
+	input io.Reader
+	force bool
 
 	names []string
 }
 
-// NewDeletePlatformCmd returns new list-brokers command with context
-func NewDeletePlatformCmd(context *cmd.Context) *DeletePlatformCmd {
-	return &DeletePlatformCmd{Context: context}
+// NewDeletePlatformCmd returns new delete-platform command with context
+func NewDeletePlatformCmd(context *cmd.Context, input io.Reader) *DeletePlatformCmd {
+	return &DeletePlatformCmd{Context: context, input: input}
 }
 
 // Validate validates command's arguments
@@ -52,41 +60,36 @@ func (dpc *DeletePlatformCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (dpc *DeletePlatformCmd) Run() error {
-	allPlatforms, err := dpc.Client.ListPlatforms()
-	if err != nil {
+	fieldQuery := util.GetResourceByNamesQuery(dpc.names)
+	err := dpc.Client.DeletePlatformsByFieldQuery(fieldQuery)
+	if respErr, ok := err.(errors.ResponseError); ok && respErr.StatusCode == http.StatusNotFound {
+		output.PrintMessage(dpc.Output, "Platform(s) not found.\n")
+		return nil
+	} else if err != nil {
+		output.PrintMessage(dpc.Output, "Could not delete platform(s). Reason: ")
 		return err
 	}
-
-	toDeletePlatforms := util.GetPlatformsByName(allPlatforms, dpc.names)
-	if len(toDeletePlatforms) < 1 {
-		output.PrintMessage(dpc.Output, "Platform(s) not found\n")
-		return nil
-	}
-
-	deletedPlatforms := make(map[string]bool)
-
-	for _, toDelete := range toDeletePlatforms {
-		err := dpc.Client.DeletePlatform(toDelete.ID)
-		if err != nil {
-			output.PrintMessage(dpc.Output, "Could not delete platform %s: %v\n", toDelete.Name, err)
-		} else {
-			output.PrintMessage(dpc.Output, "Platform with name: %s successfully deleted\n", toDelete.Name)
-			deletedPlatforms[toDelete.Name] = true
-		}
-	}
-
-	for _, platformName := range dpc.names {
-		if _, deleted := deletedPlatforms[platformName]; !deleted {
-			output.PrintError(dpc.Output, fmt.Errorf("Platform with name: %s was not found", platformName))
-		}
-	}
-
+	output.PrintMessage(dpc.Output, "Platform(s) successfully deleted.\n")
 	return nil
 }
 
 // HideUsage hide command's usage
 func (dpc *DeletePlatformCmd) HideUsage() bool {
 	return true
+}
+
+// AskForConfirmation asks the user to confirm deletion
+func (dpc *DeletePlatformCmd) AskForConfirmation() (bool, error) {
+	if !dpc.force {
+		message := fmt.Sprintf("Do you really want to delete platforms with names [%s] (Y/n): ", strings.Join(dpc.names, ", "))
+		return cmd.CommonConfirmationPrompt(message, dpc.Context, dpc.input)
+	}
+	return true, nil
+}
+
+// PrintDeclineMessage prints confirmation decline message to the user
+func (dpc *DeletePlatformCmd) PrintDeclineMessage() {
+	cmd.CommonPrintDeclineMessage(dpc.Output)
 }
 
 // Prepare returns cobra command
@@ -99,6 +102,8 @@ func (dpc *DeletePlatformCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		PreRunE: prepare(dpc, dpc.Context),
 		RunE:    cmd.RunE(dpc),
 	}
+
+	result.Flags().BoolVarP(&dpc.force, "force", "f", false, "Force delete without confirmation")
 
 	return result
 }

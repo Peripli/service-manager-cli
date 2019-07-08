@@ -10,8 +10,8 @@ import (
 	"testing"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
+	"github.com/Peripli/service-manager-cli/internal/configuration"
 	"github.com/Peripli/service-manager-cli/internal/configuration/configurationfakes"
-	"github.com/Peripli/service-manager-cli/pkg/smclient"
 )
 
 func TestInfoCmd(t *testing.T) {
@@ -25,7 +25,7 @@ var _ = Describe("Login Command test", func() {
 	var buffer *bytes.Buffer
 	var config *configurationfakes.FakeConfiguration
 
-	clientConfig := smclient.ClientConfig{URL: "http://test-url.com", User: "test-user"}
+	settings := &configuration.Settings{URL: "http://test-url.com", User: "test-user"}
 
 	BeforeEach(func() {
 		buffer = &bytes.Buffer{}
@@ -49,13 +49,13 @@ var _ = Describe("Login Command test", func() {
 
 		Context("With logged user", func() {
 			It("should print URL and logged user", func() {
-				config.LoadReturns(&clientConfig, nil)
+				config.LoadReturns(settings, nil)
 
 				ic := command.Prepare(cmd.CommonPrepare)
 				err := ic.Execute()
 
-				Expect(buffer.String()).To(ContainSubstring(fmt.Sprintf("Service Manager URL: %s\n", clientConfig.URL)))
-				Expect(buffer.String()).To(ContainSubstring(fmt.Sprintf("Logged user: %s\n", clientConfig.User)))
+				Expect(buffer.String()).To(ContainSubstring(fmt.Sprintf("Service Manager URL: %s\n", settings.URL)))
+				Expect(buffer.String()).To(ContainSubstring(fmt.Sprintf("Logged user: %s\n", settings.User)))
 				Expect(err).ShouldNot(HaveOccurred())
 			})
 		})

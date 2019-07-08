@@ -17,17 +17,54 @@
 package configuration
 
 import (
+	"errors"
 	"time"
 
-	"github.com/Peripli/service-manager-cli/pkg/smclient"
+	"github.com/Peripli/service-manager-cli/internal/util"
+	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/spf13/viper"
 )
 
+// Settings contains the information that will be saved/loaded in the CLI config file
+type Settings struct {
+	auth.Token
+
+	ClientID              string
+	ClientSecret          string
+	AuthorizationEndpoint string
+	TokenEndpoint         string
+	IssuerURL             string
+
+	URL            string
+	User           string
+	TokenBasicAuth bool
+	SSLDisabled    bool
+}
+
+// Validate validates client config
+func (settings Settings) Validate() error {
+	if err := util.ValidateURL(settings.URL); err != nil {
+		return err
+	}
+	if settings.User == "" {
+		return errors.New("user must not be empty")
+	}
+	if settings.AccessToken == "" {
+		return errors.New("token must not be empty")
+	}
+	return nil
+}
+
+// GetToken returns the oauth token from the client configuration
+func (settings Settings) GetToken() auth.Token {
+	return settings.Token
+}
+
 // Configuration should be implemented for load and save of SM client config
-// go:generate counterfeiter . Configuration
+//go:generate counterfeiter . Configuration
 type Configuration interface {
-	Save(*smclient.ClientConfig) error
-	Load() (*smclient.ClientConfig, error)
+	Save(*Settings) error
+	Load() (*Settings, error)
 }
 
 type smConfiguration struct {
@@ -48,54 +85,57 @@ func NewSMConfiguration(viperEnv *viper.Viper, cfgFile string) (Configuration, e
 	}
 
 	viperEnv.SetConfigFile(cfgFile)
+	viperEnv.SetDefault("token_basic_auth", true) // RFC 6749 section 2.3.1
 
 	return &smConfiguration{viperEnv}, nil
 }
 
 // Save implements configuration save
-func (smCfg *smConfiguration) Save(clientCfg *smclient.ClientConfig) error {
-	smCfg.viperEnv.Set("url", clientCfg.URL)
-	smCfg.viperEnv.Set("user", clientCfg.User)
-	smCfg.viperEnv.Set("ssl_disabled", clientCfg.SSLDisabled)
+func (smCfg *smConfiguration) Save(settings *Settings) error {
+	smCfg.viperEnv.Set("url", settings.URL)
+	smCfg.viperEnv.Set("user", settings.User)
+	smCfg.viperEnv.Set("ssl_disabled", settings.SSLDisabled)
+	smCfg.viperEnv.Set("token_basic_auth", settings.TokenBasicAuth)
 
-	smCfg.viperEnv.Set("access_token", clientCfg.AccessToken)
-	smCfg.viperEnv.Set("refresh_token", clientCfg.RefreshToken)
-	smCfg.viperEnv.Set("expiry", clientCfg.ExpiresIn.Format(time.RFC1123Z))
+	smCfg.viperEnv.Set("access_token", settings.AccessToken)
+	smCfg.viperEnv.Set("refresh_token", settings.RefreshToken)
+	smCfg.viperEnv.Set("expiry", settings.ExpiresIn.Format(time.RFC1123Z))
 
-	smCfg.viperEnv.Set("client_id", clientCfg.ClientID)
-	smCfg.viperEnv.Set("client_secret", clientCfg.ClientSecret)
-	smCfg.viperEnv.Set("issuer_url", clientCfg.IssuerURL)
-	smCfg.viperEnv.Set("token_url", clientCfg.TokenEndpoint)
-	smCfg.viperEnv.Set("auth_url", clientCfg.AuthorizationEndpoint)
+	smCfg.viperEnv.Set("client_id", settings.ClientID)
+	smCfg.viperEnv.Set("client_secret", settings.ClientSecret)
+	smCfg.viperEnv.Set("issuer_url", settings.IssuerURL)
+	smCfg.viperEnv.Set("token_url", settings.TokenEndpoint)
+	smCfg.viperEnv.Set("auth_url", settings.AuthorizationEndpoint)
 
 	return smCfg.viperEnv.WriteConfig()
 }
 
 // Load implements configuration load
-func (smCfg *smConfiguration) Load() (*smclient.ClientConfig, error) {
+func (smCfg *smConfiguration) Load() (*Settings, error) {
 	if err := smCfg.viperEnv.ReadInConfig(); err != nil {
 		return nil, err
 	}
 
-	clientConfig := &smclient.ClientConfig{}
+	settings := &Settings{}
 
-	if err := smCfg.viperEnv.Unmarshal(&clientConfig); err != nil {
+	if err := smCfg.viperEnv.Unmarshal(&settings); err != nil {
 		return nil, err
 	}
 
-	clientConfig.SSLDisabled = smCfg.viperEnv.Get("ssl_disabled").(bool)
-	clientConfig.AccessToken = smCfg.viperEnv.Get("access_token").(string)
-	clientConfig.RefreshToken = smCfg.viperEnv.Get("refresh_token").(string)
-	clientConfig.ExpiresIn, _ = time.Parse(time.RFC1123Z, smCfg.viperEnv.Get("expiry").(string))
-	clientConfig.TokenEndpoint = smCfg.viperEnv.Get("token_url").(string)
-	clientConfig.AuthorizationEndpoint = smCfg.viperEnv.Get("auth_url").(string)
-	clientConfig.IssuerURL = smCfg.viperEnv.Get("issuer_url").(string)
-	clientConfig.ClientID = smCfg.viperEnv.Get("client_id").(string)
-	clientConfig.ClientSecret = smCfg.viperEnv.Get("client_secret").(string)
+	settings.SSLDisabled = smCfg.viperEnv.Get("ssl_disabled").(bool)
+	settings.TokenBasicAuth = smCfg.viperEnv.Get("token_basic_auth").(bool)
+	settings.AccessToken = smCfg.viperEnv.Get("access_token").(string)
+	settings.RefreshToken = smCfg.viperEnv.Get("refresh_token").(string)
+	settings.ExpiresIn, _ = time.Parse(time.RFC1123Z, smCfg.viperEnv.Get("expiry").(string))
+	settings.TokenEndpoint = smCfg.viperEnv.Get("token_url").(string)
+	settings.AuthorizationEndpoint = smCfg.viperEnv.Get("auth_url").(string)
+	settings.IssuerURL = smCfg.viperEnv.Get("issuer_url").(string)
+	settings.ClientID = smCfg.viperEnv.Get("client_id").(string)
+	settings.ClientSecret = smCfg.viperEnv.Get("client_secret").(string)
 
-	if err := clientConfig.Validate(); err != nil {
+	if err := settings.Validate(); err != nil {
 		return nil, err
 	}
 
-	return clientConfig, nil
+	return settings, nil
 }

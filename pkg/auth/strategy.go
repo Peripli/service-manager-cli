@@ -23,13 +23,16 @@ import (
 
 // Options is used to configure new authenticators and clients
 type Options struct {
+	User                  string
+	Password              string
 	ClientID              string `mapstructure:"client_id"`
 	ClientSecret          string `mapstructure:"client_secret"`
 	AuthorizationEndpoint string `mapstructure:"authorization_endpoint"`
 	TokenEndpoint         string `mapstructure:"token_endpoint"`
 	IssuerURL             string `mapstructure:"issuer_url"`
 
-	SSLDisabled bool `mapstructure:"ssl_disabled"`
+	TokenBasicAuth bool `mapstructure:"token_basic_auth"`
+	SSLDisabled    bool `mapstructure:"ssl_disabled"`
 
 	Timeout time.Duration `mapstructure:"timeout"`
 }
@@ -43,10 +46,11 @@ type Token struct {
 	Scope        string    `json:"scope"`
 }
 
-// AuthenticationStrategy should be implemented for different authentication strategies
-//go:generate counterfeiter . AuthenticationStrategy
-type AuthenticationStrategy interface {
-	Authenticate(user, password string) (*Token, error)
+// Authenticator should be implemented for different authentication strategies
+//go:generate counterfeiter . Authenticator
+type Authenticator interface {
+	ClientCredentials() (*Token, error)
+	PasswordCredentials(user, password string) (*Token, error)
 }
 
 // Refresher should be implemented for refreshing access tokens with refresh token flow

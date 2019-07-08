@@ -16,7 +16,10 @@
 
 package types
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/Peripli/service-manager/pkg/types"
+)
 
 // Broker defines the data of a service broker.
 type Broker struct {
@@ -27,6 +30,7 @@ type Broker struct {
 	Created     string       `json:"created_at,omitempty" yaml:"created_at,omitempty"`
 	Updated     string       `json:"updated_at,omitempty" yaml:"updated_at,omitempty"`
 	Credentials *Credentials `json:"credentials,omitempty" yaml:"credentials,omitempty"`
+	Labels      types.Labels `json:"labels,omitempty" yaml:"labels,omitempty"`
 }
 
 // Message title of the table
@@ -42,9 +46,9 @@ func (b *Broker) IsEmpty() bool {
 // TableData returns the data to populate a table
 func (b *Broker) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"ID", "Name", "URL", "Description", "Created", "Updated"}
+	result.Headers = []string{"ID", "Name", "URL", "Description", "Created", "Updated", "Labels"}
 
-	row := []string{b.ID, b.Name, b.URL, b.Description, b.Created, b.Updated}
+	row := []string{b.ID, b.Name, b.URL, b.Description, b.Created, b.Updated, formatLabels(b.Labels)}
 	result.Data = append(result.Data, row)
 
 	return result
@@ -52,7 +56,7 @@ func (b *Broker) TableData() *TableData {
 
 // Brokers wraps an array of brokers
 type Brokers struct {
-	Brokers []Broker `json:"brokers"`
+	Brokers []Broker `json:"service_brokers"`
 }
 
 // IsEmpty whether the structure is empty
@@ -78,10 +82,10 @@ func (b *Brokers) Message() string {
 // TableData returns the data to populate a table
 func (b *Brokers) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"ID", "Name", "URL", "Description", "Created", "Updated"}
+	result.Headers = []string{"ID", "Name", "URL", "Description", "Created", "Updated", "Labels"}
 
 	for _, broker := range b.Brokers {
-		row := []string{broker.ID, broker.Name, broker.URL, broker.Description, broker.Created, broker.Updated}
+		row := []string{broker.ID, broker.Name, broker.URL, broker.Description, broker.Created, broker.Updated, formatLabels(broker.Labels)}
 		result.Data = append(result.Data, row)
 	}
 

@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/Peripli/service-manager-cli/pkg/auth"
-	"github.com/Peripli/service-manager-cli/pkg/smclient"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -40,18 +39,18 @@ var _ = Describe("Configuration test", func() {
 				configuration, err := NewSMConfiguration(viperEnv, configPath)
 
 				timeNow, _ := time.Parse(time.RFC1123Z, time.Now().Format(time.RFC1123Z))
-				smClientConfig := smclient.ClientConfig{URL: "http://sm.com", User: "admin", Token: auth.Token{
+				settings := Settings{URL: "http://sm.com", User: "admin", Token: auth.Token{
 					AccessToken: "token",
 					ExpiresIn:   timeNow,
 				}}
 
-				configuration.Save(&smClientConfig)
+				configuration.Save(&settings)
 
 				clientConfig, errLoad := configuration.Load()
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(errLoad).ShouldNot(HaveOccurred())
-				Expect(*clientConfig).To(Equal(smClientConfig))
+				Expect(*clientConfig).To(Equal(settings))
 			})
 		})
 	})

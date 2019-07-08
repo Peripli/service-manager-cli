@@ -56,7 +56,7 @@ func (rbc *RegisterBrokerCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		PreRunE: prepare(rbc, rbc.Context),
 		RunE:    cmd.RunE(rbc),
 	}
-	
+
 	result.Flags().StringVarP(&rbc.basicString, "basic", "b", "", "Sets the username and password for basic authentication. Format is <username:password>.")
 	cmd.AddFormatFlag(result.Flags())
 
@@ -66,7 +66,7 @@ func (rbc *RegisterBrokerCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 // Validate validates command's arguments
 func (rbc *RegisterBrokerCmd) Validate(args []string) error {
 	if len(args) < 2 {
-		return fmt.Errorf("Name and URL are required")
+		return fmt.Errorf("name and URL are required")
 	}
 
 	if rbc.basicString == "" {

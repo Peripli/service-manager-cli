@@ -18,17 +18,19 @@ package types
 
 import (
 	"fmt"
+	"github.com/Peripli/service-manager/pkg/types"
 )
 
 // Platform defines the data of a platform.
 type Platform struct {
 	ID          string       `json:"id,omitempty" yaml:"id,omitempty"`
-	Name        string       `json:"name" yaml:"name"`
+	Name        string       `json:"name,omitempty" yaml:"name,omitempty"`
 	Description string       `json:"description,omitempty" yaml:"description,omitempty"`
-	Type        string       `json:"type" yaml:"type"`
+	Type        string       `json:"type,omitempty" yaml:"type,omitempty"`
 	Created     string       `json:"created_at,omitempty" yaml:"created_at,omitempty"`
 	Updated     string       `json:"updated_at,omitempty" yaml:"updated_at,omitempty"`
 	Credentials *Credentials `json:"credentials,omitempty" yaml:"credentials,omitempty"`
+	Labels      types.Labels `json:"labels,omitempty" yaml:"labels,omitempty"`
 }
 
 // Message title of the table
@@ -45,8 +47,8 @@ func (p *Platform) IsEmpty() bool {
 func (p *Platform) TableData() *TableData {
 	result := &TableData{}
 
-	result.Headers = []string{"ID", "Name", "Type", "Description", "Created", "Updated"}
-	row := []string{p.ID, p.Name, p.Type, p.Description, p.Created, p.Updated}
+	result.Headers = []string{"ID", "Name", "Type", "Description", "Created", "Updated", "Labels"}
+	row := []string{p.ID, p.Name, p.Type, p.Description, p.Created, p.Updated, formatLabels(p.Labels)}
 
 	if p.Credentials != nil {
 		result.Headers = append(result.Headers, "Username", "Password")
@@ -86,10 +88,10 @@ func (p *Platforms) Message() string {
 // TableData returns the data to populate a table
 func (p *Platforms) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"ID", "Name", "Type", "Description", "Created", "Updated"}
+	result.Headers = []string{"ID", "Name", "Type", "Description", "Created", "Updated", "Labels"}
 
 	for _, platform := range p.Platforms {
-		row := []string{platform.ID, platform.Name, platform.Type, platform.Description, platform.Created, platform.Updated}
+		row := []string{platform.ID, platform.Name, platform.Type, platform.Description, platform.Created, platform.Updated, formatLabels(platform.Labels)}
 		result.Data = append(result.Data, row)
 	}
 

@@ -19,10 +19,9 @@ package broker
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 
 	"github.com/Peripli/service-manager-cli/internal/output"
-	"github.com/Peripli/service-manager-cli/internal/util"
-
 	"github.com/spf13/cobra"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
@@ -52,7 +51,7 @@ func (ubc *UpdateBrokerCmd) Validate(args []string) error {
 	ubc.name = args[0]
 
 	if len(args) < 2 {
-		return fmt.Errorf("Nothing to update. Broker JSON is not provided")
+		return fmt.Errorf("nothing to update. Broker JSON is not provided")
 	}
 
 	if err := json.Unmarshal([]byte(args[1]), &ubc.updatedBroker); err != nil {
@@ -64,16 +63,15 @@ func (ubc *UpdateBrokerCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (ubc *UpdateBrokerCmd) Run() error {
-	allBrokers, err := ubc.Client.ListBrokers()
+	fieldQuery := "name+=+" + url.QueryEscape(ubc.name)
+	toUpdateBrokers, err := ubc.Client.ListBrokersWithQuery(fieldQuery, "")
 	if err != nil {
 		return err
 	}
-
-	brokerWithName := util.GetBrokersByName(allBrokers, []string{ubc.name})
-	if len(brokerWithName) < 1 {
+	if len(toUpdateBrokers.Brokers) < 1 {
 		return fmt.Errorf("broker with name %s not found", ubc.name)
 	}
-	toUpdateBroker := brokerWithName[0]
+	toUpdateBroker := toUpdateBrokers.Brokers[0]
 	result, err := ubc.Client.UpdateBroker(toUpdateBroker.ID, ubc.updatedBroker)
 	if err != nil {
 		return err
