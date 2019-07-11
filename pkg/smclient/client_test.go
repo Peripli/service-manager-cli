@@ -151,7 +151,7 @@ var _ = Describe("Service Manager Client test", func() {
 			})
 			It("should fail to authentication", func() {
 				client = NewClient(http.DefaultClient, smServer.URL)
-				_, err := client.ListBrokers()
+				_, err := client.ListBrokers(nil)
 
 				Expect(err).Should(HaveOccurred())
 				Expect(err).To(MatchError(errors.ResponseError{URL: smServer.URL + web.ServiceBrokersURL, StatusCode: http.StatusUnauthorized}))
@@ -459,7 +459,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return all", func() {
-				result, err := client.ListBrokers()
+				result, err := client.ListBrokers(nil)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result.Brokers).To(HaveLen(1))
 				Expect(result.Brokers[0]).To(Equal(*broker))
@@ -476,7 +476,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return empty array", func() {
-				result, err := client.ListBrokers()
+				result, err := client.ListBrokers(nil)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result.Brokers).To(HaveLen(0))
 			})
@@ -489,7 +489,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle status code != 200", func() {
-				_, err := client.ListBrokers()
+				_, err := client.ListBrokers(nil)
 				Expect(err).Should(HaveOccurred())
 				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusCreated}))
 			})
@@ -502,7 +502,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle status code > 299", func() {
-				_, err := client.ListBrokers()
+				_, err := client.ListBrokers(nil)
 				Expect(err).Should(HaveOccurred())
 				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: smServer.URL + web.ServiceBrokersURL}))
 			})
@@ -521,7 +521,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return all", func() {
-				result, err := client.ListPlatforms()
+				result, err := client.ListPlatforms(nil)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result.Platforms).To(HaveLen(1))
 				Expect(result.Platforms[0]).To(Equal(*platform))
@@ -539,7 +539,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return empty array", func() {
-				result, err := client.ListPlatforms()
+				result, err := client.ListPlatforms(nil)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result.Platforms).To(HaveLen(0))
 			})
@@ -552,7 +552,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle status code != 200", func() {
-				_, err := client.ListPlatforms()
+				_, err := client.ListPlatforms(nil)
 				Expect(err).Should(HaveOccurred())
 				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusCreated}))
 			})
@@ -564,7 +564,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle status code > 299", func() {
-				_, err := client.ListPlatforms()
+				_, err := client.ListPlatforms(nil)
 				Expect(err).Should(HaveOccurred())
 				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: smServer.URL + web.PlatformsURL}))
 			})
@@ -583,7 +583,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return all", func() {
-				result, err := client.ListVisibilities()
+				result, err := client.ListVisibilities(nil)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result.Visibilities).To(HaveLen(1))
 				Expect(result.Visibilities[0]).To(Equal(*visibility))
@@ -601,7 +601,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return empty array", func() {
-				result, err := client.ListVisibilities()
+				result, err := client.ListVisibilities(nil)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result.Visibilities).To(HaveLen(0))
 			})
@@ -614,7 +614,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle status code != 200", func() {
-				_, err := client.ListVisibilities()
+				_, err := client.ListVisibilities(nil)
 				Expect(err).Should(HaveOccurred())
 				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusCreated}))
 			})
@@ -627,7 +627,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle status code > 299", func() {
-				_, err := client.ListVisibilities()
+				_, err := client.ListVisibilities(nil)
 				Expect(err).Should(HaveOccurred())
 				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: smServer.URL + web.VisibilitiesURL}))
 			})
@@ -652,7 +652,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return all with plans and broker name populated", func() {
-				result, err := client.ListOfferings()
+				result, err := client.ListOfferings(nil)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result.ServiceOfferings).To(HaveLen(1))
 				Expect(result.ServiceOfferings[0]).To(Equal(*resultOffering))
@@ -669,7 +669,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return empty array", func() {
-				result, err := client.ListOfferings()
+				result, err := client.ListOfferings(nil)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result.ServiceOfferings).To(HaveLen(0))
 			})
@@ -682,7 +682,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle status code != 200", func() {
-				_, err := client.ListOfferings()
+				_, err := client.ListOfferings(nil)
 				Expect(err).Should(HaveOccurred())
 				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusCreated}))
 			})
@@ -695,7 +695,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle status code > 299", func() {
-				_, err := client.ListOfferings()
+				_, err := client.ListOfferings(nil)
 				Expect(err).Should(HaveOccurred())
 				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: smServer.URL + web.ServiceOfferingsURL}))
 			})

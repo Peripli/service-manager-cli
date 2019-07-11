@@ -40,14 +40,10 @@ type Client interface {
 	RegisterPlatform(*types.Platform) (*types.Platform, error)
 	RegisterBroker(*types.Broker) (*types.Broker, error)
 	RegisterVisibility(*types.Visibility) (*types.Visibility, error)
-	ListBrokersWithQuery(*query.Parameters) (*types.Brokers, error)
-	ListBrokers() (*types.Brokers, error)
-	ListPlatformsWithQuery(*query.Parameters) (*types.Platforms, error)
-	ListPlatforms() (*types.Platforms, error)
-	ListOfferingsWithQuery(*query.Parameters) (*types.ServiceOfferings, error)
-	ListOfferings() (*types.ServiceOfferings, error)
-	ListVisibilitiesWithQuery(*query.Parameters) (*types.Visibilities, error)
-	ListVisibilities() (*types.Visibilities, error)
+	ListBrokers(*query.Parameters) (*types.Brokers, error)
+	ListPlatforms(*query.Parameters) (*types.Platforms, error)
+	ListOfferings(*query.Parameters) (*types.ServiceOfferings, error)
+	ListVisibilities(*query.Parameters) (*types.Visibilities, error)
 	DeleteBroker(string) error
 	DeleteBrokersByFieldQuery(string) error
 	DeletePlatform(string) error
@@ -175,45 +171,30 @@ func (client *serviceManagerClient) register(resource interface{}, url string, r
 	return httputil.UnmarshalResponse(response, &result)
 }
 
-// ListBrokersWithQuery returns brokers registered in the Service Manager satisfying provided queries
-func (client *serviceManagerClient) ListBrokersWithQuery(q *query.Parameters) (*types.Brokers, error) {
+// ListBrokers returns brokers registered in the Service Manager satisfying provided queries
+func (client *serviceManagerClient) ListBrokers(q *query.Parameters) (*types.Brokers, error) {
 	brokers := &types.Brokers{}
 	err := client.list(brokers, buildURL(web.ServiceBrokersURL, q))
 
 	return brokers, err
 }
 
-// ListBrokers returns brokers registered in the Service Manager
-func (client *serviceManagerClient) ListBrokers() (*types.Brokers, error) {
-	return client.ListBrokersWithQuery(nil)
-}
-
-// ListPlatformsWithQuery returns platforms registered in the Service Manager satisfying provided queries
-func (client *serviceManagerClient) ListPlatformsWithQuery(q *query.Parameters) (*types.Platforms, error) {
+// ListPlatforms returns platforms registered in the Service Manager satisfying provided queries
+func (client *serviceManagerClient) ListPlatforms(q *query.Parameters) (*types.Platforms, error) {
 	platforms := &types.Platforms{}
 	err := client.list(platforms, buildURL(web.PlatformsURL, q))
 
 	return platforms, err
 }
 
-// ListPlatforms returns platforms registered in the Service Manager
-func (client *serviceManagerClient) ListPlatforms() (*types.Platforms, error) {
-	return client.ListPlatformsWithQuery(nil)
-}
-
-func (client *serviceManagerClient) ListVisibilitiesWithQuery(q *query.Parameters) (*types.Visibilities, error) {
+func (client *serviceManagerClient) ListVisibilities(q *query.Parameters) (*types.Visibilities, error) {
 	visibilities := &types.Visibilities{}
 	err := client.list(visibilities, buildURL(web.VisibilitiesURL, q))
 	return visibilities, err
 }
 
-// ListVisibilities returns visibilities registered in the Service Manager
-func (client *serviceManagerClient) ListVisibilities() (*types.Visibilities, error) {
-	return client.ListVisibilitiesWithQuery(nil)
-}
-
 // ListOfferings returns service offerings satisfying provided queries
-func (client *serviceManagerClient) ListOfferingsWithQuery(q *query.Parameters) (*types.ServiceOfferings, error) {
+func (client *serviceManagerClient) ListOfferings(q *query.Parameters) (*types.ServiceOfferings, error) {
 	serviceOfferings := &types.ServiceOfferings{}
 	err := client.list(serviceOfferings, buildURL(web.ServiceOfferingsURL, q))
 	if err != nil {
@@ -236,11 +217,6 @@ func (client *serviceManagerClient) ListOfferingsWithQuery(q *query.Parameters) 
 		serviceOfferings.ServiceOfferings[i].BrokerName = broker.Name
 	}
 	return serviceOfferings, nil
-}
-
-// ListOfferings returns service offerings provided of all brokers in SM
-func (client *serviceManagerClient) ListOfferings() (*types.ServiceOfferings, error) {
-	return client.ListOfferingsWithQuery(nil)
 }
 
 func (client *serviceManagerClient) list(result interface{}, path string) error {

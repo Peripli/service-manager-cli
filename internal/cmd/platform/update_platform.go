@@ -66,7 +66,7 @@ func (upc *UpdatePlatformCmd) Run() error {
 	parameters := query.Parameters{
 		FieldQuery: []string{fmt.Sprintf("name = %s", upc.name)},
 	}
-	toUpdatePlatforms, err := upc.Client.ListPlatformsWithQuery(&parameters)
+	toUpdatePlatforms, err := upc.Client.ListPlatforms(&parameters)
 	if err != nil {
 		return err
 	}

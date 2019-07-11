@@ -37,7 +37,7 @@ func NewListBrokersCmd(context *cmd.Context) *ListBrokersCmd {
 
 // Run runs the command's logic
 func (lb *ListBrokersCmd) Run() error {
-	brokers, err := lb.Client.ListBrokersWithQuery(&lb.Parameters)
+	brokers, err := lb.Client.ListBrokers(&lb.Parameters)
 	if err != nil {
 		return err
 	}

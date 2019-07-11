@@ -36,7 +36,7 @@ func NewListVisibilitiesCmd(context *cmd.Context) *ListVisibilitiesCmd {
 
 //Run runs the command's logic
 func (lv *ListVisibilitiesCmd) Run() error {
-	visibilities, err := lv.Client.ListVisibilitiesWithQuery(&lv.Parameters)
+	visibilities, err := lv.Client.ListVisibilities(&lv.Parameters)
 	if err != nil {
 		return err
 	}

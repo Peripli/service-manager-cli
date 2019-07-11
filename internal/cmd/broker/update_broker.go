@@ -66,7 +66,7 @@ func (ubc *UpdateBrokerCmd) Run() error {
 	params := query.Parameters{
 		FieldQuery: []string{fmt.Sprintf("name = %s", ubc.name)},
 	}
-	toUpdateBrokers, err := ubc.Client.ListBrokersWithQuery(&params)
+	toUpdateBrokers, err := ubc.Client.ListBrokers(&params)
 	if err != nil {
 		return err
 	}

@@ -40,7 +40,7 @@ func NewListOfferingsCmd(context *cmd.Context) *ListOfferingsCmd {
 
 // Run runs the command's logic
 func (lo *ListOfferingsCmd) Run() error {
-	offerings, err := lo.Client.ListOfferingsWithQuery(&lo.Parameters)
+	offerings, err := lo.Client.ListOfferings(&lo.Parameters)
 	if err != nil {
 		return err
 	}

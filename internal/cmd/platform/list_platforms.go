@@ -37,7 +37,7 @@ func NewListPlatformsCmd(context *cmd.Context) *ListPlatformsCmd {
 
 // Run runs the command's logic
 func (lp *ListPlatformsCmd) Run() error {
-	platforms, err := lp.Client.ListPlatformsWithQuery(&lp.Parameters)
+	platforms, err := lp.Client.ListPlatforms(&lp.Parameters)
 	if err != nil {
 		return err
 	}
