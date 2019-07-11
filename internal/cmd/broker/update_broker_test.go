@@ -3,10 +3,12 @@ package broker
 import (
 	"encoding/json"
 	"errors"
-	"gopkg.in/yaml.v2"
 	"testing"
 
+	"gopkg.in/yaml.v2"
+
 	"bytes"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -30,7 +32,7 @@ var _ = Describe("Update broker command test", func() {
 	BeforeEach(func() {
 		buffer = &bytes.Buffer{}
 		client = &smclientfakes.FakeClient{}
-		context := &cmd.Context{Output: buffer, Client: client, Parameters: map[string]*[]string{}}
+		context := &cmd.Context{Output: buffer, Client: client}
 		command = NewUpdateBrokerCmd(context)
 	})
 

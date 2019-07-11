@@ -4,14 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"testing"
+
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
-	"github.com/Peripli/service-manager/pkg/query"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"gopkg.in/yaml.v2"
-	"testing"
 )
 
 func TestListVisibilitiesCmd(t *testing.T) {
@@ -40,7 +40,7 @@ var _ = Describe("List visibilities command test", func() {
 	BeforeEach(func() {
 		buffer = &bytes.Buffer{}
 		client = &smclientfakes.FakeClient{}
-		context := &cmd.Context{Output: buffer, Client: client, Parameters: map[string]*[]string{}}
+		context := &cmd.Context{Output: buffer, Client: client}
 		command = NewListVisibilitiesCmd(context)
 	})
 
@@ -91,8 +91,8 @@ var _ = Describe("List visibilities command test", func() {
 			queryArg := client.ListVisibilitiesWithQueryArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(queryArg[string(query.FieldQuery)][0]).To(Equal("planId = plan1"))
-			Expect(queryArg[string(query.LabelQuery)]).To(BeEmpty())
+			Expect(queryArg.FieldQuery[0]).To(Equal("planId = plan1"))
+			Expect(queryArg.LabelQuery).To(BeEmpty())
 		})
 	})
 
@@ -105,8 +105,8 @@ var _ = Describe("List visibilities command test", func() {
 			queryArg := client.ListVisibilitiesWithQueryArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(queryArg[string(query.FieldQuery)]).To(BeEmpty())
-			Expect(queryArg[string(query.LabelQuery)][0]).To(Equal("test = false"))
+			Expect(queryArg.FieldQuery).To(BeEmpty())
+			Expect(queryArg.LabelQuery[0]).To(Equal("test = false"))
 		})
 	})
 

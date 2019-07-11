@@ -4,14 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"testing"
+
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
-	"github.com/Peripli/service-manager/pkg/query"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"gopkg.in/yaml.v2"
-	"testing"
 )
 
 func TestListOfferingsCmd(t *testing.T) {
@@ -62,7 +62,7 @@ var _ = Describe("List offerings command test", func() {
 	BeforeEach(func() {
 		buffer = &bytes.Buffer{}
 		client = &smclientfakes.FakeClient{}
-		context := &cmd.Context{Output: buffer, Client: client, Parameters: map[string]*[]string{}}
+		context := &cmd.Context{Output: buffer, Client: client}
 		command = NewListOfferingsCmd(context)
 	})
 
@@ -148,8 +148,8 @@ var _ = Describe("List offerings command test", func() {
 			args := client.ListOfferingsWithQueryArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(args[string(query.FieldQuery)]).To(ConsistOf(param))
-			Expect(args[string(query.LabelQuery)]).To(BeEmpty())
+			Expect(args.FieldQuery).To(ConsistOf(param))
+			Expect(args.LabelQuery).To(BeEmpty())
 		})
 	})
 
@@ -163,8 +163,8 @@ var _ = Describe("List offerings command test", func() {
 			args := client.ListOfferingsWithQueryArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(args[string(query.LabelQuery)]).To(ConsistOf(param))
-			Expect(args[string(query.FieldQuery)]).To(BeEmpty())
+			Expect(args.LabelQuery).To(ConsistOf(param))
+			Expect(args.FieldQuery).To(BeEmpty())
 		})
 	})
 

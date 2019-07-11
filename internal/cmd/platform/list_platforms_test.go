@@ -3,7 +3,6 @@ package platform
 import (
 	"encoding/json"
 	"errors"
-	"github.com/Peripli/service-manager/pkg/query"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -41,7 +40,7 @@ var _ = Describe("List platforms command test", func() {
 	BeforeEach(func() {
 		buffer = &bytes.Buffer{}
 		client = &smclientfakes.FakeClient{}
-		context := &cmd.Context{Output: buffer, Client: client, Parameters: map[string]*[]string{}}
+		context := &cmd.Context{Output: buffer, Client: client}
 		command = NewListPlatformsCmd(context)
 	})
 
@@ -93,8 +92,8 @@ var _ = Describe("List platforms command test", func() {
 			args := client.ListPlatformsWithQueryArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(args[string(query.FieldQuery)]).To(ConsistOf(param))
-			Expect(args[string(query.LabelQuery)]).To(BeEmpty())
+			Expect(args.FieldQuery).To(ConsistOf(param))
+			Expect(args.LabelQuery).To(BeEmpty())
 		})
 	})
 
@@ -108,8 +107,8 @@ var _ = Describe("List platforms command test", func() {
 			args := client.ListPlatformsWithQueryArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(args[string(query.LabelQuery)]).To(ConsistOf(param))
-			Expect(args[string(query.FieldQuery)]).To(BeEmpty())
+			Expect(args.LabelQuery).To(ConsistOf(param))
+			Expect(args.FieldQuery).To(BeEmpty())
 		})
 	})
 

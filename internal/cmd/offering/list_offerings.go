@@ -40,7 +40,7 @@ func NewListOfferingsCmd(context *cmd.Context) *ListOfferingsCmd {
 
 // Run runs the command's logic
 func (lo *ListOfferingsCmd) Run() error {
-	offerings, err := lo.Client.ListOfferingsWithQuery(lo.Parameters.Copy())
+	offerings, err := lo.Client.ListOfferingsWithQuery(&lo.Parameters)
 	if err != nil {
 		return err
 	}
@@ -83,7 +83,7 @@ func (lo *ListOfferingsCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 
 	cmd.AddFormatFlag(result.Flags())
 	result.Flags().StringVarP(&lo.offering, "service", "s", "", "Plan details for a single service offering")
-	cmd.AddQueryingFlags(result.Flags(), lo.Parameters)
+	cmd.AddQueryingFlags(result.Flags(), &lo.Parameters)
 
 	return result
 }

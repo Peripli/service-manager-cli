@@ -1,36 +1,35 @@
 package query
 
-// GeneralParameter is the name of the parameter that is used to make general key-value query pairs
-const GeneralParameter = "param"
+import (
+	"net/url"
+	"strings"
 
-// Parameters are the parameters used to make requests to Service Manager
-type Parameters map[string]*[]string
+	smquery "github.com/Peripli/service-manager/pkg/query"
+)
 
-// Add adds a new parameters
-func (p Parameters) Add(key, value string) {
-	val, exists := p[key]
-	if !exists {
-		p[key] = &[]string{value}
-		return
-	}
-	*val = append(*val, value)
+// Parameters holds common query parameters
+type Parameters struct {
+	FieldQuery    []string
+	LabelQuery    []string
+	GeneralParams []string
 }
 
-// Get returns the values for the provided parameter key. If no such exists, returns an empty slice
-func (p Parameters) Get(key string) *[]string {
-	val, exists := p[key]
-	if !exists {
-		p[key] = &[]string{}
-		return p[key]
-	}
-	return val
-}
+// Encode encodes the parameters as URL query parameters
+func (p *Parameters) Encode() string {
+	v := url.Values{}
 
-// Copy returns a read-only copy of the parameters
-func (p Parameters) Copy() map[string][]string {
-	cpy := make(map[string][]string)
-	for k, v := range p {
-		cpy[k] = *v
+	if len(p.FieldQuery) > 0 {
+		v.Set(string(smquery.FieldQuery), strings.Join(p.FieldQuery, "|"))
 	}
-	return cpy
+
+	if len(p.LabelQuery) > 0 {
+		v.Set(string(smquery.LabelQuery), strings.Join(p.LabelQuery, "|"))
+	}
+
+	for _, param := range p.GeneralParams {
+		s := strings.Split(param, "=")
+		v.Add(s[0], s[1])
+	}
+
+	return v.Encode()
 }

@@ -2,9 +2,9 @@
 package configurationfakes
 
 import (
-	sync "sync"
+	"sync"
 
-	configuration "github.com/Peripli/service-manager-cli/internal/configuration"
+	"github.com/Peripli/service-manager-cli/internal/configuration"
 )
 
 type FakeConfiguration struct {

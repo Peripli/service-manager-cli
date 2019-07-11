@@ -43,8 +43,7 @@ func oidcAuthBuilder(options *auth.Options) (auth.Authenticator, *auth.Options, 
 func main() {
 	clientVersion := "0.0.1"
 
-	parameters := query.Parameters{}
-	context := &cmd.Context{Parameters: parameters}
+	context := &cmd.Context{}
 	rootCmd := cmd.BuildRootCommand(context)
 	fs := afero.NewOsFs()
 
@@ -78,12 +77,12 @@ func main() {
 		PrepareFn: cmd.SmPrepare,
 	}
 
-	registerGroups(parameters, rootCmd, normalCommandsGroup, smCommandsGroup)
+	registerGroups(&context.Parameters, rootCmd, normalCommandsGroup, smCommandsGroup)
 
 	cmd.Execute(rootCmd)
 }
 
-func registerGroups(parameters query.Parameters, rootCmd *cobra.Command, groups ...cmd.Group) {
+func registerGroups(parameters *query.Parameters, rootCmd *cobra.Command, groups ...cmd.Group) {
 	for _, group := range groups {
 		for _, command := range group.Commands {
 			cobraCmd := command.Prepare(group.PrepareFn)

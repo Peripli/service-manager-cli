@@ -37,7 +37,7 @@ func NewListBrokersCmd(context *cmd.Context) *ListBrokersCmd {
 
 // Run runs the command's logic
 func (lb *ListBrokersCmd) Run() error {
-	brokers, err := lb.Client.ListBrokersWithQuery(lb.Parameters.Copy())
+	brokers, err := lb.Client.ListBrokersWithQuery(&lb.Parameters)
 	if err != nil {
 		return err
 	}
@@ -71,6 +71,6 @@ func (lb *ListBrokersCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	}
 
 	cmd.AddFormatFlag(result.Flags())
-	cmd.AddQueryingFlags(result.Flags(), lb.Parameters)
+	cmd.AddQueryingFlags(result.Flags(), &lb.Parameters)
 	return result
 }
