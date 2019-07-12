@@ -183,7 +183,7 @@ func AddQueryingFlags(flags *pflag.FlagSet, parameters *query.Parameters) {
 
 // AddCommonQueryFlag adds the CLI param that provides general query parameters
 func AddCommonQueryFlag(flags *pflag.FlagSet, parameters *query.Parameters) {
-	flags.StringArrayVarP(&parameters.GeneralParams, "param", "", nil, "Additional query parameters")
+	flags.StringArrayVarP(&parameters.GeneralParams, "param", "", nil, "Additional query parameters in the form key=value")
 }
 
 //CommonConfirmationPrompt provides common logic for confirmation of an operation
