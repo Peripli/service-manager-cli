@@ -20,13 +20,13 @@ var _ = Describe("Login Command test", func() {
 
 	var command *Cmd
 	var buffer *bytes.Buffer
-	var clientVersion string
 
 	BeforeEach(func() {
 		buffer = &bytes.Buffer{}
 		context := &cmd.Context{Output: buffer}
-		clientVersion = "TEST VERSION"
-		command = NewVersionCmd(context, clientVersion)
+		Version = "v1.2.3"
+		GitCommit = "987654321"
+		command = NewVersionCmd(context)
 	})
 
 	Describe("Valid request", func() {
@@ -35,7 +35,8 @@ var _ = Describe("Login Command test", func() {
 				vc := command.Prepare(cmd.CommonPrepare)
 				err := vc.Execute()
 
-				Expect(buffer.String()).To(Equal(fmt.Sprintf("Service Manager Client %s\n", clientVersion)))
+				Expect(buffer.String()).To(Equal(fmt.Sprintf("Service Manager Client %s (%s)\n",
+					Version, GitCommit)))
 				Expect(err).ShouldNot(HaveOccurred())
 			})
 		})

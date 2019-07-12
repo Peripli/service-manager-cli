@@ -41,8 +41,6 @@ func oidcAuthBuilder(options *auth.Options) (auth.Authenticator, *auth.Options, 
 }
 
 func main() {
-	clientVersion := "0.0.1"
-
 	context := &cmd.Context{}
 	rootCmd := cmd.BuildRootCommand(context)
 	fs := afero.NewOsFs()
@@ -50,7 +48,7 @@ func main() {
 	normalCommandsGroup := cmd.Group{
 		Commands: []cmd.CommandPreparator{
 			login.NewLoginCmd(context, os.Stdin, oidcAuthBuilder),
-			version.NewVersionCmd(context, clientVersion),
+			version.NewVersionCmd(context),
 			info.NewInfoCmd(context),
 		},
 		PrepareFn: cmd.CommonPrepare,
