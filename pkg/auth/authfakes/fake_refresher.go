@@ -2,9 +2,9 @@
 package authfakes
 
 import (
-	sync "sync"
+	"sync"
 
-	auth "github.com/Peripli/service-manager-cli/pkg/auth"
+	"github.com/Peripli/service-manager-cli/pkg/auth"
 )
 
 type FakeRefresher struct {

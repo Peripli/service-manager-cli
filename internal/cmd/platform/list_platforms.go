@@ -37,7 +37,7 @@ func NewListPlatformsCmd(context *cmd.Context) *ListPlatformsCmd {
 
 // Run runs the command's logic
 func (lp *ListPlatformsCmd) Run() error {
-	platforms, err := lp.Client.ListPlatformsWithQuery(lp.Parameters.Copy())
+	platforms, err := lp.Client.ListPlatforms(&lp.Parameters)
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func (lp *ListPlatformsCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	}
 
 	cmd.AddFormatFlag(result.Flags())
-	cmd.AddQueryingFlags(result.Flags(), lp.Parameters)
+	cmd.AddQueryingFlags(result.Flags(), &lp.Parameters)
 
 	return result
 }

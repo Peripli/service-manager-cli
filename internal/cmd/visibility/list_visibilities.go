@@ -36,7 +36,7 @@ func NewListVisibilitiesCmd(context *cmd.Context) *ListVisibilitiesCmd {
 
 //Run runs the command's logic
 func (lv *ListVisibilitiesCmd) Run() error {
-	visibilities, err := lv.Client.ListVisibilitiesWithQuery(lv.Parameters.Copy())
+	visibilities, err := lv.Client.ListVisibilities(&lv.Parameters)
 	if err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func (lv *ListVisibilitiesCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	}
 
 	cmd.AddFormatFlag(result.Flags())
-	cmd.AddQueryingFlags(result.Flags(), lv.Parameters)
+	cmd.AddQueryingFlags(result.Flags(), &lv.Parameters)
 
 	return result
 }

@@ -41,7 +41,7 @@ var _ = Describe("Update platform command test", func() {
 			Type: "type",
 		}
 		platforms := &types.Platforms{Platforms: []types.Platform{platform}}
-		client.ListPlatformsWithQueryReturns(platforms, nil)
+		client.ListPlatformsReturns(platforms, nil)
 		_ = json.Unmarshal([]byte(args[1]), platform)
 		client.UpdatePlatformReturns(&platform, nil)
 		ubCmd := command.Prepare(cmd.SmPrepare)
@@ -120,7 +120,7 @@ var _ = Describe("Update platform command test", func() {
 
 	Context("When non existing platform updated", func() {
 		It("should return error", func() {
-			client.ListPlatformsWithQueryReturns(&types.Platforms{}, nil)
+			client.ListPlatformsReturns(&types.Platforms{}, nil)
 
 			err := invalidUpdatePlatformExecution("platform", `{"type":"newType"}`)
 
@@ -133,7 +133,7 @@ var _ = Describe("Update platform command test", func() {
 		It("Should return error", func() {
 			expectedErr := errors.New("http client error")
 			platforms := &types.Platforms{Platforms: []types.Platform{platform}}
-			client.ListPlatformsWithQueryReturns(platforms, nil)
+			client.ListPlatformsReturns(platforms, nil)
 			client.UpdatePlatformReturns(nil, expectedErr)
 
 			err := invalidUpdatePlatformExecution("platform", `{"type":"newType"}`)

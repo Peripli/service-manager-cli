@@ -19,36 +19,31 @@ package smclient
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/Peripli/service-manager-cli/pkg/query"
-	"github.com/Peripli/service-manager/pkg/web"
 	"io"
 	"net/http"
-	"net/url"
-	"strings"
+
+	"github.com/Peripli/service-manager/pkg/web"
 
 	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
 
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/errors"
 	"github.com/Peripli/service-manager-cli/pkg/httputil"
+	"github.com/Peripli/service-manager-cli/pkg/query"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 )
 
 // Client should be implemented by SM clients
 //go:generate counterfeiter . Client
 type Client interface {
-	GetInfo(map[string][]string) (*types.Info, error)
+	GetInfo(*query.Parameters) (*types.Info, error)
 	RegisterPlatform(*types.Platform) (*types.Platform, error)
 	RegisterBroker(*types.Broker) (*types.Broker, error)
 	RegisterVisibility(*types.Visibility) (*types.Visibility, error)
-	ListBrokersWithQuery(map[string][]string) (*types.Brokers, error)
-	ListBrokers() (*types.Brokers, error)
-	ListPlatformsWithQuery(map[string][]string) (*types.Platforms, error)
-	ListPlatforms() (*types.Platforms, error)
-	ListOfferingsWithQuery(map[string][]string) (*types.ServiceOfferings, error)
-	ListOfferings() (*types.ServiceOfferings, error)
-	ListVisibilitiesWithQuery(map[string][]string) (*types.Visibilities, error)
-	ListVisibilities() (*types.Visibilities, error)
+	ListBrokers(*query.Parameters) (*types.Brokers, error)
+	ListPlatforms(*query.Parameters) (*types.Platforms, error)
+	ListOfferings(*query.Parameters) (*types.ServiceOfferings, error)
+	ListVisibilities(*query.Parameters) (*types.Visibilities, error)
 	DeleteBroker(string) error
 	DeleteBrokersByFieldQuery(string) error
 	DeletePlatform(string) error
@@ -108,8 +103,8 @@ func NewClient(httpClient auth.Client, URL string) Client {
 	return &serviceManagerClient{config: &ClientConfig{URL: URL}, httpClient: httpClient}
 }
 
-func (client *serviceManagerClient) GetInfo(query map[string][]string) (*types.Info, error) {
-	response, err := client.Call(http.MethodGet, buildQueryPath(web.InfoURL, query), nil)
+func (client *serviceManagerClient) GetInfo(q *query.Parameters) (*types.Info, error) {
+	response, err := client.Call(http.MethodGet, buildURL(web.InfoURL, q), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -176,50 +171,32 @@ func (client *serviceManagerClient) register(resource interface{}, url string, r
 	return httputil.UnmarshalResponse(response, &result)
 }
 
-// ListBrokersWithQuery returns brokers registered in the Service Manager satisfying provided queries
-func (client *serviceManagerClient) ListBrokersWithQuery(query map[string][]string) (*types.Brokers, error) {
+// ListBrokers returns brokers registered in the Service Manager satisfying provided queries
+func (client *serviceManagerClient) ListBrokers(q *query.Parameters) (*types.Brokers, error) {
 	brokers := &types.Brokers{}
-	err := client.list(brokers, buildQueryPath(web.ServiceBrokersURL, query))
+	err := client.list(brokers, buildURL(web.ServiceBrokersURL, q))
 
 	return brokers, err
 }
 
-// ListBrokers returns brokers registered in the Service Manager
-func (client *serviceManagerClient) ListBrokers() (*types.Brokers, error) {
-	return client.ListBrokersWithQuery(nil)
-}
-
-// ListPlatformsWithQuery returns platforms registered in the Service Manager satisfying provided queries
-func (client *serviceManagerClient) ListPlatformsWithQuery(query map[string][]string) (*types.Platforms, error) {
+// ListPlatforms returns platforms registered in the Service Manager satisfying provided queries
+func (client *serviceManagerClient) ListPlatforms(q *query.Parameters) (*types.Platforms, error) {
 	platforms := &types.Platforms{}
-	err := client.list(platforms, buildQueryPath(web.PlatformsURL, query))
+	err := client.list(platforms, buildURL(web.PlatformsURL, q))
 
 	return platforms, err
 }
 
-// ListPlatforms returns platforms registered in the Service Manager
-func (client *serviceManagerClient) ListPlatforms() (*types.Platforms, error) {
-	return client.ListPlatformsWithQuery(nil)
-}
-
-func (client *serviceManagerClient) ListVisibilitiesWithQuery(query map[string][]string) (*types.Visibilities, error) {
+func (client *serviceManagerClient) ListVisibilities(q *query.Parameters) (*types.Visibilities, error) {
 	visibilities := &types.Visibilities{}
-
-	path := buildQueryPath(web.VisibilitiesURL, query)
-	err := client.list(visibilities, path)
-
+	err := client.list(visibilities, buildURL(web.VisibilitiesURL, q))
 	return visibilities, err
 }
 
-// ListVisibilities returns visibilities registered in the Service Manager
-func (client *serviceManagerClient) ListVisibilities() (*types.Visibilities, error) {
-	return client.ListVisibilitiesWithQuery(nil)
-}
-
 // ListOfferings returns service offerings satisfying provided queries
-func (client *serviceManagerClient) ListOfferingsWithQuery(query map[string][]string) (*types.ServiceOfferings, error) {
+func (client *serviceManagerClient) ListOfferings(q *query.Parameters) (*types.ServiceOfferings, error) {
 	serviceOfferings := &types.ServiceOfferings{}
-	err := client.list(serviceOfferings, buildQueryPath(web.ServiceOfferingsURL, query))
+	err := client.list(serviceOfferings, buildURL(web.ServiceOfferingsURL, q))
 	if err != nil {
 		return nil, err
 	}
@@ -240,11 +217,6 @@ func (client *serviceManagerClient) ListOfferingsWithQuery(query map[string][]st
 		serviceOfferings.ServiceOfferings[i].BrokerName = broker.Name
 	}
 	return serviceOfferings, nil
-}
-
-// ListOfferings returns service offerings provided of all brokers in SM
-func (client *serviceManagerClient) ListOfferings() (*types.ServiceOfferings, error) {
-	return client.ListOfferingsWithQuery(nil)
 }
 
 func (client *serviceManagerClient) list(result interface{}, path string) error {
@@ -399,37 +371,10 @@ func (client *serviceManagerClient) Call(method string, smpath string, body io.R
 	return resp, nil
 }
 
-func buildQueryPath(baseURL string, queryParams map[string][]string) string {
-	if len(queryParams) == 0 {
+func buildURL(baseURL string, q *query.Parameters) string {
+	queryParams := q.Encode()
+	if queryParams == "" {
 		return baseURL
 	}
-
-	builder := strings.Builder{}
-	builder.WriteString(baseURL)
-	builder.WriteRune('?')
-	if generalParameters, exists := queryParams[query.GeneralParameter]; exists {
-		for _, param := range generalParameters {
-			split := strings.Split(param, "=") // cover case where user provides fieldQuery or labelQuery as param
-			queryParams[split[0]] = append(queryParams[split[0]], strings.Join(split[1:], "="))
-		}
-	}
-	for k, v := range queryParams {
-		if len(v) == 0 || k == query.GeneralParameter {
-			continue
-		}
-
-		builder.WriteString(k)
-		builder.WriteRune('=')
-		builder.WriteString(parseQuery(v))
-		builder.WriteRune('&')
-	}
-	path := builder.String()
-	return path[:len(path)-1] // remove last &
-}
-
-func parseQuery(query []string) string {
-	for i := range query {
-		query[i] = url.QueryEscape(query[i])
-	}
-	return strings.Join(query, "|")
+	return baseURL + "?" + queryParams
 }

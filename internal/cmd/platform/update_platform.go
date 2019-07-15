@@ -19,11 +19,12 @@ package platform
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/Peripli/service-manager-cli/internal/output"
-	"github.com/Peripli/service-manager/pkg/query"
 	"github.com/spf13/cobra"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
+	"github.com/Peripli/service-manager-cli/pkg/query"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 )
 
@@ -62,8 +63,10 @@ func (upc *UpdatePlatformCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (upc *UpdatePlatformCmd) Run() error {
-	parameters := map[string][]string{string(query.FieldQuery): {fmt.Sprintf("name = %s", upc.name)}}
-	toUpdatePlatforms, err := upc.Client.ListPlatformsWithQuery(parameters)
+	parameters := query.Parameters{
+		FieldQuery: []string{fmt.Sprintf("name = %s", upc.name)},
+	}
+	toUpdatePlatforms, err := upc.Client.ListPlatforms(&parameters)
 	if err != nil {
 		return err
 	}

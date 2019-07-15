@@ -4,14 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"testing"
+
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
-	"github.com/Peripli/service-manager/pkg/query"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"gopkg.in/yaml.v2"
-	"testing"
 )
 
 func TestListOfferingsCmd(t *testing.T) {
@@ -62,7 +62,7 @@ var _ = Describe("List offerings command test", func() {
 	BeforeEach(func() {
 		buffer = &bytes.Buffer{}
 		client = &smclientfakes.FakeClient{}
-		context := &cmd.Context{Output: buffer, Client: client, Parameters: map[string]*[]string{}}
+		context := &cmd.Context{Output: buffer, Client: client}
 		command = NewListOfferingsCmd(context)
 	})
 
@@ -75,7 +75,7 @@ var _ = Describe("List offerings command test", func() {
 
 	Context("when no offerings provided", func() {
 		It("should list empty offerings list", func() {
-			client.ListOfferingsWithQueryReturns(&types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{}}, nil)
+			client.ListOfferingsReturns(&types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{}}, nil)
 			err := executeWithArgs([]string{})
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -86,7 +86,7 @@ var _ = Describe("List offerings command test", func() {
 	Context("when offerings are provided", func() {
 		It("should list 1 offering", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1}}
-			client.ListOfferingsWithQueryReturns(result, nil)
+			client.ListOfferingsReturns(result, nil)
 			err := executeWithArgs([]string{})
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -95,7 +95,7 @@ var _ = Describe("List offerings command test", func() {
 
 		It("should list more offerings", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1, offering2}}
-			client.ListOfferingsWithQueryReturns(result, nil)
+			client.ListOfferingsReturns(result, nil)
 			err := executeWithArgs([]string{})
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -107,7 +107,7 @@ var _ = Describe("List offerings command test", func() {
 	Context("when service flag is used", func() {
 		It("should list empty plans list when no plans provided", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{noPlanOffering}}
-			client.ListOfferingsWithQueryReturns(result, nil)
+			client.ListOfferingsReturns(result, nil)
 			err := executeWithArgs([]string{"-s", "no-plan-offering"})
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -116,7 +116,7 @@ var _ = Describe("List offerings command test", func() {
 
 		It("should list 1 plan when a single plan is provided", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1}}
-			client.ListOfferingsWithQueryReturns(result, nil)
+			client.ListOfferingsReturns(result, nil)
 			err := executeWithArgs([]string{"-s", "offering1"})
 
 			expected := &types.ServicePlans{ServicePlans: result.ServiceOfferings[0].Plans}
@@ -127,7 +127,7 @@ var _ = Describe("List offerings command test", func() {
 
 		It("should list multiple plans when multiple plans are provided", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering2}}
-			client.ListOfferingsWithQueryReturns(result, nil)
+			client.ListOfferingsReturns(result, nil)
 			err := executeWithArgs([]string{"-s", "offering2"})
 
 			expected := &types.ServicePlans{ServicePlans: result.ServiceOfferings[0].Plans}
@@ -141,37 +141,37 @@ var _ = Describe("List offerings command test", func() {
 	Context("when field query flag is used", func() {
 		It("should pass it to SM", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1}}
-			client.ListOfferingsWithQueryReturns(result, nil)
+			client.ListOfferingsReturns(result, nil)
 			param := "name = offering1"
 			err := executeWithArgs([]string{"-f", param})
 
-			args := client.ListOfferingsWithQueryArgsForCall(0)
+			args := client.ListOfferingsArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(args[string(query.FieldQuery)]).To(ConsistOf(param))
-			Expect(args[string(query.LabelQuery)]).To(BeEmpty())
+			Expect(args.FieldQuery).To(ConsistOf(param))
+			Expect(args.LabelQuery).To(BeEmpty())
 		})
 	})
 
 	Context("when label query flag is used", func() {
 		It("should pass it to SM", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1}}
-			client.ListOfferingsWithQueryReturns(result, nil)
+			client.ListOfferingsReturns(result, nil)
 			param := "test = false"
 			err := executeWithArgs([]string{"-l", param})
 
-			args := client.ListOfferingsWithQueryArgsForCall(0)
+			args := client.ListOfferingsArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(args[string(query.LabelQuery)]).To(ConsistOf(param))
-			Expect(args[string(query.FieldQuery)]).To(BeEmpty())
+			Expect(args.LabelQuery).To(ConsistOf(param))
+			Expect(args.FieldQuery).To(BeEmpty())
 		})
 	})
 
 	Context("when format flag is used", func() {
 		It("should print offerings in json", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1}}
-			client.ListOfferingsWithQueryReturns(result, nil)
+			client.ListOfferingsReturns(result, nil)
 
 			err := executeWithArgs([]string{"-o", "json"})
 
@@ -183,7 +183,7 @@ var _ = Describe("List offerings command test", func() {
 
 		It("should print offerings in yaml", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1}}
-			client.ListOfferingsWithQueryReturns(result, nil)
+			client.ListOfferingsReturns(result, nil)
 
 			err := executeWithArgs([]string{"-o", "yaml"})
 
@@ -195,7 +195,7 @@ var _ = Describe("List offerings command test", func() {
 
 		It("should print plans in json", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1}}
-			client.ListOfferingsWithQueryReturns(result, nil)
+			client.ListOfferingsReturns(result, nil)
 
 			err := executeWithArgs([]string{"-s", "offering1", "-o", "json"})
 
@@ -207,7 +207,7 @@ var _ = Describe("List offerings command test", func() {
 
 		It("should print plans in yaml", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1}}
-			client.ListOfferingsWithQueryReturns(result, nil)
+			client.ListOfferingsReturns(result, nil)
 
 			err := executeWithArgs([]string{"-s", "offering1", "-o", "yaml"})
 
@@ -237,7 +237,7 @@ var _ = Describe("List offerings command test", func() {
 	Context("when error is returned by Service manager", func() {
 		It("should handle error", func() {
 			expectedErr := errors.New("Http Client Error")
-			client.ListOfferingsWithQueryReturns(nil, expectedErr)
+			client.ListOfferingsReturns(nil, expectedErr)
 			err := executeWithArgs([]string{})
 
 			Expect(err).Should(HaveOccurred())

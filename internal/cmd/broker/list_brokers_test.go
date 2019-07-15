@@ -3,7 +3,6 @@ package broker
 import (
 	"encoding/json"
 	"errors"
-	"github.com/Peripli/service-manager/pkg/query"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -41,7 +40,7 @@ var _ = Describe("List brokers command test", func() {
 	BeforeEach(func() {
 		buffer = &bytes.Buffer{}
 		client = &smclientfakes.FakeClient{}
-		context := &cmd.Context{Output: buffer, Client: client, Parameters: map[string]*[]string{}}
+		context := &cmd.Context{Output: buffer, Client: client}
 		command = NewListBrokersCmd(context)
 	})
 
@@ -54,7 +53,7 @@ var _ = Describe("List brokers command test", func() {
 
 	Context("when no brokers are registered", func() {
 		It("should list empty brokers", func() {
-			client.ListBrokersWithQueryReturns(&types.Brokers{Brokers: []types.Broker{}}, nil)
+			client.ListBrokersReturns(&types.Brokers{Brokers: []types.Broker{}}, nil)
 			err := executeWithArgs([]string{})
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -65,7 +64,7 @@ var _ = Describe("List brokers command test", func() {
 	Context("when brokers are registered", func() {
 		It("should list 1 broker", func() {
 			result := &types.Brokers{Brokers: []types.Broker{broker}}
-			client.ListBrokersWithQueryReturns(result, nil)
+			client.ListBrokersReturns(result, nil)
 			err := executeWithArgs([]string{})
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -74,7 +73,7 @@ var _ = Describe("List brokers command test", func() {
 
 		It("should list more brokers", func() {
 			result := &types.Brokers{Brokers: []types.Broker{broker, broker2}}
-			client.ListBrokersWithQueryReturns(result, nil)
+			client.ListBrokersReturns(result, nil)
 			err := executeWithArgs([]string{})
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -86,37 +85,37 @@ var _ = Describe("List brokers command test", func() {
 	Context("when field query flag is used", func() {
 		It("should pass it to SM", func() {
 			result := &types.Brokers{Brokers: []types.Broker{broker}}
-			client.ListBrokersWithQueryReturns(result, nil)
+			client.ListBrokersReturns(result, nil)
 			param := "name = broker1"
 			err := executeWithArgs([]string{"-f", param})
 
-			args := client.ListBrokersWithQueryArgsForCall(0)
+			args := client.ListBrokersArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(args[string(query.FieldQuery)]).To(ConsistOf(param))
-			Expect(args[string(query.LabelQuery)]).To(BeEmpty())
+			Expect(args.FieldQuery).To(ConsistOf(param))
+			Expect(args.LabelQuery).To(BeEmpty())
 		})
 	})
 
 	Context("when label query flag is used", func() {
 		It("should pass it to SM", func() {
 			result := &types.Brokers{Brokers: []types.Broker{broker}}
-			client.ListBrokersWithQueryReturns(result, nil)
+			client.ListBrokersReturns(result, nil)
 			param := "test = false"
 			err := executeWithArgs([]string{"-l", param})
 
-			args := client.ListBrokersWithQueryArgsForCall(0)
+			args := client.ListBrokersArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(args[string(query.LabelQuery)]).To(ConsistOf(param))
-			Expect(args[string(query.FieldQuery)]).To(BeEmpty())
+			Expect(args.LabelQuery).To(ConsistOf(param))
+			Expect(args.FieldQuery).To(BeEmpty())
 		})
 	})
 
 	Context("when format flag is used", func() {
 		It("should print in json", func() {
 			result := &types.Brokers{Brokers: []types.Broker{broker}}
-			client.ListBrokersWithQueryReturns(result, nil)
+			client.ListBrokersReturns(result, nil)
 
 			err := executeWithArgs([]string{"-o", "json"})
 
@@ -128,7 +127,7 @@ var _ = Describe("List brokers command test", func() {
 
 		It("should print in yaml", func() {
 			result := &types.Brokers{Brokers: []types.Broker{broker}}
-			client.ListBrokersWithQueryReturns(result, nil)
+			client.ListBrokersReturns(result, nil)
 
 			err := executeWithArgs([]string{"-o", "yaml"})
 
@@ -157,7 +156,7 @@ var _ = Describe("List brokers command test", func() {
 	Context("when error is returned by Service manager", func() {
 		It("should handle error", func() {
 			expectedErr := errors.New("Http Client Error")
-			client.ListBrokersWithQueryReturns(nil, expectedErr)
+			client.ListBrokersReturns(nil, expectedErr)
 			err := executeWithArgs([]string{})
 
 			Expect(err).Should(HaveOccurred())
