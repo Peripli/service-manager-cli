@@ -27,8 +27,12 @@ func (p *Parameters) Encode() string {
 	}
 
 	for _, param := range p.GeneralParams {
-		s := strings.Split(param, "=")
-		v.Add(s[0], s[1])
+		s := strings.SplitN(param, "=", 2)
+		if len(s) < 2 {
+			v.Add(param, "")
+		} else {
+			v.Add(s[0], s[1])
+		}
 	}
 
 	return v.Encode()
