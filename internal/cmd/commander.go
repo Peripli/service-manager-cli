@@ -23,6 +23,8 @@ import (
 	"io"
 	"strings"
 
+	"github.com/Peripli/service-manager-cli/pkg/query"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
@@ -174,9 +176,14 @@ func AddFormatFlagDefault(flags *pflag.FlagSet, defValue string) {
 }
 
 // AddQueryingFlags adds --field-query (-f) and --label-query (-l) flags
-func AddQueryingFlags(flags *pflag.FlagSet, fieldQuery *[]string, labelQuery *[]string) {
-	flags.StringArrayVarP(fieldQuery, "field-query", "f", []string{}, "Filtering based on field querying")
-	flags.StringArrayVarP(labelQuery, "label-query", "l", []string{}, "Filtering based on label querying")
+func AddQueryingFlags(flags *pflag.FlagSet, parameters *query.Parameters) {
+	flags.StringArrayVarP(&parameters.FieldQuery, "field-query", "f", nil, "Filtering based on field querying")
+	flags.StringArrayVarP(&parameters.LabelQuery, "label-query", "l", nil, "Filtering based on label querying")
+}
+
+// AddCommonQueryFlag adds the CLI param that provides general query parameters
+func AddCommonQueryFlag(flags *pflag.FlagSet, parameters *query.Parameters) {
+	flags.StringArrayVarP(&parameters.GeneralParams, "param", "", nil, "Additional query parameters in the form key=value")
 }
 
 //CommonConfirmationPrompt provides common logic for confirmation of an operation

@@ -3,10 +3,12 @@ package broker
 import (
 	"encoding/json"
 	"errors"
-	"gopkg.in/yaml.v2"
 	"testing"
 
+	"gopkg.in/yaml.v2"
+
 	"bytes"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -42,7 +44,7 @@ var _ = Describe("Update broker command test", func() {
 			Description: "description",
 		}
 		brokers := &types.Brokers{Brokers: []types.Broker{broker}}
-		client.ListBrokersWithQueryReturns(brokers, nil)
+		client.ListBrokersReturns(brokers, nil)
 		_ = json.Unmarshal([]byte(args[1]), broker)
 		client.UpdateBrokerReturns(&broker, nil)
 		ubCmd := command.Prepare(cmd.SmPrepare)
@@ -121,7 +123,7 @@ var _ = Describe("Update broker command test", func() {
 
 	Context("When non existing broker updated", func() {
 		It("should return error", func() {
-			client.ListBrokersWithQueryReturns(&types.Brokers{}, nil)
+			client.ListBrokersReturns(&types.Brokers{}, nil)
 
 			err := invalidUpdateBrokerExecution("broker1", `{"description":"newDescription"}`)
 
@@ -134,7 +136,7 @@ var _ = Describe("Update broker command test", func() {
 		It("Should return error", func() {
 			expectedErr := errors.New("http client error")
 			brokers := &types.Brokers{Brokers: []types.Broker{broker}}
-			client.ListBrokersWithQueryReturns(brokers, nil)
+			client.ListBrokersReturns(brokers, nil)
 			client.UpdateBrokerReturns(nil, expectedErr)
 
 			err := invalidUpdateBrokerExecution("broker1", `{"description":"newDescription"}`)

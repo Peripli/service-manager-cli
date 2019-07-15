@@ -19,33 +19,31 @@ package smclient
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/Peripli/service-manager/pkg/web"
 	"io"
 	"net/http"
+
+	"github.com/Peripli/service-manager/pkg/web"
 
 	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
 
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/errors"
 	"github.com/Peripli/service-manager-cli/pkg/httputil"
+	"github.com/Peripli/service-manager-cli/pkg/query"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 )
 
 // Client should be implemented by SM clients
 //go:generate counterfeiter . Client
 type Client interface {
-	GetInfo() (*types.Info, error)
+	GetInfo(*query.Parameters) (*types.Info, error)
 	RegisterPlatform(*types.Platform) (*types.Platform, error)
 	RegisterBroker(*types.Broker) (*types.Broker, error)
 	RegisterVisibility(*types.Visibility) (*types.Visibility, error)
-	ListBrokersWithQuery(string, string) (*types.Brokers, error)
-	ListBrokers() (*types.Brokers, error)
-	ListPlatformsWithQuery(string, string) (*types.Platforms, error)
-	ListPlatforms() (*types.Platforms, error)
-	ListOfferingsWithQuery(string, string) (*types.ServiceOfferings, error)
-	ListOfferings() (*types.ServiceOfferings, error)
-	ListVisibilitiesWithQuery(string, string) (*types.Visibilities, error)
-	ListVisibilities() (*types.Visibilities, error)
+	ListBrokers(*query.Parameters) (*types.Brokers, error)
+	ListPlatforms(*query.Parameters) (*types.Platforms, error)
+	ListOfferings(*query.Parameters) (*types.ServiceOfferings, error)
+	ListVisibilities(*query.Parameters) (*types.Visibilities, error)
 	DeleteBroker(string) error
 	DeleteBrokersByFieldQuery(string) error
 	DeletePlatform(string) error
@@ -72,7 +70,7 @@ func NewClientWithAuth(httpClient auth.Client, config *ClientConfig) (Client, er
 		httpClient = http.DefaultClient
 	}
 	client := &serviceManagerClient{config: config, httpClient: httpClient}
-	info, err := client.GetInfo()
+	info, err := client.GetInfo(nil)
 	if err != nil {
 		return nil, err
 	}
@@ -105,8 +103,8 @@ func NewClient(httpClient auth.Client, URL string) Client {
 	return &serviceManagerClient{config: &ClientConfig{URL: URL}, httpClient: httpClient}
 }
 
-func (client *serviceManagerClient) GetInfo() (*types.Info, error) {
-	response, err := client.Call(http.MethodGet, web.InfoURL, nil)
+func (client *serviceManagerClient) GetInfo(q *query.Parameters) (*types.Info, error) {
+	response, err := client.Call(http.MethodGet, buildURL(web.InfoURL, q), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -173,48 +171,32 @@ func (client *serviceManagerClient) register(resource interface{}, url string, r
 	return httputil.UnmarshalResponse(response, &result)
 }
 
-// ListBrokersWithQuery returns brokers registered in the Service Manager satisfying provided queries
-func (client *serviceManagerClient) ListBrokersWithQuery(fieldQuery string, labelQuery string) (*types.Brokers, error) {
+// ListBrokers returns brokers registered in the Service Manager satisfying provided queries
+func (client *serviceManagerClient) ListBrokers(q *query.Parameters) (*types.Brokers, error) {
 	brokers := &types.Brokers{}
-	err := client.list(brokers, web.ServiceBrokersURL+"?fieldQuery="+fieldQuery+"&labelQuery="+labelQuery)
+	err := client.list(brokers, buildURL(web.ServiceBrokersURL, q))
 
 	return brokers, err
 }
 
-// ListBrokers returns brokers registered in the Service Manager
-func (client *serviceManagerClient) ListBrokers() (*types.Brokers, error) {
-	return client.ListBrokersWithQuery("", "")
-}
-
 // ListPlatforms returns platforms registered in the Service Manager satisfying provided queries
-func (client *serviceManagerClient) ListPlatformsWithQuery(fieldQuery string, labelQuery string) (*types.Platforms, error) {
+func (client *serviceManagerClient) ListPlatforms(q *query.Parameters) (*types.Platforms, error) {
 	platforms := &types.Platforms{}
-	err := client.list(platforms, web.PlatformsURL+"?fieldQuery="+fieldQuery+"&labelQuery="+labelQuery)
+	err := client.list(platforms, buildURL(web.PlatformsURL, q))
 
 	return platforms, err
 }
 
-// ListPlatforms returns platforms registered in the Service Manager
-func (client *serviceManagerClient) ListPlatforms() (*types.Platforms, error) {
-	return client.ListPlatformsWithQuery("", "")
-}
-
-func (client *serviceManagerClient) ListVisibilitiesWithQuery(fieldQuery string, labelQuery string) (*types.Visibilities, error) {
+func (client *serviceManagerClient) ListVisibilities(q *query.Parameters) (*types.Visibilities, error) {
 	visibilities := &types.Visibilities{}
-	err := client.list(visibilities, web.VisibilitiesURL+"?fieldQuery="+fieldQuery+"&labelQuery="+labelQuery)
-
+	err := client.list(visibilities, buildURL(web.VisibilitiesURL, q))
 	return visibilities, err
 }
 
-// ListVisibilities returns visibilities registered in the Service Manager
-func (client *serviceManagerClient) ListVisibilities() (*types.Visibilities, error) {
-	return client.ListVisibilitiesWithQuery("", "")
-}
-
 // ListOfferings returns service offerings satisfying provided queries
-func (client *serviceManagerClient) ListOfferingsWithQuery(fieldQuery string, labelQuery string) (*types.ServiceOfferings, error) {
+func (client *serviceManagerClient) ListOfferings(q *query.Parameters) (*types.ServiceOfferings, error) {
 	serviceOfferings := &types.ServiceOfferings{}
-	err := client.list(serviceOfferings, web.ServiceOfferingsURL+"?fieldQuery="+fieldQuery+"&labelQuery="+labelQuery)
+	err := client.list(serviceOfferings, buildURL(web.ServiceOfferingsURL, q))
 	if err != nil {
 		return nil, err
 	}
@@ -235,11 +217,6 @@ func (client *serviceManagerClient) ListOfferingsWithQuery(fieldQuery string, la
 		serviceOfferings.ServiceOfferings[i].BrokerName = broker.Name
 	}
 	return serviceOfferings, nil
-}
-
-// ListOfferings returns service offerings provided of all brokers in SM
-func (client *serviceManagerClient) ListOfferings() (*types.ServiceOfferings, error) {
-	return client.ListOfferingsWithQuery("", "")
 }
 
 func (client *serviceManagerClient) list(result interface{}, path string) error {
@@ -392,4 +369,12 @@ func (client *serviceManagerClient) Call(method string, smpath string, body io.R
 	}
 
 	return resp, nil
+}
+
+func buildURL(baseURL string, q *query.Parameters) string {
+	queryParams := q.Encode()
+	if queryParams == "" {
+		return baseURL
+	}
+	return baseURL + "?" + queryParams
 }

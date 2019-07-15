@@ -19,9 +19,9 @@ package broker
 import (
 	"encoding/json"
 	"fmt"
-	"net/url"
 
 	"github.com/Peripli/service-manager-cli/internal/output"
+	"github.com/Peripli/service-manager-cli/pkg/query"
 	"github.com/spf13/cobra"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
@@ -63,8 +63,10 @@ func (ubc *UpdateBrokerCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (ubc *UpdateBrokerCmd) Run() error {
-	fieldQuery := "name+=+" + url.QueryEscape(ubc.name)
-	toUpdateBrokers, err := ubc.Client.ListBrokersWithQuery(fieldQuery, "")
+	params := query.Parameters{
+		FieldQuery: []string{fmt.Sprintf("name = %s", ubc.name)},
+	}
+	toUpdateBrokers, err := ubc.Client.ListBrokers(&params)
 	if err != nil {
 		return err
 	}

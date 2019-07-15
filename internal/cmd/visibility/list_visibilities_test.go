@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"testing"
+
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"gopkg.in/yaml.v2"
-	"testing"
 )
 
 func TestListVisibilitiesCmd(t *testing.T) {
@@ -52,7 +53,7 @@ var _ = Describe("List visibilities command test", func() {
 
 	Context("when no visibilities are registered", func() {
 		It("should list empty visibilities", func() {
-			client.ListVisibilitiesWithQueryReturns(&types.Visibilities{Visibilities: []types.Visibility{}}, nil)
+			client.ListVisibilitiesReturns(&types.Visibilities{Visibilities: []types.Visibility{}}, nil)
 			err := executeWithArgs([]string{})
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -63,7 +64,7 @@ var _ = Describe("List visibilities command test", func() {
 	Context("when visibilities are registered", func() {
 		It("should list 1 visibility", func() {
 			result := &types.Visibilities{Visibilities: []types.Visibility{visibility}}
-			client.ListVisibilitiesWithQueryReturns(result, nil)
+			client.ListVisibilitiesReturns(result, nil)
 			err := executeWithArgs([]string{})
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -72,7 +73,7 @@ var _ = Describe("List visibilities command test", func() {
 
 		It("should list more visibilities", func() {
 			result := &types.Visibilities{Visibilities: []types.Visibility{visibility, visibility2}}
-			client.ListVisibilitiesWithQueryReturns(result, nil)
+			client.ListVisibilitiesReturns(result, nil)
 			err := executeWithArgs([]string{})
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -84,33 +85,35 @@ var _ = Describe("List visibilities command test", func() {
 	Context("when field query flag is used", func() {
 		It("should pass it to SM", func() {
 			result := &types.Visibilities{Visibilities: []types.Visibility{visibility}}
-			client.ListVisibilitiesWithQueryReturns(result, nil)
+			client.ListVisibilitiesReturns(result, nil)
 			err := executeWithArgs([]string{"-f", "planId = plan1"})
 
-			arg1, arg2 := client.ListVisibilitiesWithQueryArgsForCall(0)
+			queryArg := client.ListVisibilitiesArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect([]string{arg1, arg2}).To(ConsistOf("planId+%3D+plan1", ""))
+			Expect(queryArg.FieldQuery[0]).To(Equal("planId = plan1"))
+			Expect(queryArg.LabelQuery).To(BeEmpty())
 		})
 	})
 
 	Context("when label query flag is used", func() {
 		It("should pass it to SM", func() {
 			result := &types.Visibilities{Visibilities: []types.Visibility{visibility}}
-			client.ListVisibilitiesWithQueryReturns(result, nil)
+			client.ListVisibilitiesReturns(result, nil)
 			err := executeWithArgs([]string{"-l", "test = false"})
 
-			arg1, arg2 := client.ListVisibilitiesWithQueryArgsForCall(0)
+			queryArg := client.ListVisibilitiesArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect([]string{arg1, arg2}).To(ConsistOf("", "test+%3D+false"))
+			Expect(queryArg.FieldQuery).To(BeEmpty())
+			Expect(queryArg.LabelQuery[0]).To(Equal("test = false"))
 		})
 	})
 
 	Context("when format flag is used", func() {
 		It("should print in json", func() {
 			result := &types.Visibilities{Visibilities: []types.Visibility{visibility}}
-			client.ListVisibilitiesWithQueryReturns(result, nil)
+			client.ListVisibilitiesReturns(result, nil)
 
 			err := executeWithArgs([]string{"-o", "json"})
 
@@ -122,7 +125,7 @@ var _ = Describe("List visibilities command test", func() {
 
 		It("should print in yaml", func() {
 			result := &types.Visibilities{Visibilities: []types.Visibility{visibility}}
-			client.ListVisibilitiesWithQueryReturns(result, nil)
+			client.ListVisibilitiesReturns(result, nil)
 
 			err := executeWithArgs([]string{"-o", "yaml"})
 
@@ -151,7 +154,7 @@ var _ = Describe("List visibilities command test", func() {
 	Context("when error is returned by Service manager", func() {
 		It("should handle error", func() {
 			expectedErr := errors.New("Http Client Error")
-			client.ListVisibilitiesWithQueryReturns(nil, expectedErr)
+			client.ListVisibilitiesReturns(nil, expectedErr)
 			err := executeWithArgs([]string{})
 
 			Expect(err).Should(HaveOccurred())

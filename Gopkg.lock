@@ -132,11 +132,12 @@
   revision = "05335c5abaa99d4c7a3f36df162b483106ef38a8"
 
 [[projects]]
-  digest = "1:e9c3bb68a6c9470302b8046d4647e0612a2ea6037b9c6a47de60c0a90db504f8"
+  digest = "1:b013cb97ec8147b033199dfc5360d410130e1fc5d74dd6f08c4d777fe49b5c37"
   name = "github.com/onsi/ginkgo"
   packages = [
     ".",
     "config",
+    "extensions/table",
     "internal/codelocation",
     "internal/containernode",
     "internal/failer",
@@ -394,6 +395,7 @@
     "github.com/Peripli/service-manager/pkg/types",
     "github.com/Peripli/service-manager/pkg/web",
     "github.com/onsi/ginkgo",
+    "github.com/onsi/ginkgo/extensions/table",
     "github.com/onsi/gomega",
     "github.com/spf13/afero",
     "github.com/spf13/cobra",
