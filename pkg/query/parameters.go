@@ -16,6 +16,10 @@ type Parameters struct {
 
 // Encode encodes the parameters as URL query parameters
 func (p *Parameters) Encode() string {
+	if p == nil {
+		return ""
+	}
+
 	v := url.Values{}
 
 	if len(p.FieldQuery) > 0 {

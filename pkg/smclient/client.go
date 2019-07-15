@@ -372,8 +372,9 @@ func (client *serviceManagerClient) Call(method string, smpath string, body io.R
 }
 
 func buildURL(baseURL string, q *query.Parameters) string {
-	if q == nil {
+	queryParams := q.Encode()
+	if queryParams == "" {
 		return baseURL
 	}
-	return baseURL + "?" + q.Encode()
+	return baseURL + "?" + queryParams
 }

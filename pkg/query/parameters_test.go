@@ -21,6 +21,13 @@ var _ = Describe("Query Parameters test", func() {
 			Expect(p.Encode()).To(Equal(queryStr))
 		},
 
+		Entry("Empty parameters are properly encoded",
+			&query.Parameters{},
+			""),
+		Entry("nil parameters are properly encoded",
+			nil,
+			""),
+
 		Entry("Special characters in FieldQuery are properly encoded",
 			&query.Parameters{FieldQuery: []string{`key = a in [123] & b != x\y | c = "c" | d = 'd'`}},
 			"fieldQuery=key+%3D+a+in+%5B123%5D+%26+b+%21%3D+x%5Cy+%7C+c+%3D+%22c%22+%7C+d+%3D+%27d%27"),
