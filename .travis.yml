@@ -5,7 +5,7 @@ go:
 
 before_install:
   - go get -u github.com/golang/dep/cmd/dep
-  - dep ensure
+  - dep ensure -v
 
 install:
   - go get github.com/onsi/gomega
