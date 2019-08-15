@@ -170,14 +170,16 @@ func (lc *Cmd) Run() error {
 		User:        lc.user,
 		SSLDisabled: lc.sslDisabled,
 
-		Token:        *token,
-		ClientID:     options.ClientID,
-		ClientSecret: options.ClientSecret,
+		Token: *token,
 
 		IssuerURL:             info.TokenIssuerURL,
 		AuthorizationEndpoint: options.AuthorizationEndpoint,
 		TokenEndpoint:         options.TokenEndpoint,
 		TokenBasicAuth:        info.TokenBasicAuth,
+	}
+	if options.ClientID == defaultClientID && options.ClientSecret == defaultClientSecret {
+		settings.ClientID = options.ClientID
+		settings.ClientSecret = options.ClientSecret
 	}
 	if settings.User == "" {
 		settings.User = options.ClientID

@@ -49,7 +49,9 @@ func NewClient(options *auth.Options, token *auth.Token) auth.Client {
 		tt.TokenType = token.TokenType
 	}
 
-	if token == nil || tt.RefreshToken == "" {
+	if options.ClientID == "" {
+		tokenSource = noRefreshTokenSource(tt)
+	} else if token == nil || tt.RefreshToken == "" {
 		tokenSource = clientCredentialsTokenSource(ctx, options, tt)
 	} else {
 		tokenSource = refreshTokenSource(ctx, options, tt)
@@ -62,6 +64,17 @@ func NewClient(options *auth.Options, token *auth.Token) auth.Client {
 		tokenSource: tokenSource,
 		httpClient:  oauthClient,
 	}
+}
+
+type requireLoginTokenSource struct{}
+
+func (requireLoginTokenSource) Token() (*oauth2.Token, error) {
+	return nil, errors.New(`token has expired. Use "smctl login" to log in`)
+}
+
+func noRefreshTokenSource(token oauth2.Token) oauth2.TokenSource {
+	var requireLogin requireLoginTokenSource
+	return oauth2.ReuseTokenSource(&token, requireLogin)
 }
 
 func refreshTokenSource(ctx context.Context, options *auth.Options, token oauth2.Token) oauth2.TokenSource {
