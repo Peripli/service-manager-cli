@@ -18,6 +18,8 @@ package configuration
 
 import (
 	"errors"
+	"fmt"
+	"os"
 	"time"
 
 	"github.com/Peripli/service-manager-cli/internal/util"
@@ -107,7 +109,15 @@ func (smCfg *smConfiguration) Save(settings *Settings) error {
 	smCfg.viperEnv.Set("token_url", settings.TokenEndpoint)
 	smCfg.viperEnv.Set("auth_url", settings.AuthorizationEndpoint)
 
-	return smCfg.viperEnv.WriteConfig()
+	cfgFile := smCfg.viperEnv.ConfigFileUsed()
+	if err := smCfg.viperEnv.WriteConfig(); err != nil {
+		return fmt.Errorf("could not save config file %s: %s", cfgFile, err)
+	}
+	const ownerAccessOnly = 0600
+	if err := os.Chmod(cfgFile, ownerAccessOnly); err != nil {
+		return fmt.Errorf("could not set access rights of config file %s: %s", cfgFile, err)
+	}
+	return nil
 }
 
 // Load implements configuration load
