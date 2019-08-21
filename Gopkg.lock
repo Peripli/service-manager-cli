@@ -2,7 +2,7 @@
 
 
 [[projects]]
-  digest = "1:fbb5481153a080502f500f90640c13f0edcea73f78883a315108464e9d6a4837"
+  digest = "1:09e1d055bef7ad8aa964edc58ba260e5e0a416650d78d621cc85032a6d90d529"
   name = "github.com/Peripli/service-manager"
   packages = [
     "pkg/health",
@@ -14,8 +14,8 @@
     "pkg/web",
   ]
   pruneopts = "UT"
-  revision = "b00c515277cde8158eb7fe0b3ff3b706a1ac0940"
-  version = "v0.2.3"
+  revision = "91c5a999a70bba16cd8f621137a5101339a475ca"
+  version = "v0.4.3"
 
 [[projects]]
   digest = "1:abeb38ade3f32a92943e5be54f55ed6d6e3b6602761d74b4aab4c9dd45c18abd"
