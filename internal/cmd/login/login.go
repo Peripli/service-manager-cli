@@ -102,6 +102,10 @@ func (lc *Cmd) Validate(args []string) error {
 		return fmt.Errorf("service manager URL is invalid: %v", err)
 	}
 
+	if err := lc.validateLoginFlow(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -116,10 +120,6 @@ func (lc *Cmd) Run() error {
 	info, err := lc.Client.GetInfo(&lc.Parameters)
 	if err != nil {
 		return cliErr.New("Could not get Service Manager info", err)
-	}
-
-	if err := lc.checkLoginFlow(); err != nil {
-		return err
 	}
 
 	options := &auth.Options{
@@ -182,32 +182,37 @@ func (lc *Cmd) getToken(authStrategy auth.Authenticator) (*auth.Token, error) {
 	}
 }
 
-func (lc *Cmd) checkLoginFlow() error {
+func (lc *Cmd) validateLoginFlow() error {
 	switch lc.authenticationFlow {
 	case auth.ClientCredentials:
 		if len(lc.clientID) == 0 || len(lc.clientSecret) == 0 {
 			return errors.New("clientID/clientSecret should not be empty when using client credentials flow")
 		}
 	case auth.PasswordGrant:
-		if len(lc.clientID) == 0 {
-			lc.clientID = defaultClientID
-		}
-
-		if err := lc.readUser(); err != nil {
-			return err
-		}
-
-		if err := lc.readPassword(); err != nil {
-			return err
-		}
-
-		if len(lc.user) == 0 || len(lc.password) == 0 {
-			return errors.New("username/password should not be empty")
-		}
+		return lc.validatePasswordGrant()
 	default:
 		return fmt.Errorf("unknown authentication flow: %s", lc.authenticationFlow)
 	}
 
+	return nil
+}
+
+func (lc *Cmd) validatePasswordGrant() error {
+	if len(lc.clientID) == 0 {
+		lc.clientID = defaultClientID
+	}
+
+	if err := lc.readUser(); err != nil {
+		return err
+	}
+
+	if err := lc.readPassword(); err != nil {
+		return err
+	}
+
+	if len(lc.user) == 0 || len(lc.password) == 0 {
+		return errors.New("username/password should not be empty")
+	}
 	return nil
 }
 
