@@ -89,7 +89,7 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 		if ctx.Client == nil {
 			settings, err := ctx.Configuration.Load()
 			if err != nil {
-				return fmt.Errorf("no logged user. Use \"smctl login\" to log in. Reason: %s", err)
+				return fmt.Errorf(`no logged user, use "smctl login" to log in: %s`, err)
 			}
 
 			oidcClient := oidc.NewClient(&auth.Options{
@@ -102,17 +102,14 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 				TokenBasicAuth:        settings.TokenBasicAuth,
 			}, &settings.Token)
 
-			refresher, isRefresher := oidcClient.(auth.Refresher)
-			if isRefresher {
-				token, err := refresher.Token()
-				if err != nil {
-					return fmt.Errorf("error refreshing token. Reason: %s", err)
-				}
-				if settings.AccessToken != token.AccessToken {
-					settings.Token = *token
-					if saveErr := ctx.Configuration.Save(settings); saveErr != nil {
-						return fmt.Errorf("error saving config file. Reason: %s", saveErr)
-					}
+			token, err := oidcClient.Token()
+			if err != nil {
+				return fmt.Errorf("error refreshing token: %s", err)
+			}
+			if settings.AccessToken != token.AccessToken {
+				settings.Token = *token
+				if saveErr := ctx.Configuration.Save(settings); saveErr != nil {
+					return fmt.Errorf("error saving configuration: %s", saveErr)
 				}
 			}
 

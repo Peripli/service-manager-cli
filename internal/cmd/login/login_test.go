@@ -203,6 +203,16 @@ var _ = Describe("Login Command test", func() {
 			})
 		})
 
+		Context("With invalid auth-flow provided", func() {
+			It("should return error", func() {
+				lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=bad-flow"})
+				credentialsBuffer.WriteString("\n")
+				err := lc.Execute()
+				Expect(err).Should(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("bad-flow"))
+			})
+		})
+
 		Context("With error while typing user in", func() {
 			It("should save configuration successfully", func() {
 

@@ -36,6 +36,7 @@ type Settings struct {
 	AuthorizationEndpoint string
 	TokenEndpoint         string
 	IssuerURL             string
+	AuthFlow              auth.Flow
 
 	URL            string
 	User           string
@@ -108,6 +109,7 @@ func (smCfg *smConfiguration) Save(settings *Settings) error {
 	smCfg.viperEnv.Set("issuer_url", settings.IssuerURL)
 	smCfg.viperEnv.Set("token_url", settings.TokenEndpoint)
 	smCfg.viperEnv.Set("auth_url", settings.AuthorizationEndpoint)
+	smCfg.viperEnv.Set("auth_flow", string(settings.AuthFlow))
 
 	cfgFile := smCfg.viperEnv.ConfigFileUsed()
 	if err := smCfg.viperEnv.WriteConfig(); err != nil {
@@ -139,6 +141,7 @@ func (smCfg *smConfiguration) Load() (*Settings, error) {
 	settings.ExpiresIn, _ = time.Parse(time.RFC1123Z, smCfg.viperEnv.Get("expiry").(string))
 	settings.TokenEndpoint = smCfg.viperEnv.Get("token_url").(string)
 	settings.AuthorizationEndpoint = smCfg.viperEnv.Get("auth_url").(string)
+	settings.AuthFlow = auth.Flow(smCfg.viperEnv.Get("auth_flow").(string))
 	settings.IssuerURL = smCfg.viperEnv.Get("issuer_url").(string)
 	settings.ClientID = smCfg.viperEnv.Get("client_id").(string)
 	settings.ClientSecret = smCfg.viperEnv.Get("client_secret").(string)

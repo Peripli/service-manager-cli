@@ -120,12 +120,15 @@ var _ = Describe("Service Manager Auth strategy test", func() {
 				Expect(err.Error()).To(ContainSubstring(errorMsg))
 			})
 
-			It("should handle wrong JSON body", func() {
+			It("should handle response that is not JSON", func() {
 				responseStatusCode = http.StatusOK
-				responseBody = []byte(`{"json":}`)
+				responseStatusCode = http.StatusBadRequest
+				errorMsg := "internal error"
+				responseBody = []byte(errorMsg)
 				_, err := authStrategy.PasswordCredentials("admin", "admin")
 
 				Expect(err).Should(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring(errorMsg))
 			})
 		})
 	})

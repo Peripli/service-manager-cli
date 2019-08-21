@@ -113,7 +113,7 @@ func wrapError(err error) error {
 		a := A{}
 		unmarshalErr := json.Unmarshal(oauth2Err.Body, &a)
 		if unmarshalErr != nil {
-			return unmarshalErr
+			a.Description = string(oauth2Err.Body)
 		}
 
 		return fmt.Errorf("auth error: %s", a.Description)

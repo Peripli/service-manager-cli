@@ -21,6 +21,18 @@ import (
 	"time"
 )
 
+// Flow defiens an OAuth 2 authentication flow, a.k.a. grant type
+type Flow string
+
+const (
+	// DefaultFlow is the default auth flow
+	DefaultFlow Flow = ""
+	// ClientCredentials flow used for technical user
+	ClientCredentials Flow = "client-credentials"
+	// PasswordGrant flow used for named users
+	PasswordGrant Flow = "password-grant"
+)
+
 // Options is used to configure new authenticators and clients
 type Options struct {
 	User                  string
@@ -30,6 +42,7 @@ type Options struct {
 	AuthorizationEndpoint string `mapstructure:"authorization_endpoint"`
 	TokenEndpoint         string `mapstructure:"token_endpoint"`
 	IssuerURL             string `mapstructure:"issuer_url"`
+	AuthFlow              Flow   `mapstructure:"auth_flow"`
 
 	TokenBasicAuth bool `mapstructure:"token_basic_auth"`
 	SSLDisabled    bool `mapstructure:"ssl_disabled"`
