@@ -28,18 +28,18 @@ import (
 	"golang.org/x/oauth2/clientcredentials"
 )
 
+// ErrTokenExpired indicates that the access token has expired and cannot be refreshed
+var ErrTokenExpired = errors.New("access token has expired")
+
 // NewClient builds configured HTTP client.
 //
 // If token is provided will try to refresh the token if it has expired,
 // otherwise if token is not provided will do client_credentials flow and fetch token
-func NewClient(options *auth.Options, token *auth.Token) auth.Client {
+func NewClient(options *auth.Options, token *auth.Token) *Client {
 	httpClient := util.BuildHTTPClient(options.SSLDisabled)
 	httpClient.Timeout = options.Timeout
 
 	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, httpClient)
-
-	var oauthClient *http.Client
-	var tokenSource oauth2.TokenSource
 
 	var tt oauth2.Token
 	if token != nil {
@@ -49,13 +49,25 @@ func NewClient(options *auth.Options, token *auth.Token) auth.Client {
 		tt.TokenType = token.TokenType
 	}
 
-	if token == nil || tt.RefreshToken == "" {
-		tokenSource = clientCredentialsTokenSource(ctx, options, tt)
-	} else {
-		tokenSource = refreshTokenSource(ctx, options, tt)
+	flow := options.AuthFlow
+	if flow == auth.DefaultFlow {
+		if options.User != "" {
+			flow = auth.PasswordGrant
+		} else {
+			flow = auth.ClientCredentials
+		}
 	}
 
-	oauthClient = oauth2.NewClient(ctx, tokenSource)
+	tokenSource := noRefreshTokenSource(tt)
+	if options.ClientID != "" {
+		if tt.RefreshToken != "" {
+			tokenSource = refreshTokenSource(ctx, options, tt)
+		} else if flow == auth.ClientCredentials {
+			tokenSource = clientCredentialsTokenSource(ctx, options, tt)
+		}
+	}
+
+	oauthClient := oauth2.NewClient(ctx, tokenSource)
 	oauthClient.Timeout = options.Timeout
 
 	return &Client{
@@ -64,32 +76,39 @@ func NewClient(options *auth.Options, token *auth.Token) auth.Client {
 	}
 }
 
+type requireLoginTokenSource struct{}
+
+func (requireLoginTokenSource) Token() (*oauth2.Token, error) {
+	return nil, ErrTokenExpired
+}
+
+func noRefreshTokenSource(token oauth2.Token) oauth2.TokenSource {
+	var requireLogin requireLoginTokenSource
+	return oauth2.ReuseTokenSource(&token, requireLogin)
+}
+
 func refreshTokenSource(ctx context.Context, options *auth.Options, token oauth2.Token) oauth2.TokenSource {
 	oauthConfig := newOauth2Config(options)
 	return oauthConfig.TokenSource(ctx, &token)
 }
 
 func newClientCredentialsConfig(options *auth.Options) *clientcredentials.Config {
-	authStyle := authStyle(options)
-
 	return &clientcredentials.Config{
 		ClientID:     options.ClientID,
 		ClientSecret: options.ClientSecret,
 		TokenURL:     options.TokenEndpoint,
-		AuthStyle:    authStyle,
+		AuthStyle:    authStyle(options),
 	}
 }
 
 func newOauth2Config(options *auth.Options) *oauth2.Config {
-	authStyle := authStyle(options)
-
 	return &oauth2.Config{
 		ClientID:     options.ClientID,
 		ClientSecret: options.ClientSecret,
 		Endpoint: oauth2.Endpoint{
 			AuthURL:   options.AuthorizationEndpoint,
 			TokenURL:  options.TokenEndpoint,
-			AuthStyle: authStyle,
+			AuthStyle: authStyle(options),
 		},
 	}
 }

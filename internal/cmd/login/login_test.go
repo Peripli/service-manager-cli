@@ -62,7 +62,7 @@ var _ = Describe("Login Command test", func() {
 
 	Describe("Valid request", func() {
 		Context("With password provided through flag", func() {
-			It("should save configuration successfully", func() {
+			It("should save configuration successfully with default client credentials", func() {
 				lc.SetArgs([]string{"--url=http://valid-url.com", "--password=password"})
 
 				credentialsBuffer.WriteString("user\n")
@@ -79,7 +79,7 @@ var _ = Describe("Login Command test", func() {
 		})
 
 		Context("With password and client id provided through flags", func() {
-			It("should save configuration successfully", func() {
+			It("should save configuration successfully without client credentials", func() {
 				lc.SetArgs([]string{"--url=http://valid-url.com", "--password=password", "--client-id=smctl"})
 
 				credentialsBuffer.WriteString("user\n")
@@ -90,13 +90,13 @@ var _ = Describe("Login Command test", func() {
 				Expect(outputBuffer.String()).To(ContainSubstring("Logged in successfully.\n"))
 
 				savedConfig := config.SaveArgsForCall(0)
-				Expect(savedConfig.ClientID).To(Equal("smctl"))
+				Expect(savedConfig.ClientID).To(Equal(""))
 				Expect(savedConfig.ClientSecret).To(Equal(""))
 			})
 		})
 
 		Context("With password, client id and client secret provided through flags", func() {
-			It("should save configuration successfully", func() {
+			It("should save configuration successfully without client credentials", func() {
 				lc.SetArgs([]string{"--url=http://valid-url.com", "--password=password", "--client-id=smctl", "--client-secret=smctl"})
 
 				credentialsBuffer.WriteString("user\n")
@@ -107,8 +107,8 @@ var _ = Describe("Login Command test", func() {
 				Expect(outputBuffer.String()).To(ContainSubstring("Logged in successfully.\n"))
 
 				savedConfig := config.SaveArgsForCall(0)
-				Expect(savedConfig.ClientID).To(Equal("smctl"))
-				Expect(savedConfig.ClientSecret).To(Equal("smctl"))
+				Expect(savedConfig.ClientID).To(Equal(""))
+				Expect(savedConfig.ClientSecret).To(Equal(""))
 			})
 		})
 
@@ -136,13 +136,17 @@ var _ = Describe("Login Command test", func() {
 
 		Context("With client credentials flow", func() {
 			When("client id secret are provided through flag", func() {
-				It("login successfully", func() {
+				It("login successfully and not save the client credentials", func() {
 					lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=client-credentials", "--client-id=id", "--client-secret=secret"})
 
 					err := lc.Execute()
 
 					Expect(err).ShouldNot(HaveOccurred())
 					Expect(outputBuffer.String()).To(ContainSubstring("Logged in successfully.\n"))
+
+					savedConfig := config.SaveArgsForCall(0)
+					Expect(savedConfig.ClientID).To(Equal(""))
+					Expect(savedConfig.ClientSecret).To(Equal(""))
 				})
 			})
 		})
@@ -196,6 +200,16 @@ var _ = Describe("Login Command test", func() {
 				err := lc.Execute()
 				Expect(err).Should(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("username/password should not be empty"))
+			})
+		})
+
+		Context("With invalid auth-flow provided", func() {
+			It("should return error", func() {
+				lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=bad-flow"})
+				credentialsBuffer.WriteString("\n")
+				err := lc.Execute()
+				Expect(err).Should(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("bad-flow"))
 			})
 		})
 

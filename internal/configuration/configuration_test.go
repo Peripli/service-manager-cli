@@ -34,18 +34,27 @@ var _ = Describe("Configuration test", func() {
 	Describe("New SM Configuration", func() {
 		Context("when cfg file is provided", func() {
 			It("should save to this file and load the same client config", func() {
+				fs := afero.NewMemMapFs()
 				viperEnv := viper.New()
-				viperEnv.SetFs(afero.NewMemMapFs())
+				viperEnv.SetFs(fs)
 				configuration, err := NewSMConfiguration(viperEnv, configPath)
 
 				timeNow, _ := time.Parse(time.RFC1123Z, time.Now().Format(time.RFC1123Z))
-				settings := Settings{URL: "http://sm.com", User: "admin", Token: auth.Token{
-					AccessToken: "token",
-					ExpiresIn:   timeNow,
-				}}
+				settings := Settings{
+					URL:  "http://sm.com",
+					User: "admin",
+					Token: auth.Token{
+						AccessToken: "token",
+						ExpiresIn:   timeNow,
+					},
+					AuthFlow: auth.PasswordGrant,
+				}
 
 				configuration.Save(&settings)
 
+				viperEnv = viper.New()
+				viperEnv.SetFs(fs)
+				configuration, err = NewSMConfiguration(viperEnv, configPath)
 				clientConfig, errLoad := configuration.Load()
 
 				Expect(err).ShouldNot(HaveOccurred())

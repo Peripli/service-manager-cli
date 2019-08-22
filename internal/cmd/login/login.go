@@ -40,30 +40,6 @@ const (
 	defaultClientSecret = ""
 )
 
-type authFlow string
-
-func (a *authFlow) String() string {
-	return string(*a)
-}
-func (a *authFlow) Set(value string) error {
-	*a = authFlow(value)
-	return nil
-}
-
-func (a *authFlow) Type() string {
-	return "authFlow"
-}
-
-func newAuthFlowValue(value authFlow, p *authFlow) *authFlow {
-	*p = value
-	return (*authFlow)(p)
-}
-
-const (
-	clientCredentials authFlow = "client-credentials"
-	passwordGrant     authFlow = "password-grant"
-)
-
 // Cmd wraps the smctl login command
 type Cmd struct {
 	*cmd.Context
@@ -76,7 +52,7 @@ type Cmd struct {
 	sslDisabled        bool
 	clientID           string
 	clientSecret       string
-	authenticationFlow authFlow
+	authenticationFlow auth.Flow
 
 	authBuilder authenticationBuilder
 }
@@ -106,7 +82,7 @@ func (lc *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result.Flags().StringVarP(&lc.clientID, "client-id", "", "", "Client id used for OAuth flow")
 	result.Flags().StringVarP(&lc.clientSecret, "client-secret", "", defaultClientSecret, "Client secret used for OAuth flow")
 	result.Flags().BoolVarP(&lc.sslDisabled, "skip-ssl-validation", "", false, "Skip verification of the OAuth endpoint. Not recommended!")
-	result.Flags().VarP(newAuthFlowValue(passwordGrant, &lc.authenticationFlow), "auth-flow", "", "provide Oauth2 authentication flow type")
+	result.Flags().StringVarP((*string)(&lc.authenticationFlow), "auth-flow", "", string(auth.PasswordGrant), `Authentication flow (grant type): "client-credentials" or "password-grant"`)
 
 	return result
 }
@@ -126,6 +102,10 @@ func (lc *Cmd) Validate(args []string) error {
 		return fmt.Errorf("service manager URL is invalid: %v", err)
 	}
 
+	if err := lc.validateLoginFlow(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -140,10 +120,6 @@ func (lc *Cmd) Run() error {
 	info, err := lc.Client.GetInfo(&lc.Parameters)
 	if err != nil {
 		return cliErr.New("Could not get Service Manager info", err)
-	}
-
-	if err := lc.checkLoginFlow(); err != nil {
-		return err
 	}
 
 	options := &auth.Options{
@@ -169,15 +145,18 @@ func (lc *Cmd) Run() error {
 		URL:         lc.serviceManagerURL,
 		User:        lc.user,
 		SSLDisabled: lc.sslDisabled,
+		AuthFlow:    lc.authenticationFlow,
 
-		Token:        *token,
-		ClientID:     options.ClientID,
-		ClientSecret: options.ClientSecret,
+		Token: *token,
 
 		IssuerURL:             info.TokenIssuerURL,
 		AuthorizationEndpoint: options.AuthorizationEndpoint,
 		TokenEndpoint:         options.TokenEndpoint,
 		TokenBasicAuth:        info.TokenBasicAuth,
+	}
+	if options.ClientID == defaultClientID && options.ClientSecret == defaultClientSecret {
+		settings.ClientID = options.ClientID
+		settings.ClientSecret = options.ClientSecret
 	}
 	if settings.User == "" {
 		settings.User = options.ClientID
@@ -194,38 +173,46 @@ func (lc *Cmd) Run() error {
 
 func (lc *Cmd) getToken(authStrategy auth.Authenticator) (*auth.Token, error) {
 	switch lc.authenticationFlow {
-	case clientCredentials:
+	case auth.ClientCredentials:
 		return authStrategy.ClientCredentials()
-	case passwordGrant:
+	case auth.PasswordGrant:
 		return authStrategy.PasswordCredentials(lc.user, lc.password)
 	default:
 		return nil, fmt.Errorf("authentication flow %s not recognized", lc.authenticationFlow)
 	}
 }
 
-func (lc *Cmd) checkLoginFlow() error {
-	if lc.authenticationFlow == clientCredentials {
+func (lc *Cmd) validateLoginFlow() error {
+	switch lc.authenticationFlow {
+	case auth.ClientCredentials:
 		if len(lc.clientID) == 0 || len(lc.clientSecret) == 0 {
 			return errors.New("clientID/clientSecret should not be empty when using client credentials flow")
 		}
-	} else {
-		if len(lc.clientID) == 0 {
-			lc.clientID = defaultClientID
-		}
-
-		if err := lc.readUser(); err != nil {
-			return err
-		}
-
-		if err := lc.readPassword(); err != nil {
-			return err
-		}
-
-		if len(lc.user) == 0 || len(lc.password) == 0 {
-			return errors.New("username/password should not be empty")
-		}
+	case auth.PasswordGrant:
+		return lc.validatePasswordGrant()
+	default:
+		return fmt.Errorf("unknown authentication flow: %s", lc.authenticationFlow)
 	}
 
+	return nil
+}
+
+func (lc *Cmd) validatePasswordGrant() error {
+	if len(lc.clientID) == 0 {
+		lc.clientID = defaultClientID
+	}
+
+	if err := lc.readUser(); err != nil {
+		return err
+	}
+
+	if err := lc.readPassword(); err != nil {
+		return err
+	}
+
+	if len(lc.user) == 0 || len(lc.password) == 0 {
+		return errors.New("username/password should not be empty")
+	}
 	return nil
 }
 
