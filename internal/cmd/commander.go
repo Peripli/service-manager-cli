@@ -21,7 +21,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"strings"
+	"syscall"
 
 	"github.com/Peripli/service-manager-cli/pkg/query"
 
@@ -89,7 +91,10 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 		if ctx.Client == nil {
 			settings, err := ctx.Configuration.Load()
 			if err != nil {
-				return fmt.Errorf(`no logged user, use "smctl login" to log in: %s`, err)
+				if isNotExistError(err) {
+					return errors.New(`no logged user, use "smctl login" to log in`)
+				}
+				return err // error is descriptive enough, no need to wrap it
 			}
 
 			oidcClient := oidc.NewClient(&auth.Options{
@@ -104,6 +109,9 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 
 			token, err := oidcClient.Token()
 			if err != nil {
+				if err == oidc.ErrTokenExpired {
+					return errors.New(`access token has expired, use "smctl login" to log in`)
+				}
 				return fmt.Errorf("error refreshing token: %s", err)
 			}
 			if settings.AccessToken != token.AccessToken {
@@ -118,6 +126,15 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 
 		return nil
 	}
+}
+
+func isNotExistError(err error) bool {
+	e, ok := err.(*os.PathError)
+	if ok {
+		errno, ok := e.Err.(syscall.Errno)
+		return ok && errno == syscall.ENOENT
+	}
+	return false
 }
 
 // CommonPrepare provides common pre-run logic for SM commands

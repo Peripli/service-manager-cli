@@ -50,7 +50,7 @@ var _ = Describe("OIDC Client", func() {
 		Entry("No client credentials and expired token - returns error to login",
 			&auth.Options{},
 			newToken(-1*time.Hour),
-			"smctl login",
+			"access token has expired",
 			nil),
 		Entry("With client credentials and refresh token - refreshes the token",
 			options,
@@ -69,7 +69,7 @@ var _ = Describe("OIDC Client", func() {
 		Entry("With client and user credentials and no refresh token - returns error to login",
 			options,
 			tokenNoRefreshToken,
-			"smctl login",
+			"access token has expired",
 			nil),
 	)
 })

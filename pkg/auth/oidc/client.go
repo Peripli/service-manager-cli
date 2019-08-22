@@ -28,6 +28,9 @@ import (
 	"golang.org/x/oauth2/clientcredentials"
 )
 
+// ErrTokenExpired indicates that the access token has expired and cannot be refreshed
+var ErrTokenExpired = errors.New("access token has expired")
+
 // NewClient builds configured HTTP client.
 //
 // If token is provided will try to refresh the token if it has expired,
@@ -76,7 +79,7 @@ func NewClient(options *auth.Options, token *auth.Token) *Client {
 type requireLoginTokenSource struct{}
 
 func (requireLoginTokenSource) Token() (*oauth2.Token, error) {
-	return nil, errors.New(`token has expired. Use "smctl login" to log in`)
+	return nil, ErrTokenExpired
 }
 
 func noRefreshTokenSource(token oauth2.Token) oauth2.TokenSource {
