@@ -66,12 +66,6 @@ type Authenticator interface {
 	PasswordCredentials(user, password string) (*Token, error)
 }
 
-// Refresher should be implemented for refreshing access tokens with refresh token flow
-//go:generate counterfeiter . Refresher
-type Refresher interface {
-	Token() (*Token, error)
-}
-
 // Client should be implemented for http like clients which do automatic authentication
 //go:generate counterfeiter . Client
 type Client interface {
