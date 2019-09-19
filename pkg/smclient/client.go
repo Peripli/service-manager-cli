@@ -21,6 +21,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/Peripli/service-manager/pkg/util"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -221,7 +222,7 @@ func (client *serviceManagerClient) Marketplace(q *query.Parameters) (*types.Mar
 	}
 	for i, so := range marketplace.ServiceOfferings {
 		plans := &types.ServicePlansForOffering{}
-		err := client.list(&plans.ServicePlans, web.ServicePlansURL+"?fieldQuery=service_offering_id+=+"+so.ID)
+		err := client.list(&plans.ServicePlans, web.ServicePlansURL+fmt.Sprintf("?fieldQuery=service_offering_id+eq+'%s'",so.ID))
 		if err != nil {
 			return nil, err
 		}
