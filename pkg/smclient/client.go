@@ -204,7 +204,7 @@ func (client *serviceManagerClient) ListOfferings(q *query.Parameters) (*types.S
 	for i, so := range serviceOfferings.ServiceOfferings {
 		plans := &types.ServicePlans{}
 		plansURL := buildURL(web.ServicePlansURL, &query.Parameters{
-			FieldQuery: []string{fmt.Sprintf("service_offering_id eq %s", so.ID)},
+			FieldQuery: []string{fmt.Sprintf("service_offering_id eq '%s'", so.ID)},
 		})
 		err := client.list(plans, plansURL)
 		if err != nil {
