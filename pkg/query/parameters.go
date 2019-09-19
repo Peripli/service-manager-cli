@@ -23,11 +23,11 @@ func (p *Parameters) Encode() string {
 	v := url.Values{}
 
 	if len(p.FieldQuery) > 0 {
-		v.Set(string(smquery.FieldQuery), strings.Join(p.FieldQuery, "|"))
+		v.Set(string(smquery.FieldQuery), strings.Join(p.FieldQuery, " and "))
 	}
 
 	if len(p.LabelQuery) > 0 {
-		v.Set(string(smquery.LabelQuery), strings.Join(p.LabelQuery, "|"))
+		v.Set(string(smquery.LabelQuery), strings.Join(p.LabelQuery, " and "))
 	}
 
 	for _, param := range p.GeneralParams {
