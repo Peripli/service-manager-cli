@@ -67,10 +67,9 @@ func (dbc *DeleteBrokerCmd) Run() error {
 		if strings.Contains(err.Error(), "StatusCode: 404") {
 			output.PrintMessage(dbc.Output, "Service Broker(s) not found.\n")
 			return nil
-		} else {
-			output.PrintMessage(dbc.Output, "Could not delete broker(s). Reason: ")
-			return err
 		}
+		output.PrintMessage(dbc.Output, "Could not delete broker(s). Reason: ")
+		return err
 	}
 	output.PrintMessage(dbc.Output, "Service Broker(s) successfully deleted.\n")
 	return nil

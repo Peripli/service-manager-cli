@@ -62,10 +62,10 @@ func (dpc *DeletePlatformCmd) Run() error {
 		if strings.Contains(err.Error(), "StatusCode: 404") {
 			output.PrintMessage(dpc.Output, "Platform(s) not found.\n")
 			return nil
-		} else {
-			output.PrintMessage(dpc.Output, "Could not delete platform(s). Reason: ")
-			return err
 		}
+		output.PrintMessage(dpc.Output, "Could not delete platform(s). Reason: ")
+		return err
+
 	}
 
 	output.PrintMessage(dpc.Output, "Platform(s) successfully deleted.\n")
