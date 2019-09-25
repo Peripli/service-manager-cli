@@ -76,7 +76,7 @@ func (so *ServiceOffering) TableData() *TableData {
 
 // ServiceOfferings wraps an array of service offerings
 type ServiceOfferings struct {
-	ServiceOfferings []ServiceOffering `json:"service_offerings" yaml:"service_offerings"`
+	ServiceOfferings []ServiceOffering `json:"items" yaml:"items"`
 }
 
 // Message title of the table

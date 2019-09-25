@@ -18,7 +18,9 @@ package smclient
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"github.com/Peripli/service-manager/pkg/util"
 	"io"
 	"net/http"
 
@@ -27,7 +29,6 @@ import (
 	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
 
 	"github.com/Peripli/service-manager-cli/pkg/auth"
-	"github.com/Peripli/service-manager-cli/pkg/errors"
 	"github.com/Peripli/service-manager-cli/pkg/httputil"
 	"github.com/Peripli/service-manager-cli/pkg/query"
 	"github.com/Peripli/service-manager-cli/pkg/types"
@@ -110,7 +111,7 @@ func (client *serviceManagerClient) GetInfo(q *query.Parameters) (*types.Info, e
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return nil, errors.ResponseError{StatusCode: response.StatusCode}
+		return nil, util.HandleResponseError(response)
 	}
 
 	info := types.DefaultInfo
@@ -165,7 +166,7 @@ func (client *serviceManagerClient) register(resource interface{}, url string, r
 	}
 
 	if response.StatusCode != http.StatusCreated {
-		return errors.ResponseError{StatusCode: response.StatusCode}
+		return util.HandleResponseError(response)
 	}
 
 	return httputil.UnmarshalResponse(response, &result)
@@ -174,7 +175,7 @@ func (client *serviceManagerClient) register(resource interface{}, url string, r
 // ListBrokers returns brokers registered in the Service Manager satisfying provided queries
 func (client *serviceManagerClient) ListBrokers(q *query.Parameters) (*types.Brokers, error) {
 	brokers := &types.Brokers{}
-	err := client.list(brokers, buildURL(web.ServiceBrokersURL, q))
+	err := client.list(&brokers.Brokers, buildURL(web.ServiceBrokersURL, q))
 
 	return brokers, err
 }
@@ -182,34 +183,34 @@ func (client *serviceManagerClient) ListBrokers(q *query.Parameters) (*types.Bro
 // ListPlatforms returns platforms registered in the Service Manager satisfying provided queries
 func (client *serviceManagerClient) ListPlatforms(q *query.Parameters) (*types.Platforms, error) {
 	platforms := &types.Platforms{}
-	err := client.list(platforms, buildURL(web.PlatformsURL, q))
+	err := client.list(&platforms.Platforms, buildURL(web.PlatformsURL, q))
 
 	return platforms, err
 }
 
 func (client *serviceManagerClient) ListVisibilities(q *query.Parameters) (*types.Visibilities, error) {
 	visibilities := &types.Visibilities{}
-	err := client.list(visibilities, buildURL(web.VisibilitiesURL, q))
+	err := client.list(&visibilities.Visibilities, buildURL(web.VisibilitiesURL, q))
 	return visibilities, err
 }
 
 // ListOfferings returns service offerings satisfying provided queries
 func (client *serviceManagerClient) ListOfferings(q *query.Parameters) (*types.ServiceOfferings, error) {
 	serviceOfferings := &types.ServiceOfferings{}
-	err := client.list(serviceOfferings, buildURL(web.ServiceOfferingsURL, q))
+	err := client.list(&serviceOfferings.ServiceOfferings, buildURL(web.ServiceOfferingsURL, q))
 	if err != nil {
 		return nil, err
 	}
 	for i, so := range serviceOfferings.ServiceOfferings {
 		plans := &types.ServicePlans{}
-		err := client.list(plans, web.ServicePlansURL+"?fieldQuery=service_offering_id+=+"+so.ID)
+		err := client.list(&plans.ServicePlans, web.ServicePlansURL+"?fieldQuery=service_offering_id+=+"+so.ID)
 		if err != nil {
 			return nil, err
 		}
 		serviceOfferings.ServiceOfferings[i].Plans = plans.ServicePlans
 
 		broker := &types.Broker{}
-		err = client.list(broker, web.ServiceBrokersURL+"/"+so.BrokerID)
+		err = client.get(broker, web.ServiceBrokersURL+"/"+so.BrokerID)
 		if err != nil {
 			return nil, err
 		}
@@ -220,13 +221,18 @@ func (client *serviceManagerClient) ListOfferings(q *query.Parameters) (*types.S
 }
 
 func (client *serviceManagerClient) list(result interface{}, path string) error {
+	fullURL := httputil.NormalizeURL(client.config.URL) + path
+	return util.ListAll(context.Background(), client.httpClient.Do, fullURL, result)
+}
+
+func (client *serviceManagerClient) get(result interface{}, path string) error {
 	resp, err := client.Call(http.MethodGet, path, nil)
 	if err != nil {
 		return err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return errors.ResponseError{StatusCode: resp.StatusCode}
+		return util.HandleResponseError(resp)
 	}
 
 	return httputil.UnmarshalResponse(resp, &result)
@@ -262,7 +268,7 @@ func (client *serviceManagerClient) delete(path string) error {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return errors.ResponseError{StatusCode: resp.StatusCode}
+		return util.HandleResponseError(resp)
 	}
 
 	return nil
@@ -307,7 +313,7 @@ func (client *serviceManagerClient) update(resource interface{}, url string, id 
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return errors.ResponseError{StatusCode: resp.StatusCode}
+		return util.HandleResponseError(resp)
 	}
 
 	return httputil.UnmarshalResponse(resp, &result)
@@ -325,7 +331,7 @@ func (client *serviceManagerClient) Label(resourcePath string, id string, change
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return errors.ResponseError{StatusCode: response.StatusCode}
+		return util.HandleResponseError(response)
 	}
 
 	return nil
@@ -347,25 +353,7 @@ func (client *serviceManagerClient) Call(method string, smpath string, body io.R
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		respErr := errors.ResponseError{
-			URL:        fullURL,
-			StatusCode: resp.StatusCode,
-		}
-
-		respContent := make(map[string]interface{})
-		if err := httputil.UnmarshalResponse(resp, &respContent); err != nil {
-			return resp, respErr
-		}
-
-		if errorMessage, ok := respContent["error"].(string); ok {
-			respErr.ErrorMessage = errorMessage
-		}
-
-		if description, ok := respContent["description"].(string); ok {
-			respErr.Description = description
-		}
-
-		return nil, respErr
+		return nil, util.HandleResponseError(resp)
 	}
 
 	return resp, nil

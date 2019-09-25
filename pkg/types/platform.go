@@ -62,7 +62,7 @@ func (p *Platform) TableData() *TableData {
 
 // Platforms wraps an array of platforms
 type Platforms struct {
-	Platforms []Platform `json:"platforms"`
+	Platforms []Platform `json:"items"`
 }
 
 // IsEmpty whether the structure is empty

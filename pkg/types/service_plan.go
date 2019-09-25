@@ -66,7 +66,7 @@ func (sp *ServicePlan) TableData() *TableData {
 
 // ServicePlans wraps an array of service plans
 type ServicePlans struct {
-	ServicePlans []ServicePlan `json:"service_plans" yaml:"service_plans"`
+	ServicePlans []ServicePlan `json:"items" yaml:"items"`
 }
 
 // Message title of the table
