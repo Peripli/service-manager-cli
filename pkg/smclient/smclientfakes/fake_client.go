@@ -798,13 +798,13 @@ func (fake *FakeClient) ListBrokersReturnsOnCall(i int, result1 *types.Brokers, 
 	}{result1, result2}
 }
 
-func (fake *FakeClient) ListOfferings(arg1 *query.Parameters) (*types.ServiceOfferings, error) {
+func (fake *FakeClient) Marketplace(arg1 *query.Parameters) (*types.ServiceOfferings, error) {
 	fake.listOfferingsMutex.Lock()
 	ret, specificReturn := fake.listOfferingsReturnsOnCall[len(fake.listOfferingsArgsForCall)]
 	fake.listOfferingsArgsForCall = append(fake.listOfferingsArgsForCall, struct {
 		arg1 *query.Parameters
 	}{arg1})
-	fake.recordInvocation("ListOfferings", []interface{}{arg1})
+	fake.recordInvocation("Marketplace", []interface{}{arg1})
 	fake.listOfferingsMutex.Unlock()
 	if fake.ListOfferingsStub != nil {
 		return fake.ListOfferingsStub(arg1)

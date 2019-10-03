@@ -43,7 +43,6 @@ type Client interface {
 	RegisterVisibility(*types.Visibility) (*types.Visibility, error)
 	ListBrokers(*query.Parameters) (*types.Brokers, error)
 	ListPlatforms(*query.Parameters) (*types.Platforms, error)
-	ListOfferings(*query.Parameters) (*types.ServiceOfferings, error)
 	ListVisibilities(*query.Parameters) (*types.Visibilities, error)
 	DeleteBroker(string) error
 	DeleteBrokersByFieldQuery(string) error
@@ -54,6 +53,7 @@ type Client interface {
 	UpdatePlatform(string, *types.Platform) (*types.Platform, error)
 	UpdateVisibility(string, *types.Visibility) (*types.Visibility, error)
 	Label(string, string, *types.LabelChanges) error
+	Marketplace(*query.Parameters) (*types.ServiceOfferings, error)
 
 	// Call makes HTTP request to the Service Manager server with authentication.
 	// It should be used only in case there is no already implemented method for such an operation
@@ -194,8 +194,8 @@ func (client *serviceManagerClient) ListVisibilities(q *query.Parameters) (*type
 	return visibilities, err
 }
 
-// ListOfferings returns service offerings satisfying provided queries
-func (client *serviceManagerClient) ListOfferings(q *query.Parameters) (*types.ServiceOfferings, error) {
+// Marketplace returns service offerings satisfying provided queries
+func (client *serviceManagerClient) Marketplace(q *query.Parameters) (*types.ServiceOfferings, error) {
 	serviceOfferings := &types.ServiceOfferings{}
 	err := client.list(&serviceOfferings.ServiceOfferings, buildURL(web.ServiceOfferingsURL, q))
 	if err != nil {

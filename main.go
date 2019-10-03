@@ -69,7 +69,7 @@ func main() {
 			visibility.NewListVisibilitiesCmd(context),
 			visibility.NewUpdateVisibilityCmd(context),
 			visibility.NewDeleteVisibilityCmd(context, os.Stdin),
-			offering.NewListOfferingsCmd(context),
+			offering.NewMarketplaceCmd(context),
 			label.NewLabelCmd(context),
 		},
 		PrepareFn: cmd.SmPrepare,

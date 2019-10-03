@@ -22,7 +22,7 @@ func TestListOfferingsCmd(t *testing.T) {
 var _ = Describe("List offerings command test", func() {
 
 	var client *smclientfakes.FakeClient
-	var command *ListOfferingsCmd
+	var command *MarketplaceCmd
 	var buffer *bytes.Buffer
 
 	plan1 := types.ServicePlan{
@@ -63,7 +63,7 @@ var _ = Describe("List offerings command test", func() {
 		buffer = &bytes.Buffer{}
 		client = &smclientfakes.FakeClient{}
 		context := &cmd.Context{Output: buffer, Client: client}
-		command = NewListOfferingsCmd(context)
+		command = NewMarketplaceCmd(context)
 	})
 
 	executeWithArgs := func(args []string) error {

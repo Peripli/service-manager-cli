@@ -23,8 +23,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// ListOfferingsCmd wraps the smctl list-offerings command
-type ListOfferingsCmd struct {
+// MarketplaceCmd wraps the smctl marketplace command
+type MarketplaceCmd struct {
 	*cmd.Context
 
 	prepare      cmd.PrepareFunc
@@ -33,57 +33,57 @@ type ListOfferingsCmd struct {
 	offering string
 }
 
-// NewListOfferingsCmd returns new list-offerings command with context
-func NewListOfferingsCmd(context *cmd.Context) *ListOfferingsCmd {
-	return &ListOfferingsCmd{Context: context}
+// NewMarketplaceCmd returns new list-offerings command with context
+func NewMarketplaceCmd(context *cmd.Context) *MarketplaceCmd {
+	return &MarketplaceCmd{Context: context}
 }
 
 // Run runs the command's logic
-func (lo *ListOfferingsCmd) Run() error {
-	offerings, err := lo.Client.ListOfferings(&lo.Parameters)
+func (m *MarketplaceCmd) Run() error {
+	offerings, err := m.Client.Marketplace(&m.Parameters)
 	if err != nil {
 		return err
 	}
-	if lo.offering == "" {
-		output.PrintServiceManagerObject(lo.Output, lo.outputFormat, offerings)
+	if m.offering == "" {
+		output.PrintServiceManagerObject(m.Output, m.outputFormat, offerings)
 	} else {
 		plans := &types.ServicePlans{}
 		for _, v := range offerings.ServiceOfferings {
-			if v.Name == lo.offering {
+			if v.Name == m.offering {
 				plans.ServicePlans = append(plans.ServicePlans, v.Plans...)
 			}
 		}
-		output.PrintServiceManagerObject(lo.Output, lo.outputFormat, plans)
+		output.PrintServiceManagerObject(m.Output, m.outputFormat, plans)
 	}
-	output.Println(lo.Output)
+	output.Println(m.Output)
 	return nil
 }
 
 // SetOutputFormat set output format
-func (lo *ListOfferingsCmd) SetOutputFormat(format output.Format) {
-	lo.outputFormat = format
+func (m *MarketplaceCmd) SetOutputFormat(format output.Format) {
+	m.outputFormat = format
 }
 
 // HideUsage hide command's usage
-func (lo *ListOfferingsCmd) HideUsage() bool {
+func (m *MarketplaceCmd) HideUsage() bool {
 	return true
 }
 
 // Prepare returns cobra command
-func (lo *ListOfferingsCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
-	lo.prepare = prepare
+func (m *MarketplaceCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
+	m.prepare = prepare
 	result := &cobra.Command{
-		Use:     "list-offerings",
-		Aliases: []string{"lo"},
-		Short:   "List service offerings",
-		Long:    `List all service offerings.`,
-		PreRunE: lo.prepare(lo, lo.Context),
-		RunE:    cmd.RunE(lo),
+		Use:     "marketplace",
+		Aliases: []string{"m"},
+		Short:   "Shows marketplace for all the service-offerings",
+		Long:    `Shows marketplace for all the service-offerings`,
+		PreRunE: m.prepare(m, m.Context),
+		RunE:    cmd.RunE(m),
 	}
 
 	cmd.AddFormatFlag(result.Flags())
-	result.Flags().StringVarP(&lo.offering, "service", "s", "", "Plan details for a single service offering")
-	cmd.AddQueryingFlags(result.Flags(), &lo.Parameters)
+	result.Flags().StringVarP(&m.offering, "service", "s", "", "Plan details for a single service offering")
+	cmd.AddQueryingFlags(result.Flags(), &m.Parameters)
 
 	return result
 }
