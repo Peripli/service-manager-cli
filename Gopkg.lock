@@ -2,12 +2,12 @@
 
 
 [[projects]]
-  digest = "1:6b63ffd5bedc5e717507a0a197b7ab157396152e788f3603bda307f74863ceb4"
+  digest = "1:f838d1eb557ef467b30c9aa3867ea5c2d7525480ea2de9d75e1e7ec545a55cb1"
   name = "github.com/InVisionApp/go-health"
   packages = ["."]
   pruneopts = "UT"
-  revision = "06e1878ab5a8acf6e841861c6cbfcc4d3036add0"
-  version = "v2.1.0"
+  revision = "a4a89dc763c320ee165018886368a202bdcffb87"
+  version = "v2.1.2"
 
 [[projects]]
   digest = "1:be2deb3cba3d2526b3692d80483f59df6462aabc875aace2db263f2664f30670"
@@ -21,8 +21,8 @@
   version = "v1.0.1"
 
 [[projects]]
-  branch = "paging-token"
-  digest = "1:5bb5923a91fa0bb059e2d1925550eb2b38b93c65f989116febac90dd985f1e35"
+  branch = "paging-topic"
+  digest = "1:160ee0efd9855e899276c2fdf276f2de54b8ed330589569992a46027d04a8dea"
   name = "github.com/Peripli/service-manager"
   packages = [
     "pkg/health",
@@ -34,7 +34,7 @@
     "pkg/web",
   ]
   pruneopts = "UT"
-  revision = "3ee5e490231c9598fee36a55e8dff18f1ad8cf0f"
+  revision = "26e942c4445630d44cd26298b1b54c7a9a271e90"
 
 [[projects]]
   digest = "1:abeb38ade3f32a92943e5be54f55ed6d6e3b6602761d74b4aab4c9dd45c18abd"
@@ -151,7 +151,7 @@
   version = "v0.4.1"
 
 [[projects]]
-  digest = "1:0c84de0c9ef9924db2bc8ed3b18960ea4ee549c6b04d0b386c0e3043ccb11243"
+  digest = "1:264ad793409edc174dc6c54b8049835d182c634e0ffa700854dde98f6d23e67f"
   name = "github.com/onsi/ginkgo"
   packages = [
     ".",
@@ -175,8 +175,8 @@
     "types",
   ]
   pruneopts = "UT"
-  revision = "974566c482abc93ffd3df6f4626e79076c7ed290"
-  version = "v1.10.1"
+  revision = "72b6ab036f78c4bf1a9748c3941dd7c3de54917a"
+  version = "v1.10.2"
 
 [[projects]]
   digest = "1:5a9c247f0da47393b38eb20b53077be9e25452d8b2de1fdfec857233a18c503c"
@@ -292,15 +292,15 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:9fbb196ce02eabdf8692680d23a898b05b2e09a4227d8cffa597d156bdf293ab"
+  digest = "1:bbe51412d9915d64ffaa96b51d409e070665efc5194fcf145c4a27d4133107a4"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
   pruneopts = "UT"
-  revision = "9ee001bba392397c76f100a2d5b13afc86f167f1"
+  revision = "34f69633bfdcf9db92f698f8487115767eebef81"
 
 [[projects]]
   branch = "master"
-  digest = "1:fd79642b76a401ca986fe0d343ab851590527f9d6f714c54a023a23a8251d2ac"
+  digest = "1:8c17b5bd24b2cd05fc3023018b52781aebf84244de6692aa7755a3ad03d47766"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -310,7 +310,7 @@
     "html/charset",
   ]
   pruneopts = "UT"
-  revision = "aa69164e4478b84860dc6769c710c699c67058a3"
+  revision = "d98b1b4438230571bd7fbc5aaa89843e92937bd3"
 
 [[projects]]
   branch = "master"
@@ -326,14 +326,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:84aa29f57ad15b7344340348606996a4251bca7b1f8c5fa5370eea3a44e8ed07"
+  digest = "1:456406ce03ca17dfe57d9f3cae7eec35bc5101dce0adadf5bd636760b7d1e15c"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "UT"
-  revision = "2837fb4f24fee082b8c39b1a6dc9e0ed9f3fbd4f"
+  revision = "c178f38b412c7b426e4e97be2e75d11ff7b8d4d4"
 
 [[projects]]
   digest = "1:7570a3e4daa14b7627089e77ad8c714f5f36b4cf1b7dfd8510df7d6935dc42a0"
@@ -379,8 +379,8 @@
     "urlfetch",
   ]
   pruneopts = "UT"
-  revision = "c71d63e301d75423acb410203c747cad31e9a5e7"
-  version = "v1.6.3"
+  revision = "bddb1f54ecfd64b1350fd2dd897fa11d426632bc"
+  version = "v1.6.4"
 
 [[projects]]
   digest = "1:abeb38ade3f32a92943e5be54f55ed6d6e3b6602761d74b4aab4c9dd45c18abd"
@@ -400,12 +400,12 @@
   revision = "dd632973f1e7218eb1089048e0798ec9ae7dceb8"
 
 [[projects]]
-  digest = "1:4d2e5a73dc1500038e504a8d78b986630e3626dc027bc030ba5c75da257cdb96"
+  digest = "1:59f10c1537d2199d9115d946927fe31165959a95190849c82ff11e05803528b0"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   pruneopts = "UT"
-  revision = "51d6538a90f86fe93ac480b35f37b2be17fef232"
-  version = "v2.2.2"
+  revision = "f221b8435cfb71e54062f6c6e99e9ade30b124d5"
+  version = "v2.2.4"
 
 [solve-meta]
   analyzer-name = "dep"
@@ -414,6 +414,7 @@
     "github.com/Peripli/service-manager/pkg/log",
     "github.com/Peripli/service-manager/pkg/query",
     "github.com/Peripli/service-manager/pkg/types",
+    "github.com/Peripli/service-manager/pkg/util",
     "github.com/Peripli/service-manager/pkg/web",
     "github.com/onsi/ginkgo",
     "github.com/onsi/ginkgo/extensions/table",
