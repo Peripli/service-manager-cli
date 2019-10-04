@@ -3,6 +3,8 @@ package label
 import (
 	"bytes"
 	"errors"
+	"testing"
+
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	resperrors "github.com/Peripli/service-manager-cli/pkg/errors"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
@@ -11,7 +13,6 @@ import (
 	"github.com/Peripli/service-manager/pkg/web"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"testing"
 )
 
 func TestLabelCmd(t *testing.T) {
@@ -58,10 +59,10 @@ var _ = Describe("Label Command test", func() {
 				labelChanges = &types.LabelChanges{
 					LabelChanges: []*query.LabelChange{{Key: "key", Operation: "add_values", Values: []string{"val1", "val2", "val3"}}},
 				}
-				err := validLabelExecution("platform", "id", "add-values", "key", "--val", "val1","--val", "val2","--val", "val3")
+				err := validLabelExecution("platform", "id", "add-values", "key", "--val", "val1", "--val", "val2", "--val", "val3")
 
 				Expect(err).ShouldNot(HaveOccurred())
-				resourcePath, id, changes := client.LabelArgsForCall(0)
+				resourcePath, id, changes, _ := client.LabelArgsForCall(0)
 				Expect(resourcePath).To(Equal(web.PlatformsURL))
 				Expect(id).To(Equal("id"))
 				Expect(changes).To(Equal(labelChanges))

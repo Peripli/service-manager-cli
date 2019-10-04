@@ -25,7 +25,6 @@ func TestRegisterBrokerCmd(t *testing.T) {
 }
 
 var _ = Describe("Register Broker Command test", func() {
-
 	var client *smclientfakes.FakeClient
 	var command *RegisterBrokerCmd
 	var buffer *bytes.Buffer
@@ -48,7 +47,7 @@ var _ = Describe("Register Broker Command test", func() {
 
 		rbcCmd := command.Prepare(cmd.SmPrepare)
 		rbcCmd.SetArgs(args)
-		rbcCmd.Execute()
+		Expect(rbcCmd.Execute()).ToNot(HaveOccurred())
 
 		return rbcCmd
 	}
@@ -106,6 +105,18 @@ var _ = Describe("Register Broker Command test", func() {
 				yamlOutputExpected := string(yamlByte) + "\n"
 
 				Expect(buffer.String()).To(Equal(yamlOutputExpected))
+			})
+		})
+
+		Context("With generic param flag", func() {
+			It("should pass it to SM", func() {
+				validRegisterBrokerExecution([]string{"validName", "validType", "validDescription", "--basic", "user:password", "--param", "paramKey=paramValue"})
+
+				_, args := client.RegisterBrokerArgsForCall(0)
+
+				Expect(args.GeneralParams).To(ConsistOf("paramKey=paramValue"))
+				Expect(args.FieldQuery).To(BeEmpty())
+				Expect(args.LabelQuery).To(BeEmpty())
 			})
 		})
 	})

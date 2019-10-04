@@ -18,6 +18,7 @@ package visibility
 
 import (
 	"fmt"
+
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/pkg/types"
@@ -50,7 +51,7 @@ func (rv *RegisterVisibilityCmd) Validate(args []string) error {
 
 // Run runs command's logic
 func (rv *RegisterVisibilityCmd) Run() error {
-	resultVisibility, err := rv.Client.RegisterVisibility(&rv.visibility)
+	resultVisibility, err := rv.Client.RegisterVisibility(&rv.visibility, &rv.Parameters)
 	if err != nil {
 		return err
 	}
@@ -82,6 +83,7 @@ func (rv *RegisterVisibilityCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command
 	}
 
 	cmd.AddFormatFlag(result.Flags())
+	cmd.AddCommonQueryFlag(result.Flags(), &rv.Parameters)
 
 	return result
 }

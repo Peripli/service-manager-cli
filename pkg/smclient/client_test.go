@@ -45,8 +45,10 @@ var _ = Describe("Service Manager Client test", func() {
 	var client Client
 	var handlerDetails []HandlerDetails
 	var validToken = "valid-token"
+	var invalidToken = "invalid-token"
 	var smServer *httptest.Server
 	var fakeAuthClient *FakeAuthClient
+	var params *cliquery.Parameters
 
 	platform := &types.Platform{
 		ID:          "platformID",
@@ -117,27 +119,35 @@ var _ = Describe("Service Manager Client test", func() {
 		return mux
 	}
 
+	BeforeEach(func() {
+		params = &cliquery.Parameters{
+			GeneralParams: []string{"key=value"},
+		}
+	})
+
+	AfterEach(func() {
+		Expect(fakeAuthClient.requestURI).Should(ContainSubstring("key=value"), fmt.Sprintf("Request URI %s should contain ?key=value", fakeAuthClient.requestURI))
+	})
+
 	JustBeforeEach(func() {
 		smServer = httptest.NewServer(createSMHandler())
 		fakeAuthClient = &FakeAuthClient{AccessToken: validToken}
 		client = NewClient(fakeAuthClient, smServer.URL)
 	})
 
-	Describe("General parameter", func() {
-		Context("In query parameters", func() {
-			BeforeEach(func() {
-				responseBody := []byte(`{"token_issuer_url": "http://uaa.com"}`)
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodGet, Path: web.InfoURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
-				}
-			})
+	Describe("Get Info", func() {
+		BeforeEach(func() {
+			responseBody := []byte(`{"token_issuer_url": "http://uaa.com"}`)
+			handlerDetails = []HandlerDetails{
+				{Method: http.MethodGet, Path: web.InfoURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+			}
+		})
+
+		Context("with general parameter", func() {
 			It("should make request with these parameters", func() {
-				param := cliquery.Parameters{}
-				param.GeneralParams = append(param.GeneralParams, "key=val")
-				info, err := client.GetInfo(&param)
+				info, err := client.GetInfo(params)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(info).ToNot(BeNil())
-				Expect(fakeAuthClient.requestURI).To(Equal(fmt.Sprintf("%s?key=val", web.InfoURL)))
 			})
 		})
 	})
@@ -150,11 +160,12 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should fail to authentication", func() {
-				client = NewClient(http.DefaultClient, smServer.URL)
-				_, err := client.ListBrokers(nil)
+				fakeAuthClient.AccessToken = invalidToken
+				client = NewClient(fakeAuthClient, smServer.URL)
+				_, err := client.ListBrokers(params)
 
 				Expect(err).Should(HaveOccurred())
-				Expect(err).To(MatchError(errors.ResponseError{URL: smServer.URL + web.ServiceBrokersURL, StatusCode: http.StatusUnauthorized}))
+				Expect(err).To(MatchError(errors.ResponseError{URL: buildURL(smServer.URL+web.ServiceBrokersURL, params), StatusCode: http.StatusUnauthorized}))
 			})
 		})
 	})
@@ -168,7 +179,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should register successfully", func() {
-				responsePlatform, err := client.RegisterPlatform(platform)
+				responsePlatform, err := client.RegisterPlatform(platform, params)
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(responsePlatform).To(Equal(platform))
@@ -187,7 +198,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return error", func() {
-				responsePlatform, err := client.RegisterPlatform(platform)
+				responsePlatform, err := client.RegisterPlatform(platform, params)
 
 				Expect(err).Should(HaveOccurred())
 				Expect(responsePlatform).To(BeNil())
@@ -203,7 +214,7 @@ var _ = Describe("Service Manager Client test", func() {
 					}
 				})
 				It("should return error with status code", func() {
-					responsePlatform, err := client.RegisterPlatform(platform)
+					responsePlatform, err := client.RegisterPlatform(platform, params)
 
 					Expect(err).Should(HaveOccurred())
 					Expect(err).To(MatchError(errors.ResponseError{StatusCode: handlerDetails[0].ResponseStatusCode}))
@@ -219,10 +230,10 @@ var _ = Describe("Service Manager Client test", func() {
 					}
 				})
 				It("should return error with url and description", func() {
-					responsePlatform, err := client.RegisterPlatform(platform)
+					responsePlatform, err := client.RegisterPlatform(platform, params)
 
 					Expect(err).Should(HaveOccurred())
-					Expect(err).To(MatchError(errors.ResponseError{URL: smServer.URL + web.PlatformsURL, Description: "error", StatusCode: handlerDetails[0].ResponseStatusCode}))
+					Expect(err).To(MatchError(errors.ResponseError{URL: buildURL(smServer.URL+web.PlatformsURL, params), Description: "error", StatusCode: handlerDetails[0].ResponseStatusCode}))
 					Expect(responsePlatform).To(BeNil())
 				})
 			})
@@ -235,10 +246,10 @@ var _ = Describe("Service Manager Client test", func() {
 					}
 				})
 				It("should return error without url and description if invalid response body", func() {
-					responsePlatform, err := client.RegisterPlatform(platform)
+					responsePlatform, err := client.RegisterPlatform(platform, params)
 
 					Expect(err).Should(HaveOccurred())
-					Expect(err).To(MatchError(errors.ResponseError{URL: smServer.URL + web.PlatformsURL, StatusCode: handlerDetails[0].ResponseStatusCode}))
+					Expect(err).To(MatchError(errors.ResponseError{URL: buildURL(smServer.URL+web.PlatformsURL, params), StatusCode: handlerDetails[0].ResponseStatusCode}))
 					Expect(responsePlatform).To(BeNil())
 				})
 			})
@@ -246,8 +257,8 @@ var _ = Describe("Service Manager Client test", func() {
 
 		Context("When invalid config is set", func() {
 			It("should return error", func() {
-				client = NewClient(http.DefaultClient, "invalidURL")
-				_, err := client.RegisterPlatform(platform)
+				client = NewClient(fakeAuthClient, "invalidURL")
+				_, err := client.RegisterPlatform(platform, params)
 
 				Expect(err).Should(HaveOccurred())
 			})
@@ -263,7 +274,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should register successfully", func() {
-				responseVisibility, err := client.RegisterVisibility(visibility)
+				responseVisibility, err := client.RegisterVisibility(visibility, params)
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(responseVisibility).To(Equal(visibility))
@@ -283,7 +294,7 @@ var _ = Describe("Service Manager Client test", func() {
 			})
 
 			It("should return error", func() {
-				responseVisibility, err := client.RegisterVisibility(visibility)
+				responseVisibility, err := client.RegisterVisibility(visibility, params)
 
 				Expect(err).Should(HaveOccurred())
 				Expect(responseVisibility).To(BeNil())
@@ -299,7 +310,7 @@ var _ = Describe("Service Manager Client test", func() {
 					}
 				})
 				It("should return error with status code", func() {
-					responseVisibility, err := client.RegisterVisibility(visibility)
+					responseVisibility, err := client.RegisterVisibility(visibility, params)
 
 					Expect(err).Should(HaveOccurred())
 					Expect(err).To(MatchError(errors.ResponseError{StatusCode: handlerDetails[0].ResponseStatusCode}))
@@ -315,10 +326,10 @@ var _ = Describe("Service Manager Client test", func() {
 					}
 				})
 				It("should return error with url and description", func() {
-					responseVisibility, err := client.RegisterVisibility(visibility)
+					responseVisibility, err := client.RegisterVisibility(visibility, params)
 
 					Expect(err).Should(HaveOccurred())
-					Expect(err).To(MatchError(errors.ResponseError{URL: smServer.URL + web.VisibilitiesURL, Description: "error", StatusCode: handlerDetails[0].ResponseStatusCode}))
+					Expect(err).To(MatchError(errors.ResponseError{URL: buildURL(smServer.URL+web.VisibilitiesURL, params), Description: "error", StatusCode: handlerDetails[0].ResponseStatusCode}))
 					Expect(responseVisibility).To(BeNil())
 				})
 			})
@@ -331,10 +342,10 @@ var _ = Describe("Service Manager Client test", func() {
 					}
 				})
 				It("should return error without url and description if invalid response body", func() {
-					responseVisibility, err := client.RegisterVisibility(visibility)
+					responseVisibility, err := client.RegisterVisibility(visibility, params)
 
 					Expect(err).Should(HaveOccurred())
-					Expect(err).To(MatchError(errors.ResponseError{URL: smServer.URL + web.VisibilitiesURL, StatusCode: handlerDetails[0].ResponseStatusCode}))
+					Expect(err).To(MatchError(errors.ResponseError{URL: buildURL(smServer.URL+web.VisibilitiesURL, params), StatusCode: handlerDetails[0].ResponseStatusCode}))
 					Expect(responseVisibility).To(BeNil())
 				})
 			})
@@ -343,8 +354,8 @@ var _ = Describe("Service Manager Client test", func() {
 
 		Context("When invalid config is set", func() {
 			It("should return error", func() {
-				client = NewClient(http.DefaultClient, "invalidURL")
-				_, err := client.RegisterVisibility(visibility)
+				client = NewClient(fakeAuthClient, "invalidURL")
+				_, err := client.RegisterVisibility(visibility, params)
 
 				Expect(err).Should(HaveOccurred())
 			})
@@ -360,7 +371,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should register successfully", func() {
-				responseBroker, err := client.RegisterBroker(broker)
+				responseBroker, err := client.RegisterBroker(broker, params)
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(responseBroker).To(Equal(broker))
@@ -379,7 +390,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return error", func() {
-				responseBroker, err := client.RegisterBroker(broker)
+				responseBroker, err := client.RegisterBroker(broker, params)
 
 				Expect(err).Should(HaveOccurred())
 				Expect(responseBroker).To(BeNil())
@@ -395,7 +406,7 @@ var _ = Describe("Service Manager Client test", func() {
 					}
 				})
 				It("should return error with status code", func() {
-					responseBroker, err := client.RegisterBroker(broker)
+					responseBroker, err := client.RegisterBroker(broker, params)
 
 					Expect(err).Should(HaveOccurred())
 					Expect(err).To(MatchError(errors.ResponseError{StatusCode: handlerDetails[0].ResponseStatusCode}))
@@ -411,10 +422,10 @@ var _ = Describe("Service Manager Client test", func() {
 					}
 				})
 				It("should return error with url and description", func() {
-					responseBroker, err := client.RegisterBroker(broker)
+					responseBroker, err := client.RegisterBroker(broker, params)
 
 					Expect(err).Should(HaveOccurred())
-					Expect(err).To(MatchError(errors.ResponseError{URL: smServer.URL + web.ServiceBrokersURL, Description: "description",
+					Expect(err).To(MatchError(errors.ResponseError{URL: buildURL(smServer.URL+web.ServiceBrokersURL, params), Description: "description",
 						ErrorMessage: "error", StatusCode: handlerDetails[0].ResponseStatusCode}))
 					Expect(responseBroker).To(BeNil())
 				})
@@ -428,10 +439,10 @@ var _ = Describe("Service Manager Client test", func() {
 					}
 				})
 				It("should return error without url and description if invalid response body", func() {
-					responseBroker, err := client.RegisterBroker(broker)
+					responseBroker, err := client.RegisterBroker(broker, params)
 
 					Expect(err).Should(HaveOccurred())
-					Expect(err).To(MatchError(errors.ResponseError{URL: smServer.URL + web.ServiceBrokersURL, StatusCode: handlerDetails[0].ResponseStatusCode}))
+					Expect(err).To(MatchError(errors.ResponseError{URL: buildURL(smServer.URL+web.ServiceBrokersURL, params), StatusCode: handlerDetails[0].ResponseStatusCode}))
 					Expect(responseBroker).To(BeNil())
 				})
 			})
@@ -440,8 +451,8 @@ var _ = Describe("Service Manager Client test", func() {
 
 		Context("When invalid config is set", func() {
 			It("should return error", func() {
-				client = NewClient(http.DefaultClient, "invalidURL")
-				_, err := client.RegisterBroker(broker)
+				client = NewClient(fakeAuthClient, "invalidURL")
+				_, err := client.RegisterBroker(broker, params)
 
 				Expect(err).Should(HaveOccurred())
 			})
@@ -459,7 +470,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return all", func() {
-				result, err := client.ListBrokers(nil)
+				result, err := client.ListBrokers(params)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result.Brokers).To(HaveLen(1))
 				Expect(result.Brokers[0]).To(Equal(*broker))
@@ -476,7 +487,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return empty array", func() {
-				result, err := client.ListBrokers(nil)
+				result, err := client.ListBrokers(params)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result.Brokers).To(HaveLen(0))
 			})
@@ -489,7 +500,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle status code != 200", func() {
-				_, err := client.ListBrokers(nil)
+				_, err := client.ListBrokers(params)
 				Expect(err).Should(HaveOccurred())
 				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusCreated}))
 			})
@@ -502,9 +513,9 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle status code > 299", func() {
-				_, err := client.ListBrokers(nil)
+				_, err := client.ListBrokers(params)
 				Expect(err).Should(HaveOccurred())
-				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: smServer.URL + web.ServiceBrokersURL}))
+				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: buildURL(smServer.URL+web.ServiceBrokersURL, params)}))
 			})
 		})
 	})
@@ -521,7 +532,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return all", func() {
-				result, err := client.ListPlatforms(nil)
+				result, err := client.ListPlatforms(params)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result.Platforms).To(HaveLen(1))
 				Expect(result.Platforms[0]).To(Equal(*platform))
@@ -539,7 +550,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return empty array", func() {
-				result, err := client.ListPlatforms(nil)
+				result, err := client.ListPlatforms(params)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result.Platforms).To(HaveLen(0))
 			})
@@ -552,7 +563,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle status code != 200", func() {
-				_, err := client.ListPlatforms(nil)
+				_, err := client.ListPlatforms(params)
 				Expect(err).Should(HaveOccurred())
 				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusCreated}))
 			})
@@ -564,9 +575,9 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle status code > 299", func() {
-				_, err := client.ListPlatforms(nil)
+				_, err := client.ListPlatforms(params)
 				Expect(err).Should(HaveOccurred())
-				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: smServer.URL + web.PlatformsURL}))
+				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: buildURL(smServer.URL+web.PlatformsURL, params)}))
 			})
 		})
 	})
@@ -583,7 +594,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return all", func() {
-				result, err := client.ListVisibilities(nil)
+				result, err := client.ListVisibilities(params)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result.Visibilities).To(HaveLen(1))
 				Expect(result.Visibilities[0]).To(Equal(*visibility))
@@ -601,7 +612,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return empty array", func() {
-				result, err := client.ListVisibilities(nil)
+				result, err := client.ListVisibilities(params)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result.Visibilities).To(HaveLen(0))
 			})
@@ -614,7 +625,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle status code != 200", func() {
-				_, err := client.ListVisibilities(nil)
+				_, err := client.ListVisibilities(params)
 				Expect(err).Should(HaveOccurred())
 				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusCreated}))
 			})
@@ -627,9 +638,9 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle status code > 299", func() {
-				_, err := client.ListVisibilities(nil)
+				_, err := client.ListVisibilities(params)
 				Expect(err).Should(HaveOccurred())
-				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: smServer.URL + web.VisibilitiesURL}))
+				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: buildURL(smServer.URL+web.VisibilitiesURL, params)}))
 			})
 		})
 	})
@@ -652,7 +663,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return all with plans and broker name populated", func() {
-				result, err := client.ListOfferings(nil)
+				result, err := client.ListOfferings(params)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result.ServiceOfferings).To(HaveLen(1))
 				Expect(result.ServiceOfferings[0]).To(Equal(*resultOffering))
@@ -669,7 +680,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return empty array", func() {
-				result, err := client.ListOfferings(nil)
+				result, err := client.ListOfferings(params)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result.ServiceOfferings).To(HaveLen(0))
 			})
@@ -682,7 +693,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle status code != 200", func() {
-				_, err := client.ListOfferings(nil)
+				_, err := client.ListOfferings(params)
 				Expect(err).Should(HaveOccurred())
 				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusCreated}))
 			})
@@ -695,9 +706,9 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle status code > 299", func() {
-				_, err := client.ListOfferings(nil)
+				_, err := client.ListOfferings(params)
 				Expect(err).Should(HaveOccurred())
-				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: smServer.URL + web.ServiceOfferingsURL}))
+				Expect(err).To(MatchError(errors.ResponseError{StatusCode: http.StatusBadRequest, URL: buildURL(smServer.URL+web.ServiceOfferingsURL, params)}))
 			})
 		})
 
@@ -709,11 +720,12 @@ var _ = Describe("Service Manager Client test", func() {
 				responseBody := []byte("{}")
 
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+					{Method: http.MethodDelete, Path: web.ServiceBrokersURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
 			It("should be successfully removed", func() {
-				err := client.DeleteBroker("id")
+				params.FieldQuery = append(params.FieldQuery, "id = id")
+				err := client.DeleteBrokers(params)
 				Expect(err).ShouldNot(HaveOccurred())
 			})
 		})
@@ -723,11 +735,12 @@ var _ = Describe("Service Manager Client test", func() {
 				responseBody := []byte("{}")
 
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
+					{Method: http.MethodDelete, Path: web.ServiceBrokersURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
 				}
 			})
 			It("should handle error", func() {
-				err := client.DeleteBroker("id")
+				params.FieldQuery = append(params.FieldQuery, "id = id")
+				err := client.DeleteBrokers(params)
 				Expect(err).Should(HaveOccurred())
 				Expect(err).Should(MatchError(errors.ResponseError{StatusCode: http.StatusCreated}))
 			})
@@ -738,13 +751,14 @@ var _ = Describe("Service Manager Client test", func() {
 				responseBody := []byte(`{ "description": "Broker not found" }`)
 
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
+					{Method: http.MethodDelete, Path: web.ServiceBrokersURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
 				}
 			})
 			It("should handle error", func() {
-				err := client.DeleteBroker("id")
+				params.FieldQuery = append(params.FieldQuery, "id = id")
+				err := client.DeleteBrokers(params)
 				Expect(err).Should(HaveOccurred())
-				Expect(err).Should(MatchError(errors.ResponseError{Description: "Broker not found", URL: smServer.URL + web.ServiceBrokersURL + "/id", StatusCode: http.StatusNotFound}))
+				Expect(err).Should(MatchError(errors.ResponseError{Description: "Broker not found", URL: buildURL(smServer.URL+web.ServiceBrokersURL, params), StatusCode: http.StatusNotFound}))
 			})
 		})
 	})
@@ -755,11 +769,12 @@ var _ = Describe("Service Manager Client test", func() {
 				responseBody := []byte("{}")
 
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.PlatformsURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+					{Method: http.MethodDelete, Path: web.PlatformsURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
 			It("should be successfully removed", func() {
-				err := client.DeletePlatform("id")
+				params.FieldQuery = append(params.FieldQuery, "id = id")
+				err := client.DeletePlatforms(params)
 				Expect(err).ShouldNot(HaveOccurred())
 			})
 		})
@@ -769,11 +784,12 @@ var _ = Describe("Service Manager Client test", func() {
 				responseBody := []byte("{}")
 
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.PlatformsURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
+					{Method: http.MethodDelete, Path: web.PlatformsURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
 				}
 			})
 			It("should handle error", func() {
-				err := client.DeletePlatform("id")
+				params.FieldQuery = append(params.FieldQuery, "id = id")
+				err := client.DeletePlatforms(params)
 				Expect(err).Should(HaveOccurred())
 				Expect(err).Should(MatchError(errors.ResponseError{StatusCode: http.StatusCreated}))
 			})
@@ -784,13 +800,14 @@ var _ = Describe("Service Manager Client test", func() {
 				responseBody := []byte(`{ "description": "Platform not found" }`)
 
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.PlatformsURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
+					{Method: http.MethodDelete, Path: web.PlatformsURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
 				}
 			})
 			It("should handle error", func() {
-				err := client.DeletePlatform("id")
+				params.FieldQuery = append(params.FieldQuery, "id = id")
+				err := client.DeletePlatforms(params)
 				Expect(err).Should(HaveOccurred())
-				Expect(err).Should(MatchError(errors.ResponseError{Description: "Platform not found", URL: smServer.URL + web.PlatformsURL + "/id", StatusCode: http.StatusNotFound}))
+				Expect(err).Should(MatchError(errors.ResponseError{Description: "Platform not found", URL: buildURL(smServer.URL+web.PlatformsURL, params), StatusCode: http.StatusNotFound}))
 			})
 		})
 	})
@@ -801,11 +818,12 @@ var _ = Describe("Service Manager Client test", func() {
 				responseBody := []byte("{}")
 
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.VisibilitiesURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+					{Method: http.MethodDelete, Path: web.VisibilitiesURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
 			It("should be successfully removed", func() {
-				err := client.DeleteVisibility("id")
+				params.FieldQuery = append(params.FieldQuery, "id = id")
+				err := client.DeleteVisibilities(params)
 				Expect(err).ShouldNot(HaveOccurred())
 			})
 		})
@@ -815,11 +833,12 @@ var _ = Describe("Service Manager Client test", func() {
 				responseBody := []byte("{}")
 
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.VisibilitiesURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
+					{Method: http.MethodDelete, Path: web.VisibilitiesURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
 				}
 			})
 			It("should handle error", func() {
-				err := client.DeleteVisibility("id")
+				params.FieldQuery = append(params.FieldQuery, "id = id")
+				err := client.DeleteVisibilities(params)
 				Expect(err).Should(HaveOccurred())
 				Expect(err).Should(MatchError(errors.ResponseError{StatusCode: http.StatusCreated}))
 			})
@@ -830,13 +849,14 @@ var _ = Describe("Service Manager Client test", func() {
 				responseBody := []byte(`{ "description": "Visibility not found" }`)
 
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.VisibilitiesURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
+					{Method: http.MethodDelete, Path: web.VisibilitiesURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
 				}
 			})
 			It("should handle error", func() {
-				err := client.DeleteVisibility("id")
+				params.FieldQuery = append(params.FieldQuery, "id = id")
+				err := client.DeleteVisibilities(params)
 				Expect(err).Should(HaveOccurred())
-				Expect(err).Should(MatchError(errors.ResponseError{Description: "Visibility not found", URL: smServer.URL + web.VisibilitiesURL + "/id", StatusCode: http.StatusNotFound}))
+				Expect(err).Should(MatchError(errors.ResponseError{Description: "Visibility not found", URL: buildURL(smServer.URL+web.VisibilitiesURL, params), StatusCode: http.StatusNotFound}))
 			})
 		})
 	})
@@ -851,7 +871,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should be successfully removed", func() {
-				updatedBroker, err := client.UpdateBroker("id", broker)
+				updatedBroker, err := client.UpdateBroker("id", broker, params)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(updatedBroker).To(Equal(broker))
 			})
@@ -866,9 +886,9 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle error", func() {
-				_, err := client.UpdateBroker("id", broker)
+				_, err := client.UpdateBroker("id", broker, params)
 				Expect(err).Should(HaveOccurred())
-				Expect(err).Should(MatchError(errors.ResponseError{Description: "Broker not found", URL: smServer.URL + web.ServiceBrokersURL + "/id", StatusCode: http.StatusNotFound}))
+				Expect(err).Should(MatchError(errors.ResponseError{Description: "Broker not found", URL: buildURL(smServer.URL+web.ServiceBrokersURL+"/id", params), StatusCode: http.StatusNotFound}))
 			})
 		})
 
@@ -881,7 +901,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle error", func() {
-				_, err := client.UpdateBroker("id", broker)
+				_, err := client.UpdateBroker("id", broker, params)
 				Expect(err).Should(HaveOccurred())
 				Expect(err).Should(MatchError(errors.ResponseError{StatusCode: http.StatusCreated}))
 			})
@@ -898,7 +918,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should be successfully removed", func() {
-				updatedPlatform, err := client.UpdatePlatform("id", platform)
+				updatedPlatform, err := client.UpdatePlatform("id", platform, params)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(updatedPlatform).To(Equal(platform))
 			})
@@ -913,9 +933,9 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle error", func() {
-				_, err := client.UpdatePlatform("id", platform)
+				_, err := client.UpdatePlatform("id", platform, params)
 				Expect(err).Should(HaveOccurred())
-				Expect(err).Should(MatchError(errors.ResponseError{Description: "Platform not found", URL: smServer.URL + web.PlatformsURL + "/id", StatusCode: http.StatusNotFound}))
+				Expect(err).Should(MatchError(errors.ResponseError{Description: "Platform not found", URL: buildURL(smServer.URL+web.PlatformsURL+"/id", params), StatusCode: http.StatusNotFound}))
 			})
 		})
 
@@ -928,7 +948,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle error", func() {
-				_, err := client.UpdatePlatform("id", platform)
+				_, err := client.UpdatePlatform("id", platform, params)
 				Expect(err).Should(HaveOccurred())
 				Expect(err).Should(MatchError(errors.ResponseError{StatusCode: http.StatusCreated}))
 			})
@@ -945,7 +965,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should be successfully removed", func() {
-				updatedVisibility, err := client.UpdateVisibility("id", visibility)
+				updatedVisibility, err := client.UpdateVisibility("id", visibility, params)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(updatedVisibility).To(Equal(visibility))
 			})
@@ -960,9 +980,9 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle error", func() {
-				_, err := client.UpdateVisibility("id", visibility)
+				_, err := client.UpdateVisibility("id", visibility, params)
 				Expect(err).Should(HaveOccurred())
-				Expect(err).Should(MatchError(errors.ResponseError{Description: "Visibility not found", URL: smServer.URL + web.VisibilitiesURL + "/id", StatusCode: http.StatusNotFound}))
+				Expect(err).Should(MatchError(errors.ResponseError{Description: "Visibility not found", URL: buildURL(smServer.URL+web.VisibilitiesURL+"/id", params), StatusCode: http.StatusNotFound}))
 			})
 		})
 
@@ -975,7 +995,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle error", func() {
-				_, err := client.UpdateVisibility("id", visibility)
+				_, err := client.UpdateVisibility("id", visibility, params)
 				Expect(err).Should(HaveOccurred())
 				Expect(err).Should(MatchError(errors.ResponseError{StatusCode: http.StatusCreated}))
 			})
@@ -992,7 +1012,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should get the right issuer and default token basic auth", func() {
-				info, _ := client.GetInfo(nil)
+				info, _ := client.GetInfo(params)
 				Expect(info.TokenIssuerURL).To(Equal("http://uaa.com"))
 				Expect(info.TokenBasicAuth).To(BeTrue()) // default value
 			})
@@ -1007,7 +1027,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should get the right value", func() {
-				info, _ := client.GetInfo(nil)
+				info, _ := client.GetInfo(params)
 				Expect(info.TokenIssuerURL).To(Equal("http://uaa.com"))
 				Expect(info.TokenBasicAuth).To(BeFalse())
 			})
@@ -1022,9 +1042,9 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should get an error", func() {
-				_, err := client.GetInfo(nil)
+				_, err := client.GetInfo(params)
 				Expect(err).Should(HaveOccurred())
-				Expect(err).To(MatchError(errors.ResponseError{URL: smServer.URL + web.InfoURL, StatusCode: http.StatusNotFound}))
+				Expect(err).To(MatchError(errors.ResponseError{URL: buildURL(smServer.URL+web.InfoURL, params), StatusCode: http.StatusNotFound}))
 			})
 		})
 
@@ -1037,7 +1057,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should get an error", func() {
-				_, err := client.GetInfo(nil)
+				_, err := client.GetInfo(params)
 				Expect(err).Should(HaveOccurred())
 			})
 		})
@@ -1050,7 +1070,7 @@ var _ = Describe("Service Manager Client test", func() {
 			})
 			It("should label resource sucessfully", func() {
 
-				err := client.Label(web.ServiceBrokersURL, "id", labelChanges)
+				err := client.Label(web.ServiceBrokersURL, "id", labelChanges, params)
 				Expect(err).ShouldNot(HaveOccurred())
 			})
 		})
@@ -1060,16 +1080,16 @@ var _ = Describe("Service Manager Client test", func() {
 				handlerDetails = []HandlerDetails{{Method: http.MethodPatch, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusNotFound}}
 			})
 			It("should return error", func() {
-				err := client.Label(web.ServiceBrokersURL, "id", labelChanges)
+				err := client.Label(web.ServiceBrokersURL, "id", labelChanges, params)
 				Expect(err).Should(HaveOccurred())
-				Expect(err).To(MatchError(errors.ResponseError{URL: smServer.URL + web.ServiceBrokersURL + "/id", StatusCode: http.StatusNotFound}))
+				Expect(err).To(MatchError(errors.ResponseError{URL: buildURL(smServer.URL+web.ServiceBrokersURL+"/id", params), StatusCode: http.StatusNotFound}))
 			})
 		})
 
 		Context("When invalid config is set", func() {
 			It("should return error", func() {
-				client = NewClient(http.DefaultClient, "invalidURL")
-				err := client.Label(web.ServiceBrokersURL, "id", labelChanges)
+				client = NewClient(fakeAuthClient, "invalidURL")
+				err := client.Label(web.ServiceBrokersURL, "id", labelChanges, params)
 				Expect(err).Should(HaveOccurred())
 			})
 		})

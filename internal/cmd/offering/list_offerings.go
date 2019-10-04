@@ -84,6 +84,7 @@ func (lo *ListOfferingsCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	cmd.AddFormatFlag(result.Flags())
 	result.Flags().StringVarP(&lo.offering, "service", "s", "", "Plan details for a single service offering")
 	cmd.AddQueryingFlags(result.Flags(), &lo.Parameters)
+	cmd.AddCommonQueryFlag(result.Flags(), &lo.Parameters)
 
 	return result
 }

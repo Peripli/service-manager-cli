@@ -64,6 +64,7 @@ func (rpc *RegisterPlatformCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command 
 
 	result.Flags().StringVarP(&rpc.platform.ID, "id", "i", "", "external platform ID")
 	cmd.AddFormatFlag(result.Flags())
+	cmd.AddCommonQueryFlag(result.Flags(), &rpc.Parameters)
 
 	return result
 }
@@ -86,7 +87,7 @@ func (rpc *RegisterPlatformCmd) Validate(args []string) error {
 
 // Run runs command's logic
 func (rpc *RegisterPlatformCmd) Run() error {
-	resultPlatform, err := rpc.Client.RegisterPlatform(&rpc.platform)
+	resultPlatform, err := rpc.Client.RegisterPlatform(&rpc.platform, &rpc.Parameters)
 	if err != nil {
 		return err
 	}

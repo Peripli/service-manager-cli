@@ -23,7 +23,6 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 )
 
@@ -43,14 +42,6 @@ func ValidateURL(URL string) error {
 	}
 
 	return nil
-}
-
-// GetResourceByNamesQuery returns field query for retrieving all instances of resource with given names
-func GetResourceByNamesQuery(names []string) string {
-	for i := range names {
-		names[i] = url.QueryEscape(names[i])
-	}
-	return "name+in+[" + strings.Join(names, "||") + "]"
 }
 
 // BuildHTTPClient builds custom http client with configured ssl validation

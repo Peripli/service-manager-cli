@@ -18,11 +18,14 @@ package visibility
 
 import (
 	"fmt"
+	"io"
+	"net/http"
+
+	"github.com/Peripli/service-manager-cli/pkg/errors"
+
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/spf13/cobra"
-	"io"
-	"strings"
 )
 
 // DeleteVisibilityCmd wraps the smctl delete-visibility command
@@ -32,7 +35,7 @@ type DeleteVisibilityCmd struct {
 	input io.Reader
 	force bool
 
-	ids []string
+	id string
 }
 
 // NewDeleteVisibilityCmd returns new delete-visibility command with context
@@ -46,30 +49,25 @@ func (dv *DeleteVisibilityCmd) Validate(args []string) error {
 		return fmt.Errorf("id is required")
 	}
 
-	dv.ids = args
+	dv.id = args[0]
 
 	return nil
 }
 
 // Run runs the command's logic
 func (dv *DeleteVisibilityCmd) Run() error {
-	deletedVisibilities := make(map[string]bool)
+	dv.Parameters.FieldQuery = append(dv.Parameters.FieldQuery, fmt.Sprintf("id = %s", dv.id))
 
-	for _, toDelete := range dv.ids {
-		err := dv.Client.DeleteVisibility(toDelete)
-		if err != nil {
-			output.PrintMessage(dv.Output, "Could not delete visibility %s. Reason %s\n", toDelete, err)
-		} else {
-			output.PrintMessage(dv.Output, "Visibility with id: %s successfully deleted\n", toDelete)
-			deletedVisibilities[toDelete] = true
-		}
-	}
+	err := dv.Client.DeleteVisibilities(&dv.Parameters)
 
-	for _, id := range dv.ids {
-		if !deletedVisibilities[id] {
-			output.PrintError(dv.Output, fmt.Errorf("visibility with id: %s was not found", id))
-		}
+	if respErr, ok := err.(errors.ResponseError); ok && respErr.StatusCode == http.StatusNotFound {
+		output.PrintMessage(dv.Output, "Visibility not found.\n")
+		return nil
+	} else if err != nil {
+		output.PrintMessage(dv.Output, "Could not delete visibility(s). Reason: ")
+		return err
 	}
+	output.PrintMessage(dv.Output, "Visibility successfully deleted.\n")
 
 	return nil
 }
@@ -82,7 +80,7 @@ func (dv *DeleteVisibilityCmd) HideUsage() bool {
 // AskForConfirmation asks the user to confirm deletion
 func (dv *DeleteVisibilityCmd) AskForConfirmation() (bool, error) {
 	if !dv.force {
-		message := fmt.Sprintf("Do you really want to delete visibilities with ids [%s] (Y/n): ", strings.Join(dv.ids, ", "))
+		message := fmt.Sprintf("Do you really want to delete visibilities with ids [%s] (Y/n): ", dv.id)
 		return cmd.CommonConfirmationPrompt(message, dv.Context, dv.input)
 	}
 	return true, nil
@@ -96,7 +94,7 @@ func (dv *DeleteVisibilityCmd) PrintDeclineMessage() {
 // Prepare returns cobra command
 func (dv *DeleteVisibilityCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
-		Use:     "delete-visibility [id] <id2 <id3> ... <idN>>",
+		Use:     "delete-visibility [id]",
 		Aliases: []string{"dv"},
 		Short:   "Deletes visibility",
 		Long:    `Delete one or more visibilities by name.`,
@@ -105,6 +103,7 @@ func (dv *DeleteVisibilityCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	}
 
 	result.Flags().BoolVarP(&dv.force, "force", "f", false, "Force delete without confirmation")
+	cmd.AddCommonQueryFlag(result.Flags(), &dv.Parameters)
 
 	return result
 }

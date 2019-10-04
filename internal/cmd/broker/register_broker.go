@@ -59,6 +59,7 @@ func (rbc *RegisterBrokerCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 
 	result.Flags().StringVarP(&rbc.basicString, "basic", "b", "", "Sets the username and password for basic authentication. Format is <username:password>.")
 	cmd.AddFormatFlag(result.Flags())
+	cmd.AddCommonQueryFlag(result.Flags(), &rbc.Parameters)
 
 	return result
 }
@@ -85,7 +86,7 @@ func (rbc *RegisterBrokerCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (rbc *RegisterBrokerCmd) Run() error {
-	resultBroker, err := rbc.Client.RegisterBroker(&rbc.broker)
+	resultBroker, err := rbc.Client.RegisterBroker(&rbc.broker, &rbc.Parameters)
 	if responseErr, ok := err.(resperror.ResponseError); ok {
 		return fmt.Errorf(responseErr.Description)
 	} else if err != nil {

@@ -72,5 +72,7 @@ func (lb *ListBrokersCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddQueryingFlags(result.Flags(), &lb.Parameters)
+	cmd.AddCommonQueryFlag(result.Flags(), &lb.Parameters)
+
 	return result
 }

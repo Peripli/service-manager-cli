@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"testing"
+
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"gopkg.in/yaml.v2"
-	"testing"
 )
 
 func TestRegisterVisibilityCmd(t *testing.T) {
@@ -32,7 +33,7 @@ var _ = Describe("Register visibility command test", func() {
 		command = NewRegisterVisibilityCmd(context)
 	})
 
-	validRegisterVisibilityExecution := func(args ...string) error {
+	validRegisterVisibilityExecution := func(args ...string) {
 		visibility = &types.Visibility{
 			ID:            "visibilityID",
 			PlatformID:    args[0],
@@ -41,7 +42,8 @@ var _ = Describe("Register visibility command test", func() {
 		client.RegisterVisibilityReturns(visibility, nil)
 		rvCmd := command.Prepare(cmd.SmPrepare)
 		rvCmd.SetArgs(args)
-		return rvCmd.Execute()
+		err := rvCmd.Execute()
+		Expect(err).ToNot(HaveOccurred())
 	}
 
 	invalidRegisterVisibilityExecution := func(args ...string) error {
@@ -53,19 +55,17 @@ var _ = Describe("Register visibility command test", func() {
 	Describe("Valid request", func() {
 		Context("With necessary arguments provided", func() {
 			It("visibility should be registered", func() {
-				err := validRegisterVisibilityExecution("platformId", "planId")
+				validRegisterVisibilityExecution("platformId", "planId")
 				tableOutputExpected := visibility.TableData().String()
 
-				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buffer.String()).To(ContainSubstring(tableOutputExpected))
 			})
 
 			It("argument values should be as expected", func() {
-				err := validRegisterVisibilityExecution("platformId", "planId")
+				validRegisterVisibilityExecution("platformId", "planId")
 
-				v := client.RegisterVisibilityArgsForCall(0)
+				v, _ := client.RegisterVisibilityArgsForCall(0)
 
-				Expect(err).ShouldNot(HaveOccurred())
 				Expect(v.PlatformID).To(Equal("platformId"))
 				Expect(v.ServicePlanID).To(Equal("planId"))
 			})
@@ -73,25 +73,35 @@ var _ = Describe("Register visibility command test", func() {
 
 		Context("With json format flag", func() {
 			It("should be printed in json format", func() {
-				err := validRegisterVisibilityExecution("platformId", "planId", "--output", "json")
+				validRegisterVisibilityExecution("platformId", "planId", "--output", "json")
 
 				jsonByte, _ := json.MarshalIndent(visibility, "", "  ")
 				jsonOutputExpected := string(jsonByte) + "\n"
 
-				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buffer.String()).To(Equal(jsonOutputExpected))
 			})
 		})
 
 		Context("With yaml format flag", func() {
 			It("should be printed in yaml format", func() {
-				err := validRegisterVisibilityExecution("platformId", "planId", "--output", "yaml")
+				validRegisterVisibilityExecution("platformId", "planId", "--output", "yaml")
 
 				yamlByte, _ := yaml.Marshal(visibility)
 				yamlOutputExpected := string(yamlByte) + "\n"
 
-				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buffer.String()).To(Equal(yamlOutputExpected))
+			})
+		})
+
+		Context("With generic param flag", func() {
+			It("should pass it to SM", func() {
+				validRegisterVisibilityExecution("platformId", "planId", "--param", "paramKey=paramValue")
+
+				_, args := client.RegisterVisibilityArgsForCall(0)
+
+				Expect(args.GeneralParams).To(ConsistOf("paramKey=paramValue"))
+				Expect(args.FieldQuery).To(BeEmpty())
+				Expect(args.LabelQuery).To(BeEmpty())
 			})
 		})
 	})

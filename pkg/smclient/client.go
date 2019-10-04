@@ -19,6 +19,7 @@ package smclient
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -37,26 +38,29 @@ import (
 //go:generate counterfeiter . Client
 type Client interface {
 	GetInfo(*query.Parameters) (*types.Info, error)
-	RegisterPlatform(*types.Platform) (*types.Platform, error)
-	RegisterBroker(*types.Broker) (*types.Broker, error)
-	RegisterVisibility(*types.Visibility) (*types.Visibility, error)
-	ListBrokers(*query.Parameters) (*types.Brokers, error)
+
+	RegisterPlatform(*types.Platform, *query.Parameters) (*types.Platform, error)
 	ListPlatforms(*query.Parameters) (*types.Platforms, error)
-	ListOfferings(*query.Parameters) (*types.ServiceOfferings, error)
+	UpdatePlatform(string, *types.Platform, *query.Parameters) (*types.Platform, error)
+	DeletePlatforms(*query.Parameters) error
+
+	RegisterBroker(*types.Broker, *query.Parameters) (*types.Broker, error)
+	ListBrokers(*query.Parameters) (*types.Brokers, error)
+	UpdateBroker(string, *types.Broker, *query.Parameters) (*types.Broker, error)
+	DeleteBrokers(*query.Parameters) error
+
+	RegisterVisibility(*types.Visibility, *query.Parameters) (*types.Visibility, error)
 	ListVisibilities(*query.Parameters) (*types.Visibilities, error)
-	DeleteBroker(string) error
-	DeleteBrokersByFieldQuery(string) error
-	DeletePlatform(string) error
-	DeleteVisibility(string) error
-	DeletePlatformsByFieldQuery(string) error
-	UpdateBroker(string, *types.Broker) (*types.Broker, error)
-	UpdatePlatform(string, *types.Platform) (*types.Platform, error)
-	UpdateVisibility(string, *types.Visibility) (*types.Visibility, error)
-	Label(string, string, *types.LabelChanges) error
+	UpdateVisibility(string, *types.Visibility, *query.Parameters) (*types.Visibility, error)
+	DeleteVisibilities(*query.Parameters) error
+
+	ListOfferings(*query.Parameters) (*types.ServiceOfferings, error)
+
+	Label(string, string, *types.LabelChanges, *query.Parameters) error
 
 	// Call makes HTTP request to the Service Manager server with authentication.
 	// It should be used only in case there is no already implemented method for such an operation
-	Call(method string, smpath string, body io.Reader) (*http.Response, error)
+	Call(method string, smpath string, body io.Reader, q *query.Parameters) (*http.Response, error)
 }
 
 type serviceManagerClient struct {
@@ -104,7 +108,7 @@ func NewClient(httpClient auth.Client, URL string) Client {
 }
 
 func (client *serviceManagerClient) GetInfo(q *query.Parameters) (*types.Info, error) {
-	response, err := client.Call(http.MethodGet, buildURL(web.InfoURL, q), nil)
+	response, err := client.Call(http.MethodGet, web.InfoURL, nil, q)
 	if err != nil {
 		return nil, err
 	}
@@ -123,9 +127,9 @@ func (client *serviceManagerClient) GetInfo(q *query.Parameters) (*types.Info, e
 }
 
 // RegisterPlatform registers a platform in the service manager
-func (client *serviceManagerClient) RegisterPlatform(platform *types.Platform) (*types.Platform, error) {
+func (client *serviceManagerClient) RegisterPlatform(platform *types.Platform, q *query.Parameters) (*types.Platform, error) {
 	var newPlatform *types.Platform
-	err := client.register(platform, web.PlatformsURL, &newPlatform)
+	err := client.register(platform, web.PlatformsURL, q, &newPlatform)
 	if err != nil {
 		return nil, err
 	}
@@ -133,9 +137,9 @@ func (client *serviceManagerClient) RegisterPlatform(platform *types.Platform) (
 }
 
 // RegisterBroker registers a broker in the service manager
-func (client *serviceManagerClient) RegisterBroker(broker *types.Broker) (*types.Broker, error) {
+func (client *serviceManagerClient) RegisterBroker(broker *types.Broker, q *query.Parameters) (*types.Broker, error) {
 	var newBroker *types.Broker
-	err := client.register(broker, web.ServiceBrokersURL, &newBroker)
+	err := client.register(broker, web.ServiceBrokersURL, q, &newBroker)
 	if err != nil {
 		return nil, err
 	}
@@ -143,23 +147,23 @@ func (client *serviceManagerClient) RegisterBroker(broker *types.Broker) (*types
 }
 
 // RegisterVisibility registers a visibility in the service manager
-func (client *serviceManagerClient) RegisterVisibility(visibility *types.Visibility) (*types.Visibility, error) {
+func (client *serviceManagerClient) RegisterVisibility(visibility *types.Visibility, q *query.Parameters) (*types.Visibility, error) {
 	var newVisibility *types.Visibility
-	err := client.register(visibility, web.VisibilitiesURL, &newVisibility)
+	err := client.register(visibility, web.VisibilitiesURL, q, &newVisibility)
 	if err != nil {
 		return nil, err
 	}
 	return newVisibility, nil
 }
 
-func (client *serviceManagerClient) register(resource interface{}, url string, result interface{}) error {
+func (client *serviceManagerClient) register(resource interface{}, url string, q *query.Parameters, result interface{}) error {
 	requestBody, err := json.Marshal(resource)
 	if err != nil {
 		return err
 	}
 
 	buffer := bytes.NewBuffer(requestBody)
-	response, err := client.Call(http.MethodPost, url, buffer)
+	response, err := client.Call(http.MethodPost, url, buffer, q)
 	if err != nil {
 		return err
 	}
@@ -174,7 +178,7 @@ func (client *serviceManagerClient) register(resource interface{}, url string, r
 // ListBrokers returns brokers registered in the Service Manager satisfying provided queries
 func (client *serviceManagerClient) ListBrokers(q *query.Parameters) (*types.Brokers, error) {
 	brokers := &types.Brokers{}
-	err := client.list(brokers, buildURL(web.ServiceBrokersURL, q))
+	err := client.list(brokers, web.ServiceBrokersURL, q)
 
 	return brokers, err
 }
@@ -182,34 +186,39 @@ func (client *serviceManagerClient) ListBrokers(q *query.Parameters) (*types.Bro
 // ListPlatforms returns platforms registered in the Service Manager satisfying provided queries
 func (client *serviceManagerClient) ListPlatforms(q *query.Parameters) (*types.Platforms, error) {
 	platforms := &types.Platforms{}
-	err := client.list(platforms, buildURL(web.PlatformsURL, q))
+	err := client.list(platforms, web.PlatformsURL, q)
 
 	return platforms, err
 }
 
 func (client *serviceManagerClient) ListVisibilities(q *query.Parameters) (*types.Visibilities, error) {
 	visibilities := &types.Visibilities{}
-	err := client.list(visibilities, buildURL(web.VisibilitiesURL, q))
+	err := client.list(visibilities, web.VisibilitiesURL, q)
 	return visibilities, err
 }
 
 // ListOfferings returns service offerings satisfying provided queries
 func (client *serviceManagerClient) ListOfferings(q *query.Parameters) (*types.ServiceOfferings, error) {
 	serviceOfferings := &types.ServiceOfferings{}
-	err := client.list(serviceOfferings, buildURL(web.ServiceOfferingsURL, q))
+	err := client.list(serviceOfferings, web.ServiceOfferingsURL, q)
 	if err != nil {
 		return nil, err
 	}
 	for i, so := range serviceOfferings.ServiceOfferings {
 		plans := &types.ServicePlans{}
-		err := client.list(plans, web.ServicePlansURL+"?fieldQuery=service_offering_id+=+"+so.ID)
+		err := client.list(plans, web.ServicePlansURL, &query.Parameters{
+			FieldQuery:    []string{fmt.Sprintf("service_offering_id = %s", so.ID)},
+			GeneralParams: q.GeneralParams,
+		})
 		if err != nil {
 			return nil, err
 		}
 		serviceOfferings.ServiceOfferings[i].Plans = plans.ServicePlans
 
 		broker := &types.Broker{}
-		err = client.list(broker, web.ServiceBrokersURL+"/"+so.BrokerID)
+		err = client.list(broker, web.ServiceBrokersURL+"/"+so.BrokerID, &query.Parameters{
+			GeneralParams: q.GeneralParams,
+		})
 		if err != nil {
 			return nil, err
 		}
@@ -219,8 +228,8 @@ func (client *serviceManagerClient) ListOfferings(q *query.Parameters) (*types.S
 	return serviceOfferings, nil
 }
 
-func (client *serviceManagerClient) list(result interface{}, path string) error {
-	resp, err := client.Call(http.MethodGet, path, nil)
+func (client *serviceManagerClient) list(result interface{}, url string, q *query.Parameters) error {
+	resp, err := client.Call(http.MethodGet, url, nil, q)
 	if err != nil {
 		return err
 	}
@@ -232,31 +241,35 @@ func (client *serviceManagerClient) list(result interface{}, path string) error 
 	return httputil.UnmarshalResponse(resp, &result)
 }
 
-func (client *serviceManagerClient) DeleteBrokersByFieldQuery(query string) error {
-	return client.delete(web.ServiceBrokersURL + "?fieldQuery=" + query)
+func (client *serviceManagerClient) DeleteBrokers(q *query.Parameters) error {
+	return client.delete(web.ServiceBrokersURL, q)
 }
 
 // DeleteBroker deletes a broker with given id from service manager
-func (client *serviceManagerClient) DeleteBroker(id string) error {
-	return client.delete(web.ServiceBrokersURL + "/" + id)
+func (client *serviceManagerClient) DeleteBroker(id string, q *query.Parameters) error {
+	return client.delete(web.ServiceBrokersURL+"/"+id, q)
 }
 
-func (client *serviceManagerClient) DeletePlatformsByFieldQuery(query string) error {
-	return client.delete(web.PlatformsURL + "?fieldQuery=" + query)
+func (client *serviceManagerClient) DeletePlatforms(q *query.Parameters) error {
+	return client.delete(web.PlatformsURL, q)
 }
 
 // DeletePlatform deletes a platform with given id from service manager
-func (client *serviceManagerClient) DeletePlatform(id string) error {
-	return client.delete(web.PlatformsURL + "/" + id)
+func (client *serviceManagerClient) DeletePlatform(id string, q *query.Parameters) error {
+	return client.delete(web.PlatformsURL+"/"+id, q)
+}
+
+func (client *serviceManagerClient) DeleteVisibilities(q *query.Parameters) error {
+	return client.delete(web.VisibilitiesURL, q)
 }
 
 // DeleteVisibility deletes a visibility with given id from service manager
-func (client *serviceManagerClient) DeleteVisibility(id string) error {
-	return client.delete(web.VisibilitiesURL + "/" + id)
+func (client *serviceManagerClient) DeleteVisibility(id string, q *query.Parameters) error {
+	return client.delete(web.VisibilitiesURL+"/"+id, q)
 }
 
-func (client *serviceManagerClient) delete(path string) error {
-	resp, err := client.Call(http.MethodDelete, path, nil)
+func (client *serviceManagerClient) delete(url string, q *query.Parameters) error {
+	resp, err := client.Call(http.MethodDelete, url, nil, q)
 	if err != nil {
 		return err
 	}
@@ -268,40 +281,40 @@ func (client *serviceManagerClient) delete(path string) error {
 	return nil
 }
 
-func (client *serviceManagerClient) UpdateBroker(id string, updatedBroker *types.Broker) (*types.Broker, error) {
+func (client *serviceManagerClient) UpdateBroker(id string, updatedBroker *types.Broker, q *query.Parameters) (*types.Broker, error) {
 	result := &types.Broker{}
-	err := client.update(updatedBroker, web.ServiceBrokersURL, id, &result)
+	err := client.update(updatedBroker, web.ServiceBrokersURL, id, q, &result)
 	if err != nil {
 		return nil, err
 	}
 	return result, nil
 }
 
-func (client *serviceManagerClient) UpdatePlatform(id string, updatedPlatform *types.Platform) (*types.Platform, error) {
+func (client *serviceManagerClient) UpdatePlatform(id string, updatedPlatform *types.Platform, q *query.Parameters) (*types.Platform, error) {
 	result := &types.Platform{}
-	err := client.update(updatedPlatform, web.PlatformsURL, id, &result)
+	err := client.update(updatedPlatform, web.PlatformsURL, id, q, &result)
 	if err != nil {
 		return nil, err
 	}
 	return result, nil
 }
 
-func (client *serviceManagerClient) UpdateVisibility(id string, updatedVisibility *types.Visibility) (*types.Visibility, error) {
+func (client *serviceManagerClient) UpdateVisibility(id string, updatedVisibility *types.Visibility, q *query.Parameters) (*types.Visibility, error) {
 	result := &types.Visibility{}
-	err := client.update(updatedVisibility, web.VisibilitiesURL, id, &result)
+	err := client.update(updatedVisibility, web.VisibilitiesURL, id, q, &result)
 	if err != nil {
 		return nil, err
 	}
 	return result, nil
 }
 
-func (client *serviceManagerClient) update(resource interface{}, url string, id string, result interface{}) error {
+func (client *serviceManagerClient) update(resource interface{}, url string, id string, q *query.Parameters, result interface{}) error {
 	requestBody, err := json.Marshal(resource)
 	if err != nil {
 		return err
 	}
 	buffer := bytes.NewBuffer(requestBody)
-	resp, err := client.Call(http.MethodPatch, url+"/"+id, buffer)
+	resp, err := client.Call(http.MethodPatch, url+"/"+id, buffer, q)
 	if err != nil {
 		return err
 	}
@@ -313,13 +326,13 @@ func (client *serviceManagerClient) update(resource interface{}, url string, id 
 	return httputil.UnmarshalResponse(resp, &result)
 }
 
-func (client *serviceManagerClient) Label(resourcePath string, id string, change *types.LabelChanges) error {
+func (client *serviceManagerClient) Label(url string, id string, change *types.LabelChanges, q *query.Parameters) error {
 	requestBody, err := json.Marshal(change)
 	if err != nil {
 		return err
 	}
 	buffer := bytes.NewBuffer(requestBody)
-	response, err := client.Call(http.MethodPatch, resourcePath+"/"+id, buffer)
+	response, err := client.Call(http.MethodPatch, url+"/"+id, buffer, q)
 	if err != nil {
 		return err
 	}
@@ -331,9 +344,8 @@ func (client *serviceManagerClient) Label(resourcePath string, id string, change
 	return nil
 }
 
-func (client *serviceManagerClient) Call(method string, smpath string, body io.Reader) (*http.Response, error) {
-	fullURL := httputil.NormalizeURL(client.config.URL)
-	fullURL = fullURL + smpath
+func (client *serviceManagerClient) Call(method string, smpath string, body io.Reader, q *query.Parameters) (*http.Response, error) {
+	fullURL := httputil.NormalizeURL(client.config.URL) + buildURL(smpath, q)
 
 	req, err := http.NewRequest(method, fullURL, body)
 	if err != nil {

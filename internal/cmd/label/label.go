@@ -2,6 +2,7 @@ package label
 
 import (
 	"fmt"
+
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	resperror "github.com/Peripli/service-manager-cli/pkg/errors"
@@ -38,6 +39,7 @@ func (c *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	}
 
 	result.Flags().StringArrayVar(&c.values, "val", []string{}, "Label value to be used")
+	cmd.AddCommonQueryFlag(result.Flags(), &c.Parameters)
 
 	return result
 }
@@ -93,7 +95,7 @@ func (c *Cmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (c *Cmd) Run() error {
-	err := c.Client.Label(c.resourcePath, c.id, &c.labelChanges)
+	err := c.Client.Label(c.resourcePath, c.id, &c.labelChanges, &c.Parameters)
 	if responseErr, ok := err.(resperror.ResponseError); ok {
 		return fmt.Errorf(responseErr.Description)
 	} else if err != nil {

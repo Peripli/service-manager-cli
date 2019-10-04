@@ -20,12 +20,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 
 	"github.com/Peripli/service-manager-cli/pkg/errors"
 
 	"github.com/Peripli/service-manager-cli/internal/output"
-	"github.com/Peripli/service-manager-cli/internal/util"
 
 	"github.com/spf13/cobra"
 
@@ -39,7 +37,7 @@ type DeletePlatformCmd struct {
 	input io.Reader
 	force bool
 
-	names []string
+	name string
 }
 
 // NewDeletePlatformCmd returns new delete-platform command with context
@@ -53,15 +51,16 @@ func (dpc *DeletePlatformCmd) Validate(args []string) error {
 		return fmt.Errorf("[name] is required")
 	}
 
-	dpc.names = args
+	dpc.name = args[0]
 
 	return nil
 }
 
 // Run runs the command's logic
 func (dpc *DeletePlatformCmd) Run() error {
-	fieldQuery := util.GetResourceByNamesQuery(dpc.names)
-	err := dpc.Client.DeletePlatformsByFieldQuery(fieldQuery)
+	dpc.Parameters.FieldQuery = append(dpc.Parameters.FieldQuery, fmt.Sprintf("name = %s", dpc.name))
+
+	err := dpc.Client.DeletePlatforms(&dpc.Parameters)
 	if respErr, ok := err.(errors.ResponseError); ok && respErr.StatusCode == http.StatusNotFound {
 		output.PrintMessage(dpc.Output, "Platform(s) not found.\n")
 		return nil
@@ -81,7 +80,7 @@ func (dpc *DeletePlatformCmd) HideUsage() bool {
 // AskForConfirmation asks the user to confirm deletion
 func (dpc *DeletePlatformCmd) AskForConfirmation() (bool, error) {
 	if !dpc.force {
-		message := fmt.Sprintf("Do you really want to delete platforms with names [%s] (Y/n): ", strings.Join(dpc.names, ", "))
+		message := fmt.Sprintf("Do you really want to delete platforms with names [%s] (Y/n): ", dpc.name)
 		return cmd.CommonConfirmationPrompt(message, dpc.Context, dpc.input)
 	}
 	return true, nil
@@ -95,7 +94,7 @@ func (dpc *DeletePlatformCmd) PrintDeclineMessage() {
 // Prepare returns cobra command
 func (dpc *DeletePlatformCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
-		Use:     "delete-platform [name] <name2 <name3> ... <nameN>>",
+		Use:     "delete-platform [name]",
 		Aliases: []string{"dp"},
 		Short:   "Deletes platforms",
 		Long:    `Delete one or more platforms with name.`,
@@ -104,6 +103,7 @@ func (dpc *DeletePlatformCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	}
 
 	result.Flags().BoolVarP(&dpc.force, "force", "f", false, "Force delete without confirmation")
+	cmd.AddCommonQueryFlag(result.Flags(), &dpc.Parameters)
 
 	return result
 }

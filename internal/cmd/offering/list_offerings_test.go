@@ -138,12 +138,28 @@ var _ = Describe("List offerings command test", func() {
 		})
 	})
 
+	Context("when generic parameter is used", func() {
+		It("should pass it to SM", func() {
+			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1}}
+			client.ListOfferingsReturns(result, nil)
+			param := "parameterKey=parameterValue"
+			err := executeWithArgs([]string{"--param", param})
+			Expect(err).ShouldNot(HaveOccurred())
+
+			args := client.ListOfferingsArgsForCall(0)
+
+			Expect(args.GeneralParams).To(ConsistOf(param))
+			Expect(args.FieldQuery).To(BeEmpty())
+			Expect(args.LabelQuery).To(BeEmpty())
+		})
+	})
+
 	Context("when field query flag is used", func() {
 		It("should pass it to SM", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1}}
 			client.ListOfferingsReturns(result, nil)
 			param := "name = offering1"
-			err := executeWithArgs([]string{"-f", param})
+			err := executeWithArgs([]string{"--field-query", param})
 
 			args := client.ListOfferingsArgsForCall(0)
 
@@ -158,7 +174,7 @@ var _ = Describe("List offerings command test", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1}}
 			client.ListOfferingsReturns(result, nil)
 			param := "test = false"
-			err := executeWithArgs([]string{"-l", param})
+			err := executeWithArgs([]string{"--label-query", param})
 
 			args := client.ListOfferingsArgsForCall(0)
 
