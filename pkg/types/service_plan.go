@@ -102,6 +102,7 @@ func (sp *ServicePlansForOffering) TableData() *TableData {
 	return result
 }
 
+// ServicePlans wraps an array of service plans
 type ServicePlans struct {
 	ServicePlans []ServicePlan `json:"items" yaml:"items"`
 }

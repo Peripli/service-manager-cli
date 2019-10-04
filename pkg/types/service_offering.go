@@ -74,7 +74,7 @@ func (so *ServiceOffering) TableData() *TableData {
 	return result
 }
 
-// Marketplace wraps an array of service offerings
+// Marketplace wraps an array of service offerings with marketplace related table data
 type Marketplace struct {
 	ServiceOfferings []ServiceOffering `json:"items" yaml:"items"`
 }
@@ -117,6 +117,7 @@ func (m *Marketplace) TableData() *TableData {
 	return result
 }
 
+// ServiceOfferings wraps an array of service offerings
 type ServiceOfferings struct {
 	ServiceOfferings []ServiceOffering `json:"items" yaml:"items"`
 }
