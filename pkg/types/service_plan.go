@@ -64,13 +64,13 @@ func (sp *ServicePlan) TableData() *TableData {
 	return result
 }
 
-// ServicePlans wraps an array of service plans
-type ServicePlans struct {
+// ServicePlansForOffering wraps an array of service plans for marketplace command
+type ServicePlansForOffering struct {
 	ServicePlans []ServicePlan `json:"items" yaml:"items"`
 }
 
 // Message title of the table
-func (sp *ServicePlans) Message() string {
+func (sp *ServicePlansForOffering) Message() string {
 	var msg string
 
 	if len(sp.ServicePlans) == 0 {
@@ -85,6 +85,43 @@ func (sp *ServicePlans) Message() string {
 }
 
 // IsEmpty whether the structure is empty
+func (sp *ServicePlansForOffering) IsEmpty() bool {
+	return len(sp.ServicePlans) == 0
+}
+
+// TableData returns the data to populate a table
+func (sp *ServicePlansForOffering) TableData() *TableData {
+	result := &TableData{}
+	result.Headers = []string{"Plan", "Description", "ID"}
+
+	for _, v := range sp.ServicePlans {
+		row := []string{v.Name, v.Description, v.ID}
+		result.Data = append(result.Data, row)
+	}
+
+	return result
+}
+
+type ServicePlans struct {
+	ServicePlans []ServicePlan `json:"items" yaml:"items"`
+}
+
+// Message title of the table
+func (sp *ServicePlans) Message() string {
+	var msg string
+
+	if len(sp.ServicePlans) == 0 {
+		msg = "There are no service plans."
+	} else if len(sp.ServicePlans) == 1 {
+		msg = "One service plan."
+	} else {
+		msg = fmt.Sprintf("%d service plans.", len(sp.ServicePlans))
+	}
+
+	return msg
+}
+
+// IsEmpty whether the structure is empty
 func (sp *ServicePlans) IsEmpty() bool {
 	return len(sp.ServicePlans) == 0
 }
@@ -92,10 +129,10 @@ func (sp *ServicePlans) IsEmpty() bool {
 // TableData returns the data to populate a table
 func (sp *ServicePlans) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"Plan", "Description", "ID"}
+	result.Headers = []string{"ID", "Name", "Description", "Offering ID"}
 
 	for _, v := range sp.ServicePlans {
-		row := []string{v.Name, v.Description, v.ID}
+		row := []string{v.ID, v.Name, v.Description, v.ServiceOfferingID}
 		result.Data = append(result.Data, row)
 	}
 

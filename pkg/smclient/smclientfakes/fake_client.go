@@ -134,6 +134,19 @@ type FakeClient struct {
 		result1 *types.ServiceOfferings
 		result2 error
 	}
+	ListPlansStub        func(*query.Parameters) (*types.ServicePlans, error)
+	listPlansMutex       sync.RWMutex
+	listPlansArgsForCall []struct {
+		arg1 *query.Parameters
+	}
+	listPlansReturns struct {
+		result1 *types.ServicePlans
+		result2 error
+	}
+	listPlansReturnsOnCall map[int]struct {
+		result1 *types.ServicePlans
+		result2 error
+	}
 	ListPlatformsStub        func(*query.Parameters) (*types.Platforms, error)
 	listPlatformsMutex       sync.RWMutex
 	listPlatformsArgsForCall []struct {
@@ -158,6 +171,19 @@ type FakeClient struct {
 	}
 	listVisibilitiesReturnsOnCall map[int]struct {
 		result1 *types.Visibilities
+		result2 error
+	}
+	MarketplaceStub        func(*query.Parameters) (*types.Marketplace, error)
+	marketplaceMutex       sync.RWMutex
+	marketplaceArgsForCall []struct {
+		arg1 *query.Parameters
+	}
+	marketplaceReturns struct {
+		result1 *types.Marketplace
+		result2 error
+	}
+	marketplaceReturnsOnCall map[int]struct {
+		result1 *types.Marketplace
 		result2 error
 	}
 	RegisterBrokerStub        func(*types.Broker) (*types.Broker, error)
@@ -798,13 +824,13 @@ func (fake *FakeClient) ListBrokersReturnsOnCall(i int, result1 *types.Brokers, 
 	}{result1, result2}
 }
 
-func (fake *FakeClient) Marketplace(arg1 *query.Parameters) (*types.ServiceOfferings, error) {
+func (fake *FakeClient) ListOfferings(arg1 *query.Parameters) (*types.ServiceOfferings, error) {
 	fake.listOfferingsMutex.Lock()
 	ret, specificReturn := fake.listOfferingsReturnsOnCall[len(fake.listOfferingsArgsForCall)]
 	fake.listOfferingsArgsForCall = append(fake.listOfferingsArgsForCall, struct {
 		arg1 *query.Parameters
 	}{arg1})
-	fake.recordInvocation("Marketplace", []interface{}{arg1})
+	fake.recordInvocation("ListOfferings", []interface{}{arg1})
 	fake.listOfferingsMutex.Unlock()
 	if fake.ListOfferingsStub != nil {
 		return fake.ListOfferingsStub(arg1)
@@ -857,6 +883,69 @@ func (fake *FakeClient) ListOfferingsReturnsOnCall(i int, result1 *types.Service
 	}
 	fake.listOfferingsReturnsOnCall[i] = struct {
 		result1 *types.ServiceOfferings
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) ListPlans(arg1 *query.Parameters) (*types.ServicePlans, error) {
+	fake.listPlansMutex.Lock()
+	ret, specificReturn := fake.listPlansReturnsOnCall[len(fake.listPlansArgsForCall)]
+	fake.listPlansArgsForCall = append(fake.listPlansArgsForCall, struct {
+		arg1 *query.Parameters
+	}{arg1})
+	fake.recordInvocation("ListPlans", []interface{}{arg1})
+	fake.listPlansMutex.Unlock()
+	if fake.ListPlansStub != nil {
+		return fake.ListPlansStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.listPlansReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeClient) ListPlansCallCount() int {
+	fake.listPlansMutex.RLock()
+	defer fake.listPlansMutex.RUnlock()
+	return len(fake.listPlansArgsForCall)
+}
+
+func (fake *FakeClient) ListPlansCalls(stub func(*query.Parameters) (*types.ServicePlans, error)) {
+	fake.listPlansMutex.Lock()
+	defer fake.listPlansMutex.Unlock()
+	fake.ListPlansStub = stub
+}
+
+func (fake *FakeClient) ListPlansArgsForCall(i int) *query.Parameters {
+	fake.listPlansMutex.RLock()
+	defer fake.listPlansMutex.RUnlock()
+	argsForCall := fake.listPlansArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeClient) ListPlansReturns(result1 *types.ServicePlans, result2 error) {
+	fake.listPlansMutex.Lock()
+	defer fake.listPlansMutex.Unlock()
+	fake.ListPlansStub = nil
+	fake.listPlansReturns = struct {
+		result1 *types.ServicePlans
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) ListPlansReturnsOnCall(i int, result1 *types.ServicePlans, result2 error) {
+	fake.listPlansMutex.Lock()
+	defer fake.listPlansMutex.Unlock()
+	fake.ListPlansStub = nil
+	if fake.listPlansReturnsOnCall == nil {
+		fake.listPlansReturnsOnCall = make(map[int]struct {
+			result1 *types.ServicePlans
+			result2 error
+		})
+	}
+	fake.listPlansReturnsOnCall[i] = struct {
+		result1 *types.ServicePlans
 		result2 error
 	}{result1, result2}
 }
@@ -983,6 +1072,69 @@ func (fake *FakeClient) ListVisibilitiesReturnsOnCall(i int, result1 *types.Visi
 	}
 	fake.listVisibilitiesReturnsOnCall[i] = struct {
 		result1 *types.Visibilities
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) Marketplace(arg1 *query.Parameters) (*types.Marketplace, error) {
+	fake.marketplaceMutex.Lock()
+	ret, specificReturn := fake.marketplaceReturnsOnCall[len(fake.marketplaceArgsForCall)]
+	fake.marketplaceArgsForCall = append(fake.marketplaceArgsForCall, struct {
+		arg1 *query.Parameters
+	}{arg1})
+	fake.recordInvocation("Marketplace", []interface{}{arg1})
+	fake.marketplaceMutex.Unlock()
+	if fake.MarketplaceStub != nil {
+		return fake.MarketplaceStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.marketplaceReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeClient) MarketplaceCallCount() int {
+	fake.marketplaceMutex.RLock()
+	defer fake.marketplaceMutex.RUnlock()
+	return len(fake.marketplaceArgsForCall)
+}
+
+func (fake *FakeClient) MarketplaceCalls(stub func(*query.Parameters) (*types.Marketplace, error)) {
+	fake.marketplaceMutex.Lock()
+	defer fake.marketplaceMutex.Unlock()
+	fake.MarketplaceStub = stub
+}
+
+func (fake *FakeClient) MarketplaceArgsForCall(i int) *query.Parameters {
+	fake.marketplaceMutex.RLock()
+	defer fake.marketplaceMutex.RUnlock()
+	argsForCall := fake.marketplaceArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeClient) MarketplaceReturns(result1 *types.Marketplace, result2 error) {
+	fake.marketplaceMutex.Lock()
+	defer fake.marketplaceMutex.Unlock()
+	fake.MarketplaceStub = nil
+	fake.marketplaceReturns = struct {
+		result1 *types.Marketplace
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) MarketplaceReturnsOnCall(i int, result1 *types.Marketplace, result2 error) {
+	fake.marketplaceMutex.Lock()
+	defer fake.marketplaceMutex.Unlock()
+	fake.MarketplaceStub = nil
+	if fake.marketplaceReturnsOnCall == nil {
+		fake.marketplaceReturnsOnCall = make(map[int]struct {
+			result1 *types.Marketplace
+			result2 error
+		})
+	}
+	fake.marketplaceReturnsOnCall[i] = struct {
+		result1 *types.Marketplace
 		result2 error
 	}{result1, result2}
 }
@@ -1391,10 +1543,14 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.listBrokersMutex.RUnlock()
 	fake.listOfferingsMutex.RLock()
 	defer fake.listOfferingsMutex.RUnlock()
+	fake.listPlansMutex.RLock()
+	defer fake.listPlansMutex.RUnlock()
 	fake.listPlatformsMutex.RLock()
 	defer fake.listPlatformsMutex.RUnlock()
 	fake.listVisibilitiesMutex.RLock()
 	defer fake.listVisibilitiesMutex.RUnlock()
+	fake.marketplaceMutex.RLock()
+	defer fake.marketplaceMutex.RUnlock()
 	fake.registerBrokerMutex.RLock()
 	defer fake.registerBrokerMutex.RUnlock()
 	fake.registerPlatformMutex.RLock()

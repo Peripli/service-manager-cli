@@ -43,6 +43,8 @@ type Client interface {
 	RegisterVisibility(*types.Visibility) (*types.Visibility, error)
 	ListBrokers(*query.Parameters) (*types.Brokers, error)
 	ListPlatforms(*query.Parameters) (*types.Platforms, error)
+	ListOfferings(*query.Parameters) (*types.ServiceOfferings, error)
+	ListPlans(*query.Parameters) (*types.ServicePlans, error)
 	ListVisibilities(*query.Parameters) (*types.Visibilities, error)
 	DeleteBroker(string) error
 	DeleteBrokersByFieldQuery(string) error
@@ -53,7 +55,7 @@ type Client interface {
 	UpdatePlatform(string, *types.Platform) (*types.Platform, error)
 	UpdateVisibility(string, *types.Visibility) (*types.Visibility, error)
 	Label(string, string, *types.LabelChanges) error
-	Marketplace(*query.Parameters) (*types.ServiceOfferings, error)
+	Marketplace(*query.Parameters) (*types.Marketplace, error)
 
 	// Call makes HTTP request to the Service Manager server with authentication.
 	// It should be used only in case there is no already implemented method for such an operation
@@ -188,6 +190,22 @@ func (client *serviceManagerClient) ListPlatforms(q *query.Parameters) (*types.P
 	return platforms, err
 }
 
+// ListOfferings returns offerings registered in the Service Manager satisfying provided queries
+func (client *serviceManagerClient) ListOfferings(q *query.Parameters) (*types.ServiceOfferings, error) {
+	offerings := &types.ServiceOfferings{}
+	err := client.list(&offerings.ServiceOfferings, buildURL(web.ServiceOfferingsURL, q))
+
+	return offerings, err
+}
+
+// ListPlans returns plans registered in the Service Manager satisfying provided queries
+func (client *serviceManagerClient) ListPlans(q *query.Parameters) (*types.ServicePlans, error) {
+	plans := &types.ServicePlans{}
+	err := client.list(&plans.ServicePlans, buildURL(web.ServicePlansURL, q))
+
+	return plans, err
+}
+
 func (client *serviceManagerClient) ListVisibilities(q *query.Parameters) (*types.Visibilities, error) {
 	visibilities := &types.Visibilities{}
 	err := client.list(&visibilities.Visibilities, buildURL(web.VisibilitiesURL, q))
@@ -195,19 +213,19 @@ func (client *serviceManagerClient) ListVisibilities(q *query.Parameters) (*type
 }
 
 // Marketplace returns service offerings satisfying provided queries
-func (client *serviceManagerClient) Marketplace(q *query.Parameters) (*types.ServiceOfferings, error) {
-	serviceOfferings := &types.ServiceOfferings{}
-	err := client.list(&serviceOfferings.ServiceOfferings, buildURL(web.ServiceOfferingsURL, q))
+func (client *serviceManagerClient) Marketplace(q *query.Parameters) (*types.Marketplace, error) {
+	marketplace := &types.Marketplace{}
+	err := client.list(&marketplace.ServiceOfferings, buildURL(web.ServiceOfferingsURL, q))
 	if err != nil {
 		return nil, err
 	}
-	for i, so := range serviceOfferings.ServiceOfferings {
-		plans := &types.ServicePlans{}
+	for i, so := range marketplace.ServiceOfferings {
+		plans := &types.ServicePlansForOffering{}
 		err := client.list(&plans.ServicePlans, web.ServicePlansURL+"?fieldQuery=service_offering_id+=+"+so.ID)
 		if err != nil {
 			return nil, err
 		}
-		serviceOfferings.ServiceOfferings[i].Plans = plans.ServicePlans
+		marketplace.ServiceOfferings[i].Plans = plans.ServicePlans
 
 		broker := &types.Broker{}
 		err = client.get(broker, web.ServiceBrokersURL+"/"+so.BrokerID)
@@ -215,9 +233,9 @@ func (client *serviceManagerClient) Marketplace(q *query.Parameters) (*types.Ser
 			return nil, err
 		}
 
-		serviceOfferings.ServiceOfferings[i].BrokerName = broker.Name
+		marketplace.ServiceOfferings[i].BrokerName = broker.Name
 	}
-	return serviceOfferings, nil
+	return marketplace, nil
 }
 
 func (client *serviceManagerClient) list(result interface{}, path string) error {

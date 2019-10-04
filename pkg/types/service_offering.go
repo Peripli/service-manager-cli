@@ -74,7 +74,49 @@ func (so *ServiceOffering) TableData() *TableData {
 	return result
 }
 
-// ServiceOfferings wraps an array of service offerings
+// Marketplace wraps an array of service offerings
+type Marketplace struct {
+	ServiceOfferings []ServiceOffering `json:"items" yaml:"items"`
+}
+
+// Message title of the table
+func (m *Marketplace) Message() string {
+	var msg string
+
+	if len(m.ServiceOfferings) == 0 {
+		msg = "There are no service offerings."
+	} else if len(m.ServiceOfferings) == 1 {
+		msg = "One service offering."
+	} else {
+		msg = fmt.Sprintf("%d service offerings.", len(m.ServiceOfferings))
+	}
+
+	return msg
+}
+
+// IsEmpty whether the structure is empty
+func (m *Marketplace) IsEmpty() bool {
+	return len(m.ServiceOfferings) == 0
+}
+
+// TableData returns the data to populate a table
+func (m *Marketplace) TableData() *TableData {
+	result := &TableData{}
+	result.Headers = []string{"Name", "Plans", "Description", "Broker Name", "Broker ID"}
+
+	for _, v := range m.ServiceOfferings {
+		plans := make([]string, len(v.Plans))
+		for i, v := range v.Plans {
+			plans[i] = v.Name
+		}
+
+		row := []string{v.Name, strings.Join(plans, ", "), v.Description, v.BrokerName, v.BrokerID}
+		result.Data = append(result.Data, row)
+	}
+
+	return result
+}
+
 type ServiceOfferings struct {
 	ServiceOfferings []ServiceOffering `json:"items" yaml:"items"`
 }
@@ -101,17 +143,11 @@ func (so *ServiceOfferings) IsEmpty() bool {
 
 // TableData returns the data to populate a table
 func (so *ServiceOfferings) TableData() *TableData {
-
 	result := &TableData{}
-	result.Headers = []string{"Name", "Plans", "Description", "Broker Name", "Broker ID"}
+	result.Headers = []string{"ID", "Name", "Description", "Broker ID", "Labels"}
 
 	for _, v := range so.ServiceOfferings {
-		plans := make([]string, len(v.Plans))
-		for i, v := range v.Plans {
-			plans[i] = v.Name
-		}
-
-		row := []string{v.Name, strings.Join(plans, ", "), v.Description, v.BrokerName, v.BrokerID}
+		row := []string{v.ID, v.Name, v.Description, v.BrokerID, formatLabels(v.Labels)}
 		result.Data = append(result.Data, row)
 	}
 

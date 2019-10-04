@@ -40,15 +40,15 @@ func NewMarketplaceCmd(context *cmd.Context) *MarketplaceCmd {
 
 // Run runs the command's logic
 func (m *MarketplaceCmd) Run() error {
-	offerings, err := m.Client.Marketplace(&m.Parameters)
+	marketplace, err := m.Client.Marketplace(&m.Parameters)
 	if err != nil {
 		return err
 	}
 	if m.offering == "" {
-		output.PrintServiceManagerObject(m.Output, m.outputFormat, offerings)
+		output.PrintServiceManagerObject(m.Output, m.outputFormat, marketplace)
 	} else {
-		plans := &types.ServicePlans{}
-		for _, v := range offerings.ServiceOfferings {
+		plans := &types.ServicePlansForOffering{}
+		for _, v := range marketplace.ServiceOfferings {
 			if v.Name == m.offering {
 				plans.ServicePlans = append(plans.ServicePlans, v.Plans...)
 			}
@@ -83,7 +83,6 @@ func (m *MarketplaceCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 
 	cmd.AddFormatFlag(result.Flags())
 	result.Flags().StringVarP(&m.offering, "service", "s", "", "Plan details for a single service offering")
-	cmd.AddQueryingFlags(result.Flags(), &m.Parameters)
 
 	return result
 }
