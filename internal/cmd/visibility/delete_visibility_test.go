@@ -3,10 +3,11 @@ package visibility
 import (
 	"bytes"
 	"github.com/Peripli/service-manager-cli/internal/cmd"
-	"github.com/Peripli/service-manager-cli/pkg/errors"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
+	"github.com/Peripli/service-manager/pkg/util"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"io/ioutil"
 	"net/http"
 	"testing"
 )
@@ -81,7 +82,8 @@ var _ = Describe("Delete visibility command test", func() {
 
 	Context("when non-existing visibility is being deleted", func() {
 		It("should return error message", func() {
-			expectedError := errors.ResponseError{StatusCode: http.StatusNotFound}
+			body := ioutil.NopCloser(bytes.NewReader([]byte("")))
+			expectedError := util.HandleResponseError(&http.Response{Body: body, StatusCode: http.StatusNotFound})
 			client.DeleteVisibilityReturns(expectedError)
 			err := executeWithArgs("id", "-f")
 

@@ -4,13 +4,15 @@ import (
 	"bytes"
 	"errors"
 	"github.com/Peripli/service-manager-cli/internal/cmd"
-	resperrors "github.com/Peripli/service-manager-cli/pkg/errors"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 	"github.com/Peripli/service-manager/pkg/query"
+	"github.com/Peripli/service-manager/pkg/util"
 	"github.com/Peripli/service-manager/pkg/web"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"io/ioutil"
+	"net/http"
 	"testing"
 )
 
@@ -58,7 +60,7 @@ var _ = Describe("Label Command test", func() {
 				labelChanges = &types.LabelChanges{
 					LabelChanges: []*query.LabelChange{{Key: "key", Operation: "add_values", Values: []string{"val1", "val2", "val3"}}},
 				}
-				err := validLabelExecution("platform", "id", "add-values", "key", "--val", "val1","--val", "val2","--val", "val3")
+				err := validLabelExecution("platform", "id", "add-values", "key", "--val", "val1", "--val", "val2", "--val", "val3")
 
 				Expect(err).ShouldNot(HaveOccurred())
 				resourcePath, id, changes := client.LabelArgsForCall(0)
@@ -142,9 +144,12 @@ var _ = Describe("Label Command test", func() {
 		Context("with http response error from http client", func() {
 			It("should return error's description", func() {
 				description := "HTTP response error"
-				client.LabelReturns(resperrors.ResponseError{Description: description})
+				body := ioutil.NopCloser(bytes.NewReader([]byte("HTTP response error")))
+				expectedError := util.HandleResponseError(&http.Response{Body: body})
+				client.LabelReturns(expectedError)
 				err := invalidLabelExecution("platform", "id", "add", "key", "--val", "value")
-				Expect(err).To(MatchError(description))
+				Expect(err).Should(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring(description))
 
 			})
 		})

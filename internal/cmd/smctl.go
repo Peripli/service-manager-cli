@@ -45,7 +45,9 @@ func BuildRootCommand(ctx *Context) *cobra.Command {
 		Long:  `smctl controls a Service Manager instance.`,
 
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			log.Configure(context.Background(), logSettings(ctx.Verbose))
+			if _, err := log.Configure(context.Background(), logSettings(ctx.Verbose)); err != nil {
+				return err
+			}
 			cmd.SilenceUsage = true
 
 			if ctx.Output == nil {

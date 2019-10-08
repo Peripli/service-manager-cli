@@ -2,6 +2,9 @@ package broker
 
 import (
 	"encoding/json"
+	"github.com/Peripli/service-manager/pkg/util"
+	"io/ioutil"
+	"net/http"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -12,7 +15,6 @@ import (
 	"errors"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
-	resperrors "github.com/Peripli/service-manager-cli/pkg/errors"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 
@@ -139,11 +141,14 @@ var _ = Describe("Register Broker Command test", func() {
 
 		Context("With http response error from http client", func() {
 			It("should return error's description", func() {
-				client.RegisterBrokerReturns(nil, resperrors.ResponseError{Description: "HTTP response error"})
+				body := ioutil.NopCloser(bytes.NewReader([]byte("HTTP response error")))
+				expectedError := util.HandleResponseError(&http.Response{Body: body})
+				client.RegisterBrokerReturns(nil, expectedError)
 
 				err := invalidRegisterBrokerCommandExecution([]string{"validName", "validType", "--basic", "user:password"})
 
-				Expect(err).To(MatchError("HTTP response error"))
+				Expect(err).Should(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("HTTP response error"))
 			})
 		})
 
