@@ -21,8 +21,8 @@
   version = "v1.0.1"
 
 [[projects]]
-  branch = "paging-topic"
-  digest = "1:160ee0efd9855e899276c2fdf276f2de54b8ed330589569992a46027d04a8dea"
+  branch = "master"
+  digest = "1:f473f27517c12a44735d6f3a1cb56cdbfe7ae4a00f7c90a7bafac909a52c9699"
   name = "github.com/Peripli/service-manager"
   packages = [
     "pkg/health",
@@ -34,7 +34,7 @@
     "pkg/web",
   ]
   pruneopts = "UT"
-  revision = "26e942c4445630d44cd26298b1b54c7a9a271e90"
+  revision = "7920247e060da10cb2f8ea7dced2f99823ae9c01"
 
 [[projects]]
   digest = "1:abeb38ade3f32a92943e5be54f55ed6d6e3b6602761d74b4aab4c9dd45c18abd"
@@ -200,12 +200,12 @@
   version = "v1.7.0"
 
 [[projects]]
-  digest = "1:93131d8002d7025da13582877c32d1fc302486775a1b06f62241741006428c5e"
+  digest = "1:bbd3997f0121200f72b64d7a3826eb8a0b910d6a4c19894c9fe2852b9e5eaf3b"
   name = "github.com/pelletier/go-toml"
   packages = ["."]
   pruneopts = "UT"
-  revision = "728039f679cbcd4f6a54e080d2219a4c4928c546"
-  version = "v1.4.0"
+  revision = "8fe62057ea2d46ce44254c98e84e810044dbe197"
+  version = "v1.5.0"
 
 [[projects]]
   digest = "1:fd61cf4ae1953d55df708acb6b91492d538f49c305b364a014049914495db426"
@@ -310,7 +310,7 @@
     "html/charset",
   ]
   pruneopts = "UT"
-  revision = "d98b1b4438230571bd7fbc5aaa89843e92937bd3"
+  revision = "72f939374954d0a1b2a1e27dcda950e2724dd5c1"
 
 [[projects]]
   branch = "master"
@@ -326,14 +326,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:456406ce03ca17dfe57d9f3cae7eec35bc5101dce0adadf5bd636760b7d1e15c"
+  digest = "1:66da9400d3f58a196e86efa1b0c8ea0b1aae330a6ec234b26ad27ba42f74f019"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "UT"
-  revision = "c178f38b412c7b426e4e97be2e75d11ff7b8d4d4"
+  revision = "543471e840be449c53d44b32c7adf1261ad67e37"
 
 [[projects]]
   digest = "1:7570a3e4daa14b7627089e77ad8c714f5f36b4cf1b7dfd8510df7d6935dc42a0"
@@ -379,8 +379,8 @@
     "urlfetch",
   ]
   pruneopts = "UT"
-  revision = "bddb1f54ecfd64b1350fd2dd897fa11d426632bc"
-  version = "v1.6.4"
+  revision = "971852bfffca25b069c31162ae8f247a3dba083b"
+  version = "v1.6.5"
 
 [[projects]]
   digest = "1:abeb38ade3f32a92943e5be54f55ed6d6e3b6602761d74b4aab4c9dd45c18abd"
