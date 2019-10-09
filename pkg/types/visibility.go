@@ -55,7 +55,7 @@ func (v *Visibility) TableData() *TableData {
 
 // Visibilities wraps an array of Visibilities
 type Visibilities struct {
-	Visibilities []Visibility `json:"visibilities,omitempty" yaml:"visibilities,omitempty"`
+	Visibilities []Visibility `json:"items,omitempty" yaml:"items,omitempty"`
 }
 
 // IsEmpty whether the structure is empty

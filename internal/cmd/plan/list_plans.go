@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package offering
+package plan
 
 import (
 	"github.com/Peripli/service-manager-cli/internal/cmd"
@@ -22,55 +22,53 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// ListOfferingsCmd wraps the smctl list-offerings command
-type ListOfferingsCmd struct {
+// ListPlansCmd wraps the smctl list-plans command
+type ListPlansCmd struct {
 	*cmd.Context
 
 	outputFormat output.Format
 }
 
-// NewListOfferingsCmd returns new list-offerings command with context
-func NewListOfferingsCmd(context *cmd.Context) *ListOfferingsCmd {
-	return &ListOfferingsCmd{Context: context}
+// NewListPlansCmd returns new list-plans command with context
+func NewListPlansCmd(context *cmd.Context) *ListPlansCmd {
+	return &ListPlansCmd{Context: context}
 }
 
 // Run runs the command's logic
-func (lo *ListOfferingsCmd) Run() error {
-	offerings, err := lo.Client.ListOfferings(&lo.Parameters)
+func (lp *ListPlansCmd) Run() error {
+	plans, err := lp.Client.ListPlans(&lp.Parameters)
 	if err != nil {
 		return err
 	}
 
-	output.PrintServiceManagerObject(lo.Output, lo.outputFormat, offerings)
-	output.Println(lo.Output)
+	output.PrintServiceManagerObject(lp.Output, lp.outputFormat, plans)
+	output.Println(lp.Output)
 
 	return nil
 }
 
 // SetOutputFormat set output format
-func (lo *ListOfferingsCmd) SetOutputFormat(format output.Format) {
-	lo.outputFormat = format
+func (lp *ListPlansCmd) SetOutputFormat(format output.Format) {
+	lp.outputFormat = format
 }
 
 // HideUsage hide command's usage
-func (lo *ListOfferingsCmd) HideUsage() bool {
+func (lp *ListPlansCmd) HideUsage() bool {
 	return true
 }
 
 // Prepare returns cobra command
-func (lo *ListOfferingsCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
+func (lp *ListPlansCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
-		Use:     "list-offerings",
-		Aliases: []string{"lo"},
-		Short:   "List service-offerings",
-		Long:    `List all service-offerings.`,
-		PreRunE: prepare(lo, lo.Context),
-		RunE:    cmd.RunE(lo),
+		Use:     "list-plans",
+		Short:   "List service-plans",
+		Long:    `List all service-plans.`,
+		PreRunE: prepare(lp, lp.Context),
+		RunE:    cmd.RunE(lp),
 	}
 
 	cmd.AddFormatFlag(result.Flags())
-	cmd.AddQueryingFlags(result.Flags(), &lo.Parameters)
-	cmd.AddCommonQueryFlag(result.Flags(), &lo.Parameters)
+	cmd.AddQueryingFlags(result.Flags(), &lp.Parameters)
 
 	return result
 }

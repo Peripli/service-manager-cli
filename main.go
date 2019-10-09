@@ -24,6 +24,7 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/cmd/label"
 	"github.com/Peripli/service-manager-cli/internal/cmd/login"
 	"github.com/Peripli/service-manager-cli/internal/cmd/offering"
+	"github.com/Peripli/service-manager-cli/internal/cmd/plan"
 	"github.com/Peripli/service-manager-cli/internal/cmd/platform"
 	"github.com/Peripli/service-manager-cli/internal/cmd/version"
 	"github.com/Peripli/service-manager-cli/internal/cmd/visibility"
@@ -69,6 +70,8 @@ func main() {
 			visibility.NewUpdateVisibilityCmd(context),
 			visibility.NewDeleteVisibilityCmd(context, os.Stdin),
 			offering.NewListOfferingsCmd(context),
+			offering.NewMarketplaceCmd(context),
+			plan.NewListPlansCmd(context),
 			label.NewLabelCmd(context),
 		},
 		PrepareFn: cmd.SmPrepare,

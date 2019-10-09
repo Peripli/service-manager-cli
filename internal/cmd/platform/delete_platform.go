@@ -20,8 +20,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-
-	"github.com/Peripli/service-manager-cli/pkg/errors"
+	"strings"
 
 	"github.com/Peripli/service-manager-cli/internal/output"
 
@@ -60,11 +59,11 @@ func (dpc *DeletePlatformCmd) Validate(args []string) error {
 func (dpc *DeletePlatformCmd) Run() error {
 	dpc.Parameters.FieldQuery = append(dpc.Parameters.FieldQuery, fmt.Sprintf("name = %s", dpc.name))
 
-	err := dpc.Client.DeletePlatforms(&dpc.Parameters)
-	if respErr, ok := err.(errors.ResponseError); ok && respErr.StatusCode == http.StatusNotFound {
-		output.PrintMessage(dpc.Output, "Platform(s) not found.\n")
-		return nil
-	} else if err != nil {
+	if 	err := dpc.Client.DeletePlatforms(&dpc.Parameters); err != nil {
+		if strings.Contains(err.Error(), "StatusCode: 404") {
+			output.PrintMessage(dpc.Output, "Platform(s) not found.\n")
+			return nil
+		}
 		output.PrintMessage(dpc.Output, "Could not delete platform(s). Reason: ")
 		return err
 	}

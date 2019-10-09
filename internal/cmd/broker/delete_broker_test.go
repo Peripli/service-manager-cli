@@ -1,6 +1,8 @@
 package broker
 
 import (
+	"github.com/Peripli/service-manager/pkg/util"
+	"io/ioutil"
 	"net/http"
 	"testing"
 
@@ -10,7 +12,6 @@ import (
 	"bytes"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
-	"github.com/Peripli/service-manager-cli/pkg/errors"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 )
@@ -92,7 +93,8 @@ var _ = Describe("Delete brokers command test", func() {
 
 	Context("when non-existing brokers are being deleted", func() {
 		It("should return message", func() {
-			expectedError := errors.ResponseError{StatusCode: http.StatusNotFound}
+			body := ioutil.NopCloser(bytes.NewReader([]byte("")))
+			expectedError := util.HandleResponseError(&http.Response{Body: body, StatusCode: http.StatusNotFound})
 			client.DeleteBrokersReturns(expectedError)
 			err := executeWithArgs([]string{"non-existing-name", "-f"})
 
@@ -103,7 +105,8 @@ var _ = Describe("Delete brokers command test", func() {
 
 	Context("when SM returns error", func() {
 		It("should return error message", func() {
-			expectedError := errors.ResponseError{StatusCode: http.StatusInternalServerError}
+			body := ioutil.NopCloser(bytes.NewReader([]byte("")))
+			expectedError := util.HandleResponseError(&http.Response{Body: body, StatusCode: http.StatusInternalServerError})
 			client.DeleteBrokersReturns(expectedError)
 			err := executeWithArgs([]string{"name", "-f"})
 

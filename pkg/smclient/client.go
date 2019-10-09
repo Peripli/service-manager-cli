@@ -18,7 +18,9 @@ package smclient
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"github.com/Peripli/service-manager/pkg/util"
 	"fmt"
 	"io"
 	"net/http"
@@ -28,7 +30,6 @@ import (
 	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
 
 	"github.com/Peripli/service-manager-cli/pkg/auth"
-	"github.com/Peripli/service-manager-cli/pkg/errors"
 	"github.com/Peripli/service-manager-cli/pkg/httputil"
 	"github.com/Peripli/service-manager-cli/pkg/query"
 	"github.com/Peripli/service-manager-cli/pkg/types"
@@ -50,6 +51,8 @@ type Client interface {
 	DeleteBrokers(*query.Parameters) error
 
 	RegisterVisibility(*types.Visibility, *query.Parameters) (*types.Visibility, error)
+	ListOfferings(*query.Parameters) (*types.ServiceOfferings, error)
+	ListPlans(*query.Parameters) (*types.ServicePlans, error)
 	ListVisibilities(*query.Parameters) (*types.Visibilities, error)
 	UpdateVisibility(string, *types.Visibility, *query.Parameters) (*types.Visibility, error)
 	DeleteVisibilities(*query.Parameters) error
@@ -57,6 +60,8 @@ type Client interface {
 	ListOfferings(*query.Parameters) (*types.ServiceOfferings, error)
 
 	Label(string, string, *types.LabelChanges, *query.Parameters) error
+
+	Marketplace(*query.Parameters) (*types.Marketplace, error)
 
 	// Call makes HTTP request to the Service Manager server with authentication.
 	// It should be used only in case there is no already implemented method for such an operation
@@ -114,7 +119,7 @@ func (client *serviceManagerClient) GetInfo(q *query.Parameters) (*types.Info, e
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return nil, errors.ResponseError{StatusCode: response.StatusCode}
+		return nil, util.HandleResponseError(response)
 	}
 
 	info := types.DefaultInfo
@@ -169,7 +174,7 @@ func (client *serviceManagerClient) register(resource interface{}, url string, q
 	}
 
 	if response.StatusCode != http.StatusCreated {
-		return errors.ResponseError{StatusCode: response.StatusCode}
+		return util.HandleResponseError(response)
 	}
 
 	return httputil.UnmarshalResponse(response, &result)
@@ -178,7 +183,7 @@ func (client *serviceManagerClient) register(resource interface{}, url string, q
 // ListBrokers returns brokers registered in the Service Manager satisfying provided queries
 func (client *serviceManagerClient) ListBrokers(q *query.Parameters) (*types.Brokers, error) {
 	brokers := &types.Brokers{}
-	err := client.list(brokers, web.ServiceBrokersURL, q)
+	err := client.list(&brokers.Brokers, web.ServiceBrokersURL, q)
 
 	return brokers, err
 }
@@ -186,34 +191,50 @@ func (client *serviceManagerClient) ListBrokers(q *query.Parameters) (*types.Bro
 // ListPlatforms returns platforms registered in the Service Manager satisfying provided queries
 func (client *serviceManagerClient) ListPlatforms(q *query.Parameters) (*types.Platforms, error) {
 	platforms := &types.Platforms{}
-	err := client.list(platforms, web.PlatformsURL, q)
+	err := client.list(&platforms.Platforms, web.PlatformsURL, q)
 
 	return platforms, err
 }
 
+// ListOfferings returns offerings registered in the Service Manager satisfying provided queries
+func (client *serviceManagerClient) ListOfferings(q *query.Parameters) (*types.ServiceOfferings, error) {
+	offerings := &types.ServiceOfferings{}
+	err := client.list(&offerings.ServiceOfferings, web.ServiceOfferingsURL, q)
+
+	return offerings, err
+}
+
+// ListPlans returns plans registered in the Service Manager satisfying provided queries
+func (client *serviceManagerClient) ListPlans(q *query.Parameters) (*types.ServicePlans, error) {
+	plans := &types.ServicePlans{}
+	err := client.list(&plans.ServicePlans, web.ServicePlansURL, q)
+
+	return plans, err
+}
+
 func (client *serviceManagerClient) ListVisibilities(q *query.Parameters) (*types.Visibilities, error) {
 	visibilities := &types.Visibilities{}
-	err := client.list(visibilities, web.VisibilitiesURL, q)
+	err := client.list(&visibilities.Visibilities, web.VisibilitiesURL, q)
 	return visibilities, err
 }
 
-// ListOfferings returns service offerings satisfying provided queries
-func (client *serviceManagerClient) ListOfferings(q *query.Parameters) (*types.ServiceOfferings, error) {
-	serviceOfferings := &types.ServiceOfferings{}
-	err := client.list(serviceOfferings, web.ServiceOfferingsURL, q)
+// Marketplace returns service offerings satisfying provided queries
+func (client *serviceManagerClient) Marketplace(q *query.Parameters) (*types.Marketplace, error) {
+	marketplace := &types.Marketplace{}
+	err := client.list(&marketplace.ServiceOfferings, web.ServiceOfferingsURL, q)
 	if err != nil {
 		return nil, err
 	}
-	for i, so := range serviceOfferings.ServiceOfferings {
-		plans := &types.ServicePlans{}
-		err := client.list(plans, web.ServicePlansURL, &query.Parameters{
+	for i, so := range marketplace.ServiceOfferings {
+		plans := &types.ServicePlansForOffering{}
+		err := client.list(&plans.ServicePlans, web.ServicePlansURL,&query.Parameters{
 			FieldQuery:    []string{fmt.Sprintf("service_offering_id = %s", so.ID)},
 			GeneralParams: q.GeneralParams,
 		})
 		if err != nil {
 			return nil, err
 		}
-		serviceOfferings.ServiceOfferings[i].Plans = plans.ServicePlans
+		marketplace.ServiceOfferings[i].Plans = plans.ServicePlans
 
 		broker := &types.Broker{}
 		err = client.list(broker, web.ServiceBrokersURL+"/"+so.BrokerID, &query.Parameters{
@@ -223,19 +244,24 @@ func (client *serviceManagerClient) ListOfferings(q *query.Parameters) (*types.S
 			return nil, err
 		}
 
-		serviceOfferings.ServiceOfferings[i].BrokerName = broker.Name
+		marketplace.ServiceOfferings[i].BrokerName = broker.Name
 	}
-	return serviceOfferings, nil
+	return marketplace, nil
 }
 
 func (client *serviceManagerClient) list(result interface{}, url string, q *query.Parameters) error {
-	resp, err := client.Call(http.MethodGet, url, nil, q)
+	fullURL := httputil.NormalizeURL(client.config.URL) + path
+	return util.ListAll(context.Background(), client.httpClient.Do, fullURL, result)
+}
+
+func (client *serviceManagerClient) get(result interface{}, url string, q *query.Parameters) error {
+	resp, err := client.Call(http.MethodGet, path, nil, q)
 	if err != nil {
 		return err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return errors.ResponseError{StatusCode: resp.StatusCode}
+		return util.HandleResponseError(resp)
 	}
 
 	return httputil.UnmarshalResponse(resp, &result)
@@ -275,7 +301,7 @@ func (client *serviceManagerClient) delete(url string, q *query.Parameters) erro
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return errors.ResponseError{StatusCode: resp.StatusCode}
+		return util.HandleResponseError(resp)
 	}
 
 	return nil
@@ -320,7 +346,7 @@ func (client *serviceManagerClient) update(resource interface{}, url string, id 
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return errors.ResponseError{StatusCode: resp.StatusCode}
+		return util.HandleResponseError(resp)
 	}
 
 	return httputil.UnmarshalResponse(resp, &result)
@@ -338,7 +364,7 @@ func (client *serviceManagerClient) Label(url string, id string, change *types.L
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return errors.ResponseError{StatusCode: response.StatusCode}
+		return util.HandleResponseError(response)
 	}
 
 	return nil
@@ -359,25 +385,7 @@ func (client *serviceManagerClient) Call(method string, smpath string, body io.R
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		respErr := errors.ResponseError{
-			URL:        fullURL,
-			StatusCode: resp.StatusCode,
-		}
-
-		respContent := make(map[string]interface{})
-		if err := httputil.UnmarshalResponse(resp, &respContent); err != nil {
-			return resp, respErr
-		}
-
-		if errorMessage, ok := respContent["error"].(string); ok {
-			respErr.ErrorMessage = errorMessage
-		}
-
-		if description, ok := respContent["description"].(string); ok {
-			respErr.Description = description
-		}
-
-		return nil, respErr
+		return nil, util.HandleResponseError(resp)
 	}
 
 	return resp, nil

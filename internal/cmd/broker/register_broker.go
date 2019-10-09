@@ -19,7 +19,6 @@ package broker
 import (
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
-	resperror "github.com/Peripli/service-manager-cli/pkg/errors"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 
 	"fmt"
@@ -87,9 +86,7 @@ func (rbc *RegisterBrokerCmd) Validate(args []string) error {
 // Run runs the command's logic
 func (rbc *RegisterBrokerCmd) Run() error {
 	resultBroker, err := rbc.Client.RegisterBroker(&rbc.broker, &rbc.Parameters)
-	if responseErr, ok := err.(resperror.ResponseError); ok {
-		return fmt.Errorf(responseErr.Description)
-	} else if err != nil {
+	if err != nil {
 		return err
 	}
 
