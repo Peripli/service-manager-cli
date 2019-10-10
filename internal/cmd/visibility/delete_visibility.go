@@ -19,9 +19,7 @@ package visibility
 import (
 	"fmt"
 	"io"
-	"net/http"
-
-	"github.com/Peripli/service-manager-cli/pkg/errors"
+	"strings"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
@@ -58,17 +56,15 @@ func (dv *DeleteVisibilityCmd) Validate(args []string) error {
 func (dv *DeleteVisibilityCmd) Run() error {
 	dv.Parameters.FieldQuery = append(dv.Parameters.FieldQuery, fmt.Sprintf("id = %s", dv.id))
 
-	err := dv.Client.DeleteVisibilities(&dv.Parameters)
-
-	if respErr, ok := err.(errors.ResponseError); ok && respErr.StatusCode == http.StatusNotFound {
-		output.PrintMessage(dv.Output, "Visibility not found.\n")
-		return nil
-	} else if err != nil {
+	if err := dv.Client.DeleteVisibilities(&dv.Parameters); err != nil {
+		if strings.Contains(err.Error(), "StatusCode: 404") {
+			output.PrintMessage(dv.Output, "Visibility not found.\n")
+			return nil
+		}
 		output.PrintMessage(dv.Output, "Could not delete visibility(s). Reason: ")
 		return err
 	}
 	output.PrintMessage(dv.Output, "Visibility successfully deleted.\n")
-
 	return nil
 }
 

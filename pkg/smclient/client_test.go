@@ -35,7 +35,7 @@ type HandlerDetails struct {
 	ResponseStatusCode int
 }
 
-func TestSmClient(t *testing.T) {
+func TestSMClient(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "")
 }
@@ -119,7 +119,7 @@ var _ = Describe("Service Manager Client test", func() {
 	}
 
 	verifyErrorMsg := func(errorMsg, path string, body []byte, statusCode int) {
-		Expect(errorMsg).To(ContainSubstring(smServer.URL + path))
+		Expect(errorMsg).To(ContainSubstring(buildURL(smServer.URL+path, params)))
 		Expect(errorMsg).To(ContainSubstring(string(body)))
 		Expect(errorMsg).To(ContainSubstring(fmt.Sprintf("StatusCode: %d", statusCode)))
 	}
@@ -668,7 +668,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return all with plans and broker name populated", func() {
-				result, err := client.Marketplace(nil)
+				result, err := client.Marketplace(params)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result.ServiceOfferings).To(HaveLen(1))
 				Expect(result.ServiceOfferings[0]).To(Equal(*resultOffering))
@@ -685,7 +685,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return empty array", func() {
-				result, err := client.Marketplace(nil)
+				result, err := client.Marketplace(params)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result.ServiceOfferings).To(HaveLen(0))
 			})
@@ -698,7 +698,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle status code != 200", func() {
-				_, err := client.Marketplace(nil)
+				_, err := client.Marketplace(params)
 				Expect(err).Should(HaveOccurred())
 				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
@@ -711,7 +711,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle status code > 299", func() {
-				_, err := client.Marketplace(nil)
+				_, err := client.Marketplace(params)
 				Expect(err).Should(HaveOccurred())
 				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
@@ -763,7 +763,7 @@ var _ = Describe("Service Manager Client test", func() {
 				params.FieldQuery = append(params.FieldQuery, "id = id")
 				err := client.DeleteBrokers(params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path+"id", handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 	})
@@ -796,7 +796,7 @@ var _ = Describe("Service Manager Client test", func() {
 				params.FieldQuery = append(params.FieldQuery, "id = id")
 				err := client.DeletePlatforms(params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path+"id", handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 
@@ -812,7 +812,7 @@ var _ = Describe("Service Manager Client test", func() {
 				params.FieldQuery = append(params.FieldQuery, "id = id")
 				err := client.DeletePlatforms(params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path+"id", handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 	})
@@ -845,7 +845,7 @@ var _ = Describe("Service Manager Client test", func() {
 				params.FieldQuery = append(params.FieldQuery, "id = id")
 				err := client.DeleteVisibilities(params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path+"id", handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 
@@ -861,7 +861,7 @@ var _ = Describe("Service Manager Client test", func() {
 				params.FieldQuery = append(params.FieldQuery, "id = id")
 				err := client.DeleteVisibilities(params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path+"id", handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 	})

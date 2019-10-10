@@ -20,10 +20,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/Peripli/service-manager/pkg/util"
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/Peripli/service-manager/pkg/util"
 
 	"github.com/Peripli/service-manager/pkg/web"
 
@@ -56,8 +57,6 @@ type Client interface {
 	ListVisibilities(*query.Parameters) (*types.Visibilities, error)
 	UpdateVisibility(string, *types.Visibility, *query.Parameters) (*types.Visibility, error)
 	DeleteVisibilities(*query.Parameters) error
-
-	ListOfferings(*query.Parameters) (*types.ServiceOfferings, error)
 
 	Label(string, string, *types.LabelChanges, *query.Parameters) error
 
@@ -227,7 +226,7 @@ func (client *serviceManagerClient) Marketplace(q *query.Parameters) (*types.Mar
 	}
 	for i, so := range marketplace.ServiceOfferings {
 		plans := &types.ServicePlansForOffering{}
-		err := client.list(&plans.ServicePlans, web.ServicePlansURL,&query.Parameters{
+		err := client.list(&plans.ServicePlans, web.ServicePlansURL, &query.Parameters{
 			FieldQuery:    []string{fmt.Sprintf("service_offering_id = %s", so.ID)},
 			GeneralParams: q.GeneralParams,
 		})
@@ -237,7 +236,7 @@ func (client *serviceManagerClient) Marketplace(q *query.Parameters) (*types.Mar
 		marketplace.ServiceOfferings[i].Plans = plans.ServicePlans
 
 		broker := &types.Broker{}
-		err = client.list(broker, web.ServiceBrokersURL+"/"+so.BrokerID, &query.Parameters{
+		err = client.get(broker, web.ServiceBrokersURL+"/"+so.BrokerID, &query.Parameters{
 			GeneralParams: q.GeneralParams,
 		})
 		if err != nil {
@@ -250,12 +249,12 @@ func (client *serviceManagerClient) Marketplace(q *query.Parameters) (*types.Mar
 }
 
 func (client *serviceManagerClient) list(result interface{}, url string, q *query.Parameters) error {
-	fullURL := httputil.NormalizeURL(client.config.URL) + path
+	fullURL := httputil.NormalizeURL(client.config.URL) + buildURL(url, q)
 	return util.ListAll(context.Background(), client.httpClient.Do, fullURL, result)
 }
 
 func (client *serviceManagerClient) get(result interface{}, url string, q *query.Parameters) error {
-	resp, err := client.Call(http.MethodGet, path, nil, q)
+	resp, err := client.Call(http.MethodGet, url, nil, q)
 	if err != nil {
 		return err
 	}

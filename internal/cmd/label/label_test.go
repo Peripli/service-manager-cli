@@ -5,6 +5,9 @@ import (
 	"errors"
 	"testing"
 
+	"io/ioutil"
+	"net/http"
+
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
@@ -13,14 +16,10 @@ import (
 	"github.com/Peripli/service-manager/pkg/web"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"io/ioutil"
-	"net/http"
-	"testing"
 )
 
 func TestLabelCmd(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "")
 }
 
 var _ = Describe("Label Command test", func() {

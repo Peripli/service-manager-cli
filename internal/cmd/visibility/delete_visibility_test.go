@@ -2,6 +2,8 @@ package visibility
 
 import (
 	"bytes"
+
+	"io/ioutil"
 	"net/http"
 	"testing"
 
@@ -10,9 +12,6 @@ import (
 	"github.com/Peripli/service-manager/pkg/util"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"io/ioutil"
-	"net/http"
-	"testing"
 )
 
 func TestDeleteVisibilityCmd(t *testing.T) {

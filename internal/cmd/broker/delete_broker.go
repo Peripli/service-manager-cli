@@ -19,13 +19,9 @@ package broker
 import (
 	"fmt"
 	"io"
-	"net/http"
 	"strings"
 
 	"github.com/Peripli/service-manager-cli/internal/output"
-	"github.com/Peripli/service-manager-cli/pkg/errors"
-
-	"github.com/Peripli/service-manager-cli/internal/util"
 
 	"github.com/spf13/cobra"
 
