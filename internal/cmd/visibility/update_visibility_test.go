@@ -105,7 +105,7 @@ var _ = Describe("Update visibility command test", func() {
 				_, _, args := client.UpdateVisibilityArgsForCall(0)
 
 				Expect(args.GeneralParams).To(ConsistOf("paramKey=paramValue"))
-				Expect(args.FieldQuery).To(ConsistOf("id = platformId"))
+				Expect(args.FieldQuery).To(BeEmpty())
 				Expect(args.LabelQuery).To(BeEmpty())
 			})
 		})

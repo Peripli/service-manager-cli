@@ -43,8 +43,8 @@ func NewDeleteVisibilityCmd(context *cmd.Context, input io.Reader) *DeleteVisibi
 
 // Validate validates command's arguments
 func (dv *DeleteVisibilityCmd) Validate(args []string) error {
-	if len(args) < 1 {
-		return fmt.Errorf("id is required")
+	if len(args) != 1 {
+		return fmt.Errorf("single [id] is required")
 	}
 
 	dv.id = args[0]

@@ -105,7 +105,7 @@ var _ = Describe("Delete visibility command test", func() {
 			err := executeWithArgs()
 
 			Expect(err).Should(HaveOccurred())
-			Expect(err).To(MatchError("id is required"))
+			Expect(err).To(MatchError("single [id] is required"))
 		})
 	})
 })

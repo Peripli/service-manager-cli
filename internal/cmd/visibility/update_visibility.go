@@ -61,7 +61,6 @@ func (uv *UpdateVisibilityCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (uv *UpdateVisibilityCmd) Run() error {
-	uv.Parameters.FieldQuery = append(uv.Parameters.FieldQuery, fmt.Sprintf("id = %s", uv.id))
 	updatedVisibility, err := uv.Client.UpdateVisibility(uv.id, uv.updatedVisibility, &uv.Parameters)
 	if err != nil {
 		return err

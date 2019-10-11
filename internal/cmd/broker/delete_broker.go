@@ -46,8 +46,8 @@ func NewDeleteBrokerCmd(context *cmd.Context, input io.Reader) *DeleteBrokerCmd 
 
 // Validate validates command's arguments
 func (dbc *DeleteBrokerCmd) Validate(args []string) error {
-	if len(args) < 1 {
-		return fmt.Errorf("[name] is required")
+	if len(args) != 1 {
+		return fmt.Errorf("single [name] is required")
 	}
 
 	dbc.name = args[0]

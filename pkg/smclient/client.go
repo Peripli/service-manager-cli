@@ -270,27 +270,12 @@ func (client *serviceManagerClient) DeleteBrokers(q *query.Parameters) error {
 	return client.delete(web.ServiceBrokersURL, q)
 }
 
-// DeleteBroker deletes a broker with given id from service manager
-func (client *serviceManagerClient) DeleteBroker(id string, q *query.Parameters) error {
-	return client.delete(web.ServiceBrokersURL+"/"+id, q)
-}
-
 func (client *serviceManagerClient) DeletePlatforms(q *query.Parameters) error {
 	return client.delete(web.PlatformsURL, q)
 }
 
-// DeletePlatform deletes a platform with given id from service manager
-func (client *serviceManagerClient) DeletePlatform(id string, q *query.Parameters) error {
-	return client.delete(web.PlatformsURL+"/"+id, q)
-}
-
 func (client *serviceManagerClient) DeleteVisibilities(q *query.Parameters) error {
 	return client.delete(web.VisibilitiesURL, q)
-}
-
-// DeleteVisibility deletes a visibility with given id from service manager
-func (client *serviceManagerClient) DeleteVisibility(id string, q *query.Parameters) error {
-	return client.delete(web.VisibilitiesURL+"/"+id, q)
 }
 
 func (client *serviceManagerClient) delete(url string, q *query.Parameters) error {

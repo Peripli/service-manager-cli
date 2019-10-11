@@ -45,8 +45,8 @@ func NewDeletePlatformCmd(context *cmd.Context, input io.Reader) *DeletePlatform
 
 // Validate validates command's arguments
 func (dpc *DeletePlatformCmd) Validate(args []string) error {
-	if len(args) < 1 {
-		return fmt.Errorf("[name] is required")
+	if len(args) != 1 {
+		return fmt.Errorf("single [name] is required")
 	}
 
 	dpc.name = args[0]

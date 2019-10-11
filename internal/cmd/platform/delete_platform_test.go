@@ -1,10 +1,11 @@
 package platform
 
 import (
-	"github.com/Peripli/service-manager/pkg/util"
 	"io/ioutil"
 	"net/http"
 	"testing"
+
+	"github.com/Peripli/service-manager/pkg/util"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -123,7 +124,7 @@ var _ = Describe("Delete platforms command test", func() {
 			err := executeWithArgs([]string{})
 
 			Expect(err).Should(HaveOccurred())
-			Expect(err).To(MatchError("[name] is required"))
+			Expect(err).To(MatchError("single [name] is required"))
 		})
 	})
 })
