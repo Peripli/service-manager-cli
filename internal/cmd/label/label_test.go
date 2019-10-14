@@ -20,6 +20,7 @@ import (
 
 func TestLabelCmd(t *testing.T) {
 	RegisterFailHandler(Fail)
+	RunSpecs(t, "")
 }
 
 var _ = Describe("Label Command test", func() {
