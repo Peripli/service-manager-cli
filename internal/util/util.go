@@ -47,7 +47,7 @@ func ValidateURL(URL string) error {
 
 // GetResourceByNamesQuery returns field query for retrieving all instances of resource with given names
 func GetResourceByNamesQuery(names []string) string {
-	return url.QueryEscape("name in ('" + strings.Join(names, "' and '") + "')")
+	return url.QueryEscape(fmt.Sprintf("name in ('%s')", strings.Join(names, "','")))
 }
 
 // BuildHTTPClient builds custom http client with configured ssl validation
