@@ -82,12 +82,28 @@ var _ = Describe("List platforms command test", func() {
 		})
 	})
 
+	Context("when generic parameter is used", func() {
+		It("should pass it to SM", func() {
+			result := &types.Platforms{Platforms: []types.Platform{platform}}
+			client.ListPlatformsReturns(result, nil)
+			param := "parameterKey=parameterValue"
+			err := executeWithArgs([]string{"--param", param})
+			Expect(err).ShouldNot(HaveOccurred())
+
+			args := client.ListPlatformsArgsForCall(0)
+
+			Expect(args.GeneralParams).To(ConsistOf(param))
+			Expect(args.FieldQuery).To(BeEmpty())
+			Expect(args.LabelQuery).To(BeEmpty())
+		})
+	})
+
 	Context("when field query flag is used", func() {
 		It("should pass it to SM", func() {
 			result := &types.Platforms{Platforms: []types.Platform{platform}}
 			client.ListPlatformsReturns(result, nil)
 			param := "name = platform1"
-			err := executeWithArgs([]string{"-f", param})
+			err := executeWithArgs([]string{"--field-query", param})
 
 			args := client.ListPlatformsArgsForCall(0)
 
@@ -102,7 +118,7 @@ var _ = Describe("List platforms command test", func() {
 			result := &types.Platforms{Platforms: []types.Platform{platform}}
 			client.ListPlatformsReturns(result, nil)
 			param := "test = false"
-			err := executeWithArgs([]string{"-l", param})
+			err := executeWithArgs([]string{"--label-query", param})
 
 			args := client.ListPlatformsArgsForCall(0)
 

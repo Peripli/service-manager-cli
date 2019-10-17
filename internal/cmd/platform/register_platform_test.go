@@ -74,7 +74,7 @@ var _ = Describe("Register Platform Command test", func() {
 			It("Argument values should be as expected", func() {
 				err := validRegisterPlatformExecution("validName", "validType")
 
-				p := client.RegisterPlatformArgsForCall(0)
+				p, _ := client.RegisterPlatformArgsForCall(0)
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(p.Name).To(Equal("validName"))
@@ -87,7 +87,7 @@ var _ = Describe("Register Platform Command test", func() {
 				args := []string{"validName", "validType", "--id", "1234"}
 
 				err := validRegisterPlatformExecution(args...)
-				platform := client.RegisterPlatformArgsForCall(0)
+				platform, _ := client.RegisterPlatformArgsForCall(0)
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(platform.ID).To(Equal("1234"))
@@ -124,6 +124,19 @@ var _ = Describe("Register Platform Command test", func() {
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buffer.String()).To(Equal(yamlOutputExpected))
+			})
+		})
+
+		Context("With generic param flag", func() {
+			It("should pass it to SM", func() {
+				err := validRegisterPlatformExecution("platform", "cf", "--param", "paramKey=paramValue")
+				Expect(err).ShouldNot(HaveOccurred())
+
+				_, args := client.RegisterPlatformArgsForCall(0)
+
+				Expect(args.GeneralParams).To(ConsistOf("paramKey=paramValue"))
+				Expect(args.FieldQuery).To(BeEmpty())
+				Expect(args.LabelQuery).To(BeEmpty())
 			})
 		})
 	})

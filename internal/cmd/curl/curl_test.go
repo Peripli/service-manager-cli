@@ -3,10 +3,11 @@ package curl
 import (
 	"encoding/json"
 	"errors"
-	"github.com/Peripli/service-manager/pkg/web"
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
+
+	"github.com/Peripli/service-manager/pkg/web"
 
 	"github.com/spf13/afero"
 
@@ -54,7 +55,7 @@ var _ = Describe("Curl command test", func() {
 		Expect(buffer.String()).To(Equal(expectedOutput))
 
 		lastCallIndex := client.CallCallCount() - 1
-		method, path, reader := client.CallArgsForCall(lastCallIndex)
+		method, path, reader, _ := client.CallArgsForCall(lastCallIndex)
 		Expect(method).To(Equal(expectedMethod))
 		Expect(path).To(Equal(expectedPath))
 		if expectedMethod != http.MethodGet {
@@ -93,6 +94,22 @@ var _ = Describe("Curl command test", func() {
 		It("should do GET method", func() {
 			setCallReturns(200, nil, nil)
 			assertLastCall(http.MethodGet, web.ServiceBrokersURL, nil, "", nil)
+		})
+
+		Context("when generic parameter flag is used", func() {
+			It("should pass it to SM", func() {
+				setCallReturns(200, []byte(`{}`), nil)
+				param := "parameterKey=parameterValue"
+				cmdArgs := []string{web.ServiceBrokersURL, "-X", http.MethodGet, "--param", param}
+				err := executeWithArgs(cmdArgs)
+				Expect(err).ToNot(HaveOccurred())
+
+				_, _, _, args := client.CallArgsForCall(0)
+
+				Expect(args.GeneralParams).To(ConsistOf(param))
+				Expect(args.FieldQuery).To(BeEmpty())
+				Expect(args.LabelQuery).To(BeEmpty())
+			})
 		})
 
 		It("should do PATCH method", func() {

@@ -22,7 +22,6 @@ import (
 	"strings"
 
 	"github.com/Peripli/service-manager-cli/internal/output"
-	"github.com/Peripli/service-manager-cli/internal/util"
 
 	"github.com/spf13/cobra"
 
@@ -37,7 +36,7 @@ type DeleteBrokerCmd struct {
 	input io.Reader
 	force bool
 
-	names []string
+	name string
 }
 
 // NewDeleteBrokerCmd returns new delete-broker command with context
@@ -47,23 +46,19 @@ func NewDeleteBrokerCmd(context *cmd.Context, input io.Reader) *DeleteBrokerCmd 
 
 // Validate validates command's arguments
 func (dbc *DeleteBrokerCmd) Validate(args []string) error {
-	if len(args) < 1 {
-		return fmt.Errorf("[name] is required")
+	if len(args) != 1 {
+		return fmt.Errorf("single [name] is required")
 	}
 
-	for _, name := range args {
-		if name != "" {
-			dbc.names = append(dbc.names, name)
-		}
-	}
+	dbc.name = args[0]
 
 	return nil
 }
 
 // Run runs the command's logic
 func (dbc *DeleteBrokerCmd) Run() error {
-	fieldQuery := util.GetResourceByNamesQuery(dbc.names)
-	if err := dbc.Client.DeleteBrokersByFieldQuery(fieldQuery); err != nil {
+	dbc.Parameters.FieldQuery = append(dbc.Parameters.FieldQuery, fmt.Sprintf("name = %s", dbc.name))
+	if err := dbc.Client.DeleteBrokers(&dbc.Parameters); err != nil {
 		if strings.Contains(err.Error(), "StatusCode: 404") {
 			output.PrintMessage(dbc.Output, "Service Broker(s) not found.\n")
 			return nil
@@ -83,7 +78,7 @@ func (dbc *DeleteBrokerCmd) HideUsage() bool {
 // AskForConfirmation asks the user to confirm deletion
 func (dbc *DeleteBrokerCmd) AskForConfirmation() (bool, error) {
 	if !dbc.force {
-		message := fmt.Sprintf("Do you really want to delete brokers with names [%s] (Y/n): ", strings.Join(dbc.names, ", "))
+		message := fmt.Sprintf("Do you really want to delete broker with name [%s] (Y/n): ", dbc.name)
 		return cmd.CommonConfirmationPrompt(message, dbc.Context, dbc.input)
 	}
 	return true, nil
@@ -98,7 +93,7 @@ func (dbc *DeleteBrokerCmd) PrintDeclineMessage() {
 func (dbc *DeleteBrokerCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	dbc.prepare = prepare
 	result := &cobra.Command{
-		Use:     "delete-broker [name] <name2 <name3> ... <nameN>>",
+		Use:     "delete-broker [name]",
 		Aliases: []string{"db"},
 		Short:   "Deletes brokers",
 		Long:    `Delete one or more brokers with name.`,
@@ -107,6 +102,7 @@ func (dbc *DeleteBrokerCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	}
 
 	result.Flags().BoolVarP(&dbc.force, "force", "f", false, "Force delete without confirmation")
+	cmd.AddCommonQueryFlag(result.Flags(), &dbc.Parameters)
 
 	return result
 }

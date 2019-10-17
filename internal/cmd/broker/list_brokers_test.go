@@ -82,12 +82,28 @@ var _ = Describe("List brokers command test", func() {
 		})
 	})
 
+	Context("when generic parameter flag is used", func() {
+		It("should pass it to SM", func() {
+			result := &types.Brokers{Brokers: []types.Broker{broker}}
+			client.ListBrokersReturns(result, nil)
+			param := "parameterKey=parameterValue"
+			err := executeWithArgs([]string{"--param", param})
+			Expect(err).ShouldNot(HaveOccurred())
+
+			args := client.ListBrokersArgsForCall(0)
+
+			Expect(args.GeneralParams).To(ConsistOf(param))
+			Expect(args.FieldQuery).To(BeEmpty())
+			Expect(args.LabelQuery).To(BeEmpty())
+		})
+	})
+
 	Context("when field query flag is used", func() {
 		It("should pass it to SM", func() {
 			result := &types.Brokers{Brokers: []types.Broker{broker}}
 			client.ListBrokersReturns(result, nil)
 			param := "name = broker1"
-			err := executeWithArgs([]string{"-f", param})
+			err := executeWithArgs([]string{"--field-query", param})
 
 			args := client.ListBrokersArgsForCall(0)
 
@@ -102,7 +118,7 @@ var _ = Describe("List brokers command test", func() {
 			result := &types.Brokers{Brokers: []types.Broker{broker}}
 			client.ListBrokersReturns(result, nil)
 			param := "test = false"
-			err := executeWithArgs([]string{"-l", param})
+			err := executeWithArgs([]string{"--label-query", param})
 
 			args := client.ListBrokersArgsForCall(0)
 

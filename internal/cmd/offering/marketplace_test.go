@@ -20,7 +20,6 @@ func TestMarketplaceCmd(t *testing.T) {
 }
 
 var _ = Describe("Marketplace command test", func() {
-
 	var client *smclientfakes.FakeClient
 	var command *MarketplaceCmd
 	var buffer *bytes.Buffer
@@ -101,6 +100,22 @@ var _ = Describe("Marketplace command test", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring(result.Message()))
 			Expect(buffer.String()).To(ContainSubstring(result.TableData().String()))
+		})
+	})
+
+	Context("when generic parameter is used", func() {
+		It("should pass it to SM", func() {
+			result := &types.Marketplace{ServiceOfferings: []types.ServiceOffering{noPlanOffering}}
+			client.MarketplaceReturns(result, nil)
+			param := "parameterKey=parameterValue"
+			err := executeWithArgs([]string{"--param", param})
+			Expect(err).ShouldNot(HaveOccurred())
+
+			args := client.MarketplaceArgsForCall(0)
+
+			Expect(args.GeneralParams).To(ConsistOf(param))
+			Expect(args.FieldQuery).To(BeEmpty())
+			Expect(args.LabelQuery).To(BeEmpty())
 		})
 	})
 

@@ -71,7 +71,7 @@ var _ = Describe("Update broker command test", func() {
 			It("argument values should be as expected", func() {
 				err := validUpdateBrokerExecution("broker1", `{"description":"newDescription"}`)
 
-				id, broker := client.UpdateBrokerArgsForCall(0)
+				id, broker, _ := client.UpdateBrokerArgsForCall(0)
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(id).To(Equal("id"))
@@ -100,6 +100,19 @@ var _ = Describe("Update broker command test", func() {
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buffer.String()).To(Equal(yamlOutputExpected))
+			})
+		})
+
+		Context("With generic parameter flag provided", func() {
+			It("should pass it to SM", func() {
+				err := validUpdateBrokerExecution("broker1", `{"description":"newDescription"}`, "--param", "paramKey=paramValue")
+				Expect(err).ShouldNot(HaveOccurred())
+
+				_, _, args := client.UpdateBrokerArgsForCall(0)
+
+				Expect(args.GeneralParams).To(ConsistOf("paramKey=paramValue"))
+				Expect(args.FieldQuery).To(ConsistOf("name = broker1"))
+				Expect(args.LabelQuery).To(BeEmpty())
 			})
 		})
 	})
