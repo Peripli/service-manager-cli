@@ -12,12 +12,13 @@ import (
 )
 
 type FakeClient struct {
-	CallStub        func(string, string, io.Reader) (*http.Response, error)
+	CallStub        func(string, string, io.Reader, *query.Parameters) (*http.Response, error)
 	callMutex       sync.RWMutex
 	callArgsForCall []struct {
 		arg1 string
 		arg2 string
 		arg3 io.Reader
+		arg4 *query.Parameters
 	}
 	callReturns struct {
 		result1 *http.Response
@@ -27,59 +28,37 @@ type FakeClient struct {
 		result1 *http.Response
 		result2 error
 	}
-	DeleteBrokerStub        func(string) error
-	deleteBrokerMutex       sync.RWMutex
-	deleteBrokerArgsForCall []struct {
-		arg1 string
+	DeleteBrokersStub        func(*query.Parameters) error
+	deleteBrokersMutex       sync.RWMutex
+	deleteBrokersArgsForCall []struct {
+		arg1 *query.Parameters
 	}
-	deleteBrokerReturns struct {
+	deleteBrokersReturns struct {
 		result1 error
 	}
-	deleteBrokerReturnsOnCall map[int]struct {
+	deleteBrokersReturnsOnCall map[int]struct {
 		result1 error
 	}
-	DeleteBrokersByFieldQueryStub        func(string) error
-	deleteBrokersByFieldQueryMutex       sync.RWMutex
-	deleteBrokersByFieldQueryArgsForCall []struct {
-		arg1 string
+	DeletePlatformsStub        func(*query.Parameters) error
+	deletePlatformsMutex       sync.RWMutex
+	deletePlatformsArgsForCall []struct {
+		arg1 *query.Parameters
 	}
-	deleteBrokersByFieldQueryReturns struct {
+	deletePlatformsReturns struct {
 		result1 error
 	}
-	deleteBrokersByFieldQueryReturnsOnCall map[int]struct {
+	deletePlatformsReturnsOnCall map[int]struct {
 		result1 error
 	}
-	DeletePlatformStub        func(string) error
-	deletePlatformMutex       sync.RWMutex
-	deletePlatformArgsForCall []struct {
-		arg1 string
+	DeleteVisibilitiesStub        func(*query.Parameters) error
+	deleteVisibilitiesMutex       sync.RWMutex
+	deleteVisibilitiesArgsForCall []struct {
+		arg1 *query.Parameters
 	}
-	deletePlatformReturns struct {
+	deleteVisibilitiesReturns struct {
 		result1 error
 	}
-	deletePlatformReturnsOnCall map[int]struct {
-		result1 error
-	}
-	DeletePlatformsByFieldQueryStub        func(string) error
-	deletePlatformsByFieldQueryMutex       sync.RWMutex
-	deletePlatformsByFieldQueryArgsForCall []struct {
-		arg1 string
-	}
-	deletePlatformsByFieldQueryReturns struct {
-		result1 error
-	}
-	deletePlatformsByFieldQueryReturnsOnCall map[int]struct {
-		result1 error
-	}
-	DeleteVisibilityStub        func(string) error
-	deleteVisibilityMutex       sync.RWMutex
-	deleteVisibilityArgsForCall []struct {
-		arg1 string
-	}
-	deleteVisibilityReturns struct {
-		result1 error
-	}
-	deleteVisibilityReturnsOnCall map[int]struct {
+	deleteVisibilitiesReturnsOnCall map[int]struct {
 		result1 error
 	}
 	GetInfoStub        func(*query.Parameters) (*types.Info, error)
@@ -95,12 +74,13 @@ type FakeClient struct {
 		result1 *types.Info
 		result2 error
 	}
-	LabelStub        func(string, string, *types.LabelChanges) error
+	LabelStub        func(string, string, *types.LabelChanges, *query.Parameters) error
 	labelMutex       sync.RWMutex
 	labelArgsForCall []struct {
 		arg1 string
 		arg2 string
 		arg3 *types.LabelChanges
+		arg4 *query.Parameters
 	}
 	labelReturns struct {
 		result1 error
@@ -186,10 +166,11 @@ type FakeClient struct {
 		result1 *types.Marketplace
 		result2 error
 	}
-	RegisterBrokerStub        func(*types.Broker) (*types.Broker, error)
+	RegisterBrokerStub        func(*types.Broker, *query.Parameters) (*types.Broker, error)
 	registerBrokerMutex       sync.RWMutex
 	registerBrokerArgsForCall []struct {
 		arg1 *types.Broker
+		arg2 *query.Parameters
 	}
 	registerBrokerReturns struct {
 		result1 *types.Broker
@@ -199,10 +180,11 @@ type FakeClient struct {
 		result1 *types.Broker
 		result2 error
 	}
-	RegisterPlatformStub        func(*types.Platform) (*types.Platform, error)
+	RegisterPlatformStub        func(*types.Platform, *query.Parameters) (*types.Platform, error)
 	registerPlatformMutex       sync.RWMutex
 	registerPlatformArgsForCall []struct {
 		arg1 *types.Platform
+		arg2 *query.Parameters
 	}
 	registerPlatformReturns struct {
 		result1 *types.Platform
@@ -212,10 +194,11 @@ type FakeClient struct {
 		result1 *types.Platform
 		result2 error
 	}
-	RegisterVisibilityStub        func(*types.Visibility) (*types.Visibility, error)
+	RegisterVisibilityStub        func(*types.Visibility, *query.Parameters) (*types.Visibility, error)
 	registerVisibilityMutex       sync.RWMutex
 	registerVisibilityArgsForCall []struct {
 		arg1 *types.Visibility
+		arg2 *query.Parameters
 	}
 	registerVisibilityReturns struct {
 		result1 *types.Visibility
@@ -225,11 +208,12 @@ type FakeClient struct {
 		result1 *types.Visibility
 		result2 error
 	}
-	UpdateBrokerStub        func(string, *types.Broker) (*types.Broker, error)
+	UpdateBrokerStub        func(string, *types.Broker, *query.Parameters) (*types.Broker, error)
 	updateBrokerMutex       sync.RWMutex
 	updateBrokerArgsForCall []struct {
 		arg1 string
 		arg2 *types.Broker
+		arg3 *query.Parameters
 	}
 	updateBrokerReturns struct {
 		result1 *types.Broker
@@ -239,11 +223,12 @@ type FakeClient struct {
 		result1 *types.Broker
 		result2 error
 	}
-	UpdatePlatformStub        func(string, *types.Platform) (*types.Platform, error)
+	UpdatePlatformStub        func(string, *types.Platform, *query.Parameters) (*types.Platform, error)
 	updatePlatformMutex       sync.RWMutex
 	updatePlatformArgsForCall []struct {
 		arg1 string
 		arg2 *types.Platform
+		arg3 *query.Parameters
 	}
 	updatePlatformReturns struct {
 		result1 *types.Platform
@@ -253,11 +238,12 @@ type FakeClient struct {
 		result1 *types.Platform
 		result2 error
 	}
-	UpdateVisibilityStub        func(string, *types.Visibility) (*types.Visibility, error)
+	UpdateVisibilityStub        func(string, *types.Visibility, *query.Parameters) (*types.Visibility, error)
 	updateVisibilityMutex       sync.RWMutex
 	updateVisibilityArgsForCall []struct {
 		arg1 string
 		arg2 *types.Visibility
+		arg3 *query.Parameters
 	}
 	updateVisibilityReturns struct {
 		result1 *types.Visibility
@@ -271,18 +257,19 @@ type FakeClient struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeClient) Call(arg1 string, arg2 string, arg3 io.Reader) (*http.Response, error) {
+func (fake *FakeClient) Call(arg1 string, arg2 string, arg3 io.Reader, arg4 *query.Parameters) (*http.Response, error) {
 	fake.callMutex.Lock()
 	ret, specificReturn := fake.callReturnsOnCall[len(fake.callArgsForCall)]
 	fake.callArgsForCall = append(fake.callArgsForCall, struct {
 		arg1 string
 		arg2 string
 		arg3 io.Reader
-	}{arg1, arg2, arg3})
-	fake.recordInvocation("Call", []interface{}{arg1, arg2, arg3})
+		arg4 *query.Parameters
+	}{arg1, arg2, arg3, arg4})
+	fake.recordInvocation("Call", []interface{}{arg1, arg2, arg3, arg4})
 	fake.callMutex.Unlock()
 	if fake.CallStub != nil {
-		return fake.CallStub(arg1, arg2, arg3)
+		return fake.CallStub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -297,17 +284,17 @@ func (fake *FakeClient) CallCallCount() int {
 	return len(fake.callArgsForCall)
 }
 
-func (fake *FakeClient) CallCalls(stub func(string, string, io.Reader) (*http.Response, error)) {
+func (fake *FakeClient) CallCalls(stub func(string, string, io.Reader, *query.Parameters) (*http.Response, error)) {
 	fake.callMutex.Lock()
 	defer fake.callMutex.Unlock()
 	fake.CallStub = stub
 }
 
-func (fake *FakeClient) CallArgsForCall(i int) (string, string, io.Reader) {
+func (fake *FakeClient) CallArgsForCall(i int) (string, string, io.Reader, *query.Parameters) {
 	fake.callMutex.RLock()
 	defer fake.callMutex.RUnlock()
 	argsForCall := fake.callArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
 func (fake *FakeClient) CallReturns(result1 *http.Response, result2 error) {
@@ -336,302 +323,182 @@ func (fake *FakeClient) CallReturnsOnCall(i int, result1 *http.Response, result2
 	}{result1, result2}
 }
 
-func (fake *FakeClient) DeleteBroker(arg1 string) error {
-	fake.deleteBrokerMutex.Lock()
-	ret, specificReturn := fake.deleteBrokerReturnsOnCall[len(fake.deleteBrokerArgsForCall)]
-	fake.deleteBrokerArgsForCall = append(fake.deleteBrokerArgsForCall, struct {
-		arg1 string
+func (fake *FakeClient) DeleteBrokers(arg1 *query.Parameters) error {
+	fake.deleteBrokersMutex.Lock()
+	ret, specificReturn := fake.deleteBrokersReturnsOnCall[len(fake.deleteBrokersArgsForCall)]
+	fake.deleteBrokersArgsForCall = append(fake.deleteBrokersArgsForCall, struct {
+		arg1 *query.Parameters
 	}{arg1})
-	fake.recordInvocation("DeleteBroker", []interface{}{arg1})
-	fake.deleteBrokerMutex.Unlock()
-	if fake.DeleteBrokerStub != nil {
-		return fake.DeleteBrokerStub(arg1)
+	fake.recordInvocation("DeleteBrokers", []interface{}{arg1})
+	fake.deleteBrokersMutex.Unlock()
+	if fake.DeleteBrokersStub != nil {
+		return fake.DeleteBrokersStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteBrokerReturns
+	fakeReturns := fake.deleteBrokersReturns
 	return fakeReturns.result1
 }
 
-func (fake *FakeClient) DeleteBrokerCallCount() int {
-	fake.deleteBrokerMutex.RLock()
-	defer fake.deleteBrokerMutex.RUnlock()
-	return len(fake.deleteBrokerArgsForCall)
+func (fake *FakeClient) DeleteBrokersCallCount() int {
+	fake.deleteBrokersMutex.RLock()
+	defer fake.deleteBrokersMutex.RUnlock()
+	return len(fake.deleteBrokersArgsForCall)
 }
 
-func (fake *FakeClient) DeleteBrokerCalls(stub func(string) error) {
-	fake.deleteBrokerMutex.Lock()
-	defer fake.deleteBrokerMutex.Unlock()
-	fake.DeleteBrokerStub = stub
+func (fake *FakeClient) DeleteBrokersCalls(stub func(*query.Parameters) error) {
+	fake.deleteBrokersMutex.Lock()
+	defer fake.deleteBrokersMutex.Unlock()
+	fake.DeleteBrokersStub = stub
 }
 
-func (fake *FakeClient) DeleteBrokerArgsForCall(i int) string {
-	fake.deleteBrokerMutex.RLock()
-	defer fake.deleteBrokerMutex.RUnlock()
-	argsForCall := fake.deleteBrokerArgsForCall[i]
+func (fake *FakeClient) DeleteBrokersArgsForCall(i int) *query.Parameters {
+	fake.deleteBrokersMutex.RLock()
+	defer fake.deleteBrokersMutex.RUnlock()
+	argsForCall := fake.deleteBrokersArgsForCall[i]
 	return argsForCall.arg1
 }
 
-func (fake *FakeClient) DeleteBrokerReturns(result1 error) {
-	fake.deleteBrokerMutex.Lock()
-	defer fake.deleteBrokerMutex.Unlock()
-	fake.DeleteBrokerStub = nil
-	fake.deleteBrokerReturns = struct {
+func (fake *FakeClient) DeleteBrokersReturns(result1 error) {
+	fake.deleteBrokersMutex.Lock()
+	defer fake.deleteBrokersMutex.Unlock()
+	fake.DeleteBrokersStub = nil
+	fake.deleteBrokersReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *FakeClient) DeleteBrokerReturnsOnCall(i int, result1 error) {
-	fake.deleteBrokerMutex.Lock()
-	defer fake.deleteBrokerMutex.Unlock()
-	fake.DeleteBrokerStub = nil
-	if fake.deleteBrokerReturnsOnCall == nil {
-		fake.deleteBrokerReturnsOnCall = make(map[int]struct {
+func (fake *FakeClient) DeleteBrokersReturnsOnCall(i int, result1 error) {
+	fake.deleteBrokersMutex.Lock()
+	defer fake.deleteBrokersMutex.Unlock()
+	fake.DeleteBrokersStub = nil
+	if fake.deleteBrokersReturnsOnCall == nil {
+		fake.deleteBrokersReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.deleteBrokerReturnsOnCall[i] = struct {
+	fake.deleteBrokersReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *FakeClient) DeleteBrokersByFieldQuery(arg1 string) error {
-	fake.deleteBrokersByFieldQueryMutex.Lock()
-	ret, specificReturn := fake.deleteBrokersByFieldQueryReturnsOnCall[len(fake.deleteBrokersByFieldQueryArgsForCall)]
-	fake.deleteBrokersByFieldQueryArgsForCall = append(fake.deleteBrokersByFieldQueryArgsForCall, struct {
-		arg1 string
+func (fake *FakeClient) DeletePlatforms(arg1 *query.Parameters) error {
+	fake.deletePlatformsMutex.Lock()
+	ret, specificReturn := fake.deletePlatformsReturnsOnCall[len(fake.deletePlatformsArgsForCall)]
+	fake.deletePlatformsArgsForCall = append(fake.deletePlatformsArgsForCall, struct {
+		arg1 *query.Parameters
 	}{arg1})
-	fake.recordInvocation("DeleteBrokersByFieldQuery", []interface{}{arg1})
-	fake.deleteBrokersByFieldQueryMutex.Unlock()
-	if fake.DeleteBrokersByFieldQueryStub != nil {
-		return fake.DeleteBrokersByFieldQueryStub(arg1)
+	fake.recordInvocation("DeletePlatforms", []interface{}{arg1})
+	fake.deletePlatformsMutex.Unlock()
+	if fake.DeletePlatformsStub != nil {
+		return fake.DeletePlatformsStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteBrokersByFieldQueryReturns
+	fakeReturns := fake.deletePlatformsReturns
 	return fakeReturns.result1
 }
 
-func (fake *FakeClient) DeleteBrokersByFieldQueryCallCount() int {
-	fake.deleteBrokersByFieldQueryMutex.RLock()
-	defer fake.deleteBrokersByFieldQueryMutex.RUnlock()
-	return len(fake.deleteBrokersByFieldQueryArgsForCall)
+func (fake *FakeClient) DeletePlatformsCallCount() int {
+	fake.deletePlatformsMutex.RLock()
+	defer fake.deletePlatformsMutex.RUnlock()
+	return len(fake.deletePlatformsArgsForCall)
 }
 
-func (fake *FakeClient) DeleteBrokersByFieldQueryCalls(stub func(string) error) {
-	fake.deleteBrokersByFieldQueryMutex.Lock()
-	defer fake.deleteBrokersByFieldQueryMutex.Unlock()
-	fake.DeleteBrokersByFieldQueryStub = stub
+func (fake *FakeClient) DeletePlatformsCalls(stub func(*query.Parameters) error) {
+	fake.deletePlatformsMutex.Lock()
+	defer fake.deletePlatformsMutex.Unlock()
+	fake.DeletePlatformsStub = stub
 }
 
-func (fake *FakeClient) DeleteBrokersByFieldQueryArgsForCall(i int) string {
-	fake.deleteBrokersByFieldQueryMutex.RLock()
-	defer fake.deleteBrokersByFieldQueryMutex.RUnlock()
-	argsForCall := fake.deleteBrokersByFieldQueryArgsForCall[i]
+func (fake *FakeClient) DeletePlatformsArgsForCall(i int) *query.Parameters {
+	fake.deletePlatformsMutex.RLock()
+	defer fake.deletePlatformsMutex.RUnlock()
+	argsForCall := fake.deletePlatformsArgsForCall[i]
 	return argsForCall.arg1
 }
 
-func (fake *FakeClient) DeleteBrokersByFieldQueryReturns(result1 error) {
-	fake.deleteBrokersByFieldQueryMutex.Lock()
-	defer fake.deleteBrokersByFieldQueryMutex.Unlock()
-	fake.DeleteBrokersByFieldQueryStub = nil
-	fake.deleteBrokersByFieldQueryReturns = struct {
+func (fake *FakeClient) DeletePlatformsReturns(result1 error) {
+	fake.deletePlatformsMutex.Lock()
+	defer fake.deletePlatformsMutex.Unlock()
+	fake.DeletePlatformsStub = nil
+	fake.deletePlatformsReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *FakeClient) DeleteBrokersByFieldQueryReturnsOnCall(i int, result1 error) {
-	fake.deleteBrokersByFieldQueryMutex.Lock()
-	defer fake.deleteBrokersByFieldQueryMutex.Unlock()
-	fake.DeleteBrokersByFieldQueryStub = nil
-	if fake.deleteBrokersByFieldQueryReturnsOnCall == nil {
-		fake.deleteBrokersByFieldQueryReturnsOnCall = make(map[int]struct {
+func (fake *FakeClient) DeletePlatformsReturnsOnCall(i int, result1 error) {
+	fake.deletePlatformsMutex.Lock()
+	defer fake.deletePlatformsMutex.Unlock()
+	fake.DeletePlatformsStub = nil
+	if fake.deletePlatformsReturnsOnCall == nil {
+		fake.deletePlatformsReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.deleteBrokersByFieldQueryReturnsOnCall[i] = struct {
+	fake.deletePlatformsReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *FakeClient) DeletePlatform(arg1 string) error {
-	fake.deletePlatformMutex.Lock()
-	ret, specificReturn := fake.deletePlatformReturnsOnCall[len(fake.deletePlatformArgsForCall)]
-	fake.deletePlatformArgsForCall = append(fake.deletePlatformArgsForCall, struct {
-		arg1 string
+func (fake *FakeClient) DeleteVisibilities(arg1 *query.Parameters) error {
+	fake.deleteVisibilitiesMutex.Lock()
+	ret, specificReturn := fake.deleteVisibilitiesReturnsOnCall[len(fake.deleteVisibilitiesArgsForCall)]
+	fake.deleteVisibilitiesArgsForCall = append(fake.deleteVisibilitiesArgsForCall, struct {
+		arg1 *query.Parameters
 	}{arg1})
-	fake.recordInvocation("DeletePlatform", []interface{}{arg1})
-	fake.deletePlatformMutex.Unlock()
-	if fake.DeletePlatformStub != nil {
-		return fake.DeletePlatformStub(arg1)
+	fake.recordInvocation("DeleteVisibilities", []interface{}{arg1})
+	fake.deleteVisibilitiesMutex.Unlock()
+	if fake.DeleteVisibilitiesStub != nil {
+		return fake.DeleteVisibilitiesStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deletePlatformReturns
+	fakeReturns := fake.deleteVisibilitiesReturns
 	return fakeReturns.result1
 }
 
-func (fake *FakeClient) DeletePlatformCallCount() int {
-	fake.deletePlatformMutex.RLock()
-	defer fake.deletePlatformMutex.RUnlock()
-	return len(fake.deletePlatformArgsForCall)
+func (fake *FakeClient) DeleteVisibilitiesCallCount() int {
+	fake.deleteVisibilitiesMutex.RLock()
+	defer fake.deleteVisibilitiesMutex.RUnlock()
+	return len(fake.deleteVisibilitiesArgsForCall)
 }
 
-func (fake *FakeClient) DeletePlatformCalls(stub func(string) error) {
-	fake.deletePlatformMutex.Lock()
-	defer fake.deletePlatformMutex.Unlock()
-	fake.DeletePlatformStub = stub
+func (fake *FakeClient) DeleteVisibilitiesCalls(stub func(*query.Parameters) error) {
+	fake.deleteVisibilitiesMutex.Lock()
+	defer fake.deleteVisibilitiesMutex.Unlock()
+	fake.DeleteVisibilitiesStub = stub
 }
 
-func (fake *FakeClient) DeletePlatformArgsForCall(i int) string {
-	fake.deletePlatformMutex.RLock()
-	defer fake.deletePlatformMutex.RUnlock()
-	argsForCall := fake.deletePlatformArgsForCall[i]
+func (fake *FakeClient) DeleteVisibilitiesArgsForCall(i int) *query.Parameters {
+	fake.deleteVisibilitiesMutex.RLock()
+	defer fake.deleteVisibilitiesMutex.RUnlock()
+	argsForCall := fake.deleteVisibilitiesArgsForCall[i]
 	return argsForCall.arg1
 }
 
-func (fake *FakeClient) DeletePlatformReturns(result1 error) {
-	fake.deletePlatformMutex.Lock()
-	defer fake.deletePlatformMutex.Unlock()
-	fake.DeletePlatformStub = nil
-	fake.deletePlatformReturns = struct {
+func (fake *FakeClient) DeleteVisibilitiesReturns(result1 error) {
+	fake.deleteVisibilitiesMutex.Lock()
+	defer fake.deleteVisibilitiesMutex.Unlock()
+	fake.DeleteVisibilitiesStub = nil
+	fake.deleteVisibilitiesReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *FakeClient) DeletePlatformReturnsOnCall(i int, result1 error) {
-	fake.deletePlatformMutex.Lock()
-	defer fake.deletePlatformMutex.Unlock()
-	fake.DeletePlatformStub = nil
-	if fake.deletePlatformReturnsOnCall == nil {
-		fake.deletePlatformReturnsOnCall = make(map[int]struct {
+func (fake *FakeClient) DeleteVisibilitiesReturnsOnCall(i int, result1 error) {
+	fake.deleteVisibilitiesMutex.Lock()
+	defer fake.deleteVisibilitiesMutex.Unlock()
+	fake.DeleteVisibilitiesStub = nil
+	if fake.deleteVisibilitiesReturnsOnCall == nil {
+		fake.deleteVisibilitiesReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.deletePlatformReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeClient) DeletePlatformsByFieldQuery(arg1 string) error {
-	fake.deletePlatformsByFieldQueryMutex.Lock()
-	ret, specificReturn := fake.deletePlatformsByFieldQueryReturnsOnCall[len(fake.deletePlatformsByFieldQueryArgsForCall)]
-	fake.deletePlatformsByFieldQueryArgsForCall = append(fake.deletePlatformsByFieldQueryArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	fake.recordInvocation("DeletePlatformsByFieldQuery", []interface{}{arg1})
-	fake.deletePlatformsByFieldQueryMutex.Unlock()
-	if fake.DeletePlatformsByFieldQueryStub != nil {
-		return fake.DeletePlatformsByFieldQueryStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.deletePlatformsByFieldQueryReturns
-	return fakeReturns.result1
-}
-
-func (fake *FakeClient) DeletePlatformsByFieldQueryCallCount() int {
-	fake.deletePlatformsByFieldQueryMutex.RLock()
-	defer fake.deletePlatformsByFieldQueryMutex.RUnlock()
-	return len(fake.deletePlatformsByFieldQueryArgsForCall)
-}
-
-func (fake *FakeClient) DeletePlatformsByFieldQueryCalls(stub func(string) error) {
-	fake.deletePlatformsByFieldQueryMutex.Lock()
-	defer fake.deletePlatformsByFieldQueryMutex.Unlock()
-	fake.DeletePlatformsByFieldQueryStub = stub
-}
-
-func (fake *FakeClient) DeletePlatformsByFieldQueryArgsForCall(i int) string {
-	fake.deletePlatformsByFieldQueryMutex.RLock()
-	defer fake.deletePlatformsByFieldQueryMutex.RUnlock()
-	argsForCall := fake.deletePlatformsByFieldQueryArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *FakeClient) DeletePlatformsByFieldQueryReturns(result1 error) {
-	fake.deletePlatformsByFieldQueryMutex.Lock()
-	defer fake.deletePlatformsByFieldQueryMutex.Unlock()
-	fake.DeletePlatformsByFieldQueryStub = nil
-	fake.deletePlatformsByFieldQueryReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeClient) DeletePlatformsByFieldQueryReturnsOnCall(i int, result1 error) {
-	fake.deletePlatformsByFieldQueryMutex.Lock()
-	defer fake.deletePlatformsByFieldQueryMutex.Unlock()
-	fake.DeletePlatformsByFieldQueryStub = nil
-	if fake.deletePlatformsByFieldQueryReturnsOnCall == nil {
-		fake.deletePlatformsByFieldQueryReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.deletePlatformsByFieldQueryReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeClient) DeleteVisibility(arg1 string) error {
-	fake.deleteVisibilityMutex.Lock()
-	ret, specificReturn := fake.deleteVisibilityReturnsOnCall[len(fake.deleteVisibilityArgsForCall)]
-	fake.deleteVisibilityArgsForCall = append(fake.deleteVisibilityArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	fake.recordInvocation("DeleteVisibility", []interface{}{arg1})
-	fake.deleteVisibilityMutex.Unlock()
-	if fake.DeleteVisibilityStub != nil {
-		return fake.DeleteVisibilityStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.deleteVisibilityReturns
-	return fakeReturns.result1
-}
-
-func (fake *FakeClient) DeleteVisibilityCallCount() int {
-	fake.deleteVisibilityMutex.RLock()
-	defer fake.deleteVisibilityMutex.RUnlock()
-	return len(fake.deleteVisibilityArgsForCall)
-}
-
-func (fake *FakeClient) DeleteVisibilityCalls(stub func(string) error) {
-	fake.deleteVisibilityMutex.Lock()
-	defer fake.deleteVisibilityMutex.Unlock()
-	fake.DeleteVisibilityStub = stub
-}
-
-func (fake *FakeClient) DeleteVisibilityArgsForCall(i int) string {
-	fake.deleteVisibilityMutex.RLock()
-	defer fake.deleteVisibilityMutex.RUnlock()
-	argsForCall := fake.deleteVisibilityArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *FakeClient) DeleteVisibilityReturns(result1 error) {
-	fake.deleteVisibilityMutex.Lock()
-	defer fake.deleteVisibilityMutex.Unlock()
-	fake.DeleteVisibilityStub = nil
-	fake.deleteVisibilityReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeClient) DeleteVisibilityReturnsOnCall(i int, result1 error) {
-	fake.deleteVisibilityMutex.Lock()
-	defer fake.deleteVisibilityMutex.Unlock()
-	fake.DeleteVisibilityStub = nil
-	if fake.deleteVisibilityReturnsOnCall == nil {
-		fake.deleteVisibilityReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.deleteVisibilityReturnsOnCall[i] = struct {
+	fake.deleteVisibilitiesReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -699,18 +566,19 @@ func (fake *FakeClient) GetInfoReturnsOnCall(i int, result1 *types.Info, result2
 	}{result1, result2}
 }
 
-func (fake *FakeClient) Label(arg1 string, arg2 string, arg3 *types.LabelChanges) error {
+func (fake *FakeClient) Label(arg1 string, arg2 string, arg3 *types.LabelChanges, arg4 *query.Parameters) error {
 	fake.labelMutex.Lock()
 	ret, specificReturn := fake.labelReturnsOnCall[len(fake.labelArgsForCall)]
 	fake.labelArgsForCall = append(fake.labelArgsForCall, struct {
 		arg1 string
 		arg2 string
 		arg3 *types.LabelChanges
-	}{arg1, arg2, arg3})
-	fake.recordInvocation("Label", []interface{}{arg1, arg2, arg3})
+		arg4 *query.Parameters
+	}{arg1, arg2, arg3, arg4})
+	fake.recordInvocation("Label", []interface{}{arg1, arg2, arg3, arg4})
 	fake.labelMutex.Unlock()
 	if fake.LabelStub != nil {
-		return fake.LabelStub(arg1, arg2, arg3)
+		return fake.LabelStub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1
@@ -725,17 +593,17 @@ func (fake *FakeClient) LabelCallCount() int {
 	return len(fake.labelArgsForCall)
 }
 
-func (fake *FakeClient) LabelCalls(stub func(string, string, *types.LabelChanges) error) {
+func (fake *FakeClient) LabelCalls(stub func(string, string, *types.LabelChanges, *query.Parameters) error) {
 	fake.labelMutex.Lock()
 	defer fake.labelMutex.Unlock()
 	fake.LabelStub = stub
 }
 
-func (fake *FakeClient) LabelArgsForCall(i int) (string, string, *types.LabelChanges) {
+func (fake *FakeClient) LabelArgsForCall(i int) (string, string, *types.LabelChanges, *query.Parameters) {
 	fake.labelMutex.RLock()
 	defer fake.labelMutex.RUnlock()
 	argsForCall := fake.labelArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
 func (fake *FakeClient) LabelReturns(result1 error) {
@@ -1139,16 +1007,17 @@ func (fake *FakeClient) MarketplaceReturnsOnCall(i int, result1 *types.Marketpla
 	}{result1, result2}
 }
 
-func (fake *FakeClient) RegisterBroker(arg1 *types.Broker) (*types.Broker, error) {
+func (fake *FakeClient) RegisterBroker(arg1 *types.Broker, arg2 *query.Parameters) (*types.Broker, error) {
 	fake.registerBrokerMutex.Lock()
 	ret, specificReturn := fake.registerBrokerReturnsOnCall[len(fake.registerBrokerArgsForCall)]
 	fake.registerBrokerArgsForCall = append(fake.registerBrokerArgsForCall, struct {
 		arg1 *types.Broker
-	}{arg1})
-	fake.recordInvocation("RegisterBroker", []interface{}{arg1})
+		arg2 *query.Parameters
+	}{arg1, arg2})
+	fake.recordInvocation("RegisterBroker", []interface{}{arg1, arg2})
 	fake.registerBrokerMutex.Unlock()
 	if fake.RegisterBrokerStub != nil {
-		return fake.RegisterBrokerStub(arg1)
+		return fake.RegisterBrokerStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -1163,17 +1032,17 @@ func (fake *FakeClient) RegisterBrokerCallCount() int {
 	return len(fake.registerBrokerArgsForCall)
 }
 
-func (fake *FakeClient) RegisterBrokerCalls(stub func(*types.Broker) (*types.Broker, error)) {
+func (fake *FakeClient) RegisterBrokerCalls(stub func(*types.Broker, *query.Parameters) (*types.Broker, error)) {
 	fake.registerBrokerMutex.Lock()
 	defer fake.registerBrokerMutex.Unlock()
 	fake.RegisterBrokerStub = stub
 }
 
-func (fake *FakeClient) RegisterBrokerArgsForCall(i int) *types.Broker {
+func (fake *FakeClient) RegisterBrokerArgsForCall(i int) (*types.Broker, *query.Parameters) {
 	fake.registerBrokerMutex.RLock()
 	defer fake.registerBrokerMutex.RUnlock()
 	argsForCall := fake.registerBrokerArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeClient) RegisterBrokerReturns(result1 *types.Broker, result2 error) {
@@ -1202,16 +1071,17 @@ func (fake *FakeClient) RegisterBrokerReturnsOnCall(i int, result1 *types.Broker
 	}{result1, result2}
 }
 
-func (fake *FakeClient) RegisterPlatform(arg1 *types.Platform) (*types.Platform, error) {
+func (fake *FakeClient) RegisterPlatform(arg1 *types.Platform, arg2 *query.Parameters) (*types.Platform, error) {
 	fake.registerPlatformMutex.Lock()
 	ret, specificReturn := fake.registerPlatformReturnsOnCall[len(fake.registerPlatformArgsForCall)]
 	fake.registerPlatformArgsForCall = append(fake.registerPlatformArgsForCall, struct {
 		arg1 *types.Platform
-	}{arg1})
-	fake.recordInvocation("RegisterPlatform", []interface{}{arg1})
+		arg2 *query.Parameters
+	}{arg1, arg2})
+	fake.recordInvocation("RegisterPlatform", []interface{}{arg1, arg2})
 	fake.registerPlatformMutex.Unlock()
 	if fake.RegisterPlatformStub != nil {
-		return fake.RegisterPlatformStub(arg1)
+		return fake.RegisterPlatformStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -1226,17 +1096,17 @@ func (fake *FakeClient) RegisterPlatformCallCount() int {
 	return len(fake.registerPlatformArgsForCall)
 }
 
-func (fake *FakeClient) RegisterPlatformCalls(stub func(*types.Platform) (*types.Platform, error)) {
+func (fake *FakeClient) RegisterPlatformCalls(stub func(*types.Platform, *query.Parameters) (*types.Platform, error)) {
 	fake.registerPlatformMutex.Lock()
 	defer fake.registerPlatformMutex.Unlock()
 	fake.RegisterPlatformStub = stub
 }
 
-func (fake *FakeClient) RegisterPlatformArgsForCall(i int) *types.Platform {
+func (fake *FakeClient) RegisterPlatformArgsForCall(i int) (*types.Platform, *query.Parameters) {
 	fake.registerPlatformMutex.RLock()
 	defer fake.registerPlatformMutex.RUnlock()
 	argsForCall := fake.registerPlatformArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeClient) RegisterPlatformReturns(result1 *types.Platform, result2 error) {
@@ -1265,16 +1135,17 @@ func (fake *FakeClient) RegisterPlatformReturnsOnCall(i int, result1 *types.Plat
 	}{result1, result2}
 }
 
-func (fake *FakeClient) RegisterVisibility(arg1 *types.Visibility) (*types.Visibility, error) {
+func (fake *FakeClient) RegisterVisibility(arg1 *types.Visibility, arg2 *query.Parameters) (*types.Visibility, error) {
 	fake.registerVisibilityMutex.Lock()
 	ret, specificReturn := fake.registerVisibilityReturnsOnCall[len(fake.registerVisibilityArgsForCall)]
 	fake.registerVisibilityArgsForCall = append(fake.registerVisibilityArgsForCall, struct {
 		arg1 *types.Visibility
-	}{arg1})
-	fake.recordInvocation("RegisterVisibility", []interface{}{arg1})
+		arg2 *query.Parameters
+	}{arg1, arg2})
+	fake.recordInvocation("RegisterVisibility", []interface{}{arg1, arg2})
 	fake.registerVisibilityMutex.Unlock()
 	if fake.RegisterVisibilityStub != nil {
-		return fake.RegisterVisibilityStub(arg1)
+		return fake.RegisterVisibilityStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -1289,17 +1160,17 @@ func (fake *FakeClient) RegisterVisibilityCallCount() int {
 	return len(fake.registerVisibilityArgsForCall)
 }
 
-func (fake *FakeClient) RegisterVisibilityCalls(stub func(*types.Visibility) (*types.Visibility, error)) {
+func (fake *FakeClient) RegisterVisibilityCalls(stub func(*types.Visibility, *query.Parameters) (*types.Visibility, error)) {
 	fake.registerVisibilityMutex.Lock()
 	defer fake.registerVisibilityMutex.Unlock()
 	fake.RegisterVisibilityStub = stub
 }
 
-func (fake *FakeClient) RegisterVisibilityArgsForCall(i int) *types.Visibility {
+func (fake *FakeClient) RegisterVisibilityArgsForCall(i int) (*types.Visibility, *query.Parameters) {
 	fake.registerVisibilityMutex.RLock()
 	defer fake.registerVisibilityMutex.RUnlock()
 	argsForCall := fake.registerVisibilityArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeClient) RegisterVisibilityReturns(result1 *types.Visibility, result2 error) {
@@ -1328,17 +1199,18 @@ func (fake *FakeClient) RegisterVisibilityReturnsOnCall(i int, result1 *types.Vi
 	}{result1, result2}
 }
 
-func (fake *FakeClient) UpdateBroker(arg1 string, arg2 *types.Broker) (*types.Broker, error) {
+func (fake *FakeClient) UpdateBroker(arg1 string, arg2 *types.Broker, arg3 *query.Parameters) (*types.Broker, error) {
 	fake.updateBrokerMutex.Lock()
 	ret, specificReturn := fake.updateBrokerReturnsOnCall[len(fake.updateBrokerArgsForCall)]
 	fake.updateBrokerArgsForCall = append(fake.updateBrokerArgsForCall, struct {
 		arg1 string
 		arg2 *types.Broker
-	}{arg1, arg2})
-	fake.recordInvocation("UpdateBroker", []interface{}{arg1, arg2})
+		arg3 *query.Parameters
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("UpdateBroker", []interface{}{arg1, arg2, arg3})
 	fake.updateBrokerMutex.Unlock()
 	if fake.UpdateBrokerStub != nil {
-		return fake.UpdateBrokerStub(arg1, arg2)
+		return fake.UpdateBrokerStub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -1353,17 +1225,17 @@ func (fake *FakeClient) UpdateBrokerCallCount() int {
 	return len(fake.updateBrokerArgsForCall)
 }
 
-func (fake *FakeClient) UpdateBrokerCalls(stub func(string, *types.Broker) (*types.Broker, error)) {
+func (fake *FakeClient) UpdateBrokerCalls(stub func(string, *types.Broker, *query.Parameters) (*types.Broker, error)) {
 	fake.updateBrokerMutex.Lock()
 	defer fake.updateBrokerMutex.Unlock()
 	fake.UpdateBrokerStub = stub
 }
 
-func (fake *FakeClient) UpdateBrokerArgsForCall(i int) (string, *types.Broker) {
+func (fake *FakeClient) UpdateBrokerArgsForCall(i int) (string, *types.Broker, *query.Parameters) {
 	fake.updateBrokerMutex.RLock()
 	defer fake.updateBrokerMutex.RUnlock()
 	argsForCall := fake.updateBrokerArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
 func (fake *FakeClient) UpdateBrokerReturns(result1 *types.Broker, result2 error) {
@@ -1392,17 +1264,18 @@ func (fake *FakeClient) UpdateBrokerReturnsOnCall(i int, result1 *types.Broker, 
 	}{result1, result2}
 }
 
-func (fake *FakeClient) UpdatePlatform(arg1 string, arg2 *types.Platform) (*types.Platform, error) {
+func (fake *FakeClient) UpdatePlatform(arg1 string, arg2 *types.Platform, arg3 *query.Parameters) (*types.Platform, error) {
 	fake.updatePlatformMutex.Lock()
 	ret, specificReturn := fake.updatePlatformReturnsOnCall[len(fake.updatePlatformArgsForCall)]
 	fake.updatePlatformArgsForCall = append(fake.updatePlatformArgsForCall, struct {
 		arg1 string
 		arg2 *types.Platform
-	}{arg1, arg2})
-	fake.recordInvocation("UpdatePlatform", []interface{}{arg1, arg2})
+		arg3 *query.Parameters
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("UpdatePlatform", []interface{}{arg1, arg2, arg3})
 	fake.updatePlatformMutex.Unlock()
 	if fake.UpdatePlatformStub != nil {
-		return fake.UpdatePlatformStub(arg1, arg2)
+		return fake.UpdatePlatformStub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -1417,17 +1290,17 @@ func (fake *FakeClient) UpdatePlatformCallCount() int {
 	return len(fake.updatePlatformArgsForCall)
 }
 
-func (fake *FakeClient) UpdatePlatformCalls(stub func(string, *types.Platform) (*types.Platform, error)) {
+func (fake *FakeClient) UpdatePlatformCalls(stub func(string, *types.Platform, *query.Parameters) (*types.Platform, error)) {
 	fake.updatePlatformMutex.Lock()
 	defer fake.updatePlatformMutex.Unlock()
 	fake.UpdatePlatformStub = stub
 }
 
-func (fake *FakeClient) UpdatePlatformArgsForCall(i int) (string, *types.Platform) {
+func (fake *FakeClient) UpdatePlatformArgsForCall(i int) (string, *types.Platform, *query.Parameters) {
 	fake.updatePlatformMutex.RLock()
 	defer fake.updatePlatformMutex.RUnlock()
 	argsForCall := fake.updatePlatformArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
 func (fake *FakeClient) UpdatePlatformReturns(result1 *types.Platform, result2 error) {
@@ -1456,17 +1329,18 @@ func (fake *FakeClient) UpdatePlatformReturnsOnCall(i int, result1 *types.Platfo
 	}{result1, result2}
 }
 
-func (fake *FakeClient) UpdateVisibility(arg1 string, arg2 *types.Visibility) (*types.Visibility, error) {
+func (fake *FakeClient) UpdateVisibility(arg1 string, arg2 *types.Visibility, arg3 *query.Parameters) (*types.Visibility, error) {
 	fake.updateVisibilityMutex.Lock()
 	ret, specificReturn := fake.updateVisibilityReturnsOnCall[len(fake.updateVisibilityArgsForCall)]
 	fake.updateVisibilityArgsForCall = append(fake.updateVisibilityArgsForCall, struct {
 		arg1 string
 		arg2 *types.Visibility
-	}{arg1, arg2})
-	fake.recordInvocation("UpdateVisibility", []interface{}{arg1, arg2})
+		arg3 *query.Parameters
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("UpdateVisibility", []interface{}{arg1, arg2, arg3})
 	fake.updateVisibilityMutex.Unlock()
 	if fake.UpdateVisibilityStub != nil {
-		return fake.UpdateVisibilityStub(arg1, arg2)
+		return fake.UpdateVisibilityStub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -1481,17 +1355,17 @@ func (fake *FakeClient) UpdateVisibilityCallCount() int {
 	return len(fake.updateVisibilityArgsForCall)
 }
 
-func (fake *FakeClient) UpdateVisibilityCalls(stub func(string, *types.Visibility) (*types.Visibility, error)) {
+func (fake *FakeClient) UpdateVisibilityCalls(stub func(string, *types.Visibility, *query.Parameters) (*types.Visibility, error)) {
 	fake.updateVisibilityMutex.Lock()
 	defer fake.updateVisibilityMutex.Unlock()
 	fake.UpdateVisibilityStub = stub
 }
 
-func (fake *FakeClient) UpdateVisibilityArgsForCall(i int) (string, *types.Visibility) {
+func (fake *FakeClient) UpdateVisibilityArgsForCall(i int) (string, *types.Visibility, *query.Parameters) {
 	fake.updateVisibilityMutex.RLock()
 	defer fake.updateVisibilityMutex.RUnlock()
 	argsForCall := fake.updateVisibilityArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
 func (fake *FakeClient) UpdateVisibilityReturns(result1 *types.Visibility, result2 error) {
@@ -1525,16 +1399,12 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.callMutex.RLock()
 	defer fake.callMutex.RUnlock()
-	fake.deleteBrokerMutex.RLock()
-	defer fake.deleteBrokerMutex.RUnlock()
-	fake.deleteBrokersByFieldQueryMutex.RLock()
-	defer fake.deleteBrokersByFieldQueryMutex.RUnlock()
-	fake.deletePlatformMutex.RLock()
-	defer fake.deletePlatformMutex.RUnlock()
-	fake.deletePlatformsByFieldQueryMutex.RLock()
-	defer fake.deletePlatformsByFieldQueryMutex.RUnlock()
-	fake.deleteVisibilityMutex.RLock()
-	defer fake.deleteVisibilityMutex.RUnlock()
+	fake.deleteBrokersMutex.RLock()
+	defer fake.deleteBrokersMutex.RUnlock()
+	fake.deletePlatformsMutex.RLock()
+	defer fake.deletePlatformsMutex.RUnlock()
+	fake.deleteVisibilitiesMutex.RLock()
+	defer fake.deleteVisibilitiesMutex.RUnlock()
 	fake.getInfoMutex.RLock()
 	defer fake.getInfoMutex.RUnlock()
 	fake.labelMutex.RLock()

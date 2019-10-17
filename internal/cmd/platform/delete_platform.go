@@ -22,7 +22,6 @@ import (
 	"strings"
 
 	"github.com/Peripli/service-manager-cli/internal/output"
-	"github.com/Peripli/service-manager-cli/internal/util"
 
 	"github.com/spf13/cobra"
 
@@ -36,7 +35,7 @@ type DeletePlatformCmd struct {
 	input io.Reader
 	force bool
 
-	names []string
+	name string
 }
 
 // NewDeletePlatformCmd returns new delete-platform command with context
@@ -46,28 +45,27 @@ func NewDeletePlatformCmd(context *cmd.Context, input io.Reader) *DeletePlatform
 
 // Validate validates command's arguments
 func (dpc *DeletePlatformCmd) Validate(args []string) error {
-	if len(args) < 1 {
-		return fmt.Errorf("[name] is required")
+	if len(args) != 1 {
+		return fmt.Errorf("single [name] is required")
 	}
 
-	dpc.names = args
+	dpc.name = args[0]
 
 	return nil
 }
 
 // Run runs the command's logic
 func (dpc *DeletePlatformCmd) Run() error {
-	fieldQuery := util.GetResourceByNamesQuery(dpc.names)
-	if err := dpc.Client.DeletePlatformsByFieldQuery(fieldQuery); err != nil {
+	dpc.Parameters.FieldQuery = append(dpc.Parameters.FieldQuery, fmt.Sprintf("name = %s", dpc.name))
+
+	if err := dpc.Client.DeletePlatforms(&dpc.Parameters); err != nil {
 		if strings.Contains(err.Error(), "StatusCode: 404") {
 			output.PrintMessage(dpc.Output, "Platform(s) not found.\n")
 			return nil
 		}
 		output.PrintMessage(dpc.Output, "Could not delete platform(s). Reason: ")
 		return err
-
 	}
-
 	output.PrintMessage(dpc.Output, "Platform(s) successfully deleted.\n")
 	return nil
 }
@@ -80,7 +78,7 @@ func (dpc *DeletePlatformCmd) HideUsage() bool {
 // AskForConfirmation asks the user to confirm deletion
 func (dpc *DeletePlatformCmd) AskForConfirmation() (bool, error) {
 	if !dpc.force {
-		message := fmt.Sprintf("Do you really want to delete platforms with names [%s] (Y/n): ", strings.Join(dpc.names, ", "))
+		message := fmt.Sprintf("Do you really want to delete platforms with names [%s] (Y/n): ", dpc.name)
 		return cmd.CommonConfirmationPrompt(message, dpc.Context, dpc.input)
 	}
 	return true, nil
@@ -94,7 +92,7 @@ func (dpc *DeletePlatformCmd) PrintDeclineMessage() {
 // Prepare returns cobra command
 func (dpc *DeletePlatformCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
-		Use:     "delete-platform [name] <name2 <name3> ... <nameN>>",
+		Use:     "delete-platform [name]",
 		Aliases: []string{"dp"},
 		Short:   "Deletes platforms",
 		Long:    `Delete one or more platforms with name.`,
@@ -103,6 +101,7 @@ func (dpc *DeletePlatformCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	}
 
 	result.Flags().BoolVarP(&dpc.force, "force", "f", false, "Force delete without confirmation")
+	cmd.AddCommonQueryFlag(result.Flags(), &dpc.Parameters)
 
 	return result
 }

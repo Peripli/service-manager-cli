@@ -24,7 +24,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
-	"github.com/Peripli/service-manager-cli/pkg/query"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 )
 
@@ -63,10 +62,8 @@ func (upc *UpdatePlatformCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (upc *UpdatePlatformCmd) Run() error {
-	parameters := query.Parameters{
-		FieldQuery: []string{fmt.Sprintf("name = %s", upc.name)},
-	}
-	toUpdatePlatforms, err := upc.Client.ListPlatforms(&parameters)
+	upc.Parameters.FieldQuery = append(upc.Parameters.FieldQuery, fmt.Sprintf("name = %s", upc.name))
+	toUpdatePlatforms, err := upc.Client.ListPlatforms(&upc.Parameters)
 	if err != nil {
 		return err
 	}
@@ -74,7 +71,7 @@ func (upc *UpdatePlatformCmd) Run() error {
 		return fmt.Errorf("platform with name %s not found", upc.name)
 	}
 	toUpdatePlatform := toUpdatePlatforms.Platforms[0]
-	result, err := upc.Client.UpdatePlatform(toUpdatePlatform.ID, upc.updatedPlatform)
+	result, err := upc.Client.UpdatePlatform(toUpdatePlatform.ID, upc.updatedPlatform, &upc.Parameters)
 	if err != nil {
 		return err
 	}
@@ -104,6 +101,7 @@ smctl update-platform platform '{"name": "new-name", "description": "new-descrip
 	}
 
 	cmd.AddFormatFlag(result.Flags())
+	cmd.AddCommonQueryFlag(result.Flags(), &upc.Parameters)
 
 	return result
 }

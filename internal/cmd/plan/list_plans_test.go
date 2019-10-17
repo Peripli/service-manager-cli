@@ -20,11 +20,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"testing"
+
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 	"gopkg.in/yaml.v2"
-	"testing"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -100,12 +101,28 @@ var _ = Describe("List plans command test", func() {
 		})
 	})
 
+	Context("when generic parameter is used", func() {
+		It("should pass it to SM", func() {
+			result := &types.ServicePlans{ServicePlans: []types.ServicePlan{plan1}}
+			client.ListPlansReturns(result, nil)
+			param := "parameterKey=parameterValue"
+			err := executeWithArgs([]string{"--param", param})
+			Expect(err).ShouldNot(HaveOccurred())
+
+			args := client.ListPlansArgsForCall(0)
+
+			Expect(args.GeneralParams).To(ConsistOf(param))
+			Expect(args.FieldQuery).To(BeEmpty())
+			Expect(args.LabelQuery).To(BeEmpty())
+		})
+	})
+
 	Context("when field query flag is used", func() {
 		It("should pass it to SM", func() {
 			result := &types.ServicePlans{ServicePlans: []types.ServicePlan{plan1}}
 			client.ListPlansReturns(result, nil)
 			param := "name = plan1"
-			err := executeWithArgs([]string{"-f", param})
+			err := executeWithArgs([]string{"--field-query", param})
 
 			args := client.ListPlansArgsForCall(0)
 
@@ -120,7 +137,7 @@ var _ = Describe("List plans command test", func() {
 			result := &types.ServicePlans{ServicePlans: []types.ServicePlan{plan1}}
 			client.ListPlansReturns(result, nil)
 			param := "test = false"
-			err := executeWithArgs([]string{"-l", param})
+			err := executeWithArgs([]string{"--label-query", param})
 
 			args := client.ListPlansArgsForCall(0)
 

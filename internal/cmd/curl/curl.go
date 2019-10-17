@@ -68,6 +68,7 @@ func (c *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result.Flags().StringVarP(&c.method, "X", "X", "GET", "HTTP method (GET,POST,PUT,DELETE,etc)")
 	result.Flags().StringVarP(&c.body, "d", "d", "", "HTTP data to include in the request body, or '@' followed by a file name to read the data from")
 	cmd.AddFormatFlagDefault(result.Flags(), "json")
+	cmd.AddCommonQueryFlag(result.Flags(), &c.Parameters)
 
 	return result
 }
@@ -106,7 +107,7 @@ func (c *Cmd) Run() error {
 		reader = bytes.NewReader([]byte(c.body))
 	}
 
-	resp, err := c.Client.Call(c.method, c.path, reader)
+	resp, err := c.Client.Call(c.method, c.path, reader, &c.Parameters)
 	if err != nil {
 		return err
 	}

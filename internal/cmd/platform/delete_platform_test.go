@@ -1,10 +1,11 @@
 package platform
 
 import (
-	"github.com/Peripli/service-manager/pkg/util"
 	"io/ioutil"
 	"net/http"
 	"testing"
+
+	"github.com/Peripli/service-manager/pkg/util"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -48,7 +49,7 @@ var _ = Describe("Delete platforms command test", func() {
 
 	Context("when existing platform is being deleted forcefully", func() {
 		It("should list success message", func() {
-			client.DeletePlatformsByFieldQueryReturns(nil)
+			client.DeletePlatformsReturns(nil)
 			err := executeWithArgs([]string{"platform-name", "-f"})
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -58,7 +59,7 @@ var _ = Describe("Delete platforms command test", func() {
 
 	Context("when existing platform is being deleted", func() {
 		It("should list success message when confirmed", func() {
-			client.DeletePlatformsByFieldQueryReturns(nil)
+			client.DeletePlatformsReturns(nil)
 			promptBuffer.WriteString("y")
 			err := executeWithArgs([]string{"platform-name"})
 
@@ -67,21 +68,36 @@ var _ = Describe("Delete platforms command test", func() {
 		})
 
 		It("should print delete declined when declined", func() {
-			client.DeletePlatformsByFieldQueryReturns(nil)
+			client.DeletePlatformsReturns(nil)
 			promptBuffer.WriteString("n")
 			err := executeWithArgs([]string{"platform-name"})
 
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring("Delete declined"))
 		})
+	})
 
+	Context("when generic parameter flag is used", func() {
+		It("should pass it to SM", func() {
+			client.DeletePlatformsReturns(nil)
+			promptBuffer.WriteString("y")
+			param := "parameterKey=parameterValue"
+			err := executeWithArgs([]string{"platform-name", "--param", param})
+			Expect(err).ShouldNot(HaveOccurred())
+
+			args := client.DeletePlatformsArgsForCall(0)
+
+			Expect(args.GeneralParams).To(ConsistOf(param))
+			Expect(args.FieldQuery).To(ConsistOf("name = platform-name"))
+			Expect(args.LabelQuery).To(BeEmpty())
+		})
 	})
 
 	Context("when non-existing platform is being deleted", func() {
 		It("should return message", func() {
 			body := ioutil.NopCloser(bytes.NewReader([]byte("")))
 			expectedError := util.HandleResponseError(&http.Response{Body: body, StatusCode: http.StatusNotFound})
-			client.DeletePlatformsByFieldQueryReturns(expectedError)
+			client.DeletePlatformsReturns(expectedError)
 			err := executeWithArgs([]string{"non-existing-name", "-f"})
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -93,7 +109,7 @@ var _ = Describe("Delete platforms command test", func() {
 		It("should return error message", func() {
 			body := ioutil.NopCloser(bytes.NewReader([]byte("")))
 			expectedError := util.HandleResponseError(&http.Response{Body: body, StatusCode: http.StatusInternalServerError})
-			client.DeletePlatformsByFieldQueryReturns(expectedError)
+			client.DeletePlatformsReturns(expectedError)
 			err := executeWithArgs([]string{"name", "-f"})
 
 			Expect(err).Should(HaveOccurred())
@@ -104,11 +120,11 @@ var _ = Describe("Delete platforms command test", func() {
 
 	Context("when no arguments are provided", func() {
 		It("should print required arguments", func() {
-			client.DeletePlatformsByFieldQueryReturns(nil)
+			client.DeletePlatformsReturns(nil)
 			err := executeWithArgs([]string{})
 
 			Expect(err).Should(HaveOccurred())
-			Expect(err).To(MatchError("[name] is required"))
+			Expect(err).To(MatchError("single [name] is required"))
 		})
 	})
 })

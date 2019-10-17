@@ -21,7 +21,6 @@ import (
 	"fmt"
 
 	"github.com/Peripli/service-manager-cli/internal/output"
-	"github.com/Peripli/service-manager-cli/pkg/query"
 	"github.com/spf13/cobra"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
@@ -63,10 +62,8 @@ func (ubc *UpdateBrokerCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (ubc *UpdateBrokerCmd) Run() error {
-	params := query.Parameters{
-		FieldQuery: []string{fmt.Sprintf("name = %s", ubc.name)},
-	}
-	toUpdateBrokers, err := ubc.Client.ListBrokers(&params)
+	ubc.Parameters.FieldQuery = append(ubc.Parameters.FieldQuery, fmt.Sprintf("name = %s", ubc.name))
+	toUpdateBrokers, err := ubc.Client.ListBrokers(&ubc.Parameters)
 	if err != nil {
 		return err
 	}
@@ -74,7 +71,7 @@ func (ubc *UpdateBrokerCmd) Run() error {
 		return fmt.Errorf("broker with name %s not found", ubc.name)
 	}
 	toUpdateBroker := toUpdateBrokers.Brokers[0]
-	result, err := ubc.Client.UpdateBroker(toUpdateBroker.ID, ubc.updatedBroker)
+	result, err := ubc.Client.UpdateBroker(toUpdateBroker.ID, ubc.updatedBroker, &ubc.Parameters)
 	if err != nil {
 		return err
 	}
@@ -104,6 +101,7 @@ smctl update-broker broker '{"name": "new-name", "description": "new-description
 	}
 
 	cmd.AddFormatFlag(result.Flags())
+	cmd.AddCommonQueryFlag(result.Flags(), &ubc.Parameters)
 
 	return result
 }

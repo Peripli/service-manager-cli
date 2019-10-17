@@ -19,6 +19,7 @@ package visibility
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/pkg/types"
@@ -60,7 +61,7 @@ func (uv *UpdateVisibilityCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (uv *UpdateVisibilityCmd) Run() error {
-	updatedVisibility, err := uv.Client.UpdateVisibility(uv.id, uv.updatedVisibility)
+	updatedVisibility, err := uv.Client.UpdateVisibility(uv.id, uv.updatedVisibility, &uv.Parameters)
 	if err != nil {
 		return err
 	}
@@ -91,6 +92,7 @@ func (uv *UpdateVisibilityCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	}
 
 	cmd.AddFormatFlag(result.Flags())
+	cmd.AddCommonQueryFlag(result.Flags(), &uv.Parameters)
 
 	return result
 }

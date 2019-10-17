@@ -82,6 +82,22 @@ var _ = Describe("List visibilities command test", func() {
 		})
 	})
 
+	Context("when generic parameter is used", func() {
+		It("should pass it to SM", func() {
+			result := &types.Visibilities{Visibilities: []types.Visibility{visibility}}
+			client.ListVisibilitiesReturns(result, nil)
+			param := "parameterKey=parameterValue"
+			err := executeWithArgs([]string{"--param", param})
+			Expect(err).ShouldNot(HaveOccurred())
+
+			args := client.ListVisibilitiesArgsForCall(0)
+
+			Expect(args.GeneralParams).To(ConsistOf(param))
+			Expect(args.FieldQuery).To(BeEmpty())
+			Expect(args.LabelQuery).To(BeEmpty())
+		})
+	})
+
 	Context("when field query flag is used", func() {
 		It("should pass it to SM", func() {
 			result := &types.Visibilities{Visibilities: []types.Visibility{visibility}}

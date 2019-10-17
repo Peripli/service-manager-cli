@@ -70,6 +70,7 @@ func (lo *ListOfferingsCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddQueryingFlags(result.Flags(), &lo.Parameters)
+	cmd.AddCommonQueryFlag(result.Flags(), &lo.Parameters)
 
 	return result
 }

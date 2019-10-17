@@ -3,10 +3,12 @@ package platform
 import (
 	"encoding/json"
 	"errors"
-	"gopkg.in/yaml.v2"
 	"testing"
 
+	"gopkg.in/yaml.v2"
+
 	"bytes"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -34,7 +36,7 @@ var _ = Describe("Update platform command test", func() {
 		command = NewUpdatePlatformCmd(context)
 	})
 
-	validUpdatePlatformExecution := func(args ...string) error {
+	validUpdatePlatformExecution := func(args ...string) {
 		platform = types.Platform{
 			Name: "platform",
 			ID:   "id",
@@ -46,7 +48,8 @@ var _ = Describe("Update platform command test", func() {
 		client.UpdatePlatformReturns(&platform, nil)
 		ubCmd := command.Prepare(cmd.SmPrepare)
 		ubCmd.SetArgs(args)
-		return ubCmd.Execute()
+		err := ubCmd.Execute()
+		Expect(err).ShouldNot(HaveOccurred())
 	}
 
 	invalidUpdatePlatformExecution := func(args ...string) error {
@@ -58,19 +61,16 @@ var _ = Describe("Update platform command test", func() {
 	Describe("Valid request", func() {
 		Context("With necessary arguments provided", func() {
 			It("platform should be updated", func() {
+				validUpdatePlatformExecution("platform", `{"type":"newType"}`)
 
-				err := validUpdatePlatformExecution("platform", `{"type":"newType"}`)
-
-				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buffer.String()).To(ContainSubstring(platform.TableData().String()))
 			})
 
 			It("argument values should be as expected", func() {
-				err := validUpdatePlatformExecution("platform", `{"type":"newType"}`)
+				validUpdatePlatformExecution("platform", `{"type":"newType"}`)
 
-				id, platform := client.UpdatePlatformArgsForCall(0)
+				id, platform, _ := client.UpdatePlatformArgsForCall(0)
 
-				Expect(err).ShouldNot(HaveOccurred())
 				Expect(id).To(Equal("id"))
 				Expect(platform).To(Equal(&types.Platform{Type: "newType"}))
 			})
@@ -78,25 +78,35 @@ var _ = Describe("Update platform command test", func() {
 
 		Context("With json format flag", func() {
 			It("should be printed in json format", func() {
-				err := validUpdatePlatformExecution("platform", `{"type":"newType"}`, "--output", "json")
+				validUpdatePlatformExecution("platform", `{"type":"newType"}`, "--output", "json")
 
 				jsonByte, _ := json.MarshalIndent(platform, "", "  ")
 				jsonOutputExpected := string(jsonByte) + "\n"
 
-				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buffer.String()).To(Equal(jsonOutputExpected))
 			})
 		})
 
 		Context("With yaml format flag", func() {
 			It("should be printed in yaml format", func() {
-				err := validUpdatePlatformExecution("platform", `{"type":"newType"}`, "--output", "yaml")
+				validUpdatePlatformExecution("platform", `{"type":"newType"}`, "--output", "yaml")
 
 				yamlByte, _ := yaml.Marshal(platform)
 				yamlOutputExpected := string(yamlByte) + "\n"
 
-				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buffer.String()).To(Equal(yamlOutputExpected))
+			})
+		})
+
+		Context("With generic parameter flag provided", func() {
+			It("should pass it to SM", func() {
+				validUpdatePlatformExecution("platform", `{"type":"newType"}`, "--param", "paramKey=paramValue")
+
+				_, _, args := client.UpdatePlatformArgsForCall(0)
+
+				Expect(args.GeneralParams).To(ConsistOf("paramKey=paramValue"))
+				Expect(args.FieldQuery).To(ConsistOf("name = platform"))
+				Expect(args.LabelQuery).To(BeEmpty())
 			})
 		})
 	})

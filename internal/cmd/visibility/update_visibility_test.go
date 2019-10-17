@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"testing"
+
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"gopkg.in/yaml.v2"
-	"testing"
 )
 
 func TestUpdateVisibilityCmd(t *testing.T) {
@@ -38,7 +39,7 @@ var _ = Describe("Update visibility command test", func() {
 			PlatformID:    "platformID",
 			ServicePlanID: "planID",
 		}
-		json.Unmarshal([]byte(args[1]), visibility)
+		Expect(json.Unmarshal([]byte(args[1]), visibility)).ToNot(HaveOccurred())
 		client.UpdateVisibilityReturns(visibility, nil)
 		uvCmd := command.Prepare(cmd.SmPrepare)
 		uvCmd.SetArgs(args)
@@ -64,7 +65,7 @@ var _ = Describe("Update visibility command test", func() {
 			It("argument values should be as expected", func() {
 				err := validUpdateVisibilityExecution("id", `{"platform_id":"newPlatformID"}`)
 
-				id, v := client.UpdateVisibilityArgsForCall(0)
+				id, v, _ := client.UpdateVisibilityArgsForCall(0)
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(id).To(Equal("id"))
@@ -93,6 +94,19 @@ var _ = Describe("Update visibility command test", func() {
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buffer.String()).To(Equal(yamlOutputExpected))
+			})
+		})
+
+		Context("With generic parameter flag provided", func() {
+			It("should pass it to SM", func() {
+				err := validUpdateVisibilityExecution("platformId", `{"platform_id":"newPlatformID"}`, "--param", "paramKey=paramValue")
+				Expect(err).ShouldNot(HaveOccurred())
+
+				_, _, args := client.UpdateVisibilityArgsForCall(0)
+
+				Expect(args.GeneralParams).To(ConsistOf("paramKey=paramValue"))
+				Expect(args.FieldQuery).To(BeEmpty())
+				Expect(args.LabelQuery).To(BeEmpty())
 			})
 		})
 	})
