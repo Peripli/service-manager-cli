@@ -729,7 +729,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should be successfully removed", func() {
-				params.FieldQuery = append(params.FieldQuery, "id = id")
+				params.FieldQuery = append(params.FieldQuery, "id eq 'id'")
 				err := client.DeleteBrokers(params)
 				Expect(err).ShouldNot(HaveOccurred())
 			})
@@ -744,7 +744,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle error", func() {
-				params.FieldQuery = append(params.FieldQuery, "id = id")
+				params.FieldQuery = append(params.FieldQuery, "id eq 'id'")
 				err := client.DeleteBrokers(params)
 				Expect(err).Should(HaveOccurred())
 				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
@@ -760,7 +760,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle error", func() {
-				params.FieldQuery = append(params.FieldQuery, "id = id")
+				params.FieldQuery = append(params.FieldQuery, "id eq 'id'")
 				err := client.DeleteBrokers(params)
 				Expect(err).Should(HaveOccurred())
 				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
@@ -778,7 +778,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should be successfully removed", func() {
-				params.FieldQuery = append(params.FieldQuery, "id = id")
+				params.FieldQuery = append(params.FieldQuery, "id eq 'id'")
 				err := client.DeletePlatforms(params)
 				Expect(err).ShouldNot(HaveOccurred())
 			})
@@ -793,7 +793,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle error", func() {
-				params.FieldQuery = append(params.FieldQuery, "id = id")
+				params.FieldQuery = append(params.FieldQuery, "id eq 'id'")
 				err := client.DeletePlatforms(params)
 				Expect(err).Should(HaveOccurred())
 				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
@@ -809,7 +809,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle error", func() {
-				params.FieldQuery = append(params.FieldQuery, "id = id")
+				params.FieldQuery = append(params.FieldQuery, "id eq 'id'")
 				err := client.DeletePlatforms(params)
 				Expect(err).Should(HaveOccurred())
 				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
@@ -827,7 +827,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should be successfully removed", func() {
-				params.FieldQuery = append(params.FieldQuery, "id = id")
+				params.FieldQuery = append(params.FieldQuery, "id eq 'id'")
 				err := client.DeleteVisibilities(params)
 				Expect(err).ShouldNot(HaveOccurred())
 			})
@@ -842,7 +842,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle error", func() {
-				params.FieldQuery = append(params.FieldQuery, "id = id")
+				params.FieldQuery = append(params.FieldQuery, "id eq 'id'")
 				err := client.DeleteVisibilities(params)
 				Expect(err).Should(HaveOccurred())
 				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
@@ -858,7 +858,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle error", func() {
-				params.FieldQuery = append(params.FieldQuery, "id = id")
+				params.FieldQuery = append(params.FieldQuery, "id eq 'id'")
 				err := client.DeleteVisibilities(params)
 				Expect(err).Should(HaveOccurred())
 				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)

@@ -111,7 +111,7 @@ var _ = Describe("Update broker command test", func() {
 				_, _, args := client.UpdateBrokerArgsForCall(0)
 
 				Expect(args.GeneralParams).To(ConsistOf("paramKey=paramValue"))
-				Expect(args.FieldQuery).To(ConsistOf("name = broker1"))
+				Expect(args.FieldQuery).To(ConsistOf("name eq 'broker1'"))
 				Expect(args.LabelQuery).To(BeEmpty())
 			})
 		})

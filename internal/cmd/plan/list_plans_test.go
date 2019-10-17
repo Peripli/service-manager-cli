@@ -121,7 +121,7 @@ var _ = Describe("List plans command test", func() {
 		It("should pass it to SM", func() {
 			result := &types.ServicePlans{ServicePlans: []types.ServicePlan{plan1}}
 			client.ListPlansReturns(result, nil)
-			param := "name = plan1"
+			param := "name eq 'plan1'"
 			err := executeWithArgs([]string{"--field-query", param})
 
 			args := client.ListPlansArgsForCall(0)
@@ -136,7 +136,7 @@ var _ = Describe("List plans command test", func() {
 		It("should pass it to SM", func() {
 			result := &types.ServicePlans{ServicePlans: []types.ServicePlan{plan1}}
 			client.ListPlansReturns(result, nil)
-			param := "test = false"
+			param := "test eq false"
 			err := executeWithArgs([]string{"--label-query", param})
 
 			args := client.ListPlansArgsForCall(0)

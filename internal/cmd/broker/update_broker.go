@@ -62,7 +62,7 @@ func (ubc *UpdateBrokerCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (ubc *UpdateBrokerCmd) Run() error {
-	ubc.Parameters.FieldQuery = append(ubc.Parameters.FieldQuery, fmt.Sprintf("name = %s", ubc.name))
+	ubc.Parameters.FieldQuery = append(ubc.Parameters.FieldQuery, fmt.Sprintf("name eq '%s'", ubc.name))
 	toUpdateBrokers, err := ubc.Client.ListBrokers(&ubc.Parameters)
 	if err != nil {
 		return err

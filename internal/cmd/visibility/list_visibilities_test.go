@@ -102,12 +102,12 @@ var _ = Describe("List visibilities command test", func() {
 		It("should pass it to SM", func() {
 			result := &types.Visibilities{Visibilities: []types.Visibility{visibility}}
 			client.ListVisibilitiesReturns(result, nil)
-			err := executeWithArgs([]string{"-f", "planId = plan1"})
+			err := executeWithArgs([]string{"-f", "planId eq 'plan1'"})
 
 			queryArg := client.ListVisibilitiesArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(queryArg.FieldQuery[0]).To(Equal("planId = plan1"))
+			Expect(queryArg.FieldQuery[0]).To(Equal("planId eq 'plan1'"))
 			Expect(queryArg.LabelQuery).To(BeEmpty())
 		})
 	})
@@ -116,13 +116,13 @@ var _ = Describe("List visibilities command test", func() {
 		It("should pass it to SM", func() {
 			result := &types.Visibilities{Visibilities: []types.Visibility{visibility}}
 			client.ListVisibilitiesReturns(result, nil)
-			err := executeWithArgs([]string{"-l", "test = false"})
+			err := executeWithArgs([]string{"-l", "test eq false"})
 
 			queryArg := client.ListVisibilitiesArgsForCall(0)
 
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(queryArg.FieldQuery).To(BeEmpty())
-			Expect(queryArg.LabelQuery[0]).To(Equal("test = false"))
+			Expect(queryArg.LabelQuery[0]).To(Equal("test eq false"))
 		})
 	})
 
