@@ -82,7 +82,7 @@ var _ = Describe("Delete visibility command test", func() {
 			args := client.DeleteVisibilitiesArgsForCall(0)
 
 			Expect(args.GeneralParams).To(ConsistOf(param))
-			Expect(args.FieldQuery).To(ConsistOf("id = id"))
+			Expect(args.FieldQuery).To(ConsistOf("id eq 'id'"))
 			Expect(args.LabelQuery).To(BeEmpty())
 		})
 	})

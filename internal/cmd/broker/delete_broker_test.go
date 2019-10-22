@@ -87,7 +87,7 @@ var _ = Describe("Delete brokers command test", func() {
 			args := client.DeleteBrokersArgsForCall(0)
 
 			Expect(args.GeneralParams).To(ConsistOf(param))
-			Expect(args.FieldQuery).To(ConsistOf("name = broker-name"))
+			Expect(args.FieldQuery).To(ConsistOf("name eq 'broker-name'"))
 			Expect(args.LabelQuery).To(BeEmpty())
 		})
 	})

@@ -88,7 +88,7 @@ var _ = Describe("Delete platforms command test", func() {
 			args := client.DeletePlatformsArgsForCall(0)
 
 			Expect(args.GeneralParams).To(ConsistOf(param))
-			Expect(args.FieldQuery).To(ConsistOf("name = platform-name"))
+			Expect(args.FieldQuery).To(ConsistOf("name eq 'platform-name'"))
 			Expect(args.LabelQuery).To(BeEmpty())
 		})
 	})

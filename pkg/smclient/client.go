@@ -227,7 +227,7 @@ func (client *serviceManagerClient) Marketplace(q *query.Parameters) (*types.Mar
 	for i, so := range marketplace.ServiceOfferings {
 		plans := &types.ServicePlansForOffering{}
 		err := client.list(&plans.ServicePlans, web.ServicePlansURL, &query.Parameters{
-			FieldQuery:    []string{fmt.Sprintf("service_offering_id = %s", so.ID)},
+			FieldQuery:    []string{fmt.Sprintf("service_offering_id eq '%s'", so.ID)},
 			GeneralParams: q.GeneralParams,
 		})
 		if err != nil {

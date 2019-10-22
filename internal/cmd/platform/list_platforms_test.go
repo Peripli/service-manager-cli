@@ -102,7 +102,7 @@ var _ = Describe("List platforms command test", func() {
 		It("should pass it to SM", func() {
 			result := &types.Platforms{Platforms: []types.Platform{platform}}
 			client.ListPlatformsReturns(result, nil)
-			param := "name = platform1"
+			param := "name eq 'platform1'"
 			err := executeWithArgs([]string{"--field-query", param})
 
 			args := client.ListPlatformsArgsForCall(0)
@@ -117,7 +117,7 @@ var _ = Describe("List platforms command test", func() {
 		It("should pass it to SM", func() {
 			result := &types.Platforms{Platforms: []types.Platform{platform}}
 			client.ListPlatformsReturns(result, nil)
-			param := "test = false"
+			param := "test eq false"
 			err := executeWithArgs([]string{"--label-query", param})
 
 			args := client.ListPlatformsArgsForCall(0)

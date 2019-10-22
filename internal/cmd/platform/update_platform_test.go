@@ -105,7 +105,7 @@ var _ = Describe("Update platform command test", func() {
 				_, _, args := client.UpdatePlatformArgsForCall(0)
 
 				Expect(args.GeneralParams).To(ConsistOf("paramKey=paramValue"))
-				Expect(args.FieldQuery).To(ConsistOf("name = platform"))
+				Expect(args.FieldQuery).To(ConsistOf("name eq 'platform'"))
 				Expect(args.LabelQuery).To(BeEmpty())
 			})
 		})

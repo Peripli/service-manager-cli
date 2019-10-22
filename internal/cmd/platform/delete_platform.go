@@ -56,7 +56,7 @@ func (dpc *DeletePlatformCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (dpc *DeletePlatformCmd) Run() error {
-	dpc.Parameters.FieldQuery = append(dpc.Parameters.FieldQuery, fmt.Sprintf("name = %s", dpc.name))
+	dpc.Parameters.FieldQuery = append(dpc.Parameters.FieldQuery, fmt.Sprintf("name eq '%s'", dpc.name))
 
 	if err := dpc.Client.DeletePlatforms(&dpc.Parameters); err != nil {
 		if strings.Contains(err.Error(), "StatusCode: 404") {

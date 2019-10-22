@@ -54,7 +54,7 @@ func (dv *DeleteVisibilityCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (dv *DeleteVisibilityCmd) Run() error {
-	dv.Parameters.FieldQuery = append(dv.Parameters.FieldQuery, fmt.Sprintf("id = %s", dv.id))
+	dv.Parameters.FieldQuery = append(dv.Parameters.FieldQuery, fmt.Sprintf("id eq '%s'", dv.id))
 
 	if err := dv.Client.DeleteVisibilities(&dv.Parameters); err != nil {
 		if strings.Contains(err.Error(), "StatusCode: 404") {

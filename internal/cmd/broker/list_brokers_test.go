@@ -102,7 +102,7 @@ var _ = Describe("List brokers command test", func() {
 		It("should pass it to SM", func() {
 			result := &types.Brokers{Brokers: []types.Broker{broker}}
 			client.ListBrokersReturns(result, nil)
-			param := "name = broker1"
+			param := "name eq 'broker1'"
 			err := executeWithArgs([]string{"--field-query", param})
 
 			args := client.ListBrokersArgsForCall(0)
@@ -117,7 +117,7 @@ var _ = Describe("List brokers command test", func() {
 		It("should pass it to SM", func() {
 			result := &types.Brokers{Brokers: []types.Broker{broker}}
 			client.ListBrokersReturns(result, nil)
-			param := "test = false"
+			param := "test eq false"
 			err := executeWithArgs([]string{"--label-query", param})
 
 			args := client.ListBrokersArgsForCall(0)

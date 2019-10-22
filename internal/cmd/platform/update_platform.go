@@ -62,7 +62,7 @@ func (upc *UpdatePlatformCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (upc *UpdatePlatformCmd) Run() error {
-	upc.Parameters.FieldQuery = append(upc.Parameters.FieldQuery, fmt.Sprintf("name = %s", upc.name))
+	upc.Parameters.FieldQuery = append(upc.Parameters.FieldQuery, fmt.Sprintf("name eq '%s'", upc.name))
 	toUpdatePlatforms, err := upc.Client.ListPlatforms(&upc.Parameters)
 	if err != nil {
 		return err
