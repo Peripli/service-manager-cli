@@ -21,6 +21,7 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/cmd/broker"
 	"github.com/Peripli/service-manager-cli/internal/cmd/curl"
 	"github.com/Peripli/service-manager-cli/internal/cmd/info"
+	"github.com/Peripli/service-manager-cli/internal/cmd/instance"
 	"github.com/Peripli/service-manager-cli/internal/cmd/label"
 	"github.com/Peripli/service-manager-cli/internal/cmd/login"
 	"github.com/Peripli/service-manager-cli/internal/cmd/offering"
@@ -73,6 +74,7 @@ func main() {
 			offering.NewMarketplaceCmd(context),
 			plan.NewListPlansCmd(context),
 			label.NewLabelCmd(context),
+			instance.NewListInstancesCmd(context),
 		},
 		PrepareFn: cmd.SmPrepare,
 	}
