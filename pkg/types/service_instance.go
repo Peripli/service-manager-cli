@@ -39,8 +39,8 @@ type ServiceInstance struct {
 	Context         json.RawMessage `json:"-" yaml:"-"`
 	PreviousValues  json.RawMessage `json:"-" yaml: "-"`
 
-	Ready  bool `json:"ready,omitempty" yaml:"ready,omitempty"`
-	Usable bool `json:"usable,omitempty" yaml:"usable,omitempty"`
+	Ready  bool `json:"ready" yaml:"ready"`
+	Usable bool `json:"usable" yaml:"usable"`
 }
 
 // Message title of the table
