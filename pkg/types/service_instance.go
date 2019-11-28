@@ -25,7 +25,7 @@ import (
 
 // ServiceInstance defines the data of a service instance.
 type ServiceInstance struct {
-	ID        string `json:"id, omitempty" yaml:"id,omitempty"`
+	ID        string `json:"id,omitempty" yaml:"id,omitempty"`
 	Name      string `json:"name,omitempty" yaml:"name,omitempty"`
 	CreatedAt string `json:"created_at,omitempty" yaml:"created_at,omitempty"`
 	UpdatedAt string `json:"updated_at,omitempty" yaml:"updated_at,omitempty"`
@@ -37,7 +37,7 @@ type ServiceInstance struct {
 
 	MaintenanceInfo json.RawMessage `json:"maintenance_info,omitempty" yaml:"-"`
 	Context         json.RawMessage `json:"-" yaml:"-"`
-	PreviousValues  json.RawMessage `json:"-" yaml: "-"`
+	PreviousValues  json.RawMessage `json:"-" yaml:"-"`
 
 	Ready  bool `json:"ready" yaml:"ready"`
 	Usable bool `json:"usable" yaml:"usable"`

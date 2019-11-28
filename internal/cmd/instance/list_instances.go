@@ -34,6 +34,7 @@ func NewListInstancesCmd(context *cmd.Context) *ListInstancesCmd {
 	return &ListInstancesCmd{Context: context}
 }
 
+// Run runs the command's logic
 func (li *ListInstancesCmd) Run() error {
 	instances, err := li.Client.ListInstances(&li.Parameters)
 	if err != nil {
