@@ -89,7 +89,7 @@ var _ = Describe("List instances command test", func() {
 			Expect(buffer.String()).To(ContainSubstring(result.TableData().String()))
 		})
 
-		It("should list more plans", func() {
+		It("should list more instances", func() {
 			result := &types.ServiceInstances{ServiceInstances: []types.ServiceInstance{instance1, instance2}}
 			client.ListInstancesReturns(result, nil)
 			err := executeWithArgs([]string{})
