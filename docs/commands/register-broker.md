@@ -10,7 +10,7 @@ smctl register-broker [name] [url] <description> [flags]
 
 ## Aliases
 ```bash
-register-broker, rb 
+register-broker, rb
 ```
 
 ## Flags
@@ -20,7 +20,7 @@ register-broker, rb
     <code>--help</code> (alias: <code>-h</code>)
   </p>
   <p>
-    Help for <i>register-broker</i> command. 
+    Help for <i>register-broker</i> command.
   </p>
 </details>
 <details>
@@ -29,7 +29,7 @@ register-broker, rb
     <code>--basic</code> (alias: <code>-b</code>)
   </p>
   <p>
-    Sets the username and password for basic authentication. Format is <i>&lt;username:passowrd&gt;</i>
+    Sets the username and password for basic authentication. Format is <i>&lt;username:password&gt;</i>
   </p>
 </details>
 <details>
@@ -46,7 +46,7 @@ register-broker, rb
 <details>
   <summary>config</summary>
   <p>
-    <code>--config</code> 
+    <code>--config</code>
   </p>
   <p>
     Set the path for the <b>smctl</b> <i>config.json</i> file (default is <i>$HOME/.sm/config.json</i>)
@@ -66,7 +66,7 @@ register-broker, rb
 ```bash
 > smctl register-broker sample-broker-1 https://demobroker.domain.com/ "Service broker providing some valuable services" -b user:pass
 
-ID                                    Name             URL                             Description                                      Created               Updated               
-------------------------------------  ---------------  ------------------------------  -----------------------------------------------  --------------------  --------------------  
+ID                                    Name             URL                             Description                                      Created               Updated
+------------------------------------  ---------------  ------------------------------  -----------------------------------------------  --------------------  --------------------
 a52be735-30e5-4849-af23-83d65d592464  sample-broker-1  https://demobroker.domain.com/  Service broker providing some valuable services  2018-06-22T13:04:19Z  2018-06-22T13:04:19Z
 ```
