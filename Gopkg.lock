@@ -21,8 +21,8 @@
   version = "v1.0.1"
 
 [[projects]]
-  branch = "store-instances"
-  digest = "1:eb6273d14db07bf8649f40990b56946bac646d1955fc4274e8ef95de8fa5b246"
+  branch = "async_phase1"
+  digest = "1:f507a7231a17d32015ea75d18ea3fe6770d8103c2b4206243b63a3d80bcbcc70"
   name = "github.com/Peripli/service-manager"
   packages = [
     "pkg/health",
@@ -35,7 +35,7 @@
     "pkg/web",
   ]
   pruneopts = "UT"
-  revision = "19ba29ae88b8783a628a7ea40eb41b55a6d5961e"
+  revision = "963b575b6f1d02afcbbed21f4ae893359235da64"
 
 [[projects]]
   digest = "1:d04889482897652dedae6d8575b479c06fa3eb3c3abe248163b25d3df5fab43e"
