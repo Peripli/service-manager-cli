@@ -21,8 +21,8 @@
   version = "v1.0.1"
 
 [[projects]]
-  branch = "async_phase1"
-  digest = "1:4a2069ec4c891570e2c5079e8c40196929df778fd916ef4a4726174437b8e044"
+  branch = "master"
+  digest = "1:1ca1b1cbc5aca3022e4ff124fd4f9d3599b25cf3c46f6d0c43fa9386d3ab9eda"
   name = "github.com/Peripli/service-manager"
   packages = [
     "pkg/health",
@@ -35,7 +35,7 @@
     "pkg/web",
   ]
   pruneopts = "UT"
-  revision = "ee42b122ddacba5007f6c25a2fe49c575fb5a71c"
+  revision = "b6a3b7004a04a8bf0c46dacb61cfe9c9b15347e9"
 
 [[projects]]
   digest = "1:d04889482897652dedae6d8575b479c06fa3eb3c3abe248163b25d3df5fab43e"
@@ -313,7 +313,7 @@
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
   pruneopts = "UT"
-  revision = "ac88ee75c92c889b97e05591e9a39b6480c538b3"
+  revision = "86a70503ff7e82ffc18c7b0de83db35da4791e6a"
 
 [[projects]]
   branch = "master"
@@ -327,11 +327,11 @@
     "html/charset",
   ]
   pruneopts = "UT"
-  revision = "ffdde105785063a81acd95bdf89ea53f6e0aac2d"
+  revision = "ef20fe5d793301b553005db740f730d87993f778"
 
 [[projects]]
   branch = "master"
-  digest = "1:457f9784b7d0402c051d4af2aa29b9ac602129801b0e4a643006d294f40775ec"
+  digest = "1:d6cd171816957f16fe559d9365073b79cb9bee957fb331ec19f1e1329858b944"
   name = "golang.org/x/oauth2"
   packages = [
     ".",
@@ -339,18 +339,18 @@
     "internal",
   ]
   pruneopts = "UT"
-  revision = "5d9234df094ce600ff541158d1491aa10d078a47"
+  revision = "858c2ad4c8b6c5d10852cb89079f6ca1c7309787"
 
 [[projects]]
   branch = "master"
-  digest = "1:adc8dbdd1348594585d83239cf52498fd87e103577dda9b50ccac2122d9ead72"
+  digest = "1:77b59f879b437f66aa2d510e2752017a5a1ce3cef6f4744586affbed1ccf2f46"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "UT"
-  revision = "bd437916bb0eb726b873ee8e9b2dcf212d32e2fd"
+  revision = "6d18c012aee9febd81bbf9806760c8c4480e870d"
 
 [[projects]]
   digest = "1:7570a3e4daa14b7627089e77ad8c714f5f36b4cf1b7dfd8510df7d6935dc42a0"
