@@ -101,6 +101,19 @@ type FakeClient struct {
 		result1 *types.Brokers
 		result2 error
 	}
+	ListInstancesStub        func(*query.Parameters) (*types.ServiceInstances, error)
+	listInstancesMutex       sync.RWMutex
+	listInstancesArgsForCall []struct {
+		arg1 *query.Parameters
+	}
+	listInstancesReturns struct {
+		result1 *types.ServiceInstances
+		result2 error
+	}
+	listInstancesReturnsOnCall map[int]struct {
+		result1 *types.ServiceInstances
+		result2 error
+	}
 	ListOfferingsStub        func(*query.Parameters) (*types.ServiceOfferings, error)
 	listOfferingsMutex       sync.RWMutex
 	listOfferingsArgsForCall []struct {
@@ -688,6 +701,69 @@ func (fake *FakeClient) ListBrokersReturnsOnCall(i int, result1 *types.Brokers, 
 	}
 	fake.listBrokersReturnsOnCall[i] = struct {
 		result1 *types.Brokers
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) ListInstances(arg1 *query.Parameters) (*types.ServiceInstances, error) {
+	fake.listInstancesMutex.Lock()
+	ret, specificReturn := fake.listInstancesReturnsOnCall[len(fake.listInstancesArgsForCall)]
+	fake.listInstancesArgsForCall = append(fake.listInstancesArgsForCall, struct {
+		arg1 *query.Parameters
+	}{arg1})
+	fake.recordInvocation("ListInstances", []interface{}{arg1})
+	fake.listInstancesMutex.Unlock()
+	if fake.ListInstancesStub != nil {
+		return fake.ListInstancesStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.listInstancesReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeClient) ListInstancesCallCount() int {
+	fake.listInstancesMutex.RLock()
+	defer fake.listInstancesMutex.RUnlock()
+	return len(fake.listInstancesArgsForCall)
+}
+
+func (fake *FakeClient) ListInstancesCalls(stub func(*query.Parameters) (*types.ServiceInstances, error)) {
+	fake.listInstancesMutex.Lock()
+	defer fake.listInstancesMutex.Unlock()
+	fake.ListInstancesStub = stub
+}
+
+func (fake *FakeClient) ListInstancesArgsForCall(i int) *query.Parameters {
+	fake.listInstancesMutex.RLock()
+	defer fake.listInstancesMutex.RUnlock()
+	argsForCall := fake.listInstancesArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeClient) ListInstancesReturns(result1 *types.ServiceInstances, result2 error) {
+	fake.listInstancesMutex.Lock()
+	defer fake.listInstancesMutex.Unlock()
+	fake.ListInstancesStub = nil
+	fake.listInstancesReturns = struct {
+		result1 *types.ServiceInstances
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) ListInstancesReturnsOnCall(i int, result1 *types.ServiceInstances, result2 error) {
+	fake.listInstancesMutex.Lock()
+	defer fake.listInstancesMutex.Unlock()
+	fake.ListInstancesStub = nil
+	if fake.listInstancesReturnsOnCall == nil {
+		fake.listInstancesReturnsOnCall = make(map[int]struct {
+			result1 *types.ServiceInstances
+			result2 error
+		})
+	}
+	fake.listInstancesReturnsOnCall[i] = struct {
+		result1 *types.ServiceInstances
 		result2 error
 	}{result1, result2}
 }
@@ -1411,6 +1487,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.labelMutex.RUnlock()
 	fake.listBrokersMutex.RLock()
 	defer fake.listBrokersMutex.RUnlock()
+	fake.listInstancesMutex.RLock()
+	defer fake.listInstancesMutex.RUnlock()
 	fake.listOfferingsMutex.RLock()
 	defer fake.listOfferingsMutex.RUnlock()
 	fake.listPlansMutex.RLock()

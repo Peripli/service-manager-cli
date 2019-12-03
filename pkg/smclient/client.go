@@ -58,6 +58,8 @@ type Client interface {
 	UpdateVisibility(string, *types.Visibility, *query.Parameters) (*types.Visibility, error)
 	DeleteVisibilities(*query.Parameters) error
 
+	ListInstances(*query.Parameters) (*types.ServiceInstances, error)
+
 	Label(string, string, *types.LabelChanges, *query.Parameters) error
 
 	Marketplace(*query.Parameters) (*types.Marketplace, error)
@@ -211,10 +213,20 @@ func (client *serviceManagerClient) ListPlans(q *query.Parameters) (*types.Servi
 	return plans, err
 }
 
+// ListVisibilities returns visibilities registered in the Service Manager satisfying provided queries
 func (client *serviceManagerClient) ListVisibilities(q *query.Parameters) (*types.Visibilities, error) {
 	visibilities := &types.Visibilities{}
 	err := client.list(&visibilities.Visibilities, web.VisibilitiesURL, q)
+
 	return visibilities, err
+}
+
+// ListInstances returns service instances registered in the Service Manager satisfying provided queries
+func (client *serviceManagerClient) ListInstances(q *query.Parameters) (*types.ServiceInstances, error) {
+	instances := &types.ServiceInstances{}
+	err := client.list(&instances.ServiceInstances, web.ServiceInstancesURL, q)
+
+	return instances, err
 }
 
 // Marketplace returns service offerings satisfying provided queries
