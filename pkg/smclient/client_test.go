@@ -91,6 +91,13 @@ var _ = Describe("Service Manager Client test", func() {
 		ServicePlanID: "planID",
 	}
 
+	instance := &types.ServiceInstance{
+		ID:            "instanceID",
+		Name:          "instance1",
+		ServicePlanID: "service_plan_id",
+		PlatformID:    "platform_id",
+	}
+
 	labelChanges := &types.LabelChanges{
 		LabelChanges: []*query.LabelChange{
 			{Key: "key", Operation: query.LabelOperation("add"), Values: []string{"val1", "val2"}},
@@ -490,7 +497,7 @@ var _ = Describe("Service Manager Client test", func() {
 					{Method: http.MethodGet, Path: web.ServiceBrokersURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
-			It("should return empty array", func() {
+			It("should return an empty array", func() {
 				result, err := client.ListBrokers(params)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result.Brokers).To(HaveLen(0))
@@ -554,7 +561,7 @@ var _ = Describe("Service Manager Client test", func() {
 					{Method: http.MethodGet, Path: web.PlatformsURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
-			It("should return empty array", func() {
+			It("should return an empty array", func() {
 				result, err := client.ListPlatforms(params)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result.Platforms).To(HaveLen(0))
@@ -616,7 +623,7 @@ var _ = Describe("Service Manager Client test", func() {
 					{Method: http.MethodGet, Path: web.VisibilitiesURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
-			It("should return empty array", func() {
+			It("should return an empty array", func() {
 				result, err := client.ListVisibilities(params)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result.Visibilities).To(HaveLen(0))
@@ -644,6 +651,69 @@ var _ = Describe("Service Manager Client test", func() {
 			})
 			It("should handle status code > 299", func() {
 				_, err := client.ListVisibilities(params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+	})
+
+	Describe("List service instances", func() {
+		Context("when there are service instances registered", func() {
+			BeforeEach(func() {
+				instancesArray := []types.ServiceInstance{*instance}
+				instances := types.ServiceInstances{ServiceInstances: instancesArray}
+				responseBody, _ := json.Marshal(instances)
+
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceInstancesURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+				}
+			})
+			It("should return all", func() {
+				result, err := client.ListInstances(params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(result.ServiceInstances).To(HaveLen(1))
+				Expect(result.ServiceInstances[0]).To(Equal(*instance))
+			})
+		})
+
+		Context("when there are no service instances registered", func() {
+			BeforeEach(func() {
+				instancesArray := []types.ServiceInstance{}
+				instances := types.ServiceInstances{ServiceInstances: instancesArray}
+				responseBody, _ := json.Marshal(instances)
+
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceInstancesURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+				}
+			})
+			It("should return an empty array", func() {
+				result, err := client.ListInstances(params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(result.ServiceInstances).To(HaveLen(0))
+			})
+		})
+
+		Context("when invalid status code is returned", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceInstancesURL, ResponseStatusCode: http.StatusCreated},
+				}
+			})
+			It("should handle status code != 200", func() {
+				_, err := client.ListInstances(params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+
+		Context("when invalid status code is returned", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceInstancesURL, ResponseStatusCode: http.StatusBadRequest},
+				}
+			})
+			It("should handle status code > 299", func() {
+				_, err := client.ListInstances(params)
 				Expect(err).Should(HaveOccurred())
 				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
@@ -684,7 +754,7 @@ var _ = Describe("Service Manager Client test", func() {
 					{Method: http.MethodGet, Path: web.ServiceOfferingsURL, ResponseBody: offeringResponseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
-			It("should return empty array", func() {
+			It("should return an empty array", func() {
 				result, err := client.Marketplace(params)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result.ServiceOfferings).To(HaveLen(0))
