@@ -21,20 +21,29 @@
   version = "v1.0.1"
 
 [[projects]]
-  branch = "master"
-  digest = "1:f473f27517c12a44735d6f3a1cb56cdbfe7ae4a00f7c90a7bafac909a52c9699"
+  digest = "1:1ca1b1cbc5aca3022e4ff124fd4f9d3599b25cf3c46f6d0c43fa9386d3ab9eda"
   name = "github.com/Peripli/service-manager"
   packages = [
     "pkg/health",
     "pkg/log",
     "pkg/query",
+    "pkg/query/parser",
     "pkg/types",
     "pkg/util",
     "pkg/util/slice",
     "pkg/web",
   ]
   pruneopts = "UT"
-  revision = "a65c420ae21f1626cadef6f967a204335f69b645"
+  revision = "b6a3b7004a04a8bf0c46dacb61cfe9c9b15347e9"
+  version = "v0.9.0"
+
+[[projects]]
+  digest = "1:d04889482897652dedae6d8575b479c06fa3eb3c3abe248163b25d3df5fab43e"
+  name = "github.com/antlr/antlr4"
+  packages = ["runtime/Go/antlr"]
+  pruneopts = "UT"
+  revision = "be58ebffde8e29c154192c019608f0a5b8e6a064"
+  version = "4.7.2"
 
 [[projects]]
   digest = "1:abeb38ade3f32a92943e5be54f55ed6d6e3b6602761d74b4aab4c9dd45c18abd"
