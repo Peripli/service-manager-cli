@@ -20,13 +20,13 @@ login, l
     <code>--help</code> (alias: <code>-h</code>)
   </p>
   <p>
-    Help for <i>login</i> command. 
+    Help for <i>login</i> command.
   </p>
 </details>
 <details>
   <summary>password</summary>
   <p>
-    <code>--passowrd</code> (alias: <code>-p</code>)
+    <code>--password</code> (alias: <code>-p</code>)
   </p>
   <p>
     User password.
@@ -64,7 +64,7 @@ login, l
 <details>
   <summary>config</summary>
   <p>
-    <code>--config</code> 
+    <code>--config</code>
   </p>
   <p>
     Set the path for the <b>smctl</b> <i>config.json</i> file (default is <i>$HOME/.sm/config.json</i>)
@@ -85,7 +85,7 @@ login, l
 > smctl login -a https://service-manager-url.com
 
 User: user                # entering username
-Passowrd:                 # entering passowrd (password visibility is disabled)
+Password:                 # entering password (password visibility is disabled)
 Logged in successfully.
 ```
 
