@@ -21,7 +21,8 @@
   version = "v1.0.1"
 
 [[projects]]
-  digest = "1:1ca1b1cbc5aca3022e4ff124fd4f9d3599b25cf3c46f6d0c43fa9386d3ab9eda"
+  branch = "remove_unique_constraint"
+  digest = "1:cf78075a2b48c3a2d7c198e13e788c8a89d88a1580ffeac8e9c5a8714942f7a4"
   name = "github.com/Peripli/service-manager"
   packages = [
     "pkg/health",
@@ -34,8 +35,7 @@
     "pkg/web",
   ]
   pruneopts = "UT"
-  revision = "b6a3b7004a04a8bf0c46dacb61cfe9c9b15347e9"
-  version = "v0.9.0"
+  revision = "8817a84a7ba84f9ebdd9af815fc777a541b7d3cb"
 
 [[projects]]
   digest = "1:d04889482897652dedae6d8575b479c06fa3eb3c3abe248163b25d3df5fab43e"
