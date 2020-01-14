@@ -19,6 +19,8 @@ package instance
 import (
 	"fmt"
 
+	"github.com/Peripli/service-manager-cli/pkg/types"
+
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/pkg/query"
@@ -62,28 +64,9 @@ func (gb *GetInstanceCmd) Run() error {
 	}
 
 	if len(instances.ServiceInstances) > 1 && gb.platformName != "" {
-		found := false
-		for _, instance := range instances.ServiceInstances {
-			platforms, err := gb.Client.ListPlatforms(&query.Parameters{
-				FieldQuery: []string{
-					fmt.Sprintf("name eq '%s'", gb.platformName),
-				},
-			})
-			if err != nil {
-				return err
-			}
-			if len(platforms.Platforms) < 1 {
-				output.PrintMessage(gb.Output, "No platform found with name %s", gb.platformName)
-				return nil
-			}
-			platformID := platforms.Platforms[0].ID
-			if instance.PlatformID == platformID {
-				instanceID = instance.ID
-				found = true
-			}
-		}
-		if !found {
-			output.PrintMessage(gb.Output, "No matching instance name %s and platform name %s", gb.instanceName, gb.platformName)
+		instanceID, err = gb.getInstanceIDByPlatformName(instances)
+		if err != nil {
+			output.PrintMessage(gb.Output, err.Error())
 			return nil
 		}
 	}
@@ -101,6 +84,28 @@ func (gb *GetInstanceCmd) Run() error {
 	output.Println(gb.Output)
 
 	return nil
+}
+
+func (gb *GetInstanceCmd) getInstanceIDByPlatformName(instances *types.ServiceInstances) (string, error) {
+	for _, instance := range instances.ServiceInstances {
+		platforms, err := gb.Client.ListPlatforms(&query.Parameters{
+			FieldQuery: []string{
+				fmt.Sprintf("name eq '%s'", gb.platformName),
+			},
+		})
+		if err != nil {
+			return "", err
+		}
+		if len(platforms.Platforms) < 1 {
+			return "", fmt.Errorf("No platform found with name %s", gb.platformName)
+		}
+
+		if instance.PlatformID == platforms.Platforms[0].ID {
+			return instance.ID, nil
+		}
+	}
+
+	return "", fmt.Errorf("No matching instance name %s and platform name %s", gb.instanceName, gb.platformName)
 }
 
 // Validate validates command's arguments
