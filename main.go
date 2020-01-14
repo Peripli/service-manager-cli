@@ -59,6 +59,7 @@ func main() {
 		Commands: []cmd.CommandPreparator{
 			curl.NewCurlCmd(context, fs),
 			broker.NewRegisterBrokerCmd(context),
+			broker.NewGetBrokerCmd(context),
 			broker.NewListBrokersCmd(context),
 			broker.NewDeleteBrokerCmd(context, os.Stdin),
 			broker.NewUpdateBrokerCmd(context),
@@ -75,6 +76,7 @@ func main() {
 			plan.NewListPlansCmd(context),
 			label.NewLabelCmd(context),
 			instance.NewListInstancesCmd(context),
+			instance.NewGetInstanceCmd(context),
 		},
 		PrepareFn: cmd.SmPrepare,
 	}

@@ -47,6 +47,7 @@ type Client interface {
 	DeletePlatforms(*query.Parameters) error
 
 	RegisterBroker(*types.Broker, *query.Parameters) (*types.Broker, error)
+	GetBrokerByID(id string, q *query.Parameters) (*types.Broker, error)
 	ListBrokers(*query.Parameters) (*types.Brokers, error)
 	UpdateBroker(string, *types.Broker, *query.Parameters) (*types.Broker, error)
 	DeleteBrokers(*query.Parameters) error
@@ -59,6 +60,7 @@ type Client interface {
 	DeleteVisibilities(*query.Parameters) error
 
 	ListInstances(*query.Parameters) (*types.ServiceInstances, error)
+	GetInstanceByID(id string, q *query.Parameters) (*types.ServiceInstance, error)
 
 	Label(string, string, *types.LabelChanges, *query.Parameters) error
 
@@ -181,6 +183,16 @@ func (client *serviceManagerClient) register(resource interface{}, url string, q
 	return httputil.UnmarshalResponse(response, &result)
 }
 
+// GetBrokerByID returns broker registered in the Service Manager satisfying provided queries
+func (client *serviceManagerClient) GetBrokerByID(id string, q *query.Parameters) (*types.Broker, error) {
+	broker := &types.Broker{}
+	err := client.get(broker, web.ServiceBrokersURL+"/"+id, &query.Parameters{
+		GeneralParams: q.GeneralParams,
+	})
+
+	return broker, err
+}
+
 // ListBrokers returns brokers registered in the Service Manager satisfying provided queries
 func (client *serviceManagerClient) ListBrokers(q *query.Parameters) (*types.Brokers, error) {
 	brokers := &types.Brokers{}
@@ -227,6 +239,16 @@ func (client *serviceManagerClient) ListInstances(q *query.Parameters) (*types.S
 	err := client.list(&instances.ServiceInstances, web.ServiceInstancesURL, q)
 
 	return instances, err
+}
+
+// GetInstanceByID returns instance registered in the Service Manager satisfying provided queries
+func (client *serviceManagerClient) GetInstanceByID(id string, q *query.Parameters) (*types.ServiceInstance, error) {
+	instance := &types.ServiceInstance{}
+	err := client.get(instance, web.ServiceInstancesURL+"/"+id, &query.Parameters{
+		GeneralParams: q.GeneralParams,
+	})
+
+	return instance, err
 }
 
 // Marketplace returns service offerings satisfying provided queries

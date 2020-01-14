@@ -18,6 +18,7 @@ package types
 
 import (
 	"fmt"
+
 	"github.com/Peripli/service-manager/pkg/types"
 )
 
@@ -31,6 +32,8 @@ type Broker struct {
 	Updated     string       `json:"updated_at,omitempty" yaml:"updated_at,omitempty"`
 	Credentials *Credentials `json:"credentials,omitempty" yaml:"credentials,omitempty"`
 	Labels      types.Labels `json:"labels,omitempty" yaml:"labels,omitempty"`
+
+	LastOperation *types.Operation `json:"last_operation,omitempty" yaml:"last_operation,omitempty"`
 }
 
 // Message title of the table
@@ -46,9 +49,9 @@ func (b *Broker) IsEmpty() bool {
 // TableData returns the data to populate a table
 func (b *Broker) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"ID", "Name", "URL", "Description", "Created", "Updated", "Labels"}
+	result.Headers = []string{"ID", "Name", "URL", "Description", "Created", "Updated", "Labels", "Last Op"}
 
-	row := []string{b.ID, b.Name, b.URL, b.Description, b.Created, b.Updated, formatLabels(b.Labels)}
+	row := []string{b.ID, b.Name, b.URL, b.Description, b.Created, b.Updated, formatLabels(b.Labels), string(b.LastOperation.State)}
 	result.Data = append(result.Data, row)
 
 	return result
