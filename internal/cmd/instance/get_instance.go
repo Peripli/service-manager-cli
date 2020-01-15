@@ -97,7 +97,7 @@ func (gb *GetInstanceCmd) getInstanceIDByPlatformName(instances *types.ServiceIn
 			return "", err
 		}
 		if len(platforms.Platforms) < 1 {
-			return "", fmt.Errorf("No platform found with name %s", gb.platformName)
+			return "", fmt.Errorf("no platform found with name %s", gb.platformName)
 		}
 
 		if instance.PlatformID == platforms.Platforms[0].ID {
@@ -105,7 +105,7 @@ func (gb *GetInstanceCmd) getInstanceIDByPlatformName(instances *types.ServiceIn
 		}
 	}
 
-	return "", fmt.Errorf("No matching instance name %s and platform name %s", gb.instanceName, gb.platformName)
+	return "", fmt.Errorf("no matching instance name %s and platform name %s", gb.instanceName, gb.platformName)
 }
 
 // Validate validates command's arguments
