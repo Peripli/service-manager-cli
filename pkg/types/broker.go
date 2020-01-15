@@ -51,7 +51,11 @@ func (b *Broker) TableData() *TableData {
 	result := &TableData{}
 	result.Headers = []string{"ID", "Name", "URL", "Description", "Created", "Updated", "Labels", "Last Op"}
 
-	row := []string{b.ID, b.Name, b.URL, b.Description, b.Created, b.Updated, formatLabels(b.Labels), string(b.LastOperation.State)}
+	lastState := "-"
+	if b.LastOperation != nil {
+		lastState = string(b.LastOperation.State)
+	}
+	row := []string{b.ID, b.Name, b.URL, b.Description, b.Created, b.Updated, formatLabels(b.Labels), lastState}
 	result.Data = append(result.Data, row)
 
 	return result

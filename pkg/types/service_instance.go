@@ -61,7 +61,11 @@ func (si *ServiceInstance) TableData() *TableData {
 	result := &TableData{}
 	result.Headers = []string{"ID", "Name", "Service Plan ID", "Platform ID", "Created", "Updated", "Ready", "Usable", "Labels", "Last Op"}
 
-	row := []string{si.ID, si.Name, si.ServicePlanID, si.PlatformID, si.CreatedAt, si.UpdatedAt, strconv.FormatBool(si.Ready), strconv.FormatBool(si.Usable), formatLabels(si.Labels), string(si.LastOperation.State)}
+	lastState := "-"
+	if si.LastOperation != nil {
+		lastState = string(si.LastOperation.State)
+	}
+	row := []string{si.ID, si.Name, si.ServicePlanID, si.PlatformID, si.CreatedAt, si.UpdatedAt, strconv.FormatBool(si.Ready), strconv.FormatBool(si.Usable), formatLabels(si.Labels), lastState}
 	result.Data = append(result.Data, row)
 
 	return result

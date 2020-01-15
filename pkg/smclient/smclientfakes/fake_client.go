@@ -61,6 +61,20 @@ type FakeClient struct {
 	deleteVisibilitiesReturnsOnCall map[int]struct {
 		result1 error
 	}
+	GetBrokerByIDStub        func(string, *query.Parameters) (*types.Broker, error)
+	getBrokerByIDMutex       sync.RWMutex
+	getBrokerByIDArgsForCall []struct {
+		arg1 string
+		arg2 *query.Parameters
+	}
+	getBrokerByIDReturns struct {
+		result1 *types.Broker
+		result2 error
+	}
+	getBrokerByIDReturnsOnCall map[int]struct {
+		result1 *types.Broker
+		result2 error
+	}
 	GetInfoStub        func(*query.Parameters) (*types.Info, error)
 	getInfoMutex       sync.RWMutex
 	getInfoArgsForCall []struct {
@@ -72,6 +86,20 @@ type FakeClient struct {
 	}
 	getInfoReturnsOnCall map[int]struct {
 		result1 *types.Info
+		result2 error
+	}
+	GetInstanceByIDStub        func(string, *query.Parameters) (*types.ServiceInstance, error)
+	getInstanceByIDMutex       sync.RWMutex
+	getInstanceByIDArgsForCall []struct {
+		arg1 string
+		arg2 *query.Parameters
+	}
+	getInstanceByIDReturns struct {
+		result1 *types.ServiceInstance
+		result2 error
+	}
+	getInstanceByIDReturnsOnCall map[int]struct {
+		result1 *types.ServiceInstance
 		result2 error
 	}
 	LabelStub        func(string, string, *types.LabelChanges, *query.Parameters) error
@@ -516,6 +544,70 @@ func (fake *FakeClient) DeleteVisibilitiesReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeClient) GetBrokerByID(arg1 string, arg2 *query.Parameters) (*types.Broker, error) {
+	fake.getBrokerByIDMutex.Lock()
+	ret, specificReturn := fake.getBrokerByIDReturnsOnCall[len(fake.getBrokerByIDArgsForCall)]
+	fake.getBrokerByIDArgsForCall = append(fake.getBrokerByIDArgsForCall, struct {
+		arg1 string
+		arg2 *query.Parameters
+	}{arg1, arg2})
+	fake.recordInvocation("GetBrokerByID", []interface{}{arg1, arg2})
+	fake.getBrokerByIDMutex.Unlock()
+	if fake.GetBrokerByIDStub != nil {
+		return fake.GetBrokerByIDStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.getBrokerByIDReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeClient) GetBrokerByIDCallCount() int {
+	fake.getBrokerByIDMutex.RLock()
+	defer fake.getBrokerByIDMutex.RUnlock()
+	return len(fake.getBrokerByIDArgsForCall)
+}
+
+func (fake *FakeClient) GetBrokerByIDCalls(stub func(string, *query.Parameters) (*types.Broker, error)) {
+	fake.getBrokerByIDMutex.Lock()
+	defer fake.getBrokerByIDMutex.Unlock()
+	fake.GetBrokerByIDStub = stub
+}
+
+func (fake *FakeClient) GetBrokerByIDArgsForCall(i int) (string, *query.Parameters) {
+	fake.getBrokerByIDMutex.RLock()
+	defer fake.getBrokerByIDMutex.RUnlock()
+	argsForCall := fake.getBrokerByIDArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeClient) GetBrokerByIDReturns(result1 *types.Broker, result2 error) {
+	fake.getBrokerByIDMutex.Lock()
+	defer fake.getBrokerByIDMutex.Unlock()
+	fake.GetBrokerByIDStub = nil
+	fake.getBrokerByIDReturns = struct {
+		result1 *types.Broker
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) GetBrokerByIDReturnsOnCall(i int, result1 *types.Broker, result2 error) {
+	fake.getBrokerByIDMutex.Lock()
+	defer fake.getBrokerByIDMutex.Unlock()
+	fake.GetBrokerByIDStub = nil
+	if fake.getBrokerByIDReturnsOnCall == nil {
+		fake.getBrokerByIDReturnsOnCall = make(map[int]struct {
+			result1 *types.Broker
+			result2 error
+		})
+	}
+	fake.getBrokerByIDReturnsOnCall[i] = struct {
+		result1 *types.Broker
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeClient) GetInfo(arg1 *query.Parameters) (*types.Info, error) {
 	fake.getInfoMutex.Lock()
 	ret, specificReturn := fake.getInfoReturnsOnCall[len(fake.getInfoArgsForCall)]
@@ -575,6 +667,70 @@ func (fake *FakeClient) GetInfoReturnsOnCall(i int, result1 *types.Info, result2
 	}
 	fake.getInfoReturnsOnCall[i] = struct {
 		result1 *types.Info
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) GetInstanceByID(arg1 string, arg2 *query.Parameters) (*types.ServiceInstance, error) {
+	fake.getInstanceByIDMutex.Lock()
+	ret, specificReturn := fake.getInstanceByIDReturnsOnCall[len(fake.getInstanceByIDArgsForCall)]
+	fake.getInstanceByIDArgsForCall = append(fake.getInstanceByIDArgsForCall, struct {
+		arg1 string
+		arg2 *query.Parameters
+	}{arg1, arg2})
+	fake.recordInvocation("GetInstanceByID", []interface{}{arg1, arg2})
+	fake.getInstanceByIDMutex.Unlock()
+	if fake.GetInstanceByIDStub != nil {
+		return fake.GetInstanceByIDStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.getInstanceByIDReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeClient) GetInstanceByIDCallCount() int {
+	fake.getInstanceByIDMutex.RLock()
+	defer fake.getInstanceByIDMutex.RUnlock()
+	return len(fake.getInstanceByIDArgsForCall)
+}
+
+func (fake *FakeClient) GetInstanceByIDCalls(stub func(string, *query.Parameters) (*types.ServiceInstance, error)) {
+	fake.getInstanceByIDMutex.Lock()
+	defer fake.getInstanceByIDMutex.Unlock()
+	fake.GetInstanceByIDStub = stub
+}
+
+func (fake *FakeClient) GetInstanceByIDArgsForCall(i int) (string, *query.Parameters) {
+	fake.getInstanceByIDMutex.RLock()
+	defer fake.getInstanceByIDMutex.RUnlock()
+	argsForCall := fake.getInstanceByIDArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeClient) GetInstanceByIDReturns(result1 *types.ServiceInstance, result2 error) {
+	fake.getInstanceByIDMutex.Lock()
+	defer fake.getInstanceByIDMutex.Unlock()
+	fake.GetInstanceByIDStub = nil
+	fake.getInstanceByIDReturns = struct {
+		result1 *types.ServiceInstance
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) GetInstanceByIDReturnsOnCall(i int, result1 *types.ServiceInstance, result2 error) {
+	fake.getInstanceByIDMutex.Lock()
+	defer fake.getInstanceByIDMutex.Unlock()
+	fake.GetInstanceByIDStub = nil
+	if fake.getInstanceByIDReturnsOnCall == nil {
+		fake.getInstanceByIDReturnsOnCall = make(map[int]struct {
+			result1 *types.ServiceInstance
+			result2 error
+		})
+	}
+	fake.getInstanceByIDReturnsOnCall[i] = struct {
+		result1 *types.ServiceInstance
 		result2 error
 	}{result1, result2}
 }
@@ -1481,8 +1637,12 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.deletePlatformsMutex.RUnlock()
 	fake.deleteVisibilitiesMutex.RLock()
 	defer fake.deleteVisibilitiesMutex.RUnlock()
+	fake.getBrokerByIDMutex.RLock()
+	defer fake.getBrokerByIDMutex.RUnlock()
 	fake.getInfoMutex.RLock()
 	defer fake.getInfoMutex.RUnlock()
+	fake.getInstanceByIDMutex.RLock()
+	defer fake.getInstanceByIDMutex.RUnlock()
 	fake.labelMutex.RLock()
 	defer fake.labelMutex.RUnlock()
 	fake.listBrokersMutex.RLock()

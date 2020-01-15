@@ -72,7 +72,7 @@ func (gb *GetBrokerCmd) Run() error {
 
 // Validate validates command's arguments
 func (gb *GetBrokerCmd) Validate(args []string) error {
-	if len(args) < 1 {
+	if len(args) < 1 || len(args[0]) == 0 {
 		return fmt.Errorf("name is required")
 	}
 
