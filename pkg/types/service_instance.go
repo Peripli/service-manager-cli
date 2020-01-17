@@ -19,8 +19,9 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Peripli/service-manager/pkg/types"
 	"strconv"
+
+	"github.com/Peripli/service-manager/pkg/types"
 )
 
 // ServiceInstance defines the data of a service instance.
@@ -41,6 +42,8 @@ type ServiceInstance struct {
 
 	Ready  bool `json:"ready" yaml:"ready"`
 	Usable bool `json:"usable" yaml:"usable"`
+
+	LastOperation *types.Operation `json:"last_operation,omitempty" yaml:"last_operation,omitempty"`
 }
 
 // Message title of the table
@@ -56,9 +59,13 @@ func (si *ServiceInstance) IsEmpty() bool {
 // TableData returns the data to populate a table
 func (si *ServiceInstance) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"ID", "Name", "Service Plan ID", "Platform ID", "Created", "Updated", "Ready", "Usable", "Labels"}
+	result.Headers = []string{"ID", "Name", "Service Plan ID", "Platform ID", "Created", "Updated", "Ready", "Usable", "Labels", "Last Op"}
 
-	row := []string{si.ID, si.Name, si.ServicePlanID, si.PlatformID, si.CreatedAt, si.UpdatedAt, strconv.FormatBool(si.Ready), strconv.FormatBool(si.Usable), formatLabels(si.Labels)}
+	lastState := "-"
+	if si.LastOperation != nil {
+		lastState = string(si.LastOperation.State)
+	}
+	row := []string{si.ID, si.Name, si.ServicePlanID, si.PlatformID, si.CreatedAt, si.UpdatedAt, strconv.FormatBool(si.Ready), strconv.FormatBool(si.Usable), formatLabels(si.Labels), lastState}
 	result.Data = append(result.Data, row)
 
 	return result
