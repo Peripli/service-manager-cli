@@ -62,6 +62,9 @@ type Client interface {
 	ListInstances(*query.Parameters) (*types.ServiceInstances, error)
 	GetInstanceByID(id string, q *query.Parameters) (*types.ServiceInstance, error)
 
+	ListBindings(*query.Parameters) (*types.ServiceBindings, error)
+	GetBindingByID(id string, q *query.Parameters) (*types.ServiceBinding, error)
+
 	Label(string, string, *types.LabelChanges, *query.Parameters) error
 
 	Marketplace(*query.Parameters) (*types.Marketplace, error)
@@ -249,6 +252,24 @@ func (client *serviceManagerClient) GetInstanceByID(id string, q *query.Paramete
 	})
 
 	return instance, err
+}
+
+// ListBindings returns service bindings registered in the Service Manager satisfying provided queries
+func (client *serviceManagerClient) ListBindings(q *query.Parameters) (*types.ServiceBindings, error) {
+	bindings := &types.ServiceBindings{}
+	err := client.list(&bindings.ServiceBindings, web.ServiceBindingsURL, q)
+
+	return bindings, err
+}
+
+// GetBindingByID returns binding registered in the Service Manager satisfying provided queries
+func (client *serviceManagerClient) GetBindingByID(id string, q *query.Parameters) (*types.ServiceBinding, error) {
+	binding := &types.ServiceBinding{}
+	err := client.get(binding, web.ServiceBindingsURL+"/"+id, &query.Parameters{
+		GeneralParams: q.GeneralParams,
+	})
+
+	return binding, err
 }
 
 // Marketplace returns service offerings satisfying provided queries

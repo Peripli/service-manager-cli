@@ -19,7 +19,6 @@ func TestGetInstanceCmd(t *testing.T) {
 }
 
 var _ = Describe("Get instance command test", func() {
-
 	var client *smclientfakes.FakeClient
 	var command *GetInstanceCmd
 	var buffer *bytes.Buffer
@@ -59,34 +58,19 @@ var _ = Describe("Get instance command test", func() {
 	})
 
 	Context("when more than one instance with same name exists", func() {
+		var response *types.ServiceInstances
 		BeforeEach(func() {
-			client.ListInstancesReturns(&types.ServiceInstances{ServiceInstances: []types.ServiceInstance{instance, instance2}}, nil)
+			response = &types.ServiceInstances{ServiceInstances: []types.ServiceInstance{instance, instance2}}
+			client.ListInstancesReturns(response, nil)
 		})
 
-		It("should return error", func() {
-			client.GetInstanceByIDReturns(&instance, nil)
+		It("should return both instances", func() {
+			client.GetInstanceByIDReturnsOnCall(0, &instance, nil)
+			client.GetInstanceByIDReturnsOnCall(1, &instance2, nil)
 			err := executeWithArgs("instance1")
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buffer.String()).To(ContainSubstring("More than 1 instance found with this name. Use --platform flag to provide differentiator"))
-		})
 
-		Context("when a platform is provided", func() {
-			BeforeEach(func() {
-				client.ListPlatformsReturns(&types.Platforms{
-					Platforms: []types.Platform{
-						types.Platform{
-							ID:   "platformID1",
-							Name: "platform1",
-						},
-					},
-				}, nil)
-			})
-			It("should return the matching instance", func() {
-				client.GetInstanceByIDReturns(&instance, nil)
-				err := executeWithArgs("instance1", "--platform", "platform1")
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buffer.String()).To(ContainSubstring(instance.TableData().String()))
-			})
+			Expect(buffer.String()).To(ContainSubstring(response.TableData().String()))
 		})
 	})
 
@@ -106,7 +90,8 @@ var _ = Describe("Get instance command test", func() {
 			err := executeWithArgs("instance1")
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buffer.String()).To(ContainSubstring(instance.TableData().String()))
+			result := &types.ServiceInstances{ServiceInstances: []types.ServiceInstance{instance}}
+			Expect(buffer.String()).To(ContainSubstring(result.TableData().String()))
 		})
 	})
 })
