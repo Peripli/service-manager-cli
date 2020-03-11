@@ -86,13 +86,19 @@ func (rbc *RegisterBrokerCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (rbc *RegisterBrokerCmd) Run() error {
-	resultBroker, err := rbc.Client.RegisterBroker(&rbc.broker, &rbc.Parameters)
+	resultBroker, location, err := rbc.Client.RegisterBroker(&rbc.broker, &rbc.Parameters)
 	if err != nil {
 		return err
 	}
 
-	output.PrintServiceManagerObject(rbc.Output, rbc.outputFormat, resultBroker)
-	output.Println(rbc.Output)
+	if len(location) != 0 {
+		output.PrintMessage(rbc.Output, "Service Broker %s successfully scheduled for registration. To see status of the operation use:\n", rbc.broker.Name)
+		output.PrintMessage(rbc.Output, `smctl poll "%s"`, location)
+		output.Println(rbc.Output)
+	} else {
+		output.PrintServiceManagerObject(rbc.Output, rbc.outputFormat, resultBroker)
+		output.Println(rbc.Output)
+	}
 	return nil
 }
 

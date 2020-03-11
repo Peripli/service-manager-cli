@@ -206,7 +206,7 @@ func AddCommonQueryFlag(flags *pflag.FlagSet, parameters *query.Parameters) {
 
 // AddAsyncFlag adds the --async flag for SM calls.
 func AddAsyncFlag(flags *pflag.FlagSet, defValue bool) {
-	flags.BoolP("async", "", defValue, "Performs async call to SM")
+	flags.BoolP("async", "", defValue, fmt.Sprintf("The way calls to SM are performed. Default: %t", defValue))
 }
 
 //CommonConfirmationPrompt provides common logic for confirmation of an operation

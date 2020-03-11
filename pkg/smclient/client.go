@@ -46,7 +46,7 @@ type Client interface {
 	UpdatePlatform(string, *types.Platform, *query.Parameters) (*types.Platform, error)
 	DeletePlatforms(*query.Parameters) error
 
-	RegisterBroker(*types.Broker, *query.Parameters) (*types.Broker, error)
+	RegisterBroker(*types.Broker, *query.Parameters) (*types.Broker, string, error)
 	GetBrokerByID(string, *query.Parameters) (*types.Broker, error)
 	ListBrokers(*query.Parameters) (*types.Brokers, error)
 	UpdateBroker(string, *types.Broker, *query.Parameters) (*types.Broker, error)
@@ -138,7 +138,7 @@ func (client *serviceManagerClient) GetInfo(q *query.Parameters) (*types.Info, e
 // RegisterPlatform registers a platform in the service manager
 func (client *serviceManagerClient) RegisterPlatform(platform *types.Platform, q *query.Parameters) (*types.Platform, error) {
 	var newPlatform *types.Platform
-	err := client.register(platform, web.PlatformsURL, q, &newPlatform)
+	_, err := client.register(platform, web.PlatformsURL, q, &newPlatform)
 	if err != nil {
 		return nil, err
 	}
@@ -146,42 +146,45 @@ func (client *serviceManagerClient) RegisterPlatform(platform *types.Platform, q
 }
 
 // RegisterBroker registers a broker in the service manager
-func (client *serviceManagerClient) RegisterBroker(broker *types.Broker, q *query.Parameters) (*types.Broker, error) {
+func (client *serviceManagerClient) RegisterBroker(broker *types.Broker, q *query.Parameters) (*types.Broker, string, error) {
 	var newBroker *types.Broker
-	err := client.register(broker, web.ServiceBrokersURL, q, &newBroker)
+	location, err := client.register(broker, web.ServiceBrokersURL, q, &newBroker)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
-	return newBroker, nil
+	return newBroker, location, nil
 }
 
 // RegisterVisibility registers a visibility in the service manager
 func (client *serviceManagerClient) RegisterVisibility(visibility *types.Visibility, q *query.Parameters) (*types.Visibility, error) {
 	var newVisibility *types.Visibility
-	err := client.register(visibility, web.VisibilitiesURL, q, &newVisibility)
+	_, err := client.register(visibility, web.VisibilitiesURL, q, &newVisibility)
 	if err != nil {
 		return nil, err
 	}
 	return newVisibility, nil
 }
 
-func (client *serviceManagerClient) register(resource interface{}, url string, q *query.Parameters, result interface{}) error {
+func (client *serviceManagerClient) register(resource interface{}, url string, q *query.Parameters, result interface{}) (string, error) {
 	requestBody, err := json.Marshal(resource)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	buffer := bytes.NewBuffer(requestBody)
 	response, err := client.Call(http.MethodPost, url, buffer, q)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	if response.StatusCode != http.StatusCreated {
-		return util.HandleResponseError(response)
+	switch response.StatusCode {
+	case http.StatusCreated:
+		return "", httputil.UnmarshalResponse(response, &result)
+	case http.StatusAccepted:
+		return response.Header.Get("Location"), nil
+	default:
+		return "", util.HandleResponseError(response)
 	}
-
-	return httputil.UnmarshalResponse(response, &result)
 }
 
 // GetBrokerByID returns broker registered in the Service Manager satisfying provided queries
