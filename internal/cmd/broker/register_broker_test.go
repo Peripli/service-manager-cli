@@ -39,13 +39,13 @@ var _ = Describe("Register Broker Command test", func() {
 		command = NewRegisterBrokerCmd(context)
 	})
 
-	validRegisterBrokerExecution := func(args []string) *cobra.Command {
+	validAsyncRegisterBrokerExecution := func(args []string, location string) *cobra.Command {
 		broker = &types.Broker{
 			Name: args[0],
 			URL:  args[1],
 			ID:   "1234",
 		}
-		client.RegisterBrokerReturns(broker, nil)
+		client.RegisterBrokerReturns(broker,location, nil)
 
 		rbcCmd := command.Prepare(cmd.SmPrepare)
 		rbcCmd.SetArgs(args)
@@ -53,6 +53,12 @@ var _ = Describe("Register Broker Command test", func() {
 
 		return rbcCmd
 	}
+
+	validSyncRegisterBrokerExecution := func(args []string) *cobra.Command {
+		return validAsyncRegisterBrokerExecution(args, "")
+	}
+
+
 
 	invalidRegisterBrokerCommandExecution := func(args []string) error {
 		rpcCmd := command.Prepare(cmd.SmPrepare)
@@ -62,16 +68,23 @@ var _ = Describe("Register Broker Command test", func() {
 
 	Describe("Valid request", func() {
 		Context("With necessary arguments provided and basic flag", func() {
-			It("should be registered", func() {
-				validRegisterBrokerExecution([]string{"broker-name", "http://broker.com", "--basic", "user:password"})
+			It("should be registered synchronously", func() {
+				validSyncRegisterBrokerExecution([]string{"broker-name", "http://broker.com", "--basic", "user:password"})
 
 				tableOutputExpected := broker.TableData().String()
 
 				Expect(buffer.String()).To(ContainSubstring(tableOutputExpected))
 			})
 
+			It("should print location when registered asynchronously", func() {
+				validAsyncRegisterBrokerExecution([]string{"broker-name", "http://broker.com", "--basic", "user:password", "--async"}, "location")
+
+				Expect(buffer.String()).To(ContainSubstring(`smctl poll location`))
+			})
+
+
 			It("Argument values should be as expected", func() {
-				validRegisterBrokerExecution([]string{"broker-name", "http://broker.com", "--basic", "user:password"})
+				validSyncRegisterBrokerExecution([]string{"broker-name", "http://broker.com", "--basic", "user:password"})
 
 				Expect(command.broker.Name).To(Equal("broker-name"))
 				Expect(command.broker.URL).To(Equal("http://broker.com"))
@@ -82,7 +95,7 @@ var _ = Describe("Register Broker Command test", func() {
 
 		Context("With description provided", func() {
 			It("should save description value as expected", func() {
-				validRegisterBrokerExecution([]string{"validName", "validType", "validDescription", "--basic", "user:password"})
+				validSyncRegisterBrokerExecution([]string{"validName", "validType", "validDescription", "--basic", "user:password"})
 
 				Expect(command.broker.Description).To(Equal("validDescription"))
 			})
@@ -90,7 +103,7 @@ var _ = Describe("Register Broker Command test", func() {
 
 		Context("With json output flag", func() {
 			It("should be printed in json output format", func() {
-				validRegisterBrokerExecution([]string{"validName", "validUrl", "--basic", "user:password", "--output", "json"})
+				validSyncRegisterBrokerExecution([]string{"validName", "validUrl", "--basic", "user:password", "--output", "json"})
 
 				jsonByte, _ := json.MarshalIndent(broker, "", "  ")
 				jsonOutputExpected := string(jsonByte) + "\n"
@@ -101,7 +114,7 @@ var _ = Describe("Register Broker Command test", func() {
 
 		Context("With yaml output flag", func() {
 			It("should be printed in yaml output format", func() {
-				validRegisterBrokerExecution([]string{"validName", "validUrl", "--basic", "user:password", "--output", "yaml"})
+				validSyncRegisterBrokerExecution([]string{"validName", "validUrl", "--basic", "user:password", "--output", "yaml"})
 
 				yamlByte, _ := yaml.Marshal(broker)
 				yamlOutputExpected := string(yamlByte) + "\n"
@@ -112,7 +125,7 @@ var _ = Describe("Register Broker Command test", func() {
 
 		Context("With generic param flag", func() {
 			It("should pass it to SM", func() {
-				validRegisterBrokerExecution([]string{"validName", "validType", "validDescription", "--basic", "user:password", "--param", "paramKey=paramValue"})
+				validSyncRegisterBrokerExecution([]string{"validName", "validType", "validDescription", "--basic", "user:password", "--param", "paramKey=paramValue"})
 
 				_, args := client.RegisterBrokerArgsForCall(0)
 
@@ -124,7 +137,7 @@ var _ = Describe("Register Broker Command test", func() {
 
 		Context("With async flag", func() {
 			It("should pass it to SM", func() {
-				validRegisterBrokerExecution([]string{"validName", "validType", "validDescription", "--basic", "user:password", "--async"})
+				validSyncRegisterBrokerExecution([]string{"validName", "validType", "validDescription", "--basic", "user:password", "--async"})
 
 				_, args := client.RegisterBrokerArgsForCall(0)
 
@@ -154,7 +167,7 @@ var _ = Describe("Register Broker Command test", func() {
 
 		Context("With error from http client", func() {
 			It("should return error", func() {
-				client.RegisterBrokerReturns(nil, errors.New("Http Client Error"))
+				client.RegisterBrokerReturns(nil,"", errors.New("Http Client Error"))
 
 				err := invalidRegisterBrokerCommandExecution([]string{"validName", "validType", "--basic", "user:password"})
 
@@ -166,7 +179,7 @@ var _ = Describe("Register Broker Command test", func() {
 			It("should return error's description", func() {
 				body := ioutil.NopCloser(bytes.NewReader([]byte("HTTP response error")))
 				expectedError := util.HandleResponseError(&http.Response{Body: body})
-				client.RegisterBrokerReturns(nil, expectedError)
+				client.RegisterBrokerReturns(nil,"", expectedError)
 
 				err := invalidRegisterBrokerCommandExecution([]string{"validName", "validType", "--basic", "user:password"})
 

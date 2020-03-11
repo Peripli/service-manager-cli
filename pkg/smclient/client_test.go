@@ -33,6 +33,7 @@ type HandlerDetails struct {
 	Path               string
 	ResponseBody       []byte
 	ResponseStatusCode int
+	Headers map[string]string
 }
 
 func TestSMClient(t *testing.T) {
@@ -111,6 +112,9 @@ var _ = Describe("Service Manager Client test", func() {
 			mux.HandleFunc(v.Path, func(response http.ResponseWriter, req *http.Request) {
 				if v.Method != req.Method {
 					return
+				}
+				for key ,value := range v.Headers {
+					response.Header().Set(key, value)
 				}
 				authorization := req.Header.Get("Authorization")
 				if authorization != "Bearer "+validToken {
@@ -375,7 +379,7 @@ var _ = Describe("Service Manager Client test", func() {
 	})
 
 	Describe("Register broker", func() {
-		Context("When valid broker is being registered", func() {
+		Context("When valid broker is being registered synchronously", func() {
 			BeforeEach(func() {
 				responseBody, _ := json.Marshal(broker)
 				handlerDetails = []HandlerDetails{
@@ -383,10 +387,28 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should register successfully", func() {
-				responseBroker, err := client.RegisterBroker(broker, params)
+				responseBroker,location, err := client.RegisterBroker(broker, params)
 
 				Expect(err).ShouldNot(HaveOccurred())
+				Expect(location).Should(HaveLen(0))
 				Expect(responseBroker).To(Equal(broker))
+			})
+		})
+
+		Context("When valid broker is being registered asynchronously", func() {
+			var locationHeader string
+			BeforeEach(func() {
+				locationHeader = "test-location"
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodPost, Path: web.ServiceBrokersURL, ResponseBody: nil, ResponseStatusCode: http.StatusAccepted, Headers: map[string]string{"Location": locationHeader}},
+				}
+			})
+			It("should receive operation location", func() {
+				responseBroker,location, err := client.RegisterBroker(broker, params)
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(location).Should(Equal(locationHeader))
+				Expect(responseBroker).To(BeNil())
 			})
 		})
 
@@ -402,9 +424,10 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return error", func() {
-				responseBroker, err := client.RegisterBroker(broker, params)
+				responseBroker, location,err := client.RegisterBroker(broker, params)
 
 				Expect(err).Should(HaveOccurred())
+				Expect(location).Should(BeEmpty())
 				Expect(responseBroker).To(BeNil())
 			})
 		})
@@ -418,9 +441,10 @@ var _ = Describe("Service Manager Client test", func() {
 					}
 				})
 				It("should return error with status code", func() {
-					responseBroker, err := client.RegisterBroker(broker, params)
+					responseBroker,location, err := client.RegisterBroker(broker, params)
 
 					Expect(err).Should(HaveOccurred())
+					Expect(location).Should(BeEmpty())
 					verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 					Expect(responseBroker).To(BeNil())
 				})
@@ -434,9 +458,10 @@ var _ = Describe("Service Manager Client test", func() {
 					}
 				})
 				It("should return error with url and description", func() {
-					responseBroker, err := client.RegisterBroker(broker, params)
+					responseBroker,location, err := client.RegisterBroker(broker, params)
 
 					Expect(err).Should(HaveOccurred())
+					Expect(location).Should(BeEmpty())
 					verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 					Expect(responseBroker).To(BeNil())
 				})
@@ -450,9 +475,11 @@ var _ = Describe("Service Manager Client test", func() {
 					}
 				})
 				It("should return error without url and description if invalid response body", func() {
-					responseBroker, err := client.RegisterBroker(broker, params)
+					responseBroker,location, err := client.RegisterBroker(broker, params)
 
 					Expect(err).Should(HaveOccurred())
+					Expect(location).Should(BeEmpty())
+
 					verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 					Expect(responseBroker).To(BeNil())
 				})
@@ -463,9 +490,10 @@ var _ = Describe("Service Manager Client test", func() {
 		Context("When invalid config is set", func() {
 			It("should return error", func() {
 				client = NewClient(fakeAuthClient, "invalidURL")
-				_, err := client.RegisterBroker(broker, params)
+				_,location, err := client.RegisterBroker(broker, params)
 
 				Expect(err).Should(HaveOccurred())
+				Expect(location).Should(BeEmpty())
 			})
 		})
 	})

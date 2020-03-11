@@ -207,7 +207,7 @@ type FakeClient struct {
 		result1 *types.Marketplace
 		result2 error
 	}
-	RegisterBrokerStub        func(*types.Broker, *query.Parameters) (*types.Broker, error)
+	RegisterBrokerStub        func(*types.Broker, *query.Parameters) (*types.Broker, string, error)
 	registerBrokerMutex       sync.RWMutex
 	registerBrokerArgsForCall []struct {
 		arg1 *types.Broker
@@ -215,11 +215,13 @@ type FakeClient struct {
 	}
 	registerBrokerReturns struct {
 		result1 *types.Broker
-		result2 error
+		result2 string
+		result3 error
 	}
 	registerBrokerReturnsOnCall map[int]struct {
 		result1 *types.Broker
-		result2 error
+		result2 string
+		result3 error
 	}
 	RegisterPlatformStub        func(*types.Platform, *query.Parameters) (*types.Platform, error)
 	registerPlatformMutex       sync.RWMutex
@@ -1239,7 +1241,7 @@ func (fake *FakeClient) MarketplaceReturnsOnCall(i int, result1 *types.Marketpla
 	}{result1, result2}
 }
 
-func (fake *FakeClient) RegisterBroker(arg1 *types.Broker, arg2 *query.Parameters) (*types.Broker, error) {
+func (fake *FakeClient) RegisterBroker(arg1 *types.Broker, arg2 *query.Parameters) (*types.Broker, string, error) {
 	fake.registerBrokerMutex.Lock()
 	ret, specificReturn := fake.registerBrokerReturnsOnCall[len(fake.registerBrokerArgsForCall)]
 	fake.registerBrokerArgsForCall = append(fake.registerBrokerArgsForCall, struct {
@@ -1252,10 +1254,10 @@ func (fake *FakeClient) RegisterBroker(arg1 *types.Broker, arg2 *query.Parameter
 		return fake.RegisterBrokerStub(arg1, arg2)
 	}
 	if specificReturn {
-		return ret.result1, ret.result2
+		return ret.result1, ret.result2, ret.result3
 	}
 	fakeReturns := fake.registerBrokerReturns
-	return fakeReturns.result1, fakeReturns.result2
+	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
 }
 
 func (fake *FakeClient) RegisterBrokerCallCount() int {
@@ -1264,7 +1266,7 @@ func (fake *FakeClient) RegisterBrokerCallCount() int {
 	return len(fake.registerBrokerArgsForCall)
 }
 
-func (fake *FakeClient) RegisterBrokerCalls(stub func(*types.Broker, *query.Parameters) (*types.Broker, error)) {
+func (fake *FakeClient) RegisterBrokerCalls(stub func(*types.Broker, *query.Parameters) (*types.Broker, string, error)) {
 	fake.registerBrokerMutex.Lock()
 	defer fake.registerBrokerMutex.Unlock()
 	fake.RegisterBrokerStub = stub
@@ -1277,30 +1279,33 @@ func (fake *FakeClient) RegisterBrokerArgsForCall(i int) (*types.Broker, *query.
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeClient) RegisterBrokerReturns(result1 *types.Broker, result2 error) {
+func (fake *FakeClient) RegisterBrokerReturns(result1 *types.Broker, result2 string, result3 error) {
 	fake.registerBrokerMutex.Lock()
 	defer fake.registerBrokerMutex.Unlock()
 	fake.RegisterBrokerStub = nil
 	fake.registerBrokerReturns = struct {
 		result1 *types.Broker
-		result2 error
-	}{result1, result2}
+		result2 string
+		result3 error
+	}{result1, result2, result3}
 }
 
-func (fake *FakeClient) RegisterBrokerReturnsOnCall(i int, result1 *types.Broker, result2 error) {
+func (fake *FakeClient) RegisterBrokerReturnsOnCall(i int, result1 *types.Broker, result2 string, result3 error) {
 	fake.registerBrokerMutex.Lock()
 	defer fake.registerBrokerMutex.Unlock()
 	fake.RegisterBrokerStub = nil
 	if fake.registerBrokerReturnsOnCall == nil {
 		fake.registerBrokerReturnsOnCall = make(map[int]struct {
 			result1 *types.Broker
-			result2 error
+			result2 string
+			result3 error
 		})
 	}
 	fake.registerBrokerReturnsOnCall[i] = struct {
 		result1 *types.Broker
-		result2 error
-	}{result1, result2}
+		result2 string
+		result3 error
+	}{result1, result2, result3}
 }
 
 func (fake *FakeClient) RegisterPlatform(arg1 *types.Platform, arg2 *query.Parameters) (*types.Platform, error) {
