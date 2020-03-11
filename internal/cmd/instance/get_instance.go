@@ -71,7 +71,7 @@ func (gb *GetInstanceCmd) Run() error {
 		}
 	}
 
-	instance, err := gb.Client.GetInstanceByID(instanceID, &query.Parameters{})
+	instance, err := gb.Client.GetInstanceByID(instanceID, &gb.Parameters)
 	if err != nil {
 		return err
 	}

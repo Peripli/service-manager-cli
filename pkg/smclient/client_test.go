@@ -33,7 +33,7 @@ type HandlerDetails struct {
 	Path               string
 	ResponseBody       []byte
 	ResponseStatusCode int
-	Headers map[string]string
+	Headers            map[string]string
 }
 
 func TestSMClient(t *testing.T) {
@@ -58,9 +58,17 @@ var _ = Describe("Service Manager Client test", func() {
 	}
 
 	broker := &types.Broker{
+		ID: "broker-id",
 		Name:        "test-broker",
 		URL:         "http://test-url.com",
 		Credentials: &types.Credentials{Basic: types.Basic{User: "test user", Password: "test password"}},
+	}
+
+	operation := &types.Operation{
+		ID:           "operation-id",
+		Type:         "create",
+		State:        "failed",
+		ResourceID:   "broker-id",
 	}
 
 	initialOffering := &types.ServiceOffering{
@@ -113,7 +121,7 @@ var _ = Describe("Service Manager Client test", func() {
 				if v.Method != req.Method {
 					return
 				}
-				for key ,value := range v.Headers {
+				for key, value := range v.Headers {
 					response.Header().Set(key, value)
 				}
 				authorization := req.Header.Get("Authorization")
@@ -387,7 +395,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should register successfully", func() {
-				responseBroker,location, err := client.RegisterBroker(broker, params)
+				responseBroker, location, err := client.RegisterBroker(broker, params)
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(location).Should(HaveLen(0))
@@ -404,7 +412,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should receive operation location", func() {
-				responseBroker,location, err := client.RegisterBroker(broker, params)
+				responseBroker, location, err := client.RegisterBroker(broker, params)
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(location).Should(Equal(locationHeader))
@@ -424,7 +432,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return error", func() {
-				responseBroker, location,err := client.RegisterBroker(broker, params)
+				responseBroker, location, err := client.RegisterBroker(broker, params)
 
 				Expect(err).Should(HaveOccurred())
 				Expect(location).Should(BeEmpty())
@@ -441,7 +449,7 @@ var _ = Describe("Service Manager Client test", func() {
 					}
 				})
 				It("should return error with status code", func() {
-					responseBroker,location, err := client.RegisterBroker(broker, params)
+					responseBroker, location, err := client.RegisterBroker(broker, params)
 
 					Expect(err).Should(HaveOccurred())
 					Expect(location).Should(BeEmpty())
@@ -458,7 +466,7 @@ var _ = Describe("Service Manager Client test", func() {
 					}
 				})
 				It("should return error with url and description", func() {
-					responseBroker,location, err := client.RegisterBroker(broker, params)
+					responseBroker, location, err := client.RegisterBroker(broker, params)
 
 					Expect(err).Should(HaveOccurred())
 					Expect(location).Should(BeEmpty())
@@ -475,7 +483,7 @@ var _ = Describe("Service Manager Client test", func() {
 					}
 				})
 				It("should return error without url and description if invalid response body", func() {
-					responseBroker,location, err := client.RegisterBroker(broker, params)
+					responseBroker, location, err := client.RegisterBroker(broker, params)
 
 					Expect(err).Should(HaveOccurred())
 					Expect(location).Should(BeEmpty())
@@ -490,7 +498,7 @@ var _ = Describe("Service Manager Client test", func() {
 		Context("When invalid config is set", func() {
 			It("should return error", func() {
 				client = NewClient(fakeAuthClient, "invalidURL")
-				_,location, err := client.RegisterBroker(broker, params)
+				_, location, err := client.RegisterBroker(broker, params)
 
 				Expect(err).Should(HaveOccurred())
 				Expect(location).Should(BeEmpty())
@@ -555,6 +563,118 @@ var _ = Describe("Service Manager Client test", func() {
 				_, err := client.ListBrokers(params)
 				Expect(err).Should(HaveOccurred())
 				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+
+			})
+		})
+	})
+
+	Describe("Get broker", func() {
+		Context("when there is broker registered with this id", func() {
+			BeforeEach(func() {
+				responseBody, _ := json.Marshal(broker)
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+				}
+			})
+			It("should return it", func() {
+				result, err := client.GetBrokerByID(broker.ID, params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(result).To(Equal(broker))
+			})
+		})
+
+		Context("when there is no brokers registered", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusNotFound},
+				}
+			})
+			It("should return 404", func() {
+				_, err := client.GetBrokerByID(broker.ID,params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path + broker.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+
+		Context("when invalid status code is returned", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusCreated},
+				}
+			})
+			It("should handle status code != 200", func() {
+				_, err := client.GetBrokerByID(broker.ID, params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path + broker.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+
+		Context("when invalid status code is returned", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusBadRequest},
+				}
+			})
+			It("should handle status code > 299", func() {
+				_, err := client.GetBrokerByID(broker.ID,params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path + broker.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+
+			})
+		})
+	})
+
+	Describe("Poll", func() {
+		Context("when there is operation registered with this id", func() {
+			BeforeEach(func() {
+				responseBody, _ := json.Marshal(operation)
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+				}
+			})
+			It("should return it", func() {
+				result, err := client.Poll(web.ServiceBrokersURL + "/" + broker.ID + "/" + operation.ID, params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(result).To(Equal(operation))
+			})
+		})
+
+		Context("when there is no operation with this id", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusNotFound},
+				}
+			})
+			It("should return 404", func() {
+				_, err := client.Poll(web.ServiceBrokersURL + "/" + broker.ID + "/" + operation.ID, params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), web.ServiceBrokersURL + "/" + broker.ID + "/" + operation.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+
+		Context("when invalid status code is returned", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusCreated},
+				}
+			})
+			It("should handle status code != 200", func() {
+				_, err := client.Poll(web.ServiceBrokersURL + "/" + broker.ID + "/" + operation.ID, params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), web.ServiceBrokersURL + "/" + broker.ID + "/" + operation.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+
+		Context("when invalid status code is returned", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusBadRequest},
+				}
+			})
+			It("should handle status code > 299", func() {
+				_, err := client.Poll(web.ServiceBrokersURL + "/" + broker.ID + "/" + operation.ID, params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), web.ServiceBrokersURL + "/" + broker.ID + "/" + operation.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 
 			})
 		})
@@ -744,6 +864,62 @@ var _ = Describe("Service Manager Client test", func() {
 				_, err := client.ListInstances(params)
 				Expect(err).Should(HaveOccurred())
 				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+	})
+
+	Describe("Get service instance", func() {
+		Context("when there is instance with this id", func() {
+			BeforeEach(func() {
+				responseBody, _ := json.Marshal(instance)
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceInstancesURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+				}
+			})
+			It("should return it", func() {
+				result, err := client.GetInstanceByID(instance.ID, params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(result).To(Equal(instance))
+			})
+		})
+
+		Context("when there is no instance with this id", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceInstancesURL + "/", ResponseStatusCode: http.StatusNotFound},
+				}
+			})
+			It("should return 404", func() {
+				_, err := client.GetInstanceByID(instance.ID,params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path + instance.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+
+		Context("when invalid status code is returned", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceInstancesURL + "/", ResponseStatusCode: http.StatusCreated},
+				}
+			})
+			It("should handle status code != 200", func() {
+				_, err := client.GetInstanceByID(instance.ID, params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path + instance.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+
+		Context("when invalid status code is returned", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceInstancesURL + "/", ResponseStatusCode: http.StatusBadRequest},
+				}
+			})
+			It("should handle status code > 299", func() {
+				_, err := client.GetInstanceByID(instance.ID,params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path + instance.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+
 			})
 		})
 	})

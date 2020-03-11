@@ -56,7 +56,7 @@ func (gb *GetBrokerCmd) Run() error {
 	}
 
 	id := brokers.Brokers[0].ID
-	broker, err := gb.Client.GetBrokerByID(id, &query.Parameters{})
+	broker, err := gb.Client.GetBrokerByID(id, &gb.Parameters)
 	if err != nil {
 		return err
 	}

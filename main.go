@@ -27,6 +27,7 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/cmd/offering"
 	"github.com/Peripli/service-manager-cli/internal/cmd/plan"
 	"github.com/Peripli/service-manager-cli/internal/cmd/platform"
+	"github.com/Peripli/service-manager-cli/internal/cmd/poll"
 	"github.com/Peripli/service-manager-cli/internal/cmd/version"
 	"github.com/Peripli/service-manager-cli/internal/cmd/visibility"
 	"github.com/Peripli/service-manager-cli/pkg/auth"
@@ -75,6 +76,7 @@ func main() {
 			offering.NewMarketplaceCmd(context),
 			plan.NewListPlansCmd(context),
 			label.NewLabelCmd(context),
+			poll.NewPollCmd(context),
 			instance.NewListInstancesCmd(context),
 			instance.NewGetInstanceCmd(context),
 		},

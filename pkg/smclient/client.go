@@ -65,6 +65,8 @@ type Client interface {
 
 	Label(string, string, *types.LabelChanges, *query.Parameters) error
 
+	Poll(url string, q *query.Parameters) (*types.Operation, error)
+
 	Marketplace(*query.Parameters) (*types.Marketplace, error)
 
 	// Call makes HTTP request to the Service Manager server with authentication.
@@ -284,6 +286,15 @@ func (client *serviceManagerClient) Marketplace(q *query.Parameters) (*types.Mar
 		marketplace.ServiceOfferings[i].BrokerName = broker.Name
 	}
 	return marketplace, nil
+}
+
+func (client *serviceManagerClient) Poll(url string, q *query.Parameters) (*types.Operation, error) {
+	operation := &types.Operation{}
+	err := client.get(operation, url, &query.Parameters{
+		GeneralParams: q.GeneralParams,
+	})
+
+	return operation, err
 }
 
 func (client *serviceManagerClient) list(result interface{}, url string, q *query.Parameters) error {

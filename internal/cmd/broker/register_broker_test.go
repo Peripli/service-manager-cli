@@ -45,7 +45,7 @@ var _ = Describe("Register Broker Command test", func() {
 			URL:  args[1],
 			ID:   "1234",
 		}
-		client.RegisterBrokerReturns(broker,location, nil)
+		client.RegisterBrokerReturns(broker, location, nil)
 
 		rbcCmd := command.Prepare(cmd.SmPrepare)
 		rbcCmd.SetArgs(args)
@@ -57,8 +57,6 @@ var _ = Describe("Register Broker Command test", func() {
 	validSyncRegisterBrokerExecution := func(args []string) *cobra.Command {
 		return validAsyncRegisterBrokerExecution(args, "")
 	}
-
-
 
 	invalidRegisterBrokerCommandExecution := func(args []string) error {
 		rpcCmd := command.Prepare(cmd.SmPrepare)
@@ -81,7 +79,6 @@ var _ = Describe("Register Broker Command test", func() {
 
 				Expect(buffer.String()).To(ContainSubstring(`smctl poll location`))
 			})
-
 
 			It("Argument values should be as expected", func() {
 				validSyncRegisterBrokerExecution([]string{"broker-name", "http://broker.com", "--basic", "user:password"})
@@ -167,7 +164,7 @@ var _ = Describe("Register Broker Command test", func() {
 
 		Context("With error from http client", func() {
 			It("should return error", func() {
-				client.RegisterBrokerReturns(nil,"", errors.New("Http Client Error"))
+				client.RegisterBrokerReturns(nil, "", errors.New("Http Client Error"))
 
 				err := invalidRegisterBrokerCommandExecution([]string{"validName", "validType", "--basic", "user:password"})
 
@@ -179,7 +176,7 @@ var _ = Describe("Register Broker Command test", func() {
 			It("should return error's description", func() {
 				body := ioutil.NopCloser(bytes.NewReader([]byte("HTTP response error")))
 				expectedError := util.HandleResponseError(&http.Response{Body: body})
-				client.RegisterBrokerReturns(nil,"", expectedError)
+				client.RegisterBrokerReturns(nil, "", expectedError)
 
 				err := invalidRegisterBrokerCommandExecution([]string{"validName", "validType", "--basic", "user:password"})
 
