@@ -47,20 +47,21 @@ type Client interface {
 	DeletePlatforms(*query.Parameters) error
 
 	RegisterBroker(*types.Broker, *query.Parameters) (*types.Broker, error)
-	GetBrokerByID(id string, q *query.Parameters) (*types.Broker, error)
+	GetBrokerByID(string, *query.Parameters) (*types.Broker, error)
 	ListBrokers(*query.Parameters) (*types.Brokers, error)
 	UpdateBroker(string, *types.Broker, *query.Parameters) (*types.Broker, error)
 	DeleteBrokers(*query.Parameters) error
 
 	RegisterVisibility(*types.Visibility, *query.Parameters) (*types.Visibility, error)
-	ListOfferings(*query.Parameters) (*types.ServiceOfferings, error)
-	ListPlans(*query.Parameters) (*types.ServicePlans, error)
 	ListVisibilities(*query.Parameters) (*types.Visibilities, error)
 	UpdateVisibility(string, *types.Visibility, *query.Parameters) (*types.Visibility, error)
 	DeleteVisibilities(*query.Parameters) error
 
+	ListOfferings(*query.Parameters) (*types.ServiceOfferings, error)
+	ListPlans(*query.Parameters) (*types.ServicePlans, error)
+
 	ListInstances(*query.Parameters) (*types.ServiceInstances, error)
-	GetInstanceByID(id string, q *query.Parameters) (*types.ServiceInstance, error)
+	GetInstanceByID(string, *query.Parameters) (*types.ServiceInstance, error)
 
 	Label(string, string, *types.LabelChanges, *query.Parameters) error
 

@@ -59,6 +59,7 @@ func (rbc *RegisterBrokerCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result.Flags().StringVarP(&rbc.basicString, "basic", "b", "", "Sets the username and password for basic authentication. Format is <username:password>.")
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddCommonQueryFlag(result.Flags(), &rbc.Parameters)
+	cmd.AddAsyncFlag(result.Flags(), false)
 
 	return result
 }

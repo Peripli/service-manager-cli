@@ -116,7 +116,19 @@ var _ = Describe("Register Broker Command test", func() {
 
 				_, args := client.RegisterBrokerArgsForCall(0)
 
-				Expect(args.GeneralParams).To(ConsistOf("paramKey=paramValue"))
+				Expect(args.GeneralParams).To(ConsistOf("paramKey=paramValue", "async=false"))
+				Expect(args.FieldQuery).To(BeEmpty())
+				Expect(args.LabelQuery).To(BeEmpty())
+			})
+		})
+
+		Context("With async flag", func() {
+			It("should pass it to SM", func() {
+				validRegisterBrokerExecution([]string{"validName", "validType", "validDescription", "--basic", "user:password", "--async"})
+
+				_, args := client.RegisterBrokerArgsForCall(0)
+
+				Expect(args.GeneralParams).To(ConsistOf("async=true"))
 				Expect(args.FieldQuery).To(BeEmpty())
 				Expect(args.LabelQuery).To(BeEmpty())
 			})

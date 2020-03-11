@@ -88,6 +88,10 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 			return err
 		}
 
+		if async, err := c.Flags().GetBool("async"); err == nil {
+			ctx.Parameters.GeneralParams = append(ctx.Parameters.GeneralParams, fmt.Sprintf("async=%t", async))
+		}
+
 		if ctx.Client == nil {
 			settings, err := ctx.Configuration.Load()
 			if err != nil {
@@ -198,6 +202,11 @@ func AddQueryingFlags(flags *pflag.FlagSet, parameters *query.Parameters) {
 // AddCommonQueryFlag adds the CLI param that provides general query parameters
 func AddCommonQueryFlag(flags *pflag.FlagSet, parameters *query.Parameters) {
 	flags.StringArrayVarP(&parameters.GeneralParams, "param", "", nil, "Additional query parameters in the form key=value")
+}
+
+// AddAsyncFlag adds the --async flag for SM calls.
+func AddAsyncFlag(flags *pflag.FlagSet, defValue bool) {
+	flags.BoolP("async", "", defValue, "Performs async call to SM")
 }
 
 //CommonConfirmationPrompt provides common logic for confirmation of an operation
