@@ -101,9 +101,23 @@ func (si *ServiceInstances) TableData() *TableData {
 	result := &TableData{}
 	result.Headers = []string{"ID", "Name", "Service Plan ID", "Platform ID", "Created", "Updated", "Ready", "Usable", "Labels"}
 
+	addLastOpColumn := false
 	for _, instance := range si.ServiceInstances {
-		row := []string{instance.ID, instance.Name, instance.ServicePlanID, instance.PlatformID, instance.CreatedAt, instance.UpdatedAt, strconv.FormatBool(instance.Ready), strconv.FormatBool(instance.Usable), formatLabels(instance.Labels)}
+		lastState := "-"
+		if instance.LastOperation != nil {
+			lastState = string(instance.LastOperation.State)
+			addLastOpColumn = true
+		}
+		row := []string{instance.ID, instance.Name, instance.ServicePlanID, instance.PlatformID, instance.CreatedAt, instance.UpdatedAt, strconv.FormatBool(instance.Ready), strconv.FormatBool(instance.Usable), formatLabels(instance.Labels), lastState}
 		result.Data = append(result.Data, row)
+	}
+
+	if addLastOpColumn {
+		result.Headers = append(result.Headers, "Last Op")
+	} else {
+		for i := range result.Data {
+			result.Data[i] = result.Data[i][:len(result.Data[i])-1]
+		}
 	}
 
 	return result

@@ -8,10 +8,10 @@ import (
 	"testing"
 
 	cliquery "github.com/Peripli/service-manager-cli/pkg/query"
-	"github.com/Peripli/service-manager/pkg/query"
 	"github.com/Peripli/service-manager/pkg/web"
 
 	"github.com/Peripli/service-manager-cli/pkg/types"
+	smtypes "github.com/Peripli/service-manager/pkg/types"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -107,9 +107,15 @@ var _ = Describe("Service Manager Client test", func() {
 		PlatformID:    "platform_id",
 	}
 
+	binding := &types.ServiceBinding{
+		ID:                "instanceID",
+		Name:              "instance1",
+		ServiceInstanceID: "service_instance_id",
+	}
+
 	labelChanges := &types.LabelChanges{
-		LabelChanges: []*query.LabelChange{
-			{Key: "key", Operation: query.LabelOperation("add"), Values: []string{"val1", "val2"}},
+		LabelChanges: []*smtypes.LabelChange{
+			{Key: "key", Operation: smtypes.LabelOperation("add"), Values: []string{"val1", "val2"}},
 		},
 	}
 
@@ -920,6 +926,69 @@ var _ = Describe("Service Manager Client test", func() {
 				Expect(err).Should(HaveOccurred())
 				verifyErrorMsg(err.Error(), handlerDetails[0].Path+instance.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 
+			})
+		})
+	})
+
+	Describe("List service bindings", func() {
+		Context("when there are service bindings registered", func() {
+			BeforeEach(func() {
+				bindingsArray := []types.ServiceBinding{*binding}
+				bindings := types.ServiceBindings{ServiceBindings: bindingsArray}
+				responseBody, _ := json.Marshal(bindings)
+
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBindingsURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+				}
+			})
+			It("should return all", func() {
+				result, err := client.ListBindings(params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(result.ServiceBindings).To(HaveLen(1))
+				Expect(result.ServiceBindings[0]).To(Equal(*binding))
+			})
+		})
+
+		Context("when there are no service bindings registered", func() {
+			BeforeEach(func() {
+				bindingsArray := []types.ServiceBinding{}
+				bindings := types.ServiceBindings{ServiceBindings: bindingsArray}
+				responseBody, _ := json.Marshal(bindings)
+
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBindingsURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+				}
+			})
+			It("should return an empty array", func() {
+				result, err := client.ListBindings(params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(result.ServiceBindings).To(HaveLen(0))
+			})
+		})
+
+		Context("when invalid status code is returned", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBindingsURL, ResponseStatusCode: http.StatusCreated},
+				}
+			})
+			It("should handle status code != 200", func() {
+				_, err := client.ListBindings(params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+
+		Context("when invalid status code is returned", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBindingsURL, ResponseStatusCode: http.StatusBadRequest},
+				}
+			})
+			It("should handle status code > 299", func() {
+				_, err := client.ListBindings(params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 	})

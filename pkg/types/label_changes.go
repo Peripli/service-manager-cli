@@ -16,9 +16,9 @@
 
 package types
 
-import "github.com/Peripli/service-manager/pkg/query"
+import smtypes "github.com/Peripli/service-manager/pkg/types"
 
 // LabelChanges wraps multiple labels change request body structure
 type LabelChanges struct {
-	LabelChanges []*query.LabelChange `json:"labels,omitempty"`
+	LabelChanges []*smtypes.LabelChange `json:"labels,omitempty"`
 }

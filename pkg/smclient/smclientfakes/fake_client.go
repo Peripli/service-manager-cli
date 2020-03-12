@@ -61,6 +61,20 @@ type FakeClient struct {
 	deleteVisibilitiesReturnsOnCall map[int]struct {
 		result1 error
 	}
+	GetBindingByIDStub        func(string, *query.Parameters) (*types.ServiceBinding, error)
+	getBindingByIDMutex       sync.RWMutex
+	getBindingByIDArgsForCall []struct {
+		arg1 string
+		arg2 *query.Parameters
+	}
+	getBindingByIDReturns struct {
+		result1 *types.ServiceBinding
+		result2 error
+	}
+	getBindingByIDReturnsOnCall map[int]struct {
+		result1 *types.ServiceBinding
+		result2 error
+	}
 	GetBrokerByIDStub        func(string, *query.Parameters) (*types.Broker, error)
 	getBrokerByIDMutex       sync.RWMutex
 	getBrokerByIDArgsForCall []struct {
@@ -115,6 +129,19 @@ type FakeClient struct {
 	}
 	labelReturnsOnCall map[int]struct {
 		result1 error
+	}
+	ListBindingsStub        func(*query.Parameters) (*types.ServiceBindings, error)
+	listBindingsMutex       sync.RWMutex
+	listBindingsArgsForCall []struct {
+		arg1 *query.Parameters
+	}
+	listBindingsReturns struct {
+		result1 *types.ServiceBindings
+		result2 error
+	}
+	listBindingsReturnsOnCall map[int]struct {
+		result1 *types.ServiceBindings
+		result2 error
 	}
 	ListBrokersStub        func(*query.Parameters) (*types.Brokers, error)
 	listBrokersMutex       sync.RWMutex
@@ -562,6 +589,70 @@ func (fake *FakeClient) DeleteVisibilitiesReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeClient) GetBindingByID(arg1 string, arg2 *query.Parameters) (*types.ServiceBinding, error) {
+	fake.getBindingByIDMutex.Lock()
+	ret, specificReturn := fake.getBindingByIDReturnsOnCall[len(fake.getBindingByIDArgsForCall)]
+	fake.getBindingByIDArgsForCall = append(fake.getBindingByIDArgsForCall, struct {
+		arg1 string
+		arg2 *query.Parameters
+	}{arg1, arg2})
+	fake.recordInvocation("GetBindingByID", []interface{}{arg1, arg2})
+	fake.getBindingByIDMutex.Unlock()
+	if fake.GetBindingByIDStub != nil {
+		return fake.GetBindingByIDStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.getBindingByIDReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeClient) GetBindingByIDCallCount() int {
+	fake.getBindingByIDMutex.RLock()
+	defer fake.getBindingByIDMutex.RUnlock()
+	return len(fake.getBindingByIDArgsForCall)
+}
+
+func (fake *FakeClient) GetBindingByIDCalls(stub func(string, *query.Parameters) (*types.ServiceBinding, error)) {
+	fake.getBindingByIDMutex.Lock()
+	defer fake.getBindingByIDMutex.Unlock()
+	fake.GetBindingByIDStub = stub
+}
+
+func (fake *FakeClient) GetBindingByIDArgsForCall(i int) (string, *query.Parameters) {
+	fake.getBindingByIDMutex.RLock()
+	defer fake.getBindingByIDMutex.RUnlock()
+	argsForCall := fake.getBindingByIDArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeClient) GetBindingByIDReturns(result1 *types.ServiceBinding, result2 error) {
+	fake.getBindingByIDMutex.Lock()
+	defer fake.getBindingByIDMutex.Unlock()
+	fake.GetBindingByIDStub = nil
+	fake.getBindingByIDReturns = struct {
+		result1 *types.ServiceBinding
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) GetBindingByIDReturnsOnCall(i int, result1 *types.ServiceBinding, result2 error) {
+	fake.getBindingByIDMutex.Lock()
+	defer fake.getBindingByIDMutex.Unlock()
+	fake.GetBindingByIDStub = nil
+	if fake.getBindingByIDReturnsOnCall == nil {
+		fake.getBindingByIDReturnsOnCall = make(map[int]struct {
+			result1 *types.ServiceBinding
+			result2 error
+		})
+	}
+	fake.getBindingByIDReturnsOnCall[i] = struct {
+		result1 *types.ServiceBinding
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeClient) GetBrokerByID(arg1 string, arg2 *query.Parameters) (*types.Broker, error) {
 	fake.getBrokerByIDMutex.Lock()
 	ret, specificReturn := fake.getBrokerByIDReturnsOnCall[len(fake.getBrokerByIDArgsForCall)]
@@ -814,6 +905,69 @@ func (fake *FakeClient) LabelReturnsOnCall(i int, result1 error) {
 	fake.labelReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
+}
+
+func (fake *FakeClient) ListBindings(arg1 *query.Parameters) (*types.ServiceBindings, error) {
+	fake.listBindingsMutex.Lock()
+	ret, specificReturn := fake.listBindingsReturnsOnCall[len(fake.listBindingsArgsForCall)]
+	fake.listBindingsArgsForCall = append(fake.listBindingsArgsForCall, struct {
+		arg1 *query.Parameters
+	}{arg1})
+	fake.recordInvocation("ListBindings", []interface{}{arg1})
+	fake.listBindingsMutex.Unlock()
+	if fake.ListBindingsStub != nil {
+		return fake.ListBindingsStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.listBindingsReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeClient) ListBindingsCallCount() int {
+	fake.listBindingsMutex.RLock()
+	defer fake.listBindingsMutex.RUnlock()
+	return len(fake.listBindingsArgsForCall)
+}
+
+func (fake *FakeClient) ListBindingsCalls(stub func(*query.Parameters) (*types.ServiceBindings, error)) {
+	fake.listBindingsMutex.Lock()
+	defer fake.listBindingsMutex.Unlock()
+	fake.ListBindingsStub = stub
+}
+
+func (fake *FakeClient) ListBindingsArgsForCall(i int) *query.Parameters {
+	fake.listBindingsMutex.RLock()
+	defer fake.listBindingsMutex.RUnlock()
+	argsForCall := fake.listBindingsArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeClient) ListBindingsReturns(result1 *types.ServiceBindings, result2 error) {
+	fake.listBindingsMutex.Lock()
+	defer fake.listBindingsMutex.Unlock()
+	fake.ListBindingsStub = nil
+	fake.listBindingsReturns = struct {
+		result1 *types.ServiceBindings
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) ListBindingsReturnsOnCall(i int, result1 *types.ServiceBindings, result2 error) {
+	fake.listBindingsMutex.Lock()
+	defer fake.listBindingsMutex.Unlock()
+	fake.ListBindingsStub = nil
+	if fake.listBindingsReturnsOnCall == nil {
+		fake.listBindingsReturnsOnCall = make(map[int]struct {
+			result1 *types.ServiceBindings
+			result2 error
+		})
+	}
+	fake.listBindingsReturnsOnCall[i] = struct {
+		result1 *types.ServiceBindings
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeClient) ListBrokers(arg1 *query.Parameters) (*types.Brokers, error) {
@@ -1725,6 +1879,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.deletePlatformsMutex.RUnlock()
 	fake.deleteVisibilitiesMutex.RLock()
 	defer fake.deleteVisibilitiesMutex.RUnlock()
+	fake.getBindingByIDMutex.RLock()
+	defer fake.getBindingByIDMutex.RUnlock()
 	fake.getBrokerByIDMutex.RLock()
 	defer fake.getBrokerByIDMutex.RUnlock()
 	fake.getInfoMutex.RLock()
@@ -1733,6 +1889,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.getInstanceByIDMutex.RUnlock()
 	fake.labelMutex.RLock()
 	defer fake.labelMutex.RUnlock()
+	fake.listBindingsMutex.RLock()
+	defer fake.listBindingsMutex.RUnlock()
 	fake.listBrokersMutex.RLock()
 	defer fake.listBrokersMutex.RUnlock()
 	fake.listInstancesMutex.RLock()

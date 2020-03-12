@@ -6,7 +6,7 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/pkg/types"
-	"github.com/Peripli/service-manager/pkg/query"
+	smtypes "github.com/Peripli/service-manager/pkg/types"
 	"github.com/Peripli/service-manager/pkg/web"
 	"github.com/spf13/cobra"
 )
@@ -73,10 +73,10 @@ func (c *Cmd) Validate(args []string) error {
 		return fmt.Errorf("unknown resource")
 	}
 
-	labelChange := &query.LabelChange{}
+	labelChange := &smtypes.LabelChange{}
 
 	if v, ok := operations[args[2]]; ok {
-		labelChange.Operation = query.LabelOperation(v)
+		labelChange.Operation = smtypes.LabelOperation(v)
 	} else {
 		return fmt.Errorf("unknown operation")
 	}

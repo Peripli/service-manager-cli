@@ -47,7 +47,7 @@ func (o *Operation) IsEmpty() bool {
 
 // TableData returns the data to populate a table
 func (o *Operation) TableData() *TableData {
-	result := &TableData{Vertical:true}
+	result := &TableData{Vertical: true}
 	var row []string
 	if o.State == string(types.FAILED) {
 		result.Headers = []string{"ID", "Type", "State", "Error"}

@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package instance
+package binding
 
 import (
 	"fmt"
@@ -27,38 +27,38 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// GetInstanceCmd wraps the smctl list-brokers command
-type GetInstanceCmd struct {
+// GetBindingCmd wraps the smctl list-brokers command
+type GetBindingCmd struct {
 	*cmd.Context
 
-	instanceName string
-	platformName string
+	bindingName  string
+	prepare      cmd.PrepareFunc
 	outputFormat output.Format
 }
 
-// NewGetInstanceCmd returns new get status command with context
-func NewGetInstanceCmd(context *cmd.Context) *GetInstanceCmd {
-	return &GetInstanceCmd{Context: context}
+// NewGetBindingCmd returns new get status command with context
+func NewGetBindingCmd(context *cmd.Context) *GetBindingCmd {
+	return &GetBindingCmd{Context: context}
 }
 
 // Run runs the command's logic
-func (gb *GetInstanceCmd) Run() error {
-	instances, err := gb.Client.ListInstances(&query.Parameters{
+func (gb *GetBindingCmd) Run() error {
+	bindings, err := gb.Client.ListBindings(&query.Parameters{
 		FieldQuery: []string{
-			fmt.Sprintf("name eq '%s'", gb.instanceName),
+			fmt.Sprintf("name eq '%s'", gb.bindingName),
 		},
 	})
 	if err != nil {
 		return err
 	}
-	if len(instances.ServiceInstances) < 1 {
-		output.PrintMessage(gb.Output, "No instance found with name: %s", gb.instanceName)
+	if len(bindings.ServiceBindings) < 1 {
+		output.PrintMessage(gb.Output, "No binding found with name: %s", gb.bindingName)
 		return nil
 	}
 
-	resultInstances := &types.ServiceInstances{}
-	for _, instance := range instances.ServiceInstances {
-		inst, err := gb.Client.GetInstanceByID(instance.ID, &query.Parameters{
+	resultBindings := &types.ServiceBindings{}
+	for _, binding := range bindings.ServiceBindings {
+		bd, err := gb.Client.GetBindingByID(binding.ID, &query.Parameters{
 			GeneralParams: []string{
 				"last_op=true",
 			},
@@ -66,44 +66,45 @@ func (gb *GetInstanceCmd) Run() error {
 		if err != nil {
 			return err
 		}
-		resultInstances.ServiceInstances = append(resultInstances.ServiceInstances, *inst)
+		resultBindings.ServiceBindings = append(resultBindings.ServiceBindings, *bd)
 	}
 
-	output.PrintServiceManagerObject(gb.Output, gb.outputFormat, resultInstances)
+	output.PrintServiceManagerObject(gb.Output, gb.outputFormat, resultBindings)
 	output.Println(gb.Output)
 
 	return nil
 }
 
 // Validate validates command's arguments
-func (gb *GetInstanceCmd) Validate(args []string) error {
+func (gb *GetBindingCmd) Validate(args []string) error {
 	if len(args) < 1 || len(args[0]) < 1 {
-		return fmt.Errorf("instance name is required")
+		return fmt.Errorf("binding name is required")
 	}
 
-	gb.instanceName = args[0]
+	gb.bindingName = args[0]
 
 	return nil
 }
 
 // SetOutputFormat set output format
-func (gb *GetInstanceCmd) SetOutputFormat(format output.Format) {
+func (gb *GetBindingCmd) SetOutputFormat(format output.Format) {
 	gb.outputFormat = format
 }
 
 // HideUsage hide command's usage
-func (gb *GetInstanceCmd) HideUsage() bool {
+func (gb *GetBindingCmd) HideUsage() bool {
 	return true
 }
 
 // Prepare returns cobra command
-func (gb *GetInstanceCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
+func (gb *GetBindingCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
+	gb.prepare = prepare
 	result := &cobra.Command{
-		Use:     "get-instance [name]",
-		Aliases: []string{"gb"},
-		Short:   "Get single instance",
-		Long:    `Get single instance by its name`,
-		PreRunE: prepare(gb, gb.Context),
+		Use:     "get-binding [name]",
+		Aliases: []string{"gsb"},
+		Short:   "Get single binding",
+		Long:    `Get single binding by its name`,
+		PreRunE: gb.prepare(gb, gb.Context),
 		RunE:    cmd.RunE(gb),
 	}
 
