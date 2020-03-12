@@ -408,7 +408,7 @@ var _ = Describe("Service Manager Client test", func() {
 			BeforeEach(func() {
 				locationHeader = "test-location"
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodPost, Path: web.ServiceBrokersURL,  ResponseStatusCode: http.StatusAccepted, Headers: map[string]string{"Location": locationHeader}},
+					{Method: http.MethodPost, Path: web.ServiceBrokersURL, ResponseStatusCode: http.StatusAccepted, Headers: map[string]string{"Location": locationHeader}},
 				}
 			})
 			It("should receive operation location", func() {
@@ -1150,7 +1150,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should be successfully updated", func() {
-				updatedBroker,location, err := client.UpdateBroker("id", broker, params)
+				updatedBroker, location, err := client.UpdateBroker("id", broker, params)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(location).Should(HaveLen(0))
 				Expect(updatedBroker).To(Equal(broker))
@@ -1159,14 +1159,14 @@ var _ = Describe("Service Manager Client test", func() {
 
 		Context("when an existing broker is being updated asynchronously", func() {
 			var locationHeader string
-			BeforeEach(func() 	{
+			BeforeEach(func() {
 				locationHeader = "test-location"
 				handlerDetails = []HandlerDetails{
 					{Method: http.MethodPatch, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusAccepted, Headers: map[string]string{"Location": locationHeader}},
 				}
 			})
 			It("should be successfully updated", func() {
-				updatedBroker,location, err := client.UpdateBroker("id", broker, params)
+				updatedBroker, location, err := client.UpdateBroker("id", broker, params)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(location).Should(Equal(locationHeader))
 				Expect(updatedBroker).To(BeNil())
@@ -1182,7 +1182,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle error", func() {
-				_,location, err := client.UpdateBroker("id", broker, params)
+				_, location, err := client.UpdateBroker("id", broker, params)
 				Expect(err).Should(HaveOccurred())
 				Expect(location).Should(HaveLen(0))
 				verifyErrorMsg(err.Error(), handlerDetails[0].Path+"id", handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
@@ -1198,7 +1198,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle error", func() {
-				_,location, err := client.UpdateBroker("id", broker, params)
+				_, location, err := client.UpdateBroker("id", broker, params)
 				Expect(err).Should(HaveOccurred())
 				Expect(location).Should(HaveLen(0))
 				verifyErrorMsg(err.Error(), handlerDetails[0].Path+"id", handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)

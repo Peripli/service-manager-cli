@@ -58,12 +58,12 @@ func (si *ServiceInstance) IsEmpty() bool {
 
 // TableData returns the data to populate a table
 func (si *ServiceInstance) TableData() *TableData {
-	result := &TableData{}
+	result := &TableData{Vertical: true}
 	result.Headers = []string{"ID", "Name", "Service Plan ID", "Platform ID", "Created", "Updated", "Ready", "Usable", "Labels", "Last Op"}
 
 	lastState := "-"
 	if si.LastOperation != nil {
-		lastState = string(si.LastOperation.State)
+		lastState = formatLastOp(si.LastOperation)
 	}
 	row := []string{si.ID, si.Name, si.ServicePlanID, si.PlatformID, si.CreatedAt, si.UpdatedAt, strconv.FormatBool(si.Ready), strconv.FormatBool(si.Usable), formatLabels(si.Labels), lastState}
 	result.Data = append(result.Data, row)

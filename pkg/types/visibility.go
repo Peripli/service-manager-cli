@@ -19,7 +19,7 @@ package types
 import (
 	"fmt"
 	"github.com/Peripli/service-manager/pkg/types"
-	"strings"
+	"strconv"
 )
 
 // Visibility defines the data of a visibility
@@ -30,6 +30,7 @@ type Visibility struct {
 	CreatedAt     string       `json:"created_at,omitempty" yaml:"created_at,omitempty"`
 	UpdatedAt     string       `json:"updated_at,omitempty" yaml:"updated_at,omitempty"`
 	Labels        types.Labels `json:"labels,omitempty" yaml:"labels,omitempty"`
+	Ready         bool         `json:"ready,omitempty" yaml:"ready,omitempty"`
 }
 
 // Message title of the table
@@ -81,20 +82,12 @@ func (v *Visibilities) Message() string {
 // TableData returns the data to populate a table
 func (v *Visibilities) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"ID", "Platform ID", "Service Plan ID", "Labels"}
+	result.Headers = []string{"ID", "Platform ID", "Service Plan ID", "Ready", "Labels"}
 
 	for _, visibility := range v.Visibilities {
-		row := []string{visibility.ID, visibility.PlatformID, visibility.ServicePlanID, formatLabels(visibility.Labels)}
+		row := []string{visibility.ID, visibility.PlatformID, visibility.ServicePlanID, strconv.FormatBool(visibility.Ready), formatLabels(visibility.Labels)}
 		result.Data = append(result.Data, row)
 	}
 
 	return result
-}
-
-func formatLabels(labels types.Labels) string {
-	formattedLabels := make([]string, 0, len(labels))
-	for i, v := range labels {
-		formattedLabels = append(formattedLabels, i+"="+strings.Join(v, ","))
-	}
-	return strings.Join(formattedLabels, " ")
 }

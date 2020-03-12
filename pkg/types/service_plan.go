@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Peripli/service-manager/pkg/types"
+	"strconv"
 )
 
 // ServicePlan defines the data of a service plan.
@@ -41,6 +42,7 @@ type ServicePlan struct {
 
 	ServiceOfferingID string       `json:"service_offering_id,omitempty" yaml:"service_offering_id,omitempty"`
 	Labels            types.Labels `json:"labels,omitempty" yaml:"labels,omitempty"`
+	Ready             bool         `json:"ready,omitempty" yaml:"ready,omitempty"`
 }
 
 // Message title of the table
@@ -130,10 +132,10 @@ func (sp *ServicePlans) IsEmpty() bool {
 // TableData returns the data to populate a table
 func (sp *ServicePlans) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"ID", "Name", "Description", "Offering ID"}
+	result.Headers = []string{"ID", "Name", "Description", "Offering ID", "Ready"}
 
 	for _, v := range sp.ServicePlans {
-		row := []string{v.ID, v.Name, v.Description, v.ServiceOfferingID}
+		row := []string{v.ID, v.Name, v.Description, v.ServiceOfferingID, strconv.FormatBool(v.Ready)}
 		result.Data = append(result.Data, row)
 	}
 

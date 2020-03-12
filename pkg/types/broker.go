@@ -18,8 +18,8 @@ package types
 
 import (
 	"fmt"
-
 	"github.com/Peripli/service-manager/pkg/types"
+	"strconv"
 )
 
 // Broker defines the data of a service broker.
@@ -32,6 +32,7 @@ type Broker struct {
 	Updated     string       `json:"updated_at,omitempty" yaml:"updated_at,omitempty"`
 	Credentials *Credentials `json:"credentials,omitempty" yaml:"credentials,omitempty"`
 	Labels      types.Labels `json:"labels,omitempty" yaml:"labels,omitempty"`
+	Ready       bool         `json:"ready,omitempty" yaml:"ready,omitempty"`
 
 	LastOperation *types.Operation `json:"last_operation,omitempty" yaml:"last_operation,omitempty"`
 }
@@ -48,12 +49,12 @@ func (b *Broker) IsEmpty() bool {
 
 // TableData returns the data to populate a table
 func (b *Broker) TableData() *TableData {
-	result := &TableData{}
+	result := &TableData{Vertical: true}
 	result.Headers = []string{"ID", "Name", "URL", "Description", "Created", "Updated", "Labels", "Last Op"}
 
 	lastState := "-"
 	if b.LastOperation != nil {
-		lastState = string(b.LastOperation.State)
+		lastState = formatLastOp(b.LastOperation)
 	}
 	row := []string{b.ID, b.Name, b.URL, b.Description, b.Created, b.Updated, formatLabels(b.Labels), lastState}
 	result.Data = append(result.Data, row)
@@ -89,10 +90,10 @@ func (b *Brokers) Message() string {
 // TableData returns the data to populate a table
 func (b *Brokers) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"ID", "Name", "URL", "Description", "Created", "Updated", "Labels"}
+	result.Headers = []string{"ID", "Name", "URL", "Description", "Created", "Updated", "Ready", "Labels"}
 
 	for _, broker := range b.Brokers {
-		row := []string{broker.ID, broker.Name, broker.URL, broker.Description, broker.Created, broker.Updated, formatLabels(broker.Labels)}
+		row := []string{broker.ID, broker.Name, broker.URL, broker.Description, broker.Created, broker.Updated, strconv.FormatBool(broker.Ready), formatLabels(broker.Labels)}
 		result.Data = append(result.Data, row)
 	}
 
