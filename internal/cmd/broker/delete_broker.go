@@ -31,7 +31,6 @@ import (
 // DeleteBrokerCmd wraps the smctl delete-broker command
 type DeleteBrokerCmd struct {
 	*cmd.Context
-	prepare cmd.PrepareFunc
 
 	input io.Reader
 	force bool
@@ -91,13 +90,12 @@ func (dbc *DeleteBrokerCmd) PrintDeclineMessage() {
 
 // Prepare returns cobra command
 func (dbc *DeleteBrokerCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
-	dbc.prepare = prepare
 	result := &cobra.Command{
 		Use:     "delete-broker [name]",
 		Aliases: []string{"db"},
 		Short:   "Deletes brokers",
 		Long:    `Delete one or more brokers with name.`,
-		PreRunE: dbc.prepare(dbc, dbc.Context),
+		PreRunE: prepare(dbc, dbc.Context),
 		RunE:    cmd.RunE(dbc),
 	}
 

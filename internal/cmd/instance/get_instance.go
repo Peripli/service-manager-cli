@@ -33,7 +33,6 @@ type GetInstanceCmd struct {
 
 	instanceName string
 	platformName string
-	prepare      cmd.PrepareFunc
 	outputFormat output.Format
 }
 
@@ -127,13 +126,12 @@ func (gb *GetInstanceCmd) HideUsage() bool {
 
 // Prepare returns cobra command
 func (gb *GetInstanceCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
-	gb.prepare = prepare
 	result := &cobra.Command{
 		Use:     "get-instance [name]",
 		Aliases: []string{"gb"},
 		Short:   "Get single instance",
 		Long:    `Get single instance by its name`,
-		PreRunE: gb.prepare(gb, gb.Context),
+		PreRunE: prepare(gb, gb.Context),
 		RunE:    cmd.RunE(gb),
 	}
 
