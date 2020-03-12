@@ -32,12 +32,12 @@ type TableData struct {
 // String implements Stringer interface
 func (table *TableData) String() string {
 	if table.Vertical {
-		return table.VerticalTable()
+		return table.verticalTable()
 	}
-	return table.HorizontalTable()
+	return table.horizontalTable()
 }
 
-func (table *TableData) HorizontalTable() string {
+func (table *TableData) horizontalTable() string {
 	output := ""
 	if len(table.Data) == 0 {
 		return output
@@ -66,7 +66,7 @@ func (table *TableData) HorizontalTable() string {
 	return output
 }
 
-func (table *TableData) VerticalTable() string {
+func (table *TableData) verticalTable() string {
 	output := ""
 	if len(table.Data) == 0 {
 		return output

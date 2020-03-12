@@ -32,7 +32,6 @@ type GetInstanceCmd struct {
 	*cmd.Context
 
 	instanceName string
-	platformName string
 	outputFormat output.Format
 }
 
