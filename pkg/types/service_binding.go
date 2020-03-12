@@ -42,7 +42,7 @@ type ServiceBinding struct {
 	Context           json.RawMessage `json:"-" yaml:"-"`
 	BindResource      json.RawMessage `json:"-" yaml:"-"`
 
-	Ready bool `json:"ready" yaml:"ready"`
+	Ready bool `json:"ready,omitempty" yaml:"ready,omitempty"`
 
 	LastOperation *types.Operation `json:"last_operation,omitempty" yaml:"last_operation,omitempty"`
 }
@@ -59,7 +59,7 @@ func (sb *ServiceBinding) IsEmpty() bool {
 
 // TableData returns the data to populate a table
 func (sb *ServiceBinding) TableData() *TableData {
-	result := &TableData{}
+	result := &TableData{Vertical: true}
 	result.Headers = []string{"ID", "Name", "Service Instance ID", "Credentials", "Created", "Updated", "Ready", "Labels", "Last Op"}
 
 	lastState := "-"
