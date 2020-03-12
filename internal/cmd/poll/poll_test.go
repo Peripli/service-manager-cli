@@ -27,10 +27,10 @@ var _ = Describe("Poll command test", func() {
 	var command *Cmd
 	var buffer *bytes.Buffer
 	operation := &types.Operation{
-		ID:           "operation-id",
-		Type:         "create",
-		State:        "failed",
-		ResourceID:   "broker-id",
+		ID:         "operation-id",
+		Type:       "create",
+		State:      "failed",
+		ResourceID: "broker-id",
 	}
 
 	BeforeEach(func() {

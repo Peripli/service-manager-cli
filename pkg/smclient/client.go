@@ -49,7 +49,7 @@ type Client interface {
 	RegisterBroker(*types.Broker, *query.Parameters) (*types.Broker, string, error)
 	GetBrokerByID(string, *query.Parameters) (*types.Broker, error)
 	ListBrokers(*query.Parameters) (*types.Brokers, error)
-	UpdateBroker(string, *types.Broker, *query.Parameters) (*types.Broker, error)
+	UpdateBroker(string, *types.Broker, *query.Parameters) (*types.Broker, string, error)
 	DeleteBrokers(*query.Parameters) error
 
 	RegisterVisibility(*types.Visibility, *query.Parameters) (*types.Visibility, error)
@@ -340,18 +340,18 @@ func (client *serviceManagerClient) delete(url string, q *query.Parameters) erro
 	return nil
 }
 
-func (client *serviceManagerClient) UpdateBroker(id string, updatedBroker *types.Broker, q *query.Parameters) (*types.Broker, error) {
-	result := &types.Broker{}
-	err := client.update(updatedBroker, web.ServiceBrokersURL, id, q, &result)
+func (client *serviceManagerClient) UpdateBroker(id string, updatedBroker *types.Broker, q *query.Parameters) (*types.Broker, string, error) {
+	var result *types.Broker
+	location, err := client.update(updatedBroker, web.ServiceBrokersURL, id, q, &result)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
-	return result, nil
+	return result, location, nil
 }
 
 func (client *serviceManagerClient) UpdatePlatform(id string, updatedPlatform *types.Platform, q *query.Parameters) (*types.Platform, error) {
 	result := &types.Platform{}
-	err := client.update(updatedPlatform, web.PlatformsURL, id, q, &result)
+	_, err := client.update(updatedPlatform, web.PlatformsURL, id, q, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -360,29 +360,32 @@ func (client *serviceManagerClient) UpdatePlatform(id string, updatedPlatform *t
 
 func (client *serviceManagerClient) UpdateVisibility(id string, updatedVisibility *types.Visibility, q *query.Parameters) (*types.Visibility, error) {
 	result := &types.Visibility{}
-	err := client.update(updatedVisibility, web.VisibilitiesURL, id, q, &result)
+	_, err := client.update(updatedVisibility, web.VisibilitiesURL, id, q, &result)
 	if err != nil {
 		return nil, err
 	}
 	return result, nil
 }
 
-func (client *serviceManagerClient) update(resource interface{}, url string, id string, q *query.Parameters, result interface{}) error {
+func (client *serviceManagerClient) update(resource interface{}, url string, id string, q *query.Parameters, result interface{}) (string, error) {
 	requestBody, err := json.Marshal(resource)
 	if err != nil {
-		return err
+		return "", err
 	}
 	buffer := bytes.NewBuffer(requestBody)
 	resp, err := client.Call(http.MethodPatch, url+"/"+id, buffer, q)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return util.HandleResponseError(resp)
+	switch resp.StatusCode {
+	case http.StatusOK:
+		return "", httputil.UnmarshalResponse(resp, &result)
+	case http.StatusAccepted:
+		return resp.Header.Get("Location"), nil
+	default:
+		return "", util.HandleResponseError(resp)
 	}
-
-	return httputil.UnmarshalResponse(resp, &result)
 }
 
 func (client *serviceManagerClient) Label(url string, id string, change *types.LabelChanges, q *query.Parameters) error {

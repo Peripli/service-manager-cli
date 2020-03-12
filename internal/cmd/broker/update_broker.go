@@ -71,14 +71,17 @@ func (ubc *UpdateBrokerCmd) Run() error {
 		return fmt.Errorf("broker with name %s not found", ubc.name)
 	}
 	toUpdateBroker := toUpdateBrokers.Brokers[0]
-	result, err := ubc.Client.UpdateBroker(toUpdateBroker.ID, ubc.updatedBroker, &ubc.Parameters)
+	result, location, err := ubc.Client.UpdateBroker(toUpdateBroker.ID, ubc.updatedBroker, &ubc.Parameters)
 	if err != nil {
 		return err
 	}
-
+	if len(location) != 0 {
+		output.PrintMessage(ubc.Output, "Service Broker %s successfully scheduled for update. To see status of the operation use:\n", toUpdateBroker.Name)
+		output.PrintMessage(ubc.Output, "smctl poll %s\n", location)
+		return nil
+	}
 	output.PrintServiceManagerObject(ubc.Output, ubc.outputFormat, result)
 	output.Println(ubc.Output)
-
 	return nil
 }
 
@@ -102,6 +105,7 @@ smctl update-broker broker '{"name": "new-name", "description": "new-description
 
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddCommonQueryFlag(result.Flags(), &ubc.Parameters)
+	cmd.AddAsyncFlag(result.Flags(), false)
 
 	return result
 }

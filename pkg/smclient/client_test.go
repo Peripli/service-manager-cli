@@ -58,17 +58,17 @@ var _ = Describe("Service Manager Client test", func() {
 	}
 
 	broker := &types.Broker{
-		ID: "broker-id",
+		ID:          "broker-id",
 		Name:        "test-broker",
 		URL:         "http://test-url.com",
 		Credentials: &types.Credentials{Basic: types.Basic{User: "test user", Password: "test password"}},
 	}
 
 	operation := &types.Operation{
-		ID:           "operation-id",
-		Type:         "create",
-		State:        "failed",
-		ResourceID:   "broker-id",
+		ID:         "operation-id",
+		Type:       "create",
+		State:      "failed",
+		ResourceID: "broker-id",
 	}
 
 	initialOffering := &types.ServiceOffering{
@@ -408,7 +408,7 @@ var _ = Describe("Service Manager Client test", func() {
 			BeforeEach(func() {
 				locationHeader = "test-location"
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodPost, Path: web.ServiceBrokersURL, ResponseBody: nil, ResponseStatusCode: http.StatusAccepted, Headers: map[string]string{"Location": locationHeader}},
+					{Method: http.MethodPost, Path: web.ServiceBrokersURL,  ResponseStatusCode: http.StatusAccepted, Headers: map[string]string{"Location": locationHeader}},
 				}
 			})
 			It("should receive operation location", func() {
@@ -590,9 +590,9 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return 404", func() {
-				_, err := client.GetBrokerByID(broker.ID,params)
+				_, err := client.GetBrokerByID(broker.ID, params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path + broker.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+broker.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 
@@ -605,7 +605,7 @@ var _ = Describe("Service Manager Client test", func() {
 			It("should handle status code != 200", func() {
 				_, err := client.GetBrokerByID(broker.ID, params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path + broker.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+broker.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 
@@ -616,9 +616,9 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle status code > 299", func() {
-				_, err := client.GetBrokerByID(broker.ID,params)
+				_, err := client.GetBrokerByID(broker.ID, params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path + broker.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+broker.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 
 			})
 		})
@@ -633,7 +633,7 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return it", func() {
-				result, err := client.Poll(web.ServiceBrokersURL + "/" + broker.ID + "/" + operation.ID, params)
+				result, err := client.Poll(web.ServiceBrokersURL+"/"+broker.ID+"/"+operation.ID, params)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result).To(Equal(operation))
 			})
@@ -646,9 +646,9 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return 404", func() {
-				_, err := client.Poll(web.ServiceBrokersURL + "/" + broker.ID + "/" + operation.ID, params)
+				_, err := client.Poll(web.ServiceBrokersURL+"/"+broker.ID+"/"+operation.ID, params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), web.ServiceBrokersURL + "/" + broker.ID + "/" + operation.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				verifyErrorMsg(err.Error(), web.ServiceBrokersURL+"/"+broker.ID+"/"+operation.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 
@@ -659,9 +659,9 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle status code != 200", func() {
-				_, err := client.Poll(web.ServiceBrokersURL + "/" + broker.ID + "/" + operation.ID, params)
+				_, err := client.Poll(web.ServiceBrokersURL+"/"+broker.ID+"/"+operation.ID, params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), web.ServiceBrokersURL + "/" + broker.ID + "/" + operation.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				verifyErrorMsg(err.Error(), web.ServiceBrokersURL+"/"+broker.ID+"/"+operation.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 
@@ -672,9 +672,9 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle status code > 299", func() {
-				_, err := client.Poll(web.ServiceBrokersURL + "/" + broker.ID + "/" + operation.ID, params)
+				_, err := client.Poll(web.ServiceBrokersURL+"/"+broker.ID+"/"+operation.ID, params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), web.ServiceBrokersURL + "/" + broker.ID + "/" + operation.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				verifyErrorMsg(err.Error(), web.ServiceBrokersURL+"/"+broker.ID+"/"+operation.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 
 			})
 		})
@@ -890,9 +890,9 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should return 404", func() {
-				_, err := client.GetInstanceByID(instance.ID,params)
+				_, err := client.GetInstanceByID(instance.ID, params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path + instance.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+instance.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 
@@ -905,7 +905,7 @@ var _ = Describe("Service Manager Client test", func() {
 			It("should handle status code != 200", func() {
 				_, err := client.GetInstanceByID(instance.ID, params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path + instance.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+instance.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 
@@ -916,9 +916,9 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle status code > 299", func() {
-				_, err := client.GetInstanceByID(instance.ID,params)
+				_, err := client.GetInstanceByID(instance.ID, params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path + instance.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+instance.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 
 			})
 		})
@@ -1141,7 +1141,7 @@ var _ = Describe("Service Manager Client test", func() {
 	})
 
 	Describe("Update brokers", func() {
-		Context("when an existing broker is being updated", func() {
+		Context("when an existing broker is being updated synchronously", func() {
 			BeforeEach(func() {
 				responseBody, _ := json.Marshal(broker)
 
@@ -1149,10 +1149,27 @@ var _ = Describe("Service Manager Client test", func() {
 					{Method: http.MethodPatch, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
-			It("should be successfully removed", func() {
-				updatedBroker, err := client.UpdateBroker("id", broker, params)
+			It("should be successfully updated", func() {
+				updatedBroker,location, err := client.UpdateBroker("id", broker, params)
 				Expect(err).ShouldNot(HaveOccurred())
+				Expect(location).Should(HaveLen(0))
 				Expect(updatedBroker).To(Equal(broker))
+			})
+		})
+
+		Context("when an existing broker is being updated asynchronously", func() {
+			var locationHeader string
+			BeforeEach(func() 	{
+				locationHeader = "test-location"
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodPatch, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusAccepted, Headers: map[string]string{"Location": locationHeader}},
+				}
+			})
+			It("should be successfully updated", func() {
+				updatedBroker,location, err := client.UpdateBroker("id", broker, params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(location).Should(Equal(locationHeader))
+				Expect(updatedBroker).To(BeNil())
 			})
 		})
 
@@ -1165,8 +1182,9 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle error", func() {
-				_, err := client.UpdateBroker("id", broker, params)
+				_,location, err := client.UpdateBroker("id", broker, params)
 				Expect(err).Should(HaveOccurred())
+				Expect(location).Should(HaveLen(0))
 				verifyErrorMsg(err.Error(), handlerDetails[0].Path+"id", handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
@@ -1180,8 +1198,9 @@ var _ = Describe("Service Manager Client test", func() {
 				}
 			})
 			It("should handle error", func() {
-				_, err := client.UpdateBroker("id", broker, params)
+				_,location, err := client.UpdateBroker("id", broker, params)
 				Expect(err).Should(HaveOccurred())
+				Expect(location).Should(HaveLen(0))
 				verifyErrorMsg(err.Error(), handlerDetails[0].Path+"id", handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})

@@ -36,7 +36,7 @@ var _ = Describe("Update broker command test", func() {
 		command = NewUpdateBrokerCmd(context)
 	})
 
-	validUpdateBrokerExecution := func(args ...string) error {
+	validAsyncUpdateBrokerExecution := func(location string, args ...string) error {
 		broker = types.Broker{
 			Name:        "broker1",
 			ID:          "id",
@@ -46,10 +46,14 @@ var _ = Describe("Update broker command test", func() {
 		brokers := &types.Brokers{Brokers: []types.Broker{broker}}
 		client.ListBrokersReturns(brokers, nil)
 		_ = json.Unmarshal([]byte(args[1]), broker)
-		client.UpdateBrokerReturns(&broker, nil)
+		client.UpdateBrokerReturns(&broker, location, nil)
 		ubCmd := command.Prepare(cmd.SmPrepare)
 		ubCmd.SetArgs(args)
 		return ubCmd.Execute()
+	}
+
+	validSyncUpdateBrokerExecution := func(args ...string) error {
+		return validAsyncUpdateBrokerExecution("", args...)
 	}
 
 	invalidUpdateBrokerExecution := func(args ...string) error {
@@ -62,14 +66,19 @@ var _ = Describe("Update broker command test", func() {
 		Context("With necessary arguments provided", func() {
 			It("broker should be updated", func() {
 
-				err := validUpdateBrokerExecution("broker1", `{"description":"newDescription"}`)
+				err := validSyncUpdateBrokerExecution("broker1", `{"description":"newDescription"}`)
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buffer.String()).To(ContainSubstring(broker.TableData().String()))
 			})
 
+			It("should print location when updated asynchronously", func() {
+				Expect(validAsyncUpdateBrokerExecution("location", "broker1", `{"description":"newDescription"}`)).ShouldNot(HaveOccurred())
+				Expect(buffer.String()).To(ContainSubstring(`smctl poll location`))
+			})
+
 			It("argument values should be as expected", func() {
-				err := validUpdateBrokerExecution("broker1", `{"description":"newDescription"}`)
+				err := validSyncUpdateBrokerExecution("broker1", `{"description":"newDescription"}`)
 
 				id, broker, _ := client.UpdateBrokerArgsForCall(0)
 
@@ -81,7 +90,7 @@ var _ = Describe("Update broker command test", func() {
 
 		Context("With json format flag", func() {
 			It("should be printed in json format", func() {
-				err := validUpdateBrokerExecution("broker1", `{"description":"newDescription"}`, "--output", "json")
+				err := validSyncUpdateBrokerExecution("broker1", `{"description":"newDescription"}`, "--output", "json")
 
 				jsonByte, _ := json.MarshalIndent(broker, "", "  ")
 				jsonOutputExpected := string(jsonByte) + "\n"
@@ -93,7 +102,7 @@ var _ = Describe("Update broker command test", func() {
 
 		Context("With yaml format flag", func() {
 			It("should be printed in yaml format", func() {
-				err := validUpdateBrokerExecution("broker1", `{"description":"newDescription"}`, "--output", "yaml")
+				err := validSyncUpdateBrokerExecution("broker1", `{"description":"newDescription"}`, "--output", "yaml")
 
 				yamlByte, _ := yaml.Marshal(broker)
 				yamlOutputExpected := string(yamlByte) + "\n"
@@ -105,7 +114,7 @@ var _ = Describe("Update broker command test", func() {
 
 		Context("With generic parameter flag provided", func() {
 			It("should pass it to SM", func() {
-				err := validUpdateBrokerExecution("broker1", `{"description":"newDescription"}`, "--param", "paramKey=paramValue")
+				err := validSyncUpdateBrokerExecution("broker1", `{"description":"newDescription"}`, "--param", "paramKey=paramValue")
 				Expect(err).ShouldNot(HaveOccurred())
 
 				_, _, args := client.UpdateBrokerArgsForCall(0)
@@ -150,7 +159,7 @@ var _ = Describe("Update broker command test", func() {
 			expectedErr := errors.New("http client error")
 			brokers := &types.Brokers{Brokers: []types.Broker{broker}}
 			client.ListBrokersReturns(brokers, nil)
-			client.UpdateBrokerReturns(nil, expectedErr)
+			client.UpdateBrokerReturns(nil, "", expectedErr)
 
 			err := invalidUpdateBrokerExecution("broker1", `{"description":"newDescription"}`)
 
