@@ -64,7 +64,7 @@ func (sb *ServiceBinding) TableData() *TableData {
 
 	lastState := "-"
 	if sb.LastOperation != nil {
-		lastState = string(sb.LastOperation.State)
+		lastState = formatLastOp(sb.LastOperation)
 	}
 	row := []string{sb.ID, sb.Name, sb.ServiceInstanceID, string(sb.Credentials), sb.CreatedAt, sb.UpdatedAt, strconv.FormatBool(sb.Ready), formatLabels(sb.Labels), lastState}
 	result.Data = append(result.Data, row)
@@ -106,7 +106,7 @@ func (sb *ServiceBindings) TableData() *TableData {
 	for _, binding := range sb.ServiceBindings {
 		lastState := "-"
 		if binding.LastOperation != nil {
-			lastState = string(binding.LastOperation.State)
+			lastState = formatLastOp(binding.LastOperation)
 			addLastOpColumn = true
 		}
 		row := []string{binding.ID, binding.Name, binding.ServiceInstanceID, string(binding.Credentials), binding.CreatedAt, binding.UpdatedAt, strconv.FormatBool(binding.Ready), formatLabels(binding.Labels), lastState}

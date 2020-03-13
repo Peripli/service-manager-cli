@@ -82,6 +82,7 @@ func main() {
 			poll.NewPollCmd(context),
 			instance.NewListInstancesCmd(context),
 			instance.NewGetInstanceCmd(context),
+			instance.NewProvisionCmd(context),
 		},
 		PrepareFn: cmd.SmPrepare,
 	}

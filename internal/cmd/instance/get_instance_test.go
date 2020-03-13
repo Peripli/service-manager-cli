@@ -60,7 +60,7 @@ var _ = Describe("Get instance command test", func() {
 	Context("when more than one instance with same name exists", func() {
 		var response *types.ServiceInstances
 		BeforeEach(func() {
-			response = &types.ServiceInstances{ServiceInstances: []types.ServiceInstance{instance, instance2}}
+			response = &types.ServiceInstances{ServiceInstances: []types.ServiceInstance{instance, instance2}, Vertical: true}
 			client.ListInstancesReturns(response, nil)
 		})
 
@@ -90,7 +90,7 @@ var _ = Describe("Get instance command test", func() {
 			err := executeWithArgs("instance1")
 
 			Expect(err).ShouldNot(HaveOccurred())
-			result := &types.ServiceInstances{ServiceInstances: []types.ServiceInstance{instance}}
+			result := &types.ServiceInstances{ServiceInstances: []types.ServiceInstance{instance}, Vertical: true}
 			Expect(buffer.String()).To(ContainSubstring(result.TableData().String()))
 		})
 	})

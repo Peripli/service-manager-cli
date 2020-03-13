@@ -55,7 +55,7 @@ func (gb *GetInstanceCmd) Run() error {
 		return nil
 	}
 
-	resultInstances := &types.ServiceInstances{}
+	resultInstances := &types.ServiceInstances{Vertical: true}
 	for _, instance := range instances.ServiceInstances {
 		inst, err := gb.Client.GetInstanceByID(instance.ID, &query.Parameters{
 			GeneralParams: []string{
@@ -70,7 +70,6 @@ func (gb *GetInstanceCmd) Run() error {
 
 	output.PrintServiceManagerObject(gb.Output, gb.outputFormat, resultInstances)
 	output.Println(gb.Output)
-
 	return nil
 }
 

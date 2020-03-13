@@ -248,6 +248,22 @@ type FakeClient struct {
 		result1 *types.Operation
 		result2 error
 	}
+	ProvisionStub        func(*types.ServiceInstance, *query.Parameters) (*types.ServiceInstance, string, error)
+	provisionMutex       sync.RWMutex
+	provisionArgsForCall []struct {
+		arg1 *types.ServiceInstance
+		arg2 *query.Parameters
+	}
+	provisionReturns struct {
+		result1 *types.ServiceInstance
+		result2 string
+		result3 error
+	}
+	provisionReturnsOnCall map[int]struct {
+		result1 *types.ServiceInstance
+		result2 string
+		result3 error
+	}
 	RegisterBrokerStub        func(*types.Broker, *query.Parameters) (*types.Broker, string, error)
 	registerBrokerMutex       sync.RWMutex
 	registerBrokerArgsForCall []struct {
@@ -1475,6 +1491,73 @@ func (fake *FakeClient) PollReturnsOnCall(i int, result1 *types.Operation, resul
 	}{result1, result2}
 }
 
+func (fake *FakeClient) Provision(arg1 *types.ServiceInstance, arg2 *query.Parameters) (*types.ServiceInstance, string, error) {
+	fake.provisionMutex.Lock()
+	ret, specificReturn := fake.provisionReturnsOnCall[len(fake.provisionArgsForCall)]
+	fake.provisionArgsForCall = append(fake.provisionArgsForCall, struct {
+		arg1 *types.ServiceInstance
+		arg2 *query.Parameters
+	}{arg1, arg2})
+	fake.recordInvocation("Provision", []interface{}{arg1, arg2})
+	fake.provisionMutex.Unlock()
+	if fake.ProvisionStub != nil {
+		return fake.ProvisionStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2, ret.result3
+	}
+	fakeReturns := fake.provisionReturns
+	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
+}
+
+func (fake *FakeClient) ProvisionCallCount() int {
+	fake.provisionMutex.RLock()
+	defer fake.provisionMutex.RUnlock()
+	return len(fake.provisionArgsForCall)
+}
+
+func (fake *FakeClient) ProvisionCalls(stub func(*types.ServiceInstance, *query.Parameters) (*types.ServiceInstance, string, error)) {
+	fake.provisionMutex.Lock()
+	defer fake.provisionMutex.Unlock()
+	fake.ProvisionStub = stub
+}
+
+func (fake *FakeClient) ProvisionArgsForCall(i int) (*types.ServiceInstance, *query.Parameters) {
+	fake.provisionMutex.RLock()
+	defer fake.provisionMutex.RUnlock()
+	argsForCall := fake.provisionArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeClient) ProvisionReturns(result1 *types.ServiceInstance, result2 string, result3 error) {
+	fake.provisionMutex.Lock()
+	defer fake.provisionMutex.Unlock()
+	fake.ProvisionStub = nil
+	fake.provisionReturns = struct {
+		result1 *types.ServiceInstance
+		result2 string
+		result3 error
+	}{result1, result2, result3}
+}
+
+func (fake *FakeClient) ProvisionReturnsOnCall(i int, result1 *types.ServiceInstance, result2 string, result3 error) {
+	fake.provisionMutex.Lock()
+	defer fake.provisionMutex.Unlock()
+	fake.ProvisionStub = nil
+	if fake.provisionReturnsOnCall == nil {
+		fake.provisionReturnsOnCall = make(map[int]struct {
+			result1 *types.ServiceInstance
+			result2 string
+			result3 error
+		})
+	}
+	fake.provisionReturnsOnCall[i] = struct {
+		result1 *types.ServiceInstance
+		result2 string
+		result3 error
+	}{result1, result2, result3}
+}
+
 func (fake *FakeClient) RegisterBroker(arg1 *types.Broker, arg2 *query.Parameters) (*types.Broker, string, error) {
 	fake.registerBrokerMutex.Lock()
 	ret, specificReturn := fake.registerBrokerReturnsOnCall[len(fake.registerBrokerArgsForCall)]
@@ -1907,6 +1990,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.marketplaceMutex.RUnlock()
 	fake.pollMutex.RLock()
 	defer fake.pollMutex.RUnlock()
+	fake.provisionMutex.RLock()
+	defer fake.provisionMutex.RUnlock()
 	fake.registerBrokerMutex.RLock()
 	defer fake.registerBrokerMutex.RUnlock()
 	fake.registerPlatformMutex.RLock()

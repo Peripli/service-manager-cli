@@ -31,10 +31,11 @@ type ServiceInstance struct {
 	CreatedAt string `json:"created_at,omitempty" yaml:"created_at,omitempty"`
 	UpdatedAt string `json:"updated_at,omitempty" yaml:"updated_at,omitempty"`
 
-	Labels         types.Labels `json:"labels,omitempty" yaml:"labels,omitempty"`
-	PagingSequence int64        `json:"-" yaml:"-"`
-	ServicePlanID  string       `json:"service_plan_id,omitempty" yaml:"service_plan_id,omitempty"`
-	PlatformID     string       `json:"platform_id,omitempty" yaml:"platform_id,omitempty"`
+	Labels types.Labels `json:"labels,omitempty" yaml:"labels,omitempty"`
+
+	ServiceID     string `json:"service_id,omitempty" yaml:"service_id,omitempty"`
+	ServicePlanID string `json:"service_plan_id,omitempty" yaml:"service_plan_id,omitempty"`
+	PlatformID    string `json:"platform_id,omitempty" yaml:"platform_id,omitempty"`
 
 	MaintenanceInfo json.RawMessage `json:"maintenance_info,omitempty" yaml:"-"`
 	Context         json.RawMessage `json:"-" yaml:"-"`
@@ -74,6 +75,7 @@ func (si *ServiceInstance) TableData() *TableData {
 // ServiceInstances wraps an array of service instances
 type ServiceInstances struct {
 	ServiceInstances []ServiceInstance `json:"items" yaml:"items"`
+	Vertical         bool              `json:"-" yaml:"-"`
 }
 
 // Message title of the table
@@ -98,14 +100,14 @@ func (si *ServiceInstances) IsEmpty() bool {
 
 // TableData returns the data to populate a table
 func (si *ServiceInstances) TableData() *TableData {
-	result := &TableData{}
+	result := &TableData{Vertical: si.Vertical}
 	result.Headers = []string{"ID", "Name", "Service Plan ID", "Platform ID", "Created", "Updated", "Ready", "Usable", "Labels"}
 
 	addLastOpColumn := false
 	for _, instance := range si.ServiceInstances {
 		lastState := "-"
 		if instance.LastOperation != nil {
-			lastState = string(instance.LastOperation.State)
+			lastState = formatLastOp(instance.LastOperation)
 			addLastOpColumn = true
 		}
 		row := []string{instance.ID, instance.Name, instance.ServicePlanID, instance.PlatformID, instance.CreatedAt, instance.UpdatedAt, strconv.FormatBool(instance.Ready), strconv.FormatBool(instance.Usable), formatLabels(instance.Labels), lastState}

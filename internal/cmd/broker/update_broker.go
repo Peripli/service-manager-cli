@@ -105,7 +105,7 @@ smctl update-broker broker '{"name": "new-name", "description": "new-description
 
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddCommonQueryFlag(result.Flags(), &ubc.Parameters)
-	cmd.AddAsyncFlag(result.Flags(), false)
+	cmd.AddAsyncFlag(result.Flags())
 
 	return result
 }

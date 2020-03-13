@@ -88,8 +88,18 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 			return err
 		}
 
-		if async, err := c.Flags().GetBool("async"); err == nil {
+		async, errAsyncFlag := c.Flags().GetBool("async")
+		sync, errSyncFlag := c.Flags().GetBool("sync")
+
+		if errAsyncFlag == nil && errSyncFlag == nil {
+			return fmt.Errorf("ambiguas flags provided sync and async")
+		}
+
+		if errAsyncFlag == nil {
 			ctx.Parameters.GeneralParams = append(ctx.Parameters.GeneralParams, fmt.Sprintf("async=%t", async))
+		}
+		if errSyncFlag == nil {
+			ctx.Parameters.GeneralParams = append(ctx.Parameters.GeneralParams, fmt.Sprintf("async=%t", !sync))
 		}
 
 		if ctx.Client == nil {
@@ -205,8 +215,13 @@ func AddCommonQueryFlag(flags *pflag.FlagSet, parameters *query.Parameters) {
 }
 
 // AddAsyncFlag adds the --async flag for SM calls.
-func AddAsyncFlag(flags *pflag.FlagSet, defValue bool) {
-	flags.BoolP("async", "", defValue, fmt.Sprintf("The way calls to SM are performed. Default: %t", defValue))
+func AddAsyncFlag(flags *pflag.FlagSet) {
+	flags.BoolP("async", "", false, "Make calls to SM asynchronously")
+}
+
+// AddSyncFlag adds the --sync flag for SM calls.
+func AddSyncFlag(flags *pflag.FlagSet) {
+	flags.BoolP("sync", "", false, "Make calls to SM synchronously")
 }
 
 //CommonConfirmationPrompt provides common logic for confirmation of an operation

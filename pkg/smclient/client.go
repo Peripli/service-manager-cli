@@ -62,6 +62,7 @@ type Client interface {
 
 	ListInstances(*query.Parameters) (*types.ServiceInstances, error)
 	GetInstanceByID(string, *query.Parameters) (*types.ServiceInstance, error)
+	Provision(*types.ServiceInstance, *query.Parameters) (*types.ServiceInstance, string, error)
 
 	ListBindings(*query.Parameters) (*types.ServiceBindings, error)
 	GetBindingByID(id string, q *query.Parameters) (*types.ServiceBinding, error)
@@ -168,6 +169,16 @@ func (client *serviceManagerClient) RegisterVisibility(visibility *types.Visibil
 		return nil, err
 	}
 	return newVisibility, nil
+}
+
+// Provision provisions a new service instance in service manager
+func (client *serviceManagerClient) Provision(instance *types.ServiceInstance, q *query.Parameters) (*types.ServiceInstance, string, error) {
+	var newInstance *types.ServiceInstance
+	location, err := client.register(instance, web.ServiceInstancesURL, q, &newInstance)
+	if err != nil {
+		return nil, "", err
+	}
+	return newInstance, location, nil
 }
 
 func (client *serviceManagerClient) register(resource interface{}, url string, q *query.Parameters, result interface{}) (string, error) {
