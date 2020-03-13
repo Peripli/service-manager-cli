@@ -83,6 +83,7 @@ func main() {
 			instance.NewListInstancesCmd(context),
 			instance.NewGetInstanceCmd(context),
 			instance.NewProvisionCmd(context),
+			instance.NewDeprovisionCmd(context, os.Stdin),
 		},
 		PrepareFn: cmd.SmPrepare,
 	}

@@ -64,6 +64,20 @@ type FakeClient struct {
 	deleteVisibilitiesReturnsOnCall map[int]struct {
 		result1 error
 	}
+	DeprovisionStub        func(string, *query.Parameters) (string, error)
+	deprovisionMutex       sync.RWMutex
+	deprovisionArgsForCall []struct {
+		arg1 string
+		arg2 *query.Parameters
+	}
+	deprovisionReturns struct {
+		result1 string
+		result2 error
+	}
+	deprovisionReturnsOnCall map[int]struct {
+		result1 string
+		result2 error
+	}
 	GetBindingByIDStub        func(string, *query.Parameters) (*types.ServiceBinding, error)
 	getBindingByIDMutex       sync.RWMutex
 	getBindingByIDArgsForCall []struct {
@@ -610,6 +624,70 @@ func (fake *FakeClient) DeleteVisibilitiesReturnsOnCall(i int, result1 error) {
 	fake.deleteVisibilitiesReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
+}
+
+func (fake *FakeClient) Deprovision(arg1 string, arg2 *query.Parameters) (string, error) {
+	fake.deprovisionMutex.Lock()
+	ret, specificReturn := fake.deprovisionReturnsOnCall[len(fake.deprovisionArgsForCall)]
+	fake.deprovisionArgsForCall = append(fake.deprovisionArgsForCall, struct {
+		arg1 string
+		arg2 *query.Parameters
+	}{arg1, arg2})
+	fake.recordInvocation("Deprovision", []interface{}{arg1, arg2})
+	fake.deprovisionMutex.Unlock()
+	if fake.DeprovisionStub != nil {
+		return fake.DeprovisionStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.deprovisionReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeClient) DeprovisionCallCount() int {
+	fake.deprovisionMutex.RLock()
+	defer fake.deprovisionMutex.RUnlock()
+	return len(fake.deprovisionArgsForCall)
+}
+
+func (fake *FakeClient) DeprovisionCalls(stub func(string, *query.Parameters) (string, error)) {
+	fake.deprovisionMutex.Lock()
+	defer fake.deprovisionMutex.Unlock()
+	fake.DeprovisionStub = stub
+}
+
+func (fake *FakeClient) DeprovisionArgsForCall(i int) (string, *query.Parameters) {
+	fake.deprovisionMutex.RLock()
+	defer fake.deprovisionMutex.RUnlock()
+	argsForCall := fake.deprovisionArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeClient) DeprovisionReturns(result1 string, result2 error) {
+	fake.deprovisionMutex.Lock()
+	defer fake.deprovisionMutex.Unlock()
+	fake.DeprovisionStub = nil
+	fake.deprovisionReturns = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) DeprovisionReturnsOnCall(i int, result1 string, result2 error) {
+	fake.deprovisionMutex.Lock()
+	defer fake.deprovisionMutex.Unlock()
+	fake.DeprovisionStub = nil
+	if fake.deprovisionReturnsOnCall == nil {
+		fake.deprovisionReturnsOnCall = make(map[int]struct {
+			result1 string
+			result2 error
+		})
+	}
+	fake.deprovisionReturnsOnCall[i] = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeClient) GetBindingByID(arg1 string, arg2 *query.Parameters) (*types.ServiceBinding, error) {
@@ -1969,6 +2047,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.deletePlatformsMutex.RUnlock()
 	fake.deleteVisibilitiesMutex.RLock()
 	defer fake.deleteVisibilitiesMutex.RUnlock()
+	fake.deprovisionMutex.RLock()
+	defer fake.deprovisionMutex.RUnlock()
 	fake.getBindingByIDMutex.RLock()
 	defer fake.getBindingByIDMutex.RUnlock()
 	fake.getBrokerByIDMutex.RLock()

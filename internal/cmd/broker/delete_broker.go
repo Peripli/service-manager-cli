@@ -64,12 +64,12 @@ func (dbc *DeleteBrokerCmd) Run() error {
 		return err
 	}
 	if len(toDeleteBrokers.Brokers) < 1 {
-		output.PrintMessage(dbc.Output, "Service Broker(s) not found.\n")
+		output.PrintMessage(dbc.Output, "Service Broker not found.\n")
 		return nil
 	}
 	location, err := dbc.Client.DeleteBroker(toDeleteBrokers.Brokers[0].ID, &dbc.Parameters)
 	if err != nil {
-		output.PrintMessage(dbc.Output, "Could not delete broker(s). Reason: ")
+		output.PrintMessage(dbc.Output, "Could not delete broker. Reason: ")
 		return err
 	}
 	if len(location) != 0 {
@@ -77,7 +77,7 @@ func (dbc *DeleteBrokerCmd) Run() error {
 		output.PrintMessage(dbc.Output, "smctl poll %s\n", location)
 		return nil
 	}
-	output.PrintMessage(dbc.Output, "Service Broker(s) successfully deleted.\n")
+	output.PrintMessage(dbc.Output, "Service Broker successfully deleted.\n")
 	return nil
 }
 
@@ -105,8 +105,8 @@ func (dbc *DeleteBrokerCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
 		Use:     "delete-broker [name]",
 		Aliases: []string{"db"},
-		Short:   "Deletes brokers",
-		Long:    `Delete one or more brokers with name.`,
+		Short:   "Deletes broker",
+		Long:    `Deletes broker by name.`,
 		PreRunE: prepare(dbc, dbc.Context),
 		RunE:    cmd.RunE(dbc),
 	}

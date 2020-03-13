@@ -1344,6 +1344,69 @@ var _ = Describe("Service Manager Client test", func() {
 		})
 	})
 
+	Describe("Deprovision", func() {
+		Context("when an existing instance is being deleted synchronously", func() {
+			BeforeEach(func() {
+				responseBody := []byte("{}")
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodDelete, Path: web.ServiceInstancesURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+				}
+			})
+			It("should be successfully removed", func() {
+				location, err := client.Deprovision(instance.ID, params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(location).Should(BeEmpty())
+			})
+		})
+
+		Context("when an existing instance is being deleted asynchronously", func() {
+			var locationHeader string
+			BeforeEach(func() {
+				locationHeader = "location"
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodDelete, Path: web.ServiceInstancesURL + "/", ResponseStatusCode: http.StatusAccepted, Headers: map[string]string{"Location": locationHeader}},
+				}
+			})
+			It("should be successfully removed", func() {
+				location, err := client.Deprovision(instance.ID, params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(location).Should(Equal(locationHeader))
+			})
+		})
+
+		Context("when service manager returns a non-expected status code", func() {
+			BeforeEach(func() {
+				responseBody := []byte("{}")
+
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodDelete, Path: web.ServiceInstancesURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
+				}
+			})
+			It("should handle error", func() {
+				location, err := client.Deprovision(instance.ID, params)
+				Expect(err).Should(HaveOccurred())
+				Expect(location).Should(BeEmpty())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+instance.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+
+		Context("when service manager returns a status code not found", func() {
+			BeforeEach(func() {
+				responseBody := []byte(`{ "description": "Broker not found" }`)
+
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodDelete, Path: web.ServiceInstancesURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
+				}
+			})
+			It("should handle error", func() {
+				location, err := client.Deprovision(instance.ID, params)
+				Expect(err).Should(HaveOccurred())
+				Expect(location).Should(BeEmpty())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+instance.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+	})
+
 	Describe("Update brokers", func() {
 		Context("when an existing broker is being updated synchronously", func() {
 			BeforeEach(func() {

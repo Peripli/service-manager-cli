@@ -1,4 +1,4 @@
-package broker
+package instance
 
 import (
 	"io/ioutil"
@@ -17,31 +17,31 @@ import (
 	"github.com/Peripli/service-manager-cli/pkg/types"
 )
 
-func TestDeleteBrokerCmd(t *testing.T) {
+func TestDeprovisionCmd(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "")
 }
 
-var _ = Describe("Delete brokers command test", func() {
+var _ = Describe("Deprovision command test", func() {
 	var client *smclientfakes.FakeClient
-	var command *DeleteBrokerCmd
+	var command *DeprovisionCmd
 	var buffer *bytes.Buffer
 	var promptBuffer *bytes.Buffer
-	var brokers *types.Brokers
+	var instances *types.ServiceInstances
 
 	BeforeEach(func() {
 		buffer = &bytes.Buffer{}
 		promptBuffer = &bytes.Buffer{}
 		client = &smclientfakes.FakeClient{}
 		context := &cmd.Context{Output: buffer, Client: client}
-		command = NewDeleteBrokerCmd(context, promptBuffer)
+		command = NewDeprovisionCmd(context, promptBuffer)
 
-		brokers = &types.Brokers{}
-		brokers.Brokers = []types.Broker{{ID: "1234", Name: "broker-name"}, {ID: "456", Name: "broker2"}}
+		instances = &types.ServiceInstances{}
+		instances.ServiceInstances = []types.ServiceInstance{{ID: "1234", Name: "instance-name"}}
 	})
 
 	JustBeforeEach(func() {
-		client.ListBrokersReturns(brokers, nil)
+		client.ListInstancesReturns(instances, nil)
 	})
 
 	executeWithArgs := func(args ...string) error {
@@ -51,30 +51,30 @@ var _ = Describe("Delete brokers command test", func() {
 		return commandToRun.Execute()
 	}
 
-	Context("when existing broker is being deleted forcefully", func() {
+	Context("when existing instance is being deleted forcefully", func() {
 		It("should list success message", func() {
-			client.DeleteBrokerReturns("", nil)
-			err := executeWithArgs("broker-name", "-f")
+			client.DeprovisionReturns("", nil)
+			err := executeWithArgs("instance-name", "-f")
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buffer.String()).To(ContainSubstring("Service Broker successfully deleted."))
+			Expect(buffer.String()).To(ContainSubstring("Service Instance successfully deleted."))
 		})
 	})
 
-	Context("when existing broker is being deleted", func() {
+	Context("when existing instance is being deleted", func() {
 		It("should list success message when confirmed", func() {
-			client.DeleteBrokerReturns("", nil)
+			client.DeprovisionReturns("", nil)
 			promptBuffer.WriteString("y")
-			err := executeWithArgs("broker-name")
+			err := executeWithArgs("instance-name")
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buffer.String()).To(ContainSubstring("Service Broker successfully deleted."))
+			Expect(buffer.String()).To(ContainSubstring("Service Instance successfully deleted."))
 		})
 
 		It("should print delete declined when declined", func() {
-			client.DeleteBrokerReturns("", nil)
+			client.DeprovisionReturns("", nil)
 			promptBuffer.WriteString("n")
-			err := executeWithArgs("broker-name")
+			err := executeWithArgs("instance-name")
 
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring("Delete declined"))
@@ -83,45 +83,57 @@ var _ = Describe("Delete brokers command test", func() {
 
 	Context("when generic parameter flag is used", func() {
 		It("should pass it to SM", func() {
-			client.DeleteBrokerReturns("", nil)
+			client.DeprovisionReturns("", nil)
 			promptBuffer.WriteString("y")
 			param := "parameterKey=parameterValue"
-			err := executeWithArgs("broker-name", "--param", param)
+			err := executeWithArgs("instance-name", "--param", param)
 			Expect(err).ShouldNot(HaveOccurred())
 
-			_, args := client.DeleteBrokerArgsForCall(0)
+			_, args := client.DeprovisionArgsForCall(0)
 
-			Expect(args.GeneralParams).To(ConsistOf(param, "async=false"))
+			Expect(args.GeneralParams).To(ConsistOf(param, "async=true"))
 			Expect(args.FieldQuery).To(BeEmpty())
 			Expect(args.LabelQuery).To(BeEmpty())
 		})
 	})
 
-	Context("With async flag", func() {
+	Context("With sync flag", func() {
 		It("should pass it to SM", func() {
-			client.DeleteBrokerReturns("", nil)
+			client.DeprovisionReturns("", nil)
 			promptBuffer.WriteString("y")
 
-			err := executeWithArgs("broker-name", "--async")
+			err := executeWithArgs("instance-name", "--sync")
 			Expect(err).ShouldNot(HaveOccurred())
 
-			_, args := client.DeleteBrokerArgsForCall(0)
+			_, args := client.DeprovisionArgsForCall(0)
 
-			Expect(args.GeneralParams).To(ConsistOf("async=true"))
+			Expect(args.GeneralParams).To(ConsistOf("async=false"))
 			Expect(args.FieldQuery).To(BeEmpty())
 			Expect(args.LabelQuery).To(BeEmpty())
 		})
 	})
 
-	Context("when non-existing brokers are being deleted", func() {
+	Context("when non-existing instances are being deleted", func() {
 		BeforeEach(func() {
-			brokers = &types.Brokers{}
+			instances = &types.ServiceInstances{}
 		})
 		It("should return message", func() {
 			err := executeWithArgs("non-existing-name", "-f")
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buffer.String()).To(ContainSubstring("Service Broker not found"))
+			Expect(buffer.String()).To(ContainSubstring("Service Instance not found"))
+		})
+	})
+
+	Context("when more than one instance with given name found", func() {
+		BeforeEach(func() {
+			instances.ServiceInstances = append(instances.ServiceInstances, types.ServiceInstance{ID: "456", Name: "instance-name"})
+		})
+		It("should return message", func() {
+			err := executeWithArgs("instance-name", "-f")
+
+			Expect(err).Should(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("more than one service instance with name"), ContainSubstring("found. Use --id flag to specify id of the instance to be deleted"))
 		})
 	})
 
@@ -129,18 +141,18 @@ var _ = Describe("Delete brokers command test", func() {
 		It("should return error message", func() {
 			body := ioutil.NopCloser(bytes.NewReader([]byte("")))
 			expectedError := util.HandleResponseError(&http.Response{Body: body, StatusCode: http.StatusInternalServerError})
-			client.DeleteBrokerReturns("", expectedError)
+			client.DeprovisionReturns("", expectedError)
 			err := executeWithArgs("name", "-f")
 
 			Expect(err).Should(HaveOccurred())
-			Expect(buffer.String()).To(ContainSubstring("Could not delete broker. Reason:"))
+			Expect(buffer.String()).To(ContainSubstring("Could not delete service instance. Reason:"))
 
 		})
 	})
 
 	Context("when no arguments are provided", func() {
 		It("should print required arguments", func() {
-			client.DeleteBrokerReturns("", nil)
+			client.DeprovisionReturns("", nil)
 			err := executeWithArgs()
 
 			Expect(err).Should(HaveOccurred())

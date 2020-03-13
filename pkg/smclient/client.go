@@ -63,6 +63,7 @@ type Client interface {
 	ListInstances(*query.Parameters) (*types.ServiceInstances, error)
 	GetInstanceByID(string, *query.Parameters) (*types.ServiceInstance, error)
 	Provision(*types.ServiceInstance, *query.Parameters) (*types.ServiceInstance, string, error)
+	Deprovision(string, *query.Parameters) (string, error)
 
 	ListBindings(*query.Parameters) (*types.ServiceBindings, error)
 	GetBindingByID(id string, q *query.Parameters) (*types.ServiceBinding, error)
@@ -359,6 +360,10 @@ func (client *serviceManagerClient) DeletePlatforms(q *query.Parameters) error {
 func (client *serviceManagerClient) DeleteVisibilities(q *query.Parameters) error {
 	_, err := client.delete(web.VisibilitiesURL, q)
 	return err
+}
+
+func (client *serviceManagerClient) Deprovision(id string, q *query.Parameters) (string, error) {
+	return client.delete(web.ServiceInstancesURL+"/"+id, q)
 }
 
 func (client *serviceManagerClient) delete(url string, q *query.Parameters) (string, error) {
