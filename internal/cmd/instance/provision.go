@@ -17,6 +17,7 @@
 package instance
 
 import (
+	"encoding/json"
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/pkg/query"
@@ -33,9 +34,10 @@ type ProvisionCmd struct {
 	instance     types.ServiceInstance
 	offeringName string
 	planName     string
+	brokerName     string
+	parametersJSON string
 
-	brokerName   string
-	outputFormat output.Format
+	outputFormat   output.Format
 }
 
 // NewProvisionCmd returns new provision command with context
@@ -54,7 +56,8 @@ func (pi *ProvisionCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		RunE:    cmd.RunE(pi),
 	}
 
-	result.Flags().StringVarP(&pi.brokerName, "broker-name", "b", "", "Name of the broker which provides the service offering.")
+	result.Flags().StringVarP(&pi.brokerName, "broker-name", "b", "", "Name of the broker which provides the service offering. Required when offering name is ambiguous")
+	result.Flags().StringVarP(&pi.parametersJSON, "parameters", "c", "", "Valid JSON object containing instance parameters")
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddCommonQueryFlag(result.Flags(), &pi.Parameters)
 	cmd.AddSyncFlag(result.Flags())
@@ -129,6 +132,7 @@ func (pi *ProvisionCmd) Run() error {
 	}
 
 	pi.instance.ServicePlanID = plans.ServicePlans[0].ID
+	pi.instance.Parameters = json.RawMessage(pi.parametersJSON)
 
 	resultInstance, location, err := pi.Client.Provision(&pi.instance, &pi.Parameters)
 	if err != nil {
