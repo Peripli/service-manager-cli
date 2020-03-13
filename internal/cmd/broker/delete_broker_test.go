@@ -27,6 +27,7 @@ var _ = Describe("Delete brokers command test", func() {
 	var command *DeleteBrokerCmd
 	var buffer *bytes.Buffer
 	var promptBuffer *bytes.Buffer
+	var brokers *types.Brokers
 
 	BeforeEach(func() {
 		buffer = &bytes.Buffer{}
@@ -35,11 +36,15 @@ var _ = Describe("Delete brokers command test", func() {
 		context := &cmd.Context{Output: buffer, Client: client}
 		command = NewDeleteBrokerCmd(context, promptBuffer)
 
-		brokers := &types.Brokers{}
+		brokers = &types.Brokers{}
 		brokers.Brokers = []types.Broker{{ID: "1234", Name: "broker-name"}, {ID: "456", Name: "broker2"}}
 	})
 
-	executeWithArgs := func(args []string) error {
+	JustBeforeEach(func() {
+		client.ListBrokersReturns(brokers, nil)
+	})
+
+	executeWithArgs := func(args ...string) error {
 		commandToRun := command.Prepare(cmd.SmPrepare)
 		commandToRun.SetArgs(args)
 
@@ -48,8 +53,8 @@ var _ = Describe("Delete brokers command test", func() {
 
 	Context("when existing broker is being deleted forcefully", func() {
 		It("should list success message", func() {
-			client.DeleteBrokersReturns(nil)
-			err := executeWithArgs([]string{"broker-name", "-f"})
+			client.DeleteBrokerReturns("", nil)
+			err := executeWithArgs("broker-name", "-f")
 
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring("Service Broker(s) successfully deleted."))
@@ -58,18 +63,18 @@ var _ = Describe("Delete brokers command test", func() {
 
 	Context("when existing broker is being deleted", func() {
 		It("should list success message when confirmed", func() {
-			client.DeleteBrokersReturns(nil)
+			client.DeleteBrokerReturns("", nil)
 			promptBuffer.WriteString("y")
-			err := executeWithArgs([]string{"broker-name"})
+			err := executeWithArgs("broker-name")
 
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring("Service Broker(s) successfully deleted."))
 		})
 
 		It("should print delete declined when declined", func() {
-			client.DeleteBrokersReturns(nil)
+			client.DeleteBrokerReturns("", nil)
 			promptBuffer.WriteString("n")
-			err := executeWithArgs([]string{"broker-name"})
+			err := executeWithArgs("broker-name")
 
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring("Delete declined"))
@@ -78,26 +83,45 @@ var _ = Describe("Delete brokers command test", func() {
 
 	Context("when generic parameter flag is used", func() {
 		It("should pass it to SM", func() {
-			client.DeleteBrokersReturns(nil)
+			client.DeleteBrokerReturns("", nil)
 			promptBuffer.WriteString("y")
 			param := "parameterKey=parameterValue"
-			err := executeWithArgs([]string{"broker-name", "--param", param})
+			err := executeWithArgs("broker-name", "--param", param)
 			Expect(err).ShouldNot(HaveOccurred())
 
-			args := client.DeleteBrokersArgsForCall(0)
+			_, args := client.DeleteBrokerArgsForCall(0)
 
-			Expect(args.GeneralParams).To(ConsistOf(param))
-			Expect(args.FieldQuery).To(ConsistOf("name eq 'broker-name'"))
+			Expect(args.GeneralParams).To(ConsistOf(param, "async=false"))
+			Expect(args.FieldQuery).To(BeEmpty())
+			Expect(args.LabelQuery).To(BeEmpty())
+		})
+	})
+
+	Context("With async flag", func() {
+		It("should pass it to SM", func() {
+			client.DeleteBrokerReturns("", nil)
+			promptBuffer.WriteString("y")
+
+			err := executeWithArgs("broker-name", "--async")
+			Expect(err).ShouldNot(HaveOccurred())
+
+			_, args := client.DeleteBrokerArgsForCall(0)
+
+			Expect(args.GeneralParams).To(ConsistOf("async=true"))
+			Expect(args.FieldQuery).To(BeEmpty())
 			Expect(args.LabelQuery).To(BeEmpty())
 		})
 	})
 
 	Context("when non-existing brokers are being deleted", func() {
+		BeforeEach(func() {
+			brokers = &types.Brokers{}
+		})
 		It("should return message", func() {
 			body := ioutil.NopCloser(bytes.NewReader([]byte("")))
 			expectedError := util.HandleResponseError(&http.Response{Body: body, StatusCode: http.StatusNotFound})
-			client.DeleteBrokersReturns(expectedError)
-			err := executeWithArgs([]string{"non-existing-name", "-f"})
+			client.DeleteBrokerReturns("", expectedError)
+			err := executeWithArgs("non-existing-name", "-f")
 
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring("Service Broker(s) not found"))
@@ -108,8 +132,8 @@ var _ = Describe("Delete brokers command test", func() {
 		It("should return error message", func() {
 			body := ioutil.NopCloser(bytes.NewReader([]byte("")))
 			expectedError := util.HandleResponseError(&http.Response{Body: body, StatusCode: http.StatusInternalServerError})
-			client.DeleteBrokersReturns(expectedError)
-			err := executeWithArgs([]string{"name", "-f"})
+			client.DeleteBrokerReturns("", expectedError)
+			err := executeWithArgs("name", "-f")
 
 			Expect(err).Should(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring("Could not delete broker(s). Reason:"))
@@ -119,8 +143,8 @@ var _ = Describe("Delete brokers command test", func() {
 
 	Context("when no arguments are provided", func() {
 		It("should print required arguments", func() {
-			client.DeleteBrokersReturns(nil)
-			err := executeWithArgs([]string{})
+			client.DeleteBrokerReturns("", nil)
+			err := executeWithArgs()
 
 			Expect(err).Should(HaveOccurred())
 			Expect(err).To(MatchError("single [name] is required"))

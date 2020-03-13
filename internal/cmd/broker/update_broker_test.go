@@ -120,19 +120,20 @@ var _ = Describe("Update broker command test", func() {
 				_, _, args := client.UpdateBrokerArgsForCall(0)
 
 				Expect(args.GeneralParams).To(ConsistOf("paramKey=paramValue", "async=false"))
-				Expect(args.FieldQuery).To(ConsistOf("name eq 'broker1'"))
+				Expect(args.FieldQuery).To(BeEmpty())
 				Expect(args.LabelQuery).To(BeEmpty())
 			})
 		})
 
 		Context("With async flag", func() {
 			It("should pass it to SM", func() {
-				validSyncUpdateBrokerExecution("broker1", `{"description":"newDescription"}`, "--async")
+				err := validSyncUpdateBrokerExecution("broker1", `{"description":"newDescription"}`, "--async")
+				Expect(err).ShouldNot(HaveOccurred())
 
 				_, _, args := client.UpdateBrokerArgsForCall(0)
 
 				Expect(args.GeneralParams).To(ConsistOf("async=true"))
-				Expect(args.FieldQuery).To(ConsistOf("name eq 'broker1'"))
+				Expect(args.FieldQuery).To(BeEmpty())
 				Expect(args.LabelQuery).To(BeEmpty())
 			})
 		})

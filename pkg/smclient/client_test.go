@@ -1182,19 +1182,34 @@ var _ = Describe("Service Manager Client test", func() {
 
 	})
 
-	Describe("Delete brokers", func() {
-		Context("when an existing broker is being deleted", func() {
+	Describe("Delete broker", func() {
+		Context("when an existing broker is being deleted synchronously", func() {
 			BeforeEach(func() {
 				responseBody := []byte("{}")
 
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.ServiceBrokersURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+					{Method: http.MethodDelete, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
 			It("should be successfully removed", func() {
-				params.FieldQuery = append(params.FieldQuery, "id eq 'id'")
-				err := client.DeleteBrokers(params)
+				location, err := client.DeleteBroker(broker.ID, params)
 				Expect(err).ShouldNot(HaveOccurred())
+				Expect(location).Should(BeEmpty())
+			})
+		})
+
+		Context("when an existing broker is being deleted asynchronously", func() {
+			var locationHeader string
+			BeforeEach(func() {
+				locationHeader = "location"
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodDelete, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusAccepted, Headers: map[string]string{"Location": locationHeader}},
+				}
+			})
+			It("should be successfully removed", func() {
+				location, err := client.DeleteBroker(broker.ID, params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(location).Should(Equal(locationHeader))
 			})
 		})
 
@@ -1203,14 +1218,14 @@ var _ = Describe("Service Manager Client test", func() {
 				responseBody := []byte("{}")
 
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.ServiceBrokersURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
+					{Method: http.MethodDelete, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
 				}
 			})
 			It("should handle error", func() {
-				params.FieldQuery = append(params.FieldQuery, "id eq 'id'")
-				err := client.DeleteBrokers(params)
+				location, err := client.DeleteBroker(broker.ID, params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				Expect(location).Should(BeEmpty())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+broker.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 
@@ -1219,14 +1234,14 @@ var _ = Describe("Service Manager Client test", func() {
 				responseBody := []byte(`{ "description": "Broker not found" }`)
 
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.ServiceBrokersURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
+					{Method: http.MethodDelete, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
 				}
 			})
 			It("should handle error", func() {
-				params.FieldQuery = append(params.FieldQuery, "id eq 'id'")
-				err := client.DeleteBrokers(params)
+				location, err := client.DeleteBroker(broker.ID, params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				Expect(location).Should(BeEmpty())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+broker.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 	})

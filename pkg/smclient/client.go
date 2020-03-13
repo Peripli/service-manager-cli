@@ -50,7 +50,7 @@ type Client interface {
 	GetBrokerByID(string, *query.Parameters) (*types.Broker, error)
 	ListBrokers(*query.Parameters) (*types.Brokers, error)
 	UpdateBroker(string, *types.Broker, *query.Parameters) (*types.Broker, string, error)
-	DeleteBrokers(*query.Parameters) error
+	DeleteBroker(string, *query.Parameters) (string, error)
 
 	RegisterVisibility(*types.Visibility, *query.Parameters) (*types.Visibility, error)
 	ListVisibilities(*query.Parameters) (*types.Visibilities, error)
@@ -347,29 +347,33 @@ func (client *serviceManagerClient) get(result interface{}, url string, q *query
 	return httputil.UnmarshalResponse(resp, &result)
 }
 
-func (client *serviceManagerClient) DeleteBrokers(q *query.Parameters) error {
-	return client.delete(web.ServiceBrokersURL, q)
+func (client *serviceManagerClient) DeleteBroker(id string, q *query.Parameters) (string, error) {
+	return client.delete(web.ServiceBrokersURL+"/"+id, q)
 }
 
 func (client *serviceManagerClient) DeletePlatforms(q *query.Parameters) error {
-	return client.delete(web.PlatformsURL, q)
+	_, err := client.delete(web.PlatformsURL, q)
+	return err
 }
 
 func (client *serviceManagerClient) DeleteVisibilities(q *query.Parameters) error {
-	return client.delete(web.VisibilitiesURL, q)
+	_, err := client.delete(web.VisibilitiesURL, q)
+	return err
 }
 
-func (client *serviceManagerClient) delete(url string, q *query.Parameters) error {
+func (client *serviceManagerClient) delete(url string, q *query.Parameters) (string, error) {
 	resp, err := client.Call(http.MethodDelete, url, nil, q)
 	if err != nil {
-		return err
+		return "", err
 	}
-
-	if resp.StatusCode != http.StatusOK {
-		return util.HandleResponseError(resp)
+	switch resp.StatusCode {
+	case http.StatusOK:
+		return "", nil
+	case http.StatusAccepted:
+		return resp.Header.Get("Location"), nil
+	default:
+		return "", util.HandleResponseError(resp)
 	}
-
-	return nil
 }
 
 func (client *serviceManagerClient) UpdateBroker(id string, updatedBroker *types.Broker, q *query.Parameters) (*types.Broker, string, error) {
