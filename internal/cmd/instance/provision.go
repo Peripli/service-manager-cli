@@ -31,13 +31,13 @@ import (
 type ProvisionCmd struct {
 	*cmd.Context
 
-	instance     types.ServiceInstance
-	offeringName string
-	planName     string
+	instance       types.ServiceInstance
+	offeringName   string
+	planName       string
 	brokerName     string
 	parametersJSON string
 
-	outputFormat   output.Format
+	outputFormat output.Format
 }
 
 // NewProvisionCmd returns new provision command with context
