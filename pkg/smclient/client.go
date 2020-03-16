@@ -342,7 +342,7 @@ func (client *serviceManagerClient) Poll(url string, q *query.Parameters) (*type
 }
 
 func (client *serviceManagerClient) list(result interface{}, url string, q *query.Parameters) error {
-	fullURL := httputil.NormalizeURL(client.config.URL) + buildURL(url, q)
+	fullURL := httputil.NormalizeURL(client.config.URL) + BuildURL(url, q)
 	return util.ListAll(context.Background(), client.httpClient.Do, fullURL, result)
 }
 
@@ -463,7 +463,7 @@ func (client *serviceManagerClient) Label(url string, id string, change *types.L
 }
 
 func (client *serviceManagerClient) Call(method string, smpath string, body io.Reader, q *query.Parameters) (*http.Response, error) {
-	fullURL := httputil.NormalizeURL(client.config.URL) + buildURL(smpath, q)
+	fullURL := httputil.NormalizeURL(client.config.URL) + BuildURL(smpath, q)
 
 	req, err := http.NewRequest(method, fullURL, body)
 	if err != nil {
@@ -483,7 +483,7 @@ func (client *serviceManagerClient) Call(method string, smpath string, body io.R
 	return resp, nil
 }
 
-func buildURL(baseURL string, q *query.Parameters) string {
+func BuildURL(baseURL string, q *query.Parameters) string {
 	queryParams := q.Encode()
 	if queryParams == "" {
 		return baseURL
