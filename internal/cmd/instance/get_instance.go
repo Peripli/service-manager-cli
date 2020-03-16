@@ -94,7 +94,7 @@ func (gb *GetInstanceCmd) HideUsage() bool {
 func (gb *GetInstanceCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
 		Use:     "get-instance [name]",
-		Aliases: []string{"gb"},
+		Aliases: []string{"gi"},
 		Short:   "Get single instance",
 		Long:    `Get single instance by its name`,
 		PreRunE: prepare(gb, gb.Context),
