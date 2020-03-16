@@ -128,7 +128,7 @@ func (pi *ProvisionCmd) Run() error {
 		return err
 	}
 	if len(plans.ServicePlans) != 1 {
-		return fmt.Errorf("exactly one service plan with name %s for offering with id %s ecpected", pi.planName, pi.instance.ServiceID)
+		return fmt.Errorf("exactly one service plan with name %s for offering with id %s expected", pi.planName, pi.instance.ServiceID)
 	}
 
 	pi.instance.ServicePlanID = plans.ServicePlans[0].ID
