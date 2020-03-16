@@ -1,11 +1,9 @@
 package platform
 
 import (
+	"github.com/Peripli/service-manager/pkg/util"
 	"io/ioutil"
 	"net/http"
-	"testing"
-
-	"github.com/Peripli/service-manager/pkg/util"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -16,11 +14,6 @@ import (
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 )
-
-func TestDeletePlatformCmd(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "")
-}
 
 var _ = Describe("Delete platforms command test", func() {
 

@@ -3,8 +3,6 @@ package platform
 import (
 	"encoding/json"
 	"errors"
-	"testing"
-
 	"gopkg.in/yaml.v2"
 
 	"bytes"
@@ -16,11 +14,6 @@ import (
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 )
-
-func TestUpdatePlatformCmd(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "")
-}
 
 var _ = Describe("Update platform command test", func() {
 

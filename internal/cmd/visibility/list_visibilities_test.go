@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"testing"
-
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
@@ -13,11 +11,6 @@ import (
 	. "github.com/onsi/gomega"
 	"gopkg.in/yaml.v2"
 )
-
-func TestListVisibilitiesCmd(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "")
-}
 
 var _ = Describe("List visibilities command test", func() {
 

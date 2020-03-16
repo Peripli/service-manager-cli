@@ -3,8 +3,6 @@ package platform
 import (
 	"encoding/json"
 	"errors"
-	"testing"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"gopkg.in/yaml.v2"
@@ -15,11 +13,6 @@ import (
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 )
-
-func TestListPlatformsCmd(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "")
-}
 
 var _ = Describe("List platforms command test", func() {
 

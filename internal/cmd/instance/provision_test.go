@@ -3,13 +3,11 @@ package instance
 import (
 	"encoding/json"
 	"github.com/Peripli/service-manager/pkg/util"
-	"io/ioutil"
-	"net/http"
-	"testing"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"gopkg.in/yaml.v2"
+	"io/ioutil"
+	"net/http"
 
 	"bytes"
 	"errors"
@@ -20,11 +18,6 @@ import (
 
 	"github.com/spf13/cobra"
 )
-
-func TestProvisionCmd(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "")
-}
 
 const OfferingID = "offering_id"
 const PlanID = "plan_id"

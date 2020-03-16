@@ -2,8 +2,6 @@ package platform
 
 import (
 	"encoding/json"
-	"testing"
-
 	"gopkg.in/yaml.v2"
 
 	. "github.com/onsi/ginkgo"
@@ -16,11 +14,6 @@ import (
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 )
-
-func TestRegisterPlatformCmd(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "")
-}
 
 var _ = Describe("Register Platform Command test", func() {
 
