@@ -83,7 +83,7 @@ var _ = Describe("Get binding command test", func() {
 			err := executeWithArgs("binding1")
 
 			Expect(err).ShouldNot(HaveOccurred())
-			result := &types.ServiceBindings{ServiceBindings: []types.ServiceBinding{binding}, Vertical:true}
+			result := &types.ServiceBindings{ServiceBindings: []types.ServiceBinding{binding}, Vertical: true}
 			Expect(buffer.String()).To(ContainSubstring(result.TableData().String()))
 		})
 	})

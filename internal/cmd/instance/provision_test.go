@@ -192,7 +192,7 @@ var _ = Describe("Provision Command test", func() {
 				err := invalidProvisionCommandExecution("validName", "offering-name", "plan-name")
 
 				Expect(err).Should(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("service offering with name"), ContainSubstring("not found"))
+				Expect(err.Error()).To(SatisfyAll(ContainSubstring("service offering with name"), ContainSubstring("not found")))
 			})
 		})
 
@@ -206,7 +206,7 @@ var _ = Describe("Provision Command test", func() {
 					err := invalidProvisionCommandExecution("validName", "offering-name", "plan-name")
 
 					Expect(err).Should(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("more than one service offering with name"), ContainSubstring("found. Use -b flag to specify broker name"))
+					Expect(err.Error()).To(SatisfyAll(ContainSubstring("more than one service offering with name"), ContainSubstring("found. Use -b flag to specify broker name")))
 				})
 			})
 

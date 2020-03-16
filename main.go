@@ -63,6 +63,7 @@ func main() {
 			binding.NewListBindingsCmd(context),
 			binding.NewGetBindingCmd(context),
 			binding.NewBindCmd(context),
+			binding.NewUnbindCmd(context, os.Stdin),
 			broker.NewRegisterBrokerCmd(context),
 			broker.NewGetBrokerCmd(context),
 			broker.NewListBrokersCmd(context),

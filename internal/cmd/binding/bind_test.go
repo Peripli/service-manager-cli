@@ -167,7 +167,7 @@ var _ = Describe("Bind Command test", func() {
 				err := invalidBindCommandExecution("instance-name", "binding-name")
 
 				Expect(err).Should(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("service instance with name"), ContainSubstring("not found"))
+				Expect(err.Error()).To(SatisfyAll(ContainSubstring("service instance with name"), ContainSubstring("not found")))
 			})
 		})
 
@@ -179,7 +179,7 @@ var _ = Describe("Bind Command test", func() {
 				err := invalidBindCommandExecution("instance-name", "binding-name")
 
 				Expect(err).Should(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("more than one service instance with name"), ContainSubstring("found. Use --id flag to specify id of the instance to bind"))
+				Expect(err.Error()).To(SatisfyAll(ContainSubstring("more than one service instance with name"), ContainSubstring("found. Use --id flag to specify id of the instance to bind")))
 			})
 		})
 
