@@ -107,7 +107,7 @@ var _ = Describe("Provision Command test", func() {
 
 		Context("With json output flag", func() {
 			It("should be printed in json output format", func() {
-				validSyncProvisionExecution("validName", "validUrl", "plan-name", "--output", "json")
+				validSyncProvisionExecution("instance-name", "offering-name", "plan-name", "--output", "json")
 
 				jsonByte, _ := json.MarshalIndent(instance, "", "  ")
 				jsonOutputExpected := string(jsonByte) + "\n"
@@ -118,7 +118,7 @@ var _ = Describe("Provision Command test", func() {
 
 		Context("With yaml output flag", func() {
 			It("should be printed in yaml output format", func() {
-				validSyncProvisionExecution("validName", "validUrl", "plan-name", "--output", "yaml")
+				validSyncProvisionExecution("instance-name", "offering-name", "plan-name", "--output", "yaml")
 
 				yamlByte, _ := yaml.Marshal(instance)
 				yamlOutputExpected := string(yamlByte) + "\n"
@@ -129,7 +129,7 @@ var _ = Describe("Provision Command test", func() {
 
 		Context("With generic param flag", func() {
 			It("should pass it to SM", func() {
-				validSyncProvisionExecution("validName", "validType", "validDescription", "plan-name", "--param", "paramKey=paramValue")
+				validSyncProvisionExecution("instance-name", "offering-name", "plan-name", "--param", "paramKey=paramValue")
 
 				_, args := client.ProvisionArgsForCall(0)
 
@@ -141,7 +141,7 @@ var _ = Describe("Provision Command test", func() {
 
 		Context("With sync flag", func() {
 			It("should pass it to SM", func() {
-				validSyncProvisionExecution("validName", "validType", "validDescription", "plan-name")
+				validSyncProvisionExecution("instance-name", "offering-name", "plan-name")
 
 				_, args := client.ProvisionArgsForCall(0)
 

@@ -57,11 +57,7 @@ func (gb *GetInstanceCmd) Run() error {
 
 	resultInstances := &types.ServiceInstances{Vertical: true}
 	for _, instance := range instances.ServiceInstances {
-		inst, err := gb.Client.GetInstanceByID(instance.ID, &query.Parameters{
-			GeneralParams: []string{
-				"last_op=true",
-			},
-		})
+		inst, err := gb.Client.GetInstanceByID(instance.ID, &gb.Parameters)
 		if err != nil {
 			return err
 		}

@@ -60,7 +60,7 @@ var _ = Describe("Get binding command test", func() {
 	Context("when more than one binding with same name exists", func() {
 		var response *types.ServiceBindings
 		BeforeEach(func() {
-			response = &types.ServiceBindings{ServiceBindings: []types.ServiceBinding{binding, binding2}}
+			response = &types.ServiceBindings{ServiceBindings: []types.ServiceBinding{binding, binding2}, Vertical: true}
 			client.ListBindingsReturns(response, nil)
 		})
 
@@ -90,7 +90,7 @@ var _ = Describe("Get binding command test", func() {
 			err := executeWithArgs("binding1")
 
 			Expect(err).ShouldNot(HaveOccurred())
-			result := &types.ServiceBindings{ServiceBindings: []types.ServiceBinding{binding}}
+			result := &types.ServiceBindings{ServiceBindings: []types.ServiceBinding{binding}, Vertical:true}
 			Expect(buffer.String()).To(ContainSubstring(result.TableData().String()))
 		})
 	})

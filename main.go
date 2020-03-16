@@ -62,6 +62,7 @@ func main() {
 			curl.NewCurlCmd(context, fs),
 			binding.NewListBindingsCmd(context),
 			binding.NewGetBindingCmd(context),
+			binding.NewBindCmd(context),
 			broker.NewRegisterBrokerCmd(context),
 			broker.NewGetBrokerCmd(context),
 			broker.NewListBrokersCmd(context),

@@ -483,6 +483,7 @@ func (client *serviceManagerClient) Call(method string, smpath string, body io.R
 	return resp, nil
 }
 
+// BuildURL builds the url with provided query parameters
 func BuildURL(baseURL string, q *query.Parameters) string {
 	queryParams := q.Encode()
 	if queryParams == "" {

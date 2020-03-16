@@ -55,13 +55,9 @@ func (gb *GetBindingCmd) Run() error {
 		return nil
 	}
 
-	resultBindings := &types.ServiceBindings{}
+	resultBindings := &types.ServiceBindings{Vertical: true}
 	for _, binding := range bindings.ServiceBindings {
-		bd, err := gb.Client.GetBindingByID(binding.ID, &query.Parameters{
-			GeneralParams: []string{
-				"last_op=true",
-			},
-		})
+		bd, err := gb.Client.GetBindingByID(binding.ID, &gb.Parameters)
 		if err != nil {
 			return err
 		}

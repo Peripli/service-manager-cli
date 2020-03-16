@@ -75,6 +75,7 @@ func (sb *ServiceBinding) TableData() *TableData {
 // ServiceBindings wraps an array of service bindings
 type ServiceBindings struct {
 	ServiceBindings []ServiceBinding `json:"items" yaml:"items"`
+	Vertical        bool             `json:"-" yaml:"-"`
 }
 
 // Message title of the table
@@ -99,8 +100,8 @@ func (sb *ServiceBindings) IsEmpty() bool {
 
 // TableData returns the data to populate a table
 func (sb *ServiceBindings) TableData() *TableData {
-	result := &TableData{}
-	result.Headers = []string{"ID", "Name", "Service Instance ID", "Credentials", "Created", "Updated", "Ready", "Usable", "Labels"}
+	result := &TableData{Vertical: sb.Vertical}
+	result.Headers = []string{"ID", "Name", "Service Instance ID", "Credentials", "Created", "Updated", "Ready", "Labels"}
 
 	addLastOpColumn := false
 	for _, binding := range sb.ServiceBindings {
