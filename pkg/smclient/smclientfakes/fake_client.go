@@ -12,6 +12,22 @@ import (
 )
 
 type FakeClient struct {
+	BindStub        func(*types.ServiceBinding, *query.Parameters) (*types.ServiceBinding, string, error)
+	bindMutex       sync.RWMutex
+	bindArgsForCall []struct {
+		arg1 *types.ServiceBinding
+		arg2 *query.Parameters
+	}
+	bindReturns struct {
+		result1 *types.ServiceBinding
+		result2 string
+		result3 error
+	}
+	bindReturnsOnCall map[int]struct {
+		result1 *types.ServiceBinding
+		result2 string
+		result3 error
+	}
 	CallStub        func(string, string, io.Reader, *query.Parameters) (*http.Response, error)
 	callMutex       sync.RWMutex
 	callArgsForCall []struct {
@@ -325,6 +341,20 @@ type FakeClient struct {
 		result1 *types.Visibility
 		result2 error
 	}
+	UnbindStub        func(string, *query.Parameters) (string, error)
+	unbindMutex       sync.RWMutex
+	unbindArgsForCall []struct {
+		arg1 string
+		arg2 *query.Parameters
+	}
+	unbindReturns struct {
+		result1 string
+		result2 error
+	}
+	unbindReturnsOnCall map[int]struct {
+		result1 string
+		result2 error
+	}
 	UpdateBrokerStub        func(string, *types.Broker, *query.Parameters) (*types.Broker, string, error)
 	updateBrokerMutex       sync.RWMutex
 	updateBrokerArgsForCall []struct {
@@ -374,6 +404,73 @@ type FakeClient struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeClient) Bind(arg1 *types.ServiceBinding, arg2 *query.Parameters) (*types.ServiceBinding, string, error) {
+	fake.bindMutex.Lock()
+	ret, specificReturn := fake.bindReturnsOnCall[len(fake.bindArgsForCall)]
+	fake.bindArgsForCall = append(fake.bindArgsForCall, struct {
+		arg1 *types.ServiceBinding
+		arg2 *query.Parameters
+	}{arg1, arg2})
+	fake.recordInvocation("Bind", []interface{}{arg1, arg2})
+	fake.bindMutex.Unlock()
+	if fake.BindStub != nil {
+		return fake.BindStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2, ret.result3
+	}
+	fakeReturns := fake.bindReturns
+	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
+}
+
+func (fake *FakeClient) BindCallCount() int {
+	fake.bindMutex.RLock()
+	defer fake.bindMutex.RUnlock()
+	return len(fake.bindArgsForCall)
+}
+
+func (fake *FakeClient) BindCalls(stub func(*types.ServiceBinding, *query.Parameters) (*types.ServiceBinding, string, error)) {
+	fake.bindMutex.Lock()
+	defer fake.bindMutex.Unlock()
+	fake.BindStub = stub
+}
+
+func (fake *FakeClient) BindArgsForCall(i int) (*types.ServiceBinding, *query.Parameters) {
+	fake.bindMutex.RLock()
+	defer fake.bindMutex.RUnlock()
+	argsForCall := fake.bindArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeClient) BindReturns(result1 *types.ServiceBinding, result2 string, result3 error) {
+	fake.bindMutex.Lock()
+	defer fake.bindMutex.Unlock()
+	fake.BindStub = nil
+	fake.bindReturns = struct {
+		result1 *types.ServiceBinding
+		result2 string
+		result3 error
+	}{result1, result2, result3}
+}
+
+func (fake *FakeClient) BindReturnsOnCall(i int, result1 *types.ServiceBinding, result2 string, result3 error) {
+	fake.bindMutex.Lock()
+	defer fake.bindMutex.Unlock()
+	fake.BindStub = nil
+	if fake.bindReturnsOnCall == nil {
+		fake.bindReturnsOnCall = make(map[int]struct {
+			result1 *types.ServiceBinding
+			result2 string
+			result3 error
+		})
+	}
+	fake.bindReturnsOnCall[i] = struct {
+		result1 *types.ServiceBinding
+		result2 string
+		result3 error
+	}{result1, result2, result3}
 }
 
 func (fake *FakeClient) Call(arg1 string, arg2 string, arg3 io.Reader, arg4 *query.Parameters) (*http.Response, error) {
@@ -1838,6 +1935,70 @@ func (fake *FakeClient) RegisterVisibilityReturnsOnCall(i int, result1 *types.Vi
 	}{result1, result2}
 }
 
+func (fake *FakeClient) Unbind(arg1 string, arg2 *query.Parameters) (string, error) {
+	fake.unbindMutex.Lock()
+	ret, specificReturn := fake.unbindReturnsOnCall[len(fake.unbindArgsForCall)]
+	fake.unbindArgsForCall = append(fake.unbindArgsForCall, struct {
+		arg1 string
+		arg2 *query.Parameters
+	}{arg1, arg2})
+	fake.recordInvocation("Unbind", []interface{}{arg1, arg2})
+	fake.unbindMutex.Unlock()
+	if fake.UnbindStub != nil {
+		return fake.UnbindStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.unbindReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeClient) UnbindCallCount() int {
+	fake.unbindMutex.RLock()
+	defer fake.unbindMutex.RUnlock()
+	return len(fake.unbindArgsForCall)
+}
+
+func (fake *FakeClient) UnbindCalls(stub func(string, *query.Parameters) (string, error)) {
+	fake.unbindMutex.Lock()
+	defer fake.unbindMutex.Unlock()
+	fake.UnbindStub = stub
+}
+
+func (fake *FakeClient) UnbindArgsForCall(i int) (string, *query.Parameters) {
+	fake.unbindMutex.RLock()
+	defer fake.unbindMutex.RUnlock()
+	argsForCall := fake.unbindArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeClient) UnbindReturns(result1 string, result2 error) {
+	fake.unbindMutex.Lock()
+	defer fake.unbindMutex.Unlock()
+	fake.UnbindStub = nil
+	fake.unbindReturns = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) UnbindReturnsOnCall(i int, result1 string, result2 error) {
+	fake.unbindMutex.Lock()
+	defer fake.unbindMutex.Unlock()
+	fake.UnbindStub = nil
+	if fake.unbindReturnsOnCall == nil {
+		fake.unbindReturnsOnCall = make(map[int]struct {
+			result1 string
+			result2 error
+		})
+	}
+	fake.unbindReturnsOnCall[i] = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeClient) UpdateBroker(arg1 string, arg2 *types.Broker, arg3 *query.Parameters) (*types.Broker, string, error) {
 	fake.updateBrokerMutex.Lock()
 	ret, specificReturn := fake.updateBrokerReturnsOnCall[len(fake.updateBrokerArgsForCall)]
@@ -2039,6 +2200,8 @@ func (fake *FakeClient) UpdateVisibilityReturnsOnCall(i int, result1 *types.Visi
 func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.bindMutex.RLock()
+	defer fake.bindMutex.RUnlock()
 	fake.callMutex.RLock()
 	defer fake.callMutex.RUnlock()
 	fake.deleteBrokerMutex.RLock()
@@ -2085,6 +2248,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.registerPlatformMutex.RUnlock()
 	fake.registerVisibilityMutex.RLock()
 	defer fake.registerVisibilityMutex.RUnlock()
+	fake.unbindMutex.RLock()
+	defer fake.unbindMutex.RUnlock()
 	fake.updateBrokerMutex.RLock()
 	defer fake.updateBrokerMutex.RUnlock()
 	fake.updatePlatformMutex.RLock()

@@ -21,10 +21,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/Peripli/service-manager/pkg/util"
 	"io"
 	"net/http"
-
-	"github.com/Peripli/service-manager/pkg/util"
 
 	"github.com/Peripli/service-manager/pkg/web"
 
@@ -66,11 +65,13 @@ type Client interface {
 	Deprovision(string, *query.Parameters) (string, error)
 
 	ListBindings(*query.Parameters) (*types.ServiceBindings, error)
-	GetBindingByID(id string, q *query.Parameters) (*types.ServiceBinding, error)
+	GetBindingByID(string, *query.Parameters) (*types.ServiceBinding, error)
+	Bind(*types.ServiceBinding, *query.Parameters) (*types.ServiceBinding, string, error)
+	Unbind(string, *query.Parameters) (string, error)
 
 	Label(string, string, *types.LabelChanges, *query.Parameters) error
 
-	Poll(url string, q *query.Parameters) (*types.Operation, error)
+	Poll(string, *query.Parameters) (*types.Operation, error)
 
 	Marketplace(*query.Parameters) (*types.Marketplace, error)
 
@@ -180,6 +181,16 @@ func (client *serviceManagerClient) Provision(instance *types.ServiceInstance, q
 		return nil, "", err
 	}
 	return newInstance, location, nil
+}
+
+// Bind creates binding to an instance in service manager
+func (client *serviceManagerClient) Bind(binding *types.ServiceBinding, q *query.Parameters) (*types.ServiceBinding, string, error) {
+	var newBinding *types.ServiceBinding
+	location, err := client.register(binding, web.ServiceBindingsURL, q, &newBinding)
+	if err != nil {
+		return nil, "", err
+	}
+	return newBinding, location, nil
 }
 
 func (client *serviceManagerClient) register(resource interface{}, url string, q *query.Parameters, result interface{}) (string, error) {
@@ -364,6 +375,10 @@ func (client *serviceManagerClient) DeleteVisibilities(q *query.Parameters) erro
 
 func (client *serviceManagerClient) Deprovision(id string, q *query.Parameters) (string, error) {
 	return client.delete(web.ServiceInstancesURL+"/"+id, q)
+}
+
+func (client *serviceManagerClient) Unbind(id string, q *query.Parameters) (string, error) {
+	return client.delete(web.ServiceBindingsURL+"/"+id, q)
 }
 
 func (client *serviceManagerClient) delete(url string, q *query.Parameters) (string, error) {

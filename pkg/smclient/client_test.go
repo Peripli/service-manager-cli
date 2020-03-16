@@ -165,37 +165,64 @@ var _ = Describe("Service Manager Client test", func() {
 		client = NewClient(fakeAuthClient, smServer.URL)
 	})
 
-	Describe("Get Info", func() {
-		BeforeEach(func() {
-			responseBody := []byte(`{"token_issuer_url": "http://uaa.com"}`)
-			handlerDetails = []HandlerDetails{
-				{Method: http.MethodGet, Path: web.InfoURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
-			}
-		})
-
-		Context("with general parameter", func() {
-			It("should make request with these parameters", func() {
-				info, err := client.GetInfo(params)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(info).ToNot(BeNil())
-			})
-		})
-	})
-
-	Describe("Test failing client authentication", func() {
-		Context("When wrong token is used", func() {
+	Describe("List platforms", func() {
+		Context("when there are platforms registered", func() {
 			BeforeEach(func() {
+				platformsArray := []types.Platform{*platform}
+				platforms := types.Platforms{Platforms: platformsArray}
+				responseBody, _ := json.Marshal(platforms)
+
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodGet, Path: web.ServiceBrokersURL},
+					{Method: http.MethodGet, Path: web.PlatformsURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
-			It("should fail to authentication", func() {
-				fakeAuthClient.AccessToken = invalidToken
-				client = NewClient(fakeAuthClient, smServer.URL)
-				_, err := client.ListBrokers(params)
+			It("should return all", func() {
+				result, err := client.ListPlatforms(params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(result.Platforms).To(HaveLen(1))
+				Expect(result.Platforms[0]).To(Equal(*platform))
+			})
+		})
 
+		Context("when there are no platforms registered", func() {
+			BeforeEach(func() {
+				platformsArray := []types.Platform{}
+				platforms := types.Platforms{Platforms: platformsArray}
+				responseBody, _ := json.Marshal(platforms)
+
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.PlatformsURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+				}
+			})
+			It("should return an empty array", func() {
+				result, err := client.ListPlatforms(params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(result.Platforms).To(HaveLen(0))
+			})
+		})
+
+		Context("when invalid status code is returned", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.PlatformsURL, ResponseStatusCode: http.StatusCreated},
+				}
+			})
+			It("should handle status code != 200", func() {
+				_, err := client.ListPlatforms(params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path, []byte{}, http.StatusUnauthorized)
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+		Context("when invalid status code is returned", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.PlatformsURL, ResponseStatusCode: http.StatusBadRequest},
+				}
+			})
+			It("should handle status code > 299", func() {
+				_, err := client.ListPlatforms(params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 	})
@@ -295,99 +322,217 @@ var _ = Describe("Service Manager Client test", func() {
 		})
 	})
 
-	Describe("Register Visibility", func() {
-		Context("When valid visibility is being registered", func() {
+	Describe("Update platforms", func() {
+		Context("when an existing platform is being updated", func() {
 			BeforeEach(func() {
-				responseBody, _ := json.Marshal(visibility)
+				responseBody, _ := json.Marshal(platform)
+
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodPost, Path: web.VisibilitiesURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
+					{Method: http.MethodPatch, Path: web.PlatformsURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
-			It("should register successfully", func() {
-				responseVisibility, err := client.RegisterVisibility(visibility, params)
-
+			It("should be successfully removed", func() {
+				updatedPlatform, err := client.UpdatePlatform("id", platform, params)
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(responseVisibility).To(Equal(visibility))
+				Expect(updatedPlatform).To(Equal(platform))
 			})
 		})
 
-		Context("When invalid visibility is returned by SM", func() {
+		Context("when a non-existing platform is being updated", func() {
 			BeforeEach(func() {
-				responseBody, _ := json.Marshal(struct {
-					ID bool `json:"id"`
-				}{
-					ID: true,
-				})
+				responseBody := []byte(`{"description": "Platform not found"}`)
+
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodPost, Path: web.VisibilitiesURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
+					{Method: http.MethodPatch, Path: web.PlatformsURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
 				}
 			})
-
-			It("should return error", func() {
-				responseVisibility, err := client.RegisterVisibility(visibility, params)
-
+			It("should handle error", func() {
+				_, err := client.UpdatePlatform("id", platform, params)
 				Expect(err).Should(HaveOccurred())
-				Expect(responseVisibility).To(BeNil())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+"id", handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 
-		Context("When invalid status code is returned by SM", func() {
-			Context("And status code is successful", func() {
-				BeforeEach(func() {
-					responseBody, _ := json.Marshal(visibility)
-					handlerDetails = []HandlerDetails{
-						{Method: http.MethodPost, Path: web.VisibilitiesURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
-					}
-				})
-				It("should return error with status code", func() {
-					responseVisibility, err := client.RegisterVisibility(visibility, params)
+		Context("when service manager returns a non-expected status code", func() {
+			BeforeEach(func() {
+				responseBody := []byte("{}")
 
-					Expect(err).Should(HaveOccurred())
-					verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
-					Expect(responseVisibility).To(BeNil())
-				})
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodPatch, Path: web.PlatformsURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
+				}
 			})
-
-			Context("And status code is unsuccessful", func() {
-				BeforeEach(func() {
-					responseBody := []byte(`{ "description": "error"}`)
-					handlerDetails = []HandlerDetails{
-						{Method: http.MethodPost, Path: web.VisibilitiesURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusBadRequest},
-					}
-				})
-				It("should return error with url and description", func() {
-					responseVisibility, err := client.RegisterVisibility(visibility, params)
-
-					Expect(err).Should(HaveOccurred())
-					verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
-					Expect(responseVisibility).To(BeNil())
-				})
+			It("should handle error", func() {
+				_, err := client.UpdatePlatform("id", platform, params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+"id", handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
+		})
+	})
 
-			Context("And response body is invalid", func() {
-				BeforeEach(func() {
-					responseBody := []byte(`{ "description": description", "error": "error"}`)
-					handlerDetails = []HandlerDetails{
-						{Method: http.MethodPost, Path: web.VisibilitiesURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusBadRequest},
-					}
-				})
-				It("should return error without url and description if invalid response body", func() {
-					responseVisibility, err := client.RegisterVisibility(visibility, params)
+	Describe("Delete platforms", func() {
+		Context("when an existing platform is being deleted", func() {
+			BeforeEach(func() {
+				responseBody := []byte("{}")
 
-					Expect(err).Should(HaveOccurred())
-					verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
-					Expect(responseVisibility).To(BeNil())
-				})
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodDelete, Path: web.PlatformsURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+				}
 			})
-
+			It("should be successfully removed", func() {
+				params.FieldQuery = append(params.FieldQuery, "id eq 'id'")
+				err := client.DeletePlatforms(params)
+				Expect(err).ShouldNot(HaveOccurred())
+			})
 		})
 
-		Context("When invalid config is set", func() {
-			It("should return error", func() {
-				client = NewClient(fakeAuthClient, "invalidURL")
-				_, err := client.RegisterVisibility(visibility, params)
+		Context("when service manager returns a non-expected status code", func() {
+			BeforeEach(func() {
+				responseBody := []byte("{}")
 
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodDelete, Path: web.PlatformsURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
+				}
+			})
+			It("should handle error", func() {
+				params.FieldQuery = append(params.FieldQuery, "id eq 'id'")
+				err := client.DeletePlatforms(params)
 				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+
+		Context("when service manager returns a status code not found", func() {
+			BeforeEach(func() {
+				responseBody := []byte(`{ "description": "Platform not found" }`)
+
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodDelete, Path: web.PlatformsURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
+				}
+			})
+			It("should handle error", func() {
+				params.FieldQuery = append(params.FieldQuery, "id eq 'id'")
+				err := client.DeletePlatforms(params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+	})
+
+
+	Describe("List brokers", func() {
+		Context("when there are brokers registered", func() {
+			BeforeEach(func() {
+				brokersArray := []types.Broker{*broker}
+				brokers := types.Brokers{Brokers: brokersArray}
+				responseBody, _ := json.Marshal(brokers)
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+				}
+			})
+			It("should return all", func() {
+				result, err := client.ListBrokers(params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(result.Brokers).To(HaveLen(1))
+				Expect(result.Brokers[0]).To(Equal(*broker))
+			})
+		})
+
+		Context("when there are no brokers registered", func() {
+			BeforeEach(func() {
+				brokersArray := []types.Broker{}
+				brokers := types.Brokers{Brokers: brokersArray}
+				responseBody, _ := json.Marshal(brokers)
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+				}
+			})
+			It("should return an empty array", func() {
+				result, err := client.ListBrokers(params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(result.Brokers).To(HaveLen(0))
+			})
+		})
+
+		Context("when invalid status code is returned", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL, ResponseStatusCode: http.StatusCreated},
+				}
+			})
+			It("should handle status code != 200", func() {
+				_, err := client.ListBrokers(params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+
+		Context("when invalid status code is returned", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL, ResponseStatusCode: http.StatusBadRequest},
+				}
+			})
+			It("should handle status code > 299", func() {
+				_, err := client.ListBrokers(params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+
+			})
+		})
+	})
+
+	Describe("Get broker", func() {
+		Context("when there is broker registered with this id", func() {
+			BeforeEach(func() {
+				responseBody, _ := json.Marshal(broker)
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+				}
+			})
+			It("should return it", func() {
+				result, err := client.GetBrokerByID(broker.ID, params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(result).To(Equal(broker))
+			})
+		})
+
+		Context("when there is no brokers registered", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusNotFound},
+				}
+			})
+			It("should return 404", func() {
+				_, err := client.GetBrokerByID(broker.ID, params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+broker.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+
+		Context("when invalid status code is returned", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusCreated},
+				}
+			})
+			It("should handle status code != 200", func() {
+				_, err := client.GetBrokerByID(broker.ID, params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+broker.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+
+		Context("when invalid status code is returned", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusBadRequest},
+				}
+			})
+			It("should handle status code > 299", func() {
+				_, err := client.GetBrokerByID(broker.ID, params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+broker.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+
 			})
 		})
 	})
@@ -512,241 +657,136 @@ var _ = Describe("Service Manager Client test", func() {
 		})
 	})
 
-	Describe("List brokers", func() {
-		Context("when there are brokers registered", func() {
-			BeforeEach(func() {
-				brokersArray := []types.Broker{*broker}
-				brokers := types.Brokers{Brokers: brokersArray}
-				responseBody, _ := json.Marshal(brokers)
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodGet, Path: web.ServiceBrokersURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
-				}
-			})
-			It("should return all", func() {
-				result, err := client.ListBrokers(params)
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(result.Brokers).To(HaveLen(1))
-				Expect(result.Brokers[0]).To(Equal(*broker))
-			})
-		})
-
-		Context("when there are no brokers registered", func() {
-			BeforeEach(func() {
-				brokersArray := []types.Broker{}
-				brokers := types.Brokers{Brokers: brokersArray}
-				responseBody, _ := json.Marshal(brokers)
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodGet, Path: web.ServiceBrokersURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
-				}
-			})
-			It("should return an empty array", func() {
-				result, err := client.ListBrokers(params)
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(result.Brokers).To(HaveLen(0))
-			})
-		})
-
-		Context("when invalid status code is returned", func() {
-			BeforeEach(func() {
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodGet, Path: web.ServiceBrokersURL, ResponseStatusCode: http.StatusCreated},
-				}
-			})
-			It("should handle status code != 200", func() {
-				_, err := client.ListBrokers(params)
-				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
-			})
-		})
-
-		Context("when invalid status code is returned", func() {
-			BeforeEach(func() {
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodGet, Path: web.ServiceBrokersURL, ResponseStatusCode: http.StatusBadRequest},
-				}
-			})
-			It("should handle status code > 299", func() {
-				_, err := client.ListBrokers(params)
-				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
-
-			})
-		})
-	})
-
-	Describe("Get broker", func() {
-		Context("when there is broker registered with this id", func() {
+	Describe("Update brokers", func() {
+		Context("when an existing broker is being updated synchronously", func() {
 			BeforeEach(func() {
 				responseBody, _ := json.Marshal(broker)
+
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+					{Method: http.MethodPatch, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
-			It("should return it", func() {
-				result, err := client.GetBrokerByID(broker.ID, params)
+			It("should be successfully updated", func() {
+				updatedBroker, location, err := client.UpdateBroker("id", broker, params)
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(result).To(Equal(broker))
+				Expect(location).Should(HaveLen(0))
+				Expect(updatedBroker).To(Equal(broker))
 			})
 		})
 
-		Context("when there is no brokers registered", func() {
+		Context("when an existing broker is being updated asynchronously", func() {
+			var locationHeader string
 			BeforeEach(func() {
+				locationHeader = "test-location"
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusNotFound},
+					{Method: http.MethodPatch, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusAccepted, Headers: map[string]string{"Location": locationHeader}},
 				}
 			})
-			It("should return 404", func() {
-				_, err := client.GetBrokerByID(broker.ID, params)
-				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path+broker.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			It("should be successfully updated", func() {
+				updatedBroker, location, err := client.UpdateBroker("id", broker, params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(location).Should(Equal(locationHeader))
+				Expect(updatedBroker).To(BeNil())
 			})
 		})
 
-		Context("when invalid status code is returned", func() {
+		Context("when a non-existing broker is being updated", func() {
 			BeforeEach(func() {
+				responseBody := []byte(`{"description": "Broker not found"}`)
+
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusCreated},
+					{Method: http.MethodPatch, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
 				}
 			})
-			It("should handle status code != 200", func() {
-				_, err := client.GetBrokerByID(broker.ID, params)
+			It("should handle error", func() {
+				_, location, err := client.UpdateBroker("id", broker, params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path+broker.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				Expect(location).Should(HaveLen(0))
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+"id", handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 
-		Context("when invalid status code is returned", func() {
+		Context("when service manager returns a non-expected status code", func() {
 			BeforeEach(func() {
+				responseBody := []byte("{}")
+
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusBadRequest},
+					{Method: http.MethodPatch, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
 				}
 			})
-			It("should handle status code > 299", func() {
-				_, err := client.GetBrokerByID(broker.ID, params)
+			It("should handle error", func() {
+				_, location, err := client.UpdateBroker("id", broker, params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path+broker.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
-
+				Expect(location).Should(HaveLen(0))
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+"id", handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 	})
 
-	Describe("Poll", func() {
-		Context("when there is operation registered with this id", func() {
+	Describe("Delete broker", func() {
+		Context("when an existing broker is being deleted synchronously", func() {
 			BeforeEach(func() {
-				responseBody, _ := json.Marshal(operation)
+				responseBody := []byte("{}")
+
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+					{Method: http.MethodDelete, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
-			It("should return it", func() {
-				result, err := client.Poll(web.ServiceBrokersURL+"/"+broker.ID+"/"+operation.ID, params)
+			It("should be successfully removed", func() {
+				location, err := client.DeleteBroker(broker.ID, params)
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(result).To(Equal(operation))
+				Expect(location).Should(BeEmpty())
 			})
 		})
 
-		Context("when there is no operation with this id", func() {
+		Context("when an existing broker is being deleted asynchronously", func() {
+			var locationHeader string
 			BeforeEach(func() {
+				locationHeader = "location"
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusNotFound},
+					{Method: http.MethodDelete, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusAccepted, Headers: map[string]string{"Location": locationHeader}},
 				}
 			})
-			It("should return 404", func() {
-				_, err := client.Poll(web.ServiceBrokersURL+"/"+broker.ID+"/"+operation.ID, params)
-				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), web.ServiceBrokersURL+"/"+broker.ID+"/"+operation.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			It("should be successfully removed", func() {
+				location, err := client.DeleteBroker(broker.ID, params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(location).Should(Equal(locationHeader))
 			})
 		})
 
-		Context("when invalid status code is returned", func() {
+		Context("when service manager returns a non-expected status code", func() {
 			BeforeEach(func() {
+				responseBody := []byte("{}")
+
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusCreated},
+					{Method: http.MethodDelete, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
 				}
 			})
-			It("should handle status code != 200", func() {
-				_, err := client.Poll(web.ServiceBrokersURL+"/"+broker.ID+"/"+operation.ID, params)
+			It("should handle error", func() {
+				location, err := client.DeleteBroker(broker.ID, params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), web.ServiceBrokersURL+"/"+broker.ID+"/"+operation.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				Expect(location).Should(BeEmpty())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+broker.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 
-		Context("when invalid status code is returned", func() {
+		Context("when service manager returns a status code not found", func() {
 			BeforeEach(func() {
+				responseBody := []byte(`{ "description": "Broker not found" }`)
+
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusBadRequest},
+					{Method: http.MethodDelete, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
 				}
 			})
-			It("should handle status code > 299", func() {
-				_, err := client.Poll(web.ServiceBrokersURL+"/"+broker.ID+"/"+operation.ID, params)
+			It("should handle error", func() {
+				location, err := client.DeleteBroker(broker.ID, params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), web.ServiceBrokersURL+"/"+broker.ID+"/"+operation.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
-
+				Expect(location).Should(BeEmpty())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+broker.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 	})
 
-	Describe("List platforms", func() {
-		Context("when there are platforms registered", func() {
-			BeforeEach(func() {
-				platformsArray := []types.Platform{*platform}
-				platforms := types.Platforms{Platforms: platformsArray}
-				responseBody, _ := json.Marshal(platforms)
-
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodGet, Path: web.PlatformsURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
-				}
-			})
-			It("should return all", func() {
-				result, err := client.ListPlatforms(params)
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(result.Platforms).To(HaveLen(1))
-				Expect(result.Platforms[0]).To(Equal(*platform))
-			})
-		})
-
-		Context("when there are no platforms registered", func() {
-			BeforeEach(func() {
-				platformsArray := []types.Platform{}
-				platforms := types.Platforms{Platforms: platformsArray}
-				responseBody, _ := json.Marshal(platforms)
-
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodGet, Path: web.PlatformsURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
-				}
-			})
-			It("should return an empty array", func() {
-				result, err := client.ListPlatforms(params)
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(result.Platforms).To(HaveLen(0))
-			})
-		})
-
-		Context("when invalid status code is returned", func() {
-			BeforeEach(func() {
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodGet, Path: web.PlatformsURL, ResponseStatusCode: http.StatusCreated},
-				}
-			})
-			It("should handle status code != 200", func() {
-				_, err := client.ListPlatforms(params)
-				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
-			})
-		})
-		Context("when invalid status code is returned", func() {
-			BeforeEach(func() {
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodGet, Path: web.PlatformsURL, ResponseStatusCode: http.StatusBadRequest},
-				}
-			})
-			It("should handle status code > 299", func() {
-				_, err := client.ListPlatforms(params)
-				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
-			})
-		})
-	})
 
 	Describe("List Visibilities", func() {
 		Context("when there are visibilities registered", func() {
@@ -810,6 +850,201 @@ var _ = Describe("Service Manager Client test", func() {
 			})
 		})
 	})
+
+	Describe("Register Visibility", func() {
+		Context("When valid visibility is being registered", func() {
+			BeforeEach(func() {
+				responseBody, _ := json.Marshal(visibility)
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodPost, Path: web.VisibilitiesURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
+				}
+			})
+			It("should register successfully", func() {
+				responseVisibility, err := client.RegisterVisibility(visibility, params)
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(responseVisibility).To(Equal(visibility))
+			})
+		})
+
+		Context("When invalid visibility is returned by SM", func() {
+			BeforeEach(func() {
+				responseBody, _ := json.Marshal(struct {
+					ID bool `json:"id"`
+				}{
+					ID: true,
+				})
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodPost, Path: web.VisibilitiesURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
+				}
+			})
+
+			It("should return error", func() {
+				responseVisibility, err := client.RegisterVisibility(visibility, params)
+
+				Expect(err).Should(HaveOccurred())
+				Expect(responseVisibility).To(BeNil())
+			})
+		})
+
+		Context("When invalid status code is returned by SM", func() {
+			Context("And status code is successful", func() {
+				BeforeEach(func() {
+					responseBody, _ := json.Marshal(visibility)
+					handlerDetails = []HandlerDetails{
+						{Method: http.MethodPost, Path: web.VisibilitiesURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+					}
+				})
+				It("should return error with status code", func() {
+					responseVisibility, err := client.RegisterVisibility(visibility, params)
+
+					Expect(err).Should(HaveOccurred())
+					verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+					Expect(responseVisibility).To(BeNil())
+				})
+			})
+
+			Context("And status code is unsuccessful", func() {
+				BeforeEach(func() {
+					responseBody := []byte(`{ "description": "error"}`)
+					handlerDetails = []HandlerDetails{
+						{Method: http.MethodPost, Path: web.VisibilitiesURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusBadRequest},
+					}
+				})
+				It("should return error with url and description", func() {
+					responseVisibility, err := client.RegisterVisibility(visibility, params)
+
+					Expect(err).Should(HaveOccurred())
+					verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+					Expect(responseVisibility).To(BeNil())
+				})
+			})
+
+			Context("And response body is invalid", func() {
+				BeforeEach(func() {
+					responseBody := []byte(`{ "description": description", "error": "error"}`)
+					handlerDetails = []HandlerDetails{
+						{Method: http.MethodPost, Path: web.VisibilitiesURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusBadRequest},
+					}
+				})
+				It("should return error without url and description if invalid response body", func() {
+					responseVisibility, err := client.RegisterVisibility(visibility, params)
+
+					Expect(err).Should(HaveOccurred())
+					verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+					Expect(responseVisibility).To(BeNil())
+				})
+			})
+
+		})
+
+		Context("When invalid config is set", func() {
+			It("should return error", func() {
+				client = NewClient(fakeAuthClient, "invalidURL")
+				_, err := client.RegisterVisibility(visibility, params)
+
+				Expect(err).Should(HaveOccurred())
+			})
+		})
+	})
+
+	Describe("Update visibilities", func() {
+		Context("when an existing visibility is being updated", func() {
+			BeforeEach(func() {
+				responseBody, _ := json.Marshal(visibility)
+
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodPatch, Path: web.VisibilitiesURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+				}
+			})
+			It("should be successfully removed", func() {
+				updatedVisibility, err := client.UpdateVisibility("id", visibility, params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(updatedVisibility).To(Equal(visibility))
+			})
+		})
+
+		Context("when a non-existing visibility is being updated", func() {
+			BeforeEach(func() {
+				responseBody := []byte(`{"description": "Visibility not found"}`)
+
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodPatch, Path: web.VisibilitiesURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
+				}
+			})
+			It("should handle error", func() {
+				_, err := client.UpdateVisibility("id", visibility, params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+"id", handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+
+		Context("when service manager returns a non-expected status code", func() {
+			BeforeEach(func() {
+				responseBody := []byte("{}")
+
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodPatch, Path: web.VisibilitiesURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
+				}
+			})
+			It("should handle error", func() {
+				_, err := client.UpdateVisibility("id", visibility, params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+"id", handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+
+			})
+		})
+	})
+
+	Describe("Delete visibility", func() {
+		Context("when an existing visibility is being deleted", func() {
+			BeforeEach(func() {
+				responseBody := []byte("{}")
+
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodDelete, Path: web.VisibilitiesURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+				}
+			})
+			It("should be successfully removed", func() {
+				params.FieldQuery = append(params.FieldQuery, "id eq 'id'")
+				err := client.DeleteVisibilities(params)
+				Expect(err).ShouldNot(HaveOccurred())
+			})
+		})
+
+		Context("when service manager returns a non-expected status code", func() {
+			BeforeEach(func() {
+				responseBody := []byte("{}")
+
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodDelete, Path: web.VisibilitiesURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
+				}
+			})
+			It("should handle error", func() {
+				params.FieldQuery = append(params.FieldQuery, "id eq 'id'")
+				err := client.DeleteVisibilities(params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+
+		Context("when service manager returns a status code not found", func() {
+			BeforeEach(func() {
+				responseBody := []byte(`{ "description": "Visibility not found" }`)
+
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodDelete, Path: web.VisibilitiesURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
+				}
+			})
+			It("should handle error", func() {
+				params.FieldQuery = append(params.FieldQuery, "id eq 'id'")
+				err := client.DeleteVisibilities(params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+	})
+
 
 	Describe("List service instances", func() {
 		Context("when there are service instances registered", func() {
@@ -1050,6 +1285,70 @@ var _ = Describe("Service Manager Client test", func() {
 		})
 	})
 
+	Describe("Deprovision", func() {
+		Context("when an existing instance is being deleted synchronously", func() {
+			BeforeEach(func() {
+				responseBody := []byte("{}")
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodDelete, Path: web.ServiceInstancesURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+				}
+			})
+			It("should be successfully removed", func() {
+				location, err := client.Deprovision(instance.ID, params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(location).Should(BeEmpty())
+			})
+		})
+
+		Context("when an existing instance is being deleted asynchronously", func() {
+			var locationHeader string
+			BeforeEach(func() {
+				locationHeader = "location"
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodDelete, Path: web.ServiceInstancesURL + "/", ResponseStatusCode: http.StatusAccepted, Headers: map[string]string{"Location": locationHeader}},
+				}
+			})
+			It("should be successfully removed", func() {
+				location, err := client.Deprovision(instance.ID, params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(location).Should(Equal(locationHeader))
+			})
+		})
+
+		Context("when service manager returns a non-expected status code", func() {
+			BeforeEach(func() {
+				responseBody := []byte("{}")
+
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodDelete, Path: web.ServiceInstancesURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
+				}
+			})
+			It("should handle error", func() {
+				location, err := client.Deprovision(instance.ID, params)
+				Expect(err).Should(HaveOccurred())
+				Expect(location).Should(BeEmpty())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+instance.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+
+		Context("when service manager returns a status code not found", func() {
+			BeforeEach(func() {
+				responseBody := []byte(`{ "description": "Broker not found" }`)
+
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodDelete, Path: web.ServiceInstancesURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
+				}
+			})
+			It("should handle error", func() {
+				location, err := client.Deprovision(instance.ID, params)
+				Expect(err).Should(HaveOccurred())
+				Expect(location).Should(BeEmpty())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+instance.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+	})
+
+
 	Describe("List service bindings", func() {
 		Context("when there are service bindings registered", func() {
 			BeforeEach(func() {
@@ -1112,6 +1411,246 @@ var _ = Describe("Service Manager Client test", func() {
 			})
 		})
 	})
+
+	Describe("Get service binding", func() {
+		Context("when there is binding with this id", func() {
+			BeforeEach(func() {
+				responseBody, _ := json.Marshal(binding)
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBindingsURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+				}
+			})
+			It("should return it", func() {
+				result, err := client.GetBindingByID(binding.ID, params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(result).To(Equal(binding))
+			})
+		})
+
+		Context("when there is no binding with this id", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBindingsURL + "/", ResponseStatusCode: http.StatusNotFound},
+				}
+			})
+			It("should return 404", func() {
+				_, err := client.GetBindingByID(binding.ID, params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+binding.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+
+		Context("when invalid status code is returned", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBindingsURL + "/", ResponseStatusCode: http.StatusCreated},
+				}
+			})
+			It("should handle status code != 200", func() {
+				_, err := client.GetBindingByID(binding.ID, params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+binding.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+
+		Context("when invalid status code is returned", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBindingsURL + "/", ResponseStatusCode: http.StatusBadRequest},
+				}
+			})
+			It("should handle status code > 299", func() {
+				_, err := client.GetBindingByID(binding.ID, params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+binding.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+
+			})
+		})
+	})
+
+	Describe("Bind", func() {
+		Context("When valid binding is being created synchronously", func() {
+			BeforeEach(func() {
+				responseBody, _ := json.Marshal(binding)
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodPost, Path: web.ServiceBindingsURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
+				}
+			})
+			It("should provision successfully", func() {
+				responseBinding, location, err := client.Bind(binding, params)
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(location).Should(HaveLen(0))
+				Expect(responseBinding).To(Equal(binding))
+			})
+		})
+
+		Context("When valid binding is being created asynchronously", func() {
+			var locationHeader string
+			BeforeEach(func() {
+				locationHeader = "test-location"
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodPost, Path: web.ServiceBindingsURL, ResponseStatusCode: http.StatusAccepted, Headers: map[string]string{"Location": locationHeader}},
+				}
+			})
+			It("should receive operation location", func() {
+				responseBinding, location, err := client.Bind(binding, params)
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(location).Should(Equal(locationHeader))
+				Expect(responseBinding).To(BeNil())
+			})
+		})
+
+		Context("When invalid binding is being returned by SM", func() {
+			BeforeEach(func() {
+				responseBody, _ := json.Marshal(struct {
+					Name bool `json:"name"`
+				}{
+					Name: true,
+				})
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodPost, Path: web.ServiceBindingsURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
+				}
+			})
+			It("should return error", func() {
+				responseBinding, location, err := client.Bind(binding, params)
+
+				Expect(err).Should(HaveOccurred())
+				Expect(location).Should(BeEmpty())
+				Expect(responseBinding).To(BeNil())
+			})
+		})
+
+		Context("When invalid status code is returned by SM", func() {
+			Context("And status code is unsuccessful", func() {
+				BeforeEach(func() {
+					responseBody, _ := json.Marshal(binding)
+					handlerDetails = []HandlerDetails{
+						{Method: http.MethodPost, Path: web.ServiceBindingsURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+					}
+				})
+				It("should return error with status code", func() {
+					responseBinding, location, err := client.Bind(binding, params)
+
+					Expect(err).Should(HaveOccurred())
+					Expect(location).Should(BeEmpty())
+					verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+					Expect(responseBinding).To(BeNil())
+				})
+			})
+
+			Context("And status code is unsuccessful", func() {
+				BeforeEach(func() {
+					responseBody := []byte(`{ "description": "description", "error": "error"}`)
+					handlerDetails = []HandlerDetails{
+						{Method: http.MethodPost, Path: web.ServiceBindingsURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusBadRequest},
+					}
+				})
+				It("should return error with url and description", func() {
+					responseBinding, location, err := client.Bind(binding, params)
+
+					Expect(err).Should(HaveOccurred())
+					Expect(location).Should(BeEmpty())
+					verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+					Expect(responseBinding).To(BeNil())
+				})
+			})
+
+			Context("And invalid response body", func() {
+				BeforeEach(func() {
+					responseBody := []byte(`{ "description": description", "error": "error"}`)
+					handlerDetails = []HandlerDetails{
+						{Method: http.MethodPost, Path: web.ServiceBindingsURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusBadRequest},
+					}
+				})
+				It("should return error without url and description if invalid response body", func() {
+					responseBinding, location, err := client.Bind(binding, params)
+
+					Expect(err).Should(HaveOccurred())
+					Expect(location).Should(BeEmpty())
+
+					verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+					Expect(responseBinding).To(BeNil())
+				})
+			})
+
+		})
+
+		Context("When invalid config is set", func() {
+			It("should return error", func() {
+				client = NewClient(fakeAuthClient, "invalidURL")
+				_, location, err := client.Bind(binding, params)
+
+				Expect(err).Should(HaveOccurred())
+				Expect(location).Should(BeEmpty())
+			})
+		})
+	})
+
+	Describe("Unbind", func() {
+		Context("when an existing binding is being deleted synchronously", func() {
+			BeforeEach(func() {
+				responseBody := []byte("{}")
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodDelete, Path: web.ServiceBindingsURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+				}
+			})
+			It("should be successfully removed", func() {
+				location, err := client.Unbind(binding.ID, params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(location).Should(BeEmpty())
+			})
+		})
+
+		Context("when an existing binding is being deleted asynchronously", func() {
+			var locationHeader string
+			BeforeEach(func() {
+				locationHeader = "location"
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodDelete, Path: web.ServiceBindingsURL + "/", ResponseStatusCode: http.StatusAccepted, Headers: map[string]string{"Location": locationHeader}},
+				}
+			})
+			It("should be successfully removed", func() {
+				location, err := client.Unbind(binding.ID, params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(location).Should(Equal(locationHeader))
+			})
+		})
+
+		Context("when service manager returns a non-expected status code", func() {
+			BeforeEach(func() {
+				responseBody := []byte("{}")
+
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodDelete, Path: web.ServiceBindingsURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
+				}
+			})
+			It("should handle error", func() {
+				location, err := client.Unbind(binding.ID, params)
+				Expect(err).Should(HaveOccurred())
+				Expect(location).Should(BeEmpty())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+binding.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+
+		Context("when service manager returns a status code not found", func() {
+			BeforeEach(func() {
+				responseBody := []byte(`{ "description": "Broker not found" }`)
+
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodDelete, Path: web.ServiceBindingsURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
+				}
+			})
+			It("should handle error", func() {
+				location, err := client.Unbind(binding.ID, params)
+				Expect(err).Should(HaveOccurred())
+				Expect(location).Should(BeEmpty())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+binding.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+	})
+
 
 	Describe("Marketplace", func() {
 		Context("when there are offerings provided", func() {
@@ -1182,388 +1721,90 @@ var _ = Describe("Service Manager Client test", func() {
 
 	})
 
-	Describe("Delete broker", func() {
-		Context("when an existing broker is being deleted synchronously", func() {
+	Describe("Poll", func() {
+		Context("when there is operation registered with this id", func() {
 			BeforeEach(func() {
-				responseBody := []byte("{}")
-
+				responseBody, _ := json.Marshal(operation)
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
-			It("should be successfully removed", func() {
-				location, err := client.DeleteBroker(broker.ID, params)
+			It("should return it", func() {
+				result, err := client.Poll(web.ServiceBrokersURL+"/"+broker.ID+"/"+operation.ID, params)
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(location).Should(BeEmpty())
+				Expect(result).To(Equal(operation))
 			})
 		})
 
-		Context("when an existing broker is being deleted asynchronously", func() {
-			var locationHeader string
+		Context("when there is no operation with this id", func() {
 			BeforeEach(func() {
-				locationHeader = "location"
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusAccepted, Headers: map[string]string{"Location": locationHeader}},
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusNotFound},
 				}
 			})
-			It("should be successfully removed", func() {
-				location, err := client.DeleteBroker(broker.ID, params)
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(location).Should(Equal(locationHeader))
-			})
-		})
-
-		Context("when service manager returns a non-expected status code", func() {
-			BeforeEach(func() {
-				responseBody := []byte("{}")
-
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
-				}
-			})
-			It("should handle error", func() {
-				location, err := client.DeleteBroker(broker.ID, params)
+			It("should return 404", func() {
+				_, err := client.Poll(web.ServiceBrokersURL+"/"+broker.ID+"/"+operation.ID, params)
 				Expect(err).Should(HaveOccurred())
-				Expect(location).Should(BeEmpty())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path+broker.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				verifyErrorMsg(err.Error(), web.ServiceBrokersURL+"/"+broker.ID+"/"+operation.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 
-		Context("when service manager returns a status code not found", func() {
+		Context("when invalid status code is returned", func() {
 			BeforeEach(func() {
-				responseBody := []byte(`{ "description": "Broker not found" }`)
-
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusCreated},
 				}
 			})
-			It("should handle error", func() {
-				location, err := client.DeleteBroker(broker.ID, params)
+			It("should handle status code != 200", func() {
+				_, err := client.Poll(web.ServiceBrokersURL+"/"+broker.ID+"/"+operation.ID, params)
 				Expect(err).Should(HaveOccurred())
-				Expect(location).Should(BeEmpty())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path+broker.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				verifyErrorMsg(err.Error(), web.ServiceBrokersURL+"/"+broker.ID+"/"+operation.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+
+		Context("when invalid status code is returned", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusBadRequest},
+				}
+			})
+			It("should handle status code > 299", func() {
+				_, err := client.Poll(web.ServiceBrokersURL+"/"+broker.ID+"/"+operation.ID, params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), web.ServiceBrokersURL+"/"+broker.ID+"/"+operation.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+
 			})
 		})
 	})
 
-	Describe("Delete platforms", func() {
-		Context("when an existing platform is being deleted", func() {
+	Describe("Label", func() {
+		Context("when valid label change is sent", func() {
 			BeforeEach(func() {
-				responseBody := []byte("{}")
-
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.PlatformsURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
-				}
+				handlerDetails = []HandlerDetails{{Method: http.MethodPatch, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusOK}}
 			})
-			It("should be successfully removed", func() {
-				params.FieldQuery = append(params.FieldQuery, "id eq 'id'")
-				err := client.DeletePlatforms(params)
+			It("should label resource sucessfully", func() {
+
+				err := client.Label(web.ServiceBrokersURL, "id", labelChanges, params)
 				Expect(err).ShouldNot(HaveOccurred())
 			})
 		})
 
-		Context("when service manager returns a non-expected status code", func() {
+		Context("when invalid status code is returned", func() {
 			BeforeEach(func() {
-				responseBody := []byte("{}")
-
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.PlatformsURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
-				}
+				handlerDetails = []HandlerDetails{{Method: http.MethodPatch, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusNotFound}}
 			})
-			It("should handle error", func() {
-				params.FieldQuery = append(params.FieldQuery, "id eq 'id'")
-				err := client.DeletePlatforms(params)
-				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
-			})
-		})
-
-		Context("when service manager returns a status code not found", func() {
-			BeforeEach(func() {
-				responseBody := []byte(`{ "description": "Platform not found" }`)
-
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.PlatformsURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
-				}
-			})
-			It("should handle error", func() {
-				params.FieldQuery = append(params.FieldQuery, "id eq 'id'")
-				err := client.DeletePlatforms(params)
-				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
-			})
-		})
-	})
-
-	Describe("Delete visibility", func() {
-		Context("when an existing visibility is being deleted", func() {
-			BeforeEach(func() {
-				responseBody := []byte("{}")
-
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.VisibilitiesURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
-				}
-			})
-			It("should be successfully removed", func() {
-				params.FieldQuery = append(params.FieldQuery, "id eq 'id'")
-				err := client.DeleteVisibilities(params)
-				Expect(err).ShouldNot(HaveOccurred())
-			})
-		})
-
-		Context("when service manager returns a non-expected status code", func() {
-			BeforeEach(func() {
-				responseBody := []byte("{}")
-
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.VisibilitiesURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
-				}
-			})
-			It("should handle error", func() {
-				params.FieldQuery = append(params.FieldQuery, "id eq 'id'")
-				err := client.DeleteVisibilities(params)
-				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
-			})
-		})
-
-		Context("when service manager returns a status code not found", func() {
-			BeforeEach(func() {
-				responseBody := []byte(`{ "description": "Visibility not found" }`)
-
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.VisibilitiesURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
-				}
-			})
-			It("should handle error", func() {
-				params.FieldQuery = append(params.FieldQuery, "id eq 'id'")
-				err := client.DeleteVisibilities(params)
-				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
-			})
-		})
-	})
-
-	Describe("Deprovision", func() {
-		Context("when an existing instance is being deleted synchronously", func() {
-			BeforeEach(func() {
-				responseBody := []byte("{}")
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.ServiceInstancesURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
-				}
-			})
-			It("should be successfully removed", func() {
-				location, err := client.Deprovision(instance.ID, params)
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(location).Should(BeEmpty())
-			})
-		})
-
-		Context("when an existing instance is being deleted asynchronously", func() {
-			var locationHeader string
-			BeforeEach(func() {
-				locationHeader = "location"
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.ServiceInstancesURL + "/", ResponseStatusCode: http.StatusAccepted, Headers: map[string]string{"Location": locationHeader}},
-				}
-			})
-			It("should be successfully removed", func() {
-				location, err := client.Deprovision(instance.ID, params)
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(location).Should(Equal(locationHeader))
-			})
-		})
-
-		Context("when service manager returns a non-expected status code", func() {
-			BeforeEach(func() {
-				responseBody := []byte("{}")
-
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.ServiceInstancesURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
-				}
-			})
-			It("should handle error", func() {
-				location, err := client.Deprovision(instance.ID, params)
-				Expect(err).Should(HaveOccurred())
-				Expect(location).Should(BeEmpty())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path+instance.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
-			})
-		})
-
-		Context("when service manager returns a status code not found", func() {
-			BeforeEach(func() {
-				responseBody := []byte(`{ "description": "Broker not found" }`)
-
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.ServiceInstancesURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
-				}
-			})
-			It("should handle error", func() {
-				location, err := client.Deprovision(instance.ID, params)
-				Expect(err).Should(HaveOccurred())
-				Expect(location).Should(BeEmpty())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path+instance.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
-			})
-		})
-	})
-
-	Describe("Update brokers", func() {
-		Context("when an existing broker is being updated synchronously", func() {
-			BeforeEach(func() {
-				responseBody, _ := json.Marshal(broker)
-
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodPatch, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
-				}
-			})
-			It("should be successfully updated", func() {
-				updatedBroker, location, err := client.UpdateBroker("id", broker, params)
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(location).Should(HaveLen(0))
-				Expect(updatedBroker).To(Equal(broker))
-			})
-		})
-
-		Context("when an existing broker is being updated asynchronously", func() {
-			var locationHeader string
-			BeforeEach(func() {
-				locationHeader = "test-location"
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodPatch, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusAccepted, Headers: map[string]string{"Location": locationHeader}},
-				}
-			})
-			It("should be successfully updated", func() {
-				updatedBroker, location, err := client.UpdateBroker("id", broker, params)
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(location).Should(Equal(locationHeader))
-				Expect(updatedBroker).To(BeNil())
-			})
-		})
-
-		Context("when a non-existing broker is being updated", func() {
-			BeforeEach(func() {
-				responseBody := []byte(`{"description": "Broker not found"}`)
-
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodPatch, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
-				}
-			})
-			It("should handle error", func() {
-				_, location, err := client.UpdateBroker("id", broker, params)
-				Expect(err).Should(HaveOccurred())
-				Expect(location).Should(HaveLen(0))
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path+"id", handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
-			})
-		})
-
-		Context("when service manager returns a non-expected status code", func() {
-			BeforeEach(func() {
-				responseBody := []byte("{}")
-
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodPatch, Path: web.ServiceBrokersURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
-				}
-			})
-			It("should handle error", func() {
-				_, location, err := client.UpdateBroker("id", broker, params)
-				Expect(err).Should(HaveOccurred())
-				Expect(location).Should(HaveLen(0))
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path+"id", handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
-			})
-		})
-	})
-
-	Describe("Update platforms", func() {
-		Context("when an existing platform is being updated", func() {
-			BeforeEach(func() {
-				responseBody, _ := json.Marshal(platform)
-
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodPatch, Path: web.PlatformsURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
-				}
-			})
-			It("should be successfully removed", func() {
-				updatedPlatform, err := client.UpdatePlatform("id", platform, params)
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(updatedPlatform).To(Equal(platform))
-			})
-		})
-
-		Context("when a non-existing platform is being updated", func() {
-			BeforeEach(func() {
-				responseBody := []byte(`{"description": "Platform not found"}`)
-
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodPatch, Path: web.PlatformsURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
-				}
-			})
-			It("should handle error", func() {
-				_, err := client.UpdatePlatform("id", platform, params)
+			It("should return error", func() {
+				err := client.Label(web.ServiceBrokersURL, "id", labelChanges, params)
 				Expect(err).Should(HaveOccurred())
 				verifyErrorMsg(err.Error(), handlerDetails[0].Path+"id", handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 
-		Context("when service manager returns a non-expected status code", func() {
-			BeforeEach(func() {
-				responseBody := []byte("{}")
-
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodPatch, Path: web.PlatformsURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
-				}
-			})
-			It("should handle error", func() {
-				_, err := client.UpdatePlatform("id", platform, params)
+		Context("When invalid config is set", func() {
+			It("should return error", func() {
+				client = NewClient(fakeAuthClient, "invalidURL")
+				err := client.Label(web.ServiceBrokersURL, "id", labelChanges, params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path+"id", handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
-			})
-		})
-	})
-
-	Describe("Update visibilities", func() {
-		Context("when an existing visibility is being updated", func() {
-			BeforeEach(func() {
-				responseBody, _ := json.Marshal(visibility)
-
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodPatch, Path: web.VisibilitiesURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
-				}
-			})
-			It("should be successfully removed", func() {
-				updatedVisibility, err := client.UpdateVisibility("id", visibility, params)
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(updatedVisibility).To(Equal(visibility))
-			})
-		})
-
-		Context("when a non-existing visibility is being updated", func() {
-			BeforeEach(func() {
-				responseBody := []byte(`{"description": "Visibility not found"}`)
-
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodPatch, Path: web.VisibilitiesURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
-				}
-			})
-			It("should handle error", func() {
-				_, err := client.UpdateVisibility("id", visibility, params)
-				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path+"id", handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
-			})
-		})
-
-		Context("when service manager returns a non-expected status code", func() {
-			BeforeEach(func() {
-				responseBody := []byte("{}")
-
-				handlerDetails = []HandlerDetails{
-					{Method: http.MethodPatch, Path: web.VisibilitiesURL + "/", ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
-				}
-			})
-			It("should handle error", func() {
-				_, err := client.UpdateVisibility("id", visibility, params)
-				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path+"id", handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
-
 			})
 		})
 	})
@@ -1628,36 +1869,37 @@ var _ = Describe("Service Manager Client test", func() {
 				Expect(err).Should(HaveOccurred())
 			})
 		})
+
+		Context("with general parameter", func() {
+			BeforeEach(func() {
+				responseBody := []byte(`{"token_issuer_url": "http://uaa.com"}`)
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.InfoURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+				}
+			})
+
+			It("should make request with these parameters", func() {
+				info, err := client.GetInfo(params)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(info).ToNot(BeNil())
+			})
+		})
 	})
 
-	Describe("Label", func() {
-		Context("when valid label change is sent", func() {
+	Describe("Test failing client authentication", func() {
+		Context("When wrong token is used", func() {
 			BeforeEach(func() {
-				handlerDetails = []HandlerDetails{{Method: http.MethodPatch, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusOK}}
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet, Path: web.ServiceBrokersURL},
+				}
 			})
-			It("should label resource sucessfully", func() {
+			It("should fail to authentication", func() {
+				fakeAuthClient.AccessToken = invalidToken
+				client = NewClient(fakeAuthClient, smServer.URL)
+				_, err := client.ListBrokers(params)
 
-				err := client.Label(web.ServiceBrokersURL, "id", labelChanges, params)
-				Expect(err).ShouldNot(HaveOccurred())
-			})
-		})
-
-		Context("when invalid status code is returned", func() {
-			BeforeEach(func() {
-				handlerDetails = []HandlerDetails{{Method: http.MethodPatch, Path: web.ServiceBrokersURL + "/", ResponseStatusCode: http.StatusNotFound}}
-			})
-			It("should return error", func() {
-				err := client.Label(web.ServiceBrokersURL, "id", labelChanges, params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path+"id", handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
-			})
-		})
-
-		Context("When invalid config is set", func() {
-			It("should return error", func() {
-				client = NewClient(fakeAuthClient, "invalidURL")
-				err := client.Label(web.ServiceBrokersURL, "id", labelChanges, params)
-				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path, []byte{}, http.StatusUnauthorized)
 			})
 		})
 	})
