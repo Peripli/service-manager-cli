@@ -35,8 +35,6 @@ type UnbindCmd struct {
 	instanceName string
 	bindingID    string
 	bindingName  string
-
-	outputFormat output.Format
 }
 
 // NewUnbindCmd returns new bind command with context

@@ -15,15 +15,27 @@ var _ = Describe("Get binding command test", func() {
 	var client *smclientfakes.FakeClient
 	var command *GetBindingCmd
 	var buffer *bytes.Buffer
+
+	instance1 := types.ServiceInstance{
+		ID:   "1",
+		Name: "instance-name1",
+	}
+
+	instance2 := types.ServiceInstance{
+		ID:   "2",
+		Name: "instance-name2",
+	}
 	binding := types.ServiceBinding{
-		Name:              "binding1",
-		ServiceInstanceID: "1",
-		ID:                "id1",
+		Name:                "binding1",
+		ServiceInstanceID:   "1",
+		ServiceInstanceName: "instance-name1",
+		ID:                  "id1",
 	}
 	binding2 := types.ServiceBinding{
-		Name:              "binding1",
-		ServiceInstanceID: "2",
-		ID:                "id2",
+		Name:                "binding1",
+		ServiceInstanceID:   "2",
+		ServiceInstanceName: "instance-name2",
+		ID:                  "id2",
 	}
 
 	BeforeEach(func() {
@@ -32,6 +44,8 @@ var _ = Describe("Get binding command test", func() {
 		client.ListBindingsReturns(&types.ServiceBindings{ServiceBindings: []types.ServiceBinding{binding}}, nil)
 		context := &cmd.Context{Output: buffer, Client: client}
 		command = NewGetBindingCmd(context)
+		client.GetInstanceByIDReturnsOnCall(0, &instance1, nil)
+		client.GetInstanceByIDReturnsOnCall(1, &instance2, nil)
 	})
 
 	executeWithArgs := func(args ...string) error {

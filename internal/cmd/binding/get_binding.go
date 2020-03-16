@@ -61,6 +61,11 @@ func (gb *GetBindingCmd) Run() error {
 		if err != nil {
 			return err
 		}
+		instance, err := gb.Client.GetInstanceByID(bd.ServiceInstanceID, &query.Parameters{})
+		if err != nil {
+			return err
+		}
+		bd.ServiceInstanceName = instance.Name
 		resultBindings.ServiceBindings = append(resultBindings.ServiceBindings, *bd)
 	}
 

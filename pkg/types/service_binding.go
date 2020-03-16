@@ -33,14 +33,17 @@ type ServiceBinding struct {
 	Labels         types.Labels `json:"labels,omitempty" yaml:"labels,omitempty"`
 	PagingSequence int64        `json:"-" yaml:"-"`
 
-	Credentials       json.RawMessage `json:"credentials,omitempty" yaml:"credentials,omitempty"`
-	ServiceInstanceID string          `json:"service_instance_id" yaml:"service_instance_id,omitempty"`
-	SyslogDrainURL    string          `json:"syslog_drain_url,omitempty" yaml:"syslog_drain_url,omitempty"`
-	RouteServiceURL   string          `json:"route_service_url,omitempty"`
-	VolumeMounts      json.RawMessage `json:"-" yaml:"-"`
-	Endpoints         json.RawMessage `json:"-" yaml:"-"`
-	Context           json.RawMessage `json:"-" yaml:"-"`
-	BindResource      json.RawMessage `json:"-" yaml:"-"`
+	Credentials json.RawMessage `json:"credentials,omitempty" yaml:"credentials,omitempty"`
+
+	ServiceInstanceID   string `json:"service_instance_id" yaml:"service_instance_id,omitempty"`
+	ServiceInstanceName string `json:"service_instance_name,omitempty" yaml:"service_instance_name,omitempty"`
+
+	SyslogDrainURL  string          `json:"syslog_drain_url,omitempty" yaml:"syslog_drain_url,omitempty"`
+	RouteServiceURL string          `json:"route_service_url,omitempty"`
+	VolumeMounts    json.RawMessage `json:"-" yaml:"-"`
+	Endpoints       json.RawMessage `json:"-" yaml:"-"`
+	Context         json.RawMessage `json:"-" yaml:"-"`
+	BindResource    json.RawMessage `json:"-" yaml:"-"`
 
 	Ready bool `json:"ready,omitempty" yaml:"ready,omitempty"`
 
@@ -60,13 +63,13 @@ func (sb *ServiceBinding) IsEmpty() bool {
 // TableData returns the data to populate a table
 func (sb *ServiceBinding) TableData() *TableData {
 	result := &TableData{Vertical: true}
-	result.Headers = []string{"ID", "Name", "Service Instance ID", "Credentials", "Created", "Updated", "Ready", "Labels", "Last Op"}
+	result.Headers = []string{"ID", "Name", "Service Instance Name", "Service Instance ID", "Credentials", "Created", "Updated", "Ready", "Labels", "Last Op"}
 
 	lastState := "-"
 	if sb.LastOperation != nil {
 		lastState = formatLastOp(sb.LastOperation)
 	}
-	row := []string{sb.ID, sb.Name, sb.ServiceInstanceID, string(sb.Credentials), sb.CreatedAt, sb.UpdatedAt, strconv.FormatBool(sb.Ready), formatLabels(sb.Labels), lastState}
+	row := []string{sb.ID, sb.Name, sb.ServiceInstanceName, sb.ServiceInstanceID, string(sb.Credentials), sb.CreatedAt, sb.UpdatedAt, strconv.FormatBool(sb.Ready), formatLabels(sb.Labels), lastState}
 	result.Data = append(result.Data, row)
 
 	return result
@@ -101,7 +104,7 @@ func (sb *ServiceBindings) IsEmpty() bool {
 // TableData returns the data to populate a table
 func (sb *ServiceBindings) TableData() *TableData {
 	result := &TableData{Vertical: sb.Vertical}
-	result.Headers = []string{"ID", "Name", "Service Instance ID", "Credentials", "Created", "Updated", "Ready", "Labels"}
+	result.Headers = []string{"ID", "Name", "Instance Name", "Credentials", "Created", "Updated", "Ready", "Labels"}
 
 	addLastOpColumn := false
 	for _, binding := range sb.ServiceBindings {
@@ -110,7 +113,7 @@ func (sb *ServiceBindings) TableData() *TableData {
 			lastState = formatLastOp(binding.LastOperation)
 			addLastOpColumn = true
 		}
-		row := []string{binding.ID, binding.Name, binding.ServiceInstanceID, string(binding.Credentials), binding.CreatedAt, binding.UpdatedAt, strconv.FormatBool(binding.Ready), formatLabels(binding.Labels), lastState}
+		row := []string{binding.ID, binding.Name, binding.ServiceInstanceName, string(binding.Credentials), binding.CreatedAt, binding.UpdatedAt, strconv.FormatBool(binding.Ready), formatLabels(binding.Labels), lastState}
 		result.Data = append(result.Data, row)
 	}
 

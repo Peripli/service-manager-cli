@@ -33,6 +33,16 @@ var _ = Describe("List bindings command test", func() {
 	var command *ListBindingsCmd
 	var buffer *bytes.Buffer
 
+	instance1 := types.ServiceInstance{
+		ID:   "service_instance_id1",
+		Name: "instance-name1",
+	}
+
+	instance2 := types.ServiceInstance{
+		ID:   "service_instance_id2",
+		Name: "instance-name2",
+	}
+
 	binding1 := types.ServiceBinding{
 		ID:                "id1",
 		Name:              "binding1",
@@ -50,6 +60,8 @@ var _ = Describe("List bindings command test", func() {
 		client = &smclientfakes.FakeClient{}
 		context := &cmd.Context{Output: buffer, Client: client}
 		command = NewListBindingsCmd(context)
+		client.GetInstanceByIDReturnsOnCall(0, &instance1, nil)
+		client.GetInstanceByIDReturnsOnCall(1, &instance2, nil)
 	})
 
 	executeWithArgs := func(args []string) error {
