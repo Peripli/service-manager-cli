@@ -101,6 +101,8 @@ func (bc *BindCmd) Run() error {
 		output.PrintMessage(bc.Output, "smctl poll %s\n", location)
 		return nil
 	}
+
+	resultBinding.ServiceInstanceName = bc.instanceName
 	output.PrintServiceManagerObject(bc.Output, bc.outputFormat, resultBinding)
 	output.Println(bc.Output)
 	return nil
