@@ -71,7 +71,7 @@ type Client interface {
 
 	Label(string, string, *types.LabelChanges, *query.Parameters) error
 
-	Poll(string, *query.Parameters) (*types.Operation, error)
+	Status(string, *query.Parameters) (*types.Operation, error)
 
 	Marketplace(*query.Parameters) (*types.Marketplace, error)
 
@@ -332,7 +332,7 @@ func (client *serviceManagerClient) Marketplace(q *query.Parameters) (*types.Mar
 	return marketplace, nil
 }
 
-func (client *serviceManagerClient) Poll(url string, q *query.Parameters) (*types.Operation, error) {
+func (client *serviceManagerClient) Status(url string, q *query.Parameters) (*types.Operation, error) {
 	operation := &types.Operation{}
 	err := client.get(operation, url, &query.Parameters{
 		GeneralParams: q.GeneralParams,

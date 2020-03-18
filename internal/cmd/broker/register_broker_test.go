@@ -70,7 +70,7 @@ var _ = Describe("Register Broker Command test", func() {
 			It("should print location when registered asynchronously", func() {
 				validAsyncRegisterBrokerExecution([]string{"broker-name", "http://broker.com", "--basic", "user:password", "--mode", "async"}, "location")
 
-				Expect(buffer.String()).To(ContainSubstring(`smctl poll location`))
+				Expect(buffer.String()).To(ContainSubstring(`smctl status location`))
 			})
 
 			It("Argument values should be as expected", func() {

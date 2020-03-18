@@ -93,7 +93,7 @@ func (rbc *RegisterBrokerCmd) Run() error {
 
 	if len(location) != 0 {
 		output.PrintMessage(rbc.Output, "Service Broker %s successfully scheduled for registration. To see status of the operation use:\n", rbc.broker.Name)
-		output.PrintMessage(rbc.Output, "smctl poll %s\n", location)
+		output.PrintMessage(rbc.Output, "smctl status %s\n", location)
 		return nil
 	}
 	output.PrintServiceManagerObject(rbc.Output, rbc.outputFormat, resultBroker)

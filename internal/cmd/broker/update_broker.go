@@ -81,7 +81,7 @@ func (ubc *UpdateBrokerCmd) Run() error {
 	}
 	if len(location) != 0 {
 		output.PrintMessage(ubc.Output, "Service Broker %s successfully scheduled for update. To see status of the operation use:\n", toUpdateBroker.Name)
-		output.PrintMessage(ubc.Output, "smctl poll %s\n", location)
+		output.PrintMessage(ubc.Output, "smctl status %s\n", location)
 		return nil
 	}
 	output.PrintServiceManagerObject(ubc.Output, ubc.outputFormat, result)

@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package poll
+package status
 
 import (
 	"fmt"
@@ -24,7 +24,7 @@ import (
 	"strings"
 )
 
-// Cmd wraps smctl poll command
+// Cmd wraps smctl status command
 type Cmd struct {
 	*cmd.Context
 
@@ -32,17 +32,17 @@ type Cmd struct {
 	outputFormat output.Format
 }
 
-// NewPollCmd returns new label command with context
-func NewPollCmd(context *cmd.Context) *Cmd {
+// NewStatusCmd returns new label command with context
+func NewStatusCmd(context *cmd.Context) *Cmd {
 	return &Cmd{Context: context}
 }
 
 // Prepare returns cobra command
 func (c *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
-		Use:   "poll [operation URL path]",
-		Short: "Poll asynchronous operation's status",
-		Long:  "Poll asynchronous operation's status",
+		Use:   "status [operation URL path]",
+		Short: "Get asynchronous operation's status",
+		Long:  "Get asynchronous operation's status",
 
 		PreRunE: prepare(c, c.Context),
 		RunE:    cmd.RunE(c),
@@ -65,7 +65,7 @@ func (c *Cmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (c *Cmd) Run() error {
-	operation, err := c.Client.Poll(c.operationURL, &c.Parameters)
+	operation, err := c.Client.Status(c.operationURL, &c.Parameters)
 	if err != nil {
 		if strings.Contains(err.Error(), "StatusCode: 404") {
 			output.PrintMessage(c.Output, "Operation not found.\n")

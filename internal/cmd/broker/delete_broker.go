@@ -74,7 +74,7 @@ func (dbc *DeleteBrokerCmd) Run() error {
 	}
 	if len(location) != 0 {
 		output.PrintMessage(dbc.Output, "Service Broker %s successfully scheduled for deletion. To see status of the operation use:\n", dbc.name)
-		output.PrintMessage(dbc.Output, "smctl poll %s\n", location)
+		output.PrintMessage(dbc.Output, "smctl status %s\n", location)
 		return nil
 	}
 	output.PrintMessage(dbc.Output, "Service Broker successfully deleted.\n")

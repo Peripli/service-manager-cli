@@ -67,7 +67,7 @@ var _ = Describe("Update broker command test", func() {
 
 			It("should print location when updated asynchronously", func() {
 				Expect(validAsyncUpdateBrokerExecution("location", "broker1", `{"description":"newDescription"}`)).ShouldNot(HaveOccurred())
-				Expect(buffer.String()).To(ContainSubstring(`smctl poll location`))
+				Expect(buffer.String()).To(ContainSubstring(`smctl status location`))
 			})
 
 			It("argument values should be as expected", func() {

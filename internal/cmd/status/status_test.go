@@ -1,4 +1,4 @@
-package poll
+package status
 
 import (
 	"github.com/Peripli/service-manager/pkg/util"
@@ -16,12 +16,12 @@ import (
 	"github.com/Peripli/service-manager-cli/pkg/types"
 )
 
-func TestPollCmd(t *testing.T) {
+func TestStatusCmd(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "")
 }
 
-var _ = Describe("Poll command test", func() {
+var _ = Describe("Status command test", func() {
 
 	var client *smclientfakes.FakeClient
 	var command *Cmd
@@ -37,7 +37,7 @@ var _ = Describe("Poll command test", func() {
 		buffer = &bytes.Buffer{}
 		client = &smclientfakes.FakeClient{}
 		context := &cmd.Context{Output: buffer, Client: client}
-		command = NewPollCmd(context)
+		command = NewStatusCmd(context)
 	})
 
 	executeWithArgs := func(args ...string) error {
@@ -49,7 +49,7 @@ var _ = Describe("Poll command test", func() {
 
 	Context("when no operation url is provided", func() {
 		It("should return error", func() {
-			client.PollReturns(operation, nil)
+			client.StatusReturns(operation, nil)
 			err := executeWithArgs()
 
 			Expect(err).Should(HaveOccurred())
@@ -60,7 +60,7 @@ var _ = Describe("Poll command test", func() {
 		It("should return message", func() {
 			body := ioutil.NopCloser(bytes.NewReader([]byte("")))
 			expectedError := util.HandleResponseError(&http.Response{Body: body, StatusCode: http.StatusNotFound})
-			client.PollReturns(nil, expectedError)
+			client.StatusReturns(nil, expectedError)
 			err := executeWithArgs("non-existing-path")
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -70,7 +70,7 @@ var _ = Describe("Poll command test", func() {
 
 	Context("when operation is found", func() {
 		It("should return its data", func() {
-			client.PollReturns(operation, nil)
+			client.StatusReturns(operation, nil)
 			err := executeWithArgs("path")
 
 			Expect(err).ShouldNot(HaveOccurred())

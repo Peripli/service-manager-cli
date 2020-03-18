@@ -98,7 +98,7 @@ func (bc *BindCmd) Run() error {
 
 	if len(location) != 0 {
 		output.PrintMessage(bc.Output, "Service Binding %s successfully scheduled. To see status of the operation use:\n", bc.binding.Name)
-		output.PrintMessage(bc.Output, "smctl poll %s\n", location)
+		output.PrintMessage(bc.Output, "smctl status %s\n", location)
 		return nil
 	}
 

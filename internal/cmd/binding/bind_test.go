@@ -76,7 +76,7 @@ var _ = Describe("Bind Command test", func() {
 			It("should print location when registered asynchronously", func() {
 				validAsyncBindExecution("location", "instance-name", "binding-name")
 
-				Expect(buffer.String()).To(ContainSubstring(`smctl poll location`))
+				Expect(buffer.String()).To(ContainSubstring(`smctl status location`))
 			})
 
 			It("Argument values should be as expected", func() {

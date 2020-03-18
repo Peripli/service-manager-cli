@@ -267,20 +267,6 @@ type FakeClient struct {
 		result1 *types.Marketplace
 		result2 error
 	}
-	PollStub        func(string, *query.Parameters) (*types.Operation, error)
-	pollMutex       sync.RWMutex
-	pollArgsForCall []struct {
-		arg1 string
-		arg2 *query.Parameters
-	}
-	pollReturns struct {
-		result1 *types.Operation
-		result2 error
-	}
-	pollReturnsOnCall map[int]struct {
-		result1 *types.Operation
-		result2 error
-	}
 	ProvisionStub        func(*types.ServiceInstance, *query.Parameters) (*types.ServiceInstance, string, error)
 	provisionMutex       sync.RWMutex
 	provisionArgsForCall []struct {
@@ -339,6 +325,20 @@ type FakeClient struct {
 	}
 	registerVisibilityReturnsOnCall map[int]struct {
 		result1 *types.Visibility
+		result2 error
+	}
+	StatusStub        func(string, *query.Parameters) (*types.Operation, error)
+	statusMutex       sync.RWMutex
+	statusArgsForCall []struct {
+		arg1 string
+		arg2 *query.Parameters
+	}
+	statusReturns struct {
+		result1 *types.Operation
+		result2 error
+	}
+	statusReturnsOnCall map[int]struct {
+		result1 *types.Operation
 		result2 error
 	}
 	UnbindStub        func(string, *query.Parameters) (string, error)
@@ -1609,70 +1609,6 @@ func (fake *FakeClient) MarketplaceReturnsOnCall(i int, result1 *types.Marketpla
 	}{result1, result2}
 }
 
-func (fake *FakeClient) Poll(arg1 string, arg2 *query.Parameters) (*types.Operation, error) {
-	fake.pollMutex.Lock()
-	ret, specificReturn := fake.pollReturnsOnCall[len(fake.pollArgsForCall)]
-	fake.pollArgsForCall = append(fake.pollArgsForCall, struct {
-		arg1 string
-		arg2 *query.Parameters
-	}{arg1, arg2})
-	fake.recordInvocation("Poll", []interface{}{arg1, arg2})
-	fake.pollMutex.Unlock()
-	if fake.PollStub != nil {
-		return fake.PollStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.pollReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeClient) PollCallCount() int {
-	fake.pollMutex.RLock()
-	defer fake.pollMutex.RUnlock()
-	return len(fake.pollArgsForCall)
-}
-
-func (fake *FakeClient) PollCalls(stub func(string, *query.Parameters) (*types.Operation, error)) {
-	fake.pollMutex.Lock()
-	defer fake.pollMutex.Unlock()
-	fake.PollStub = stub
-}
-
-func (fake *FakeClient) PollArgsForCall(i int) (string, *query.Parameters) {
-	fake.pollMutex.RLock()
-	defer fake.pollMutex.RUnlock()
-	argsForCall := fake.pollArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeClient) PollReturns(result1 *types.Operation, result2 error) {
-	fake.pollMutex.Lock()
-	defer fake.pollMutex.Unlock()
-	fake.PollStub = nil
-	fake.pollReturns = struct {
-		result1 *types.Operation
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeClient) PollReturnsOnCall(i int, result1 *types.Operation, result2 error) {
-	fake.pollMutex.Lock()
-	defer fake.pollMutex.Unlock()
-	fake.PollStub = nil
-	if fake.pollReturnsOnCall == nil {
-		fake.pollReturnsOnCall = make(map[int]struct {
-			result1 *types.Operation
-			result2 error
-		})
-	}
-	fake.pollReturnsOnCall[i] = struct {
-		result1 *types.Operation
-		result2 error
-	}{result1, result2}
-}
-
 func (fake *FakeClient) Provision(arg1 *types.ServiceInstance, arg2 *query.Parameters) (*types.ServiceInstance, string, error) {
 	fake.provisionMutex.Lock()
 	ret, specificReturn := fake.provisionReturnsOnCall[len(fake.provisionArgsForCall)]
@@ -1931,6 +1867,70 @@ func (fake *FakeClient) RegisterVisibilityReturnsOnCall(i int, result1 *types.Vi
 	}
 	fake.registerVisibilityReturnsOnCall[i] = struct {
 		result1 *types.Visibility
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) Status(arg1 string, arg2 *query.Parameters) (*types.Operation, error) {
+	fake.statusMutex.Lock()
+	ret, specificReturn := fake.statusReturnsOnCall[len(fake.statusArgsForCall)]
+	fake.statusArgsForCall = append(fake.statusArgsForCall, struct {
+		arg1 string
+		arg2 *query.Parameters
+	}{arg1, arg2})
+	fake.recordInvocation("Status", []interface{}{arg1, arg2})
+	fake.statusMutex.Unlock()
+	if fake.StatusStub != nil {
+		return fake.StatusStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.statusReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeClient) StatusCallCount() int {
+	fake.statusMutex.RLock()
+	defer fake.statusMutex.RUnlock()
+	return len(fake.statusArgsForCall)
+}
+
+func (fake *FakeClient) StatusCalls(stub func(string, *query.Parameters) (*types.Operation, error)) {
+	fake.statusMutex.Lock()
+	defer fake.statusMutex.Unlock()
+	fake.StatusStub = stub
+}
+
+func (fake *FakeClient) StatusArgsForCall(i int) (string, *query.Parameters) {
+	fake.statusMutex.RLock()
+	defer fake.statusMutex.RUnlock()
+	argsForCall := fake.statusArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeClient) StatusReturns(result1 *types.Operation, result2 error) {
+	fake.statusMutex.Lock()
+	defer fake.statusMutex.Unlock()
+	fake.StatusStub = nil
+	fake.statusReturns = struct {
+		result1 *types.Operation
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) StatusReturnsOnCall(i int, result1 *types.Operation, result2 error) {
+	fake.statusMutex.Lock()
+	defer fake.statusMutex.Unlock()
+	fake.StatusStub = nil
+	if fake.statusReturnsOnCall == nil {
+		fake.statusReturnsOnCall = make(map[int]struct {
+			result1 *types.Operation
+			result2 error
+		})
+	}
+	fake.statusReturnsOnCall[i] = struct {
+		result1 *types.Operation
 		result2 error
 	}{result1, result2}
 }
@@ -2238,8 +2238,6 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.listVisibilitiesMutex.RUnlock()
 	fake.marketplaceMutex.RLock()
 	defer fake.marketplaceMutex.RUnlock()
-	fake.pollMutex.RLock()
-	defer fake.pollMutex.RUnlock()
 	fake.provisionMutex.RLock()
 	defer fake.provisionMutex.RUnlock()
 	fake.registerBrokerMutex.RLock()
@@ -2248,6 +2246,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.registerPlatformMutex.RUnlock()
 	fake.registerVisibilityMutex.RLock()
 	defer fake.registerVisibilityMutex.RUnlock()
+	fake.statusMutex.RLock()
+	defer fake.statusMutex.RUnlock()
 	fake.unbindMutex.RLock()
 	defer fake.unbindMutex.RUnlock()
 	fake.updateBrokerMutex.RLock()

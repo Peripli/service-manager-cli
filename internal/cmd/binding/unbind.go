@@ -117,7 +117,7 @@ func (ubc *UnbindCmd) Run() error {
 	}
 	if len(location) != 0 {
 		output.PrintMessage(ubc.Output, "Service Binding %s successfully scheduled for deletion. To see status of the operation use:\n", ubc.bindingName)
-		output.PrintMessage(ubc.Output, "smctl poll %s\n", location)
+		output.PrintMessage(ubc.Output, "smctl status %s\n", location)
 		return nil
 	}
 	output.PrintMessage(ubc.Output, "Service Binding successfully deleted.\n")

@@ -86,7 +86,7 @@ var _ = Describe("Provision Command test", func() {
 			It("should print location when registered asynchronously", func() {
 				validAsyncProvisionExecution("location", "instance-name", "offering-name", "plan-name")
 
-				Expect(buffer.String()).To(ContainSubstring(`smctl poll location`))
+				Expect(buffer.String()).To(ContainSubstring(`smctl status location`))
 			})
 
 			It("Argument values should be as expected", func() {
