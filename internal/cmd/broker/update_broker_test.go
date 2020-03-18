@@ -120,7 +120,7 @@ var _ = Describe("Update broker command test", func() {
 
 		Context("With async flag", func() {
 			It("should pass it to SM", func() {
-				err := validSyncUpdateBrokerExecution("broker1", `{"description":"newDescription"}`, "--async")
+				err := validSyncUpdateBrokerExecution("broker1", `{"description":"newDescription"}`, "--mode", "async")
 				Expect(err).ShouldNot(HaveOccurred())
 
 				_, _, args := client.UpdateBrokerArgsForCall(0)

@@ -113,7 +113,7 @@ func (dbc *DeleteBrokerCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 
 	result.Flags().BoolVarP(&dbc.force, "force", "f", false, "Force delete without confirmation")
 	cmd.AddCommonQueryFlag(result.Flags(), &dbc.Parameters)
-	cmd.AddAsyncFlag(result.Flags())
+	cmd.AddModeFlag(result.Flags(), "sync")
 
 	return result
 }

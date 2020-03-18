@@ -54,7 +54,7 @@ var _ = Describe("Bind Command test", func() {
 	}
 
 	validSyncBindExecution := func(args ...string) *cobra.Command {
-		return validAsyncBindExecution("", append(args, "--sync")...)
+		return validAsyncBindExecution("", append(args, "--mode", "sync")...)
 	}
 
 	invalidBindCommandExecution := func(args ...string) error {

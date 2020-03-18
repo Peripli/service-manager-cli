@@ -60,7 +60,7 @@ func (pi *ProvisionCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result.Flags().StringVarP(&pi.parametersJSON, "parameters", "c", "", "Valid JSON object containing instance parameters")
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddCommonQueryFlag(result.Flags(), &pi.Parameters)
-	cmd.AddSyncFlag(result.Flags())
+	cmd.AddModeFlag(result.Flags(), "async")
 
 	return result
 }

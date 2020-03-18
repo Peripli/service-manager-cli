@@ -64,7 +64,7 @@ var _ = Describe("Provision Command test", func() {
 	}
 
 	validSyncProvisionExecution := func(args ...string) *cobra.Command {
-		return validAsyncProvisionExecution("", append(args, "--sync")...)
+		return validAsyncProvisionExecution("", append(args, "--mode", "sync")...)
 	}
 
 	invalidProvisionCommandExecution := func(args ...string) error {

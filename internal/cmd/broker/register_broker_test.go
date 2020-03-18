@@ -68,7 +68,7 @@ var _ = Describe("Register Broker Command test", func() {
 			})
 
 			It("should print location when registered asynchronously", func() {
-				validAsyncRegisterBrokerExecution([]string{"broker-name", "http://broker.com", "--basic", "user:password", "--async"}, "location")
+				validAsyncRegisterBrokerExecution([]string{"broker-name", "http://broker.com", "--basic", "user:password", "--mode", "async"}, "location")
 
 				Expect(buffer.String()).To(ContainSubstring(`smctl poll location`))
 			})
@@ -127,7 +127,7 @@ var _ = Describe("Register Broker Command test", func() {
 
 		Context("With async flag", func() {
 			It("should pass it to SM", func() {
-				validSyncRegisterBrokerExecution([]string{"validName", "validType", "validDescription", "--basic", "user:password", "--async"})
+				validSyncRegisterBrokerExecution([]string{"validName", "validType", "validDescription", "--basic", "user:password", "--mode", "async"})
 
 				_, args := client.RegisterBrokerArgsForCall(0)
 

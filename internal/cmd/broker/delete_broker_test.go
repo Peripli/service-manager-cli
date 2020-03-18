@@ -95,7 +95,7 @@ var _ = Describe("Delete brokers command test", func() {
 			client.DeleteBrokerReturns("", nil)
 			promptBuffer.WriteString("y")
 
-			err := executeWithArgs("broker-name", "--async")
+			err := executeWithArgs("broker-name", "--mode", "async")
 			Expect(err).ShouldNot(HaveOccurred())
 
 			_, args := client.DeleteBrokerArgsForCall(0)

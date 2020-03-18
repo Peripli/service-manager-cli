@@ -95,7 +95,7 @@ var _ = Describe("Deprovision command test", func() {
 			client.DeprovisionReturns("", nil)
 			promptBuffer.WriteString("y")
 
-			err := executeWithArgs("instance-name", "--sync")
+			err := executeWithArgs("instance-name", "--mode", "sync")
 			Expect(err).ShouldNot(HaveOccurred())
 
 			_, args := client.DeprovisionArgsForCall(0)

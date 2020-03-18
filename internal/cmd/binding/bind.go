@@ -55,7 +55,7 @@ func (bc *BindCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result.Flags().StringVarP(&bc.binding.ServiceInstanceID, "id", "", "", "ID of the service instance. Required when name is ambiguous")
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddCommonQueryFlag(result.Flags(), &bc.Parameters)
-	cmd.AddSyncFlag(result.Flags())
+	cmd.AddModeFlag(result.Flags(), "async")
 
 	return result
 }

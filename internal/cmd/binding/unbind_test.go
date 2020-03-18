@@ -99,7 +99,7 @@ var _ = Describe("Unbind command test", func() {
 			client.UnbindReturns("", nil)
 			promptBuffer.WriteString("y")
 
-			err := executeWithArgs("instance-name", "binding-name", "--sync")
+			err := executeWithArgs("instance-name", "binding-name", "--mode", "sync")
 			Expect(err).ShouldNot(HaveOccurred())
 
 			_, args := client.UnbindArgsForCall(0)

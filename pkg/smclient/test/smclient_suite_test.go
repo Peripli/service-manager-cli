@@ -1,6 +1,7 @@
 package test
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
 	"net/http"
@@ -84,6 +85,7 @@ var (
 		Name:          "instance1",
 		ServicePlanID: "service_plan_id",
 		PlatformID:    "platform_id",
+		Context:       json.RawMessage("{}"),
 	}
 
 	binding = &types.ServiceBinding{

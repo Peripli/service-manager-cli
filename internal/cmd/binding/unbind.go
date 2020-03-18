@@ -56,7 +56,7 @@ func (ubc *UnbindCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result.Flags().StringVarP(&ubc.bindingID, "id", "", "", "ID of the service binding. Required when name is ambiguous")
 	result.Flags().BoolVarP(&ubc.force, "force", "f", false, "Force delete without confirmation")
 	cmd.AddCommonQueryFlag(result.Flags(), &ubc.Parameters)
-	cmd.AddSyncFlag(result.Flags())
+	cmd.AddModeFlag(result.Flags(), "async")
 
 	return result
 }
