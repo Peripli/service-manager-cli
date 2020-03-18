@@ -94,7 +94,7 @@ func (ubc *UnbindCmd) Run() error {
 			return fmt.Errorf("more than one service instance with name %s found. Use --id flag to specify id of the binding to be deleted", ubc.instanceName)
 		}
 
-		bindingsToDelte, err := ubc.Client.ListBindings(&query.Parameters{
+		bindingsToDelete, err := ubc.Client.ListBindings(&query.Parameters{
 			FieldQuery: []string{
 				fmt.Sprintf("name eq '%s'", ubc.bindingName),
 				fmt.Sprintf("service_instance_id eq '%s'", instanceToUnbind.ServiceInstances[0].ID),
@@ -103,11 +103,11 @@ func (ubc *UnbindCmd) Run() error {
 		if err != nil {
 			return err
 		}
-		if len(bindingsToDelte.ServiceBindings) < 1 {
+		if len(bindingsToDelete.ServiceBindings) < 1 {
 			output.PrintMessage(ubc.Output, "Service Binding with name %s for instance with name %s not found", ubc.bindingName, ubc.instanceName)
 			return nil
 		}
-		ubc.bindingID = bindingsToDelte.ServiceBindings[0].ID
+		ubc.bindingID = bindingsToDelete.ServiceBindings[0].ID
 	}
 
 	location, err := ubc.Client.Unbind(ubc.bindingID, &ubc.Parameters)
@@ -116,8 +116,7 @@ func (ubc *UnbindCmd) Run() error {
 		return err
 	}
 	if len(location) != 0 {
-		output.PrintMessage(ubc.Output, "Service Binding %s successfully scheduled for deletion. To see status of the operation use:\n", ubc.bindingName)
-		output.PrintMessage(ubc.Output, "smctl status %s\n", location)
+		cmd.CommonHandleAsyncExecution(ubc.Context, location, fmt.Sprintf("Service Binding %s successfully scheduled for deletion. To see status of the operation use:\n", ubc.bindingName))
 		return nil
 	}
 	output.PrintMessage(ubc.Output, "Service Binding successfully deleted.\n")

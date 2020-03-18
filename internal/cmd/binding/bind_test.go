@@ -43,6 +43,10 @@ var _ = Describe("Bind Command test", func() {
 			ID:   "instance-id",
 			Name: args[1],
 		}
+		operation := &types.Operation{
+			State: "in progress",
+		}
+		client.StatusReturns(operation, nil)
 		client.ListInstancesReturns(&types.ServiceInstances{ServiceInstances: []types.ServiceInstance{*instance}}, nil)
 		client.BindReturns(binding, location, nil)
 

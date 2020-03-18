@@ -80,8 +80,7 @@ func (ubc *UpdateBrokerCmd) Run() error {
 		return err
 	}
 	if len(location) != 0 {
-		output.PrintMessage(ubc.Output, "Service Broker %s successfully scheduled for update. To see status of the operation use:\n", toUpdateBroker.Name)
-		output.PrintMessage(ubc.Output, "smctl status %s\n", location)
+		cmd.CommonHandleAsyncExecution(ubc.Context, location, fmt.Sprintf("Service Broker %s successfully scheduled for update. To see status of the operation use:\n", toUpdateBroker.Name))
 		return nil
 	}
 	output.PrintServiceManagerObject(ubc.Output, ubc.outputFormat, result)

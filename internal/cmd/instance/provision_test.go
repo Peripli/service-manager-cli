@@ -52,6 +52,10 @@ var _ = Describe("Provision Command test", func() {
 		instance = &types.ServiceInstance{
 			Name: args[0],
 		}
+		operation := &types.Operation{
+			State: "in progress",
+		}
+		client.StatusReturns(operation, nil)
 		client.ListOfferingsReturns(offerings, nil)
 		client.ListPlansReturns(plans, nil)
 		client.ProvisionReturns(instance, location, nil)

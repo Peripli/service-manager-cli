@@ -37,6 +37,11 @@ var _ = Describe("Update broker command test", func() {
 			Description: "description",
 		}
 		brokers := &types.Brokers{Brokers: []types.Broker{broker}}
+		operation := &types.Operation{
+			State: "in progress",
+		}
+
+		client.StatusReturns(operation, nil)
 		client.ListBrokersReturns(brokers, nil)
 		_ = json.Unmarshal([]byte(args[1]), broker)
 		client.UpdateBrokerReturns(&broker, location, nil)

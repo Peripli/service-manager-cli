@@ -140,8 +140,7 @@ func (pi *ProvisionCmd) Run() error {
 	}
 
 	if len(location) != 0 {
-		output.PrintMessage(pi.Output, "Service Instance %s successfully scheduled for provisioning. To see status of the operation use:\n", pi.instance.Name)
-		output.PrintMessage(pi.Output, "smctl status %s\n", location)
+		cmd.CommonHandleAsyncExecution(pi.Context, location, fmt.Sprintf("Service Instance %s successfully scheduled for provisioning. To see status of the operation use:\n", pi.instance.Name))
 		return nil
 	}
 	output.PrintServiceManagerObject(pi.Output, pi.outputFormat, resultInstance)

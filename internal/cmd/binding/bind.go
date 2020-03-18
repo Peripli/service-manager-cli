@@ -97,8 +97,7 @@ func (bc *BindCmd) Run() error {
 	}
 
 	if len(location) != 0 {
-		output.PrintMessage(bc.Output, "Service Binding %s successfully scheduled. To see status of the operation use:\n", bc.binding.Name)
-		output.PrintMessage(bc.Output, "smctl status %s\n", location)
+		cmd.CommonHandleAsyncExecution(bc.Context, location, fmt.Sprintf("Service Binding %s successfully scheduled. To see status of the operation use:\n", bc.binding.Name))
 		return nil
 	}
 

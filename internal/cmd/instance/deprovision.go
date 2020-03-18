@@ -81,8 +81,7 @@ func (dbc *DeprovisionCmd) Run() error {
 		return err
 	}
 	if len(location) != 0 {
-		output.PrintMessage(dbc.Output, "Service Instance %s successfully scheduled for deletion. To see status of the operation use:\n", dbc.name)
-		output.PrintMessage(dbc.Output, "smctl status %s\n", location)
+		cmd.CommonHandleAsyncExecution(dbc.Context, location, fmt.Sprintf("Service Instance %s successfully scheduled for deletion. To see status of the operation use:\n", dbc.name))
 		return nil
 	}
 	output.PrintMessage(dbc.Output, "Service Instance successfully deleted.\n")

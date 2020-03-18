@@ -38,6 +38,10 @@ var _ = Describe("Register Broker Command test", func() {
 			URL:  args[1],
 			ID:   "1234",
 		}
+		operation := &types.Operation{
+			State: "in progress",
+		}
+		client.StatusReturns(operation, nil)
 		client.RegisterBrokerReturns(broker, location, nil)
 
 		rbcCmd := command.Prepare(cmd.SmPrepare)
