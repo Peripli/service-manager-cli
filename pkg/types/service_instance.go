@@ -39,7 +39,7 @@ type ServiceInstance struct {
 
 	Parameters      json.RawMessage `json:"parameters,omitempty" yaml:"parameters,omitempty"`
 	MaintenanceInfo json.RawMessage `json:"maintenance_info,omitempty" yaml:"-"`
-	Context         json.RawMessage `json:"-" yaml:"-"`
+	Context         json.RawMessage `json:"context" yaml:"context"`
 	PreviousValues  json.RawMessage `json:"-" yaml:"-"`
 
 	Ready  bool `json:"ready" yaml:"ready"`
