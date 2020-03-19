@@ -3,10 +3,11 @@ package test
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Peripli/service-manager-cli/pkg/smclient"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/Peripli/service-manager-cli/pkg/smclient"
 
 	cliquery "github.com/Peripli/service-manager-cli/pkg/query"
 
@@ -77,7 +78,6 @@ var (
 		Description: "Some description",
 		Plans:       []types.ServicePlan{*plan},
 		BrokerID:    "id",
-		BrokerName:  "test-broker",
 	}
 
 	instance = &types.ServiceInstance{
