@@ -82,7 +82,6 @@ var _ = Describe("Service Manager Client test", func() {
 		Description: "Some description",
 		Plans:       []types.ServicePlan{*plan},
 		BrokerID:    "id",
-		BrokerName:  "test-broker",
 	}
 
 	visibility := &types.Visibility{

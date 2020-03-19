@@ -268,16 +268,6 @@ func (client *serviceManagerClient) Marketplace(q *query.Parameters) (*types.Mar
 			return nil, err
 		}
 		marketplace.ServiceOfferings[i].Plans = plans.ServicePlans
-
-		broker := &types.Broker{}
-		err = client.get(broker, web.ServiceBrokersURL+"/"+so.BrokerID, &query.Parameters{
-			GeneralParams: q.GeneralParams,
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		marketplace.ServiceOfferings[i].BrokerName = broker.Name
 	}
 	return marketplace, nil
 }
