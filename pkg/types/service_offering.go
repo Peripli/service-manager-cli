@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Peripli/service-manager/pkg/types"
+	"strconv"
 	"strings"
 )
 
@@ -46,6 +47,7 @@ type ServiceOffering struct {
 	BrokerName string        `json:"broker_name,omitempty" yaml:"broker_name,omitempty"`
 	Plans      []ServicePlan `json:"plans,omitempty" yaml:"plans,omitempty"`
 	Labels     types.Labels  `json:"labels,omitempty" yaml:"labels,omitempty"`
+	Ready      bool          `json:"ready,omitempty" yaml:"ready,omitempty"`
 }
 
 // Message title of the table
@@ -145,10 +147,10 @@ func (so *ServiceOfferings) IsEmpty() bool {
 // TableData returns the data to populate a table
 func (so *ServiceOfferings) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"ID", "Name", "Description", "Broker ID", "Labels"}
+	result.Headers = []string{"ID", "Name", "Description", "Broker ID", "Ready", "Labels"}
 
 	for _, v := range so.ServiceOfferings {
-		row := []string{v.ID, v.Name, v.Description, v.BrokerID, formatLabels(v.Labels)}
+		row := []string{v.ID, v.Name, v.Description, v.BrokerID, strconv.FormatBool(v.Ready), formatLabels(v.Labels)}
 		result.Data = append(result.Data, row)
 	}
 

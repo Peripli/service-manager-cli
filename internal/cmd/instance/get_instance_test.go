@@ -1,8 +1,6 @@
 package instance
 
 import (
-	"testing"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -12,11 +10,6 @@ import (
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
 )
-
-func TestGetInstanceCmd(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "")
-}
 
 var _ = Describe("Get instance command test", func() {
 	var client *smclientfakes.FakeClient
@@ -60,7 +53,7 @@ var _ = Describe("Get instance command test", func() {
 	Context("when more than one instance with same name exists", func() {
 		var response *types.ServiceInstances
 		BeforeEach(func() {
-			response = &types.ServiceInstances{ServiceInstances: []types.ServiceInstance{instance, instance2}}
+			response = &types.ServiceInstances{ServiceInstances: []types.ServiceInstance{instance, instance2}, Vertical: true}
 			client.ListInstancesReturns(response, nil)
 		})
 
@@ -90,7 +83,7 @@ var _ = Describe("Get instance command test", func() {
 			err := executeWithArgs("instance1")
 
 			Expect(err).ShouldNot(HaveOccurred())
-			result := &types.ServiceInstances{ServiceInstances: []types.ServiceInstance{instance}}
+			result := &types.ServiceInstances{ServiceInstances: []types.ServiceInstance{instance}, Vertical: true}
 			Expect(buffer.String()).To(ContainSubstring(result.TableData().String()))
 		})
 	})

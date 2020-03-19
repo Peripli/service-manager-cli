@@ -23,22 +23,25 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
-	"gopkg.in/yaml.v2"
-	"testing"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"gopkg.in/yaml.v2"
 )
-
-func TestListBindingsCmd(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "")
-}
 
 var _ = Describe("List bindings command test", func() {
 	var client *smclientfakes.FakeClient
 	var command *ListBindingsCmd
 	var buffer *bytes.Buffer
+
+	instance1 := types.ServiceInstance{
+		ID:   "service_instance_id1",
+		Name: "instance-name1",
+	}
+
+	instance2 := types.ServiceInstance{
+		ID:   "service_instance_id2",
+		Name: "instance-name2",
+	}
 
 	binding1 := types.ServiceBinding{
 		ID:                "id1",
@@ -57,6 +60,8 @@ var _ = Describe("List bindings command test", func() {
 		client = &smclientfakes.FakeClient{}
 		context := &cmd.Context{Output: buffer, Client: client}
 		command = NewListBindingsCmd(context)
+		client.GetInstanceByIDReturnsOnCall(0, &instance1, nil)
+		client.GetInstanceByIDReturnsOnCall(1, &instance2, nil)
 	})
 
 	executeWithArgs := func(args []string) error {

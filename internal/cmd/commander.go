@@ -34,6 +34,7 @@ import (
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
+	"github.com/Peripli/service-manager/pkg/types"
 )
 
 var supportedFormats = map[string]output.Format{
@@ -86,6 +87,14 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 	return func(c *cobra.Command, args []string) error {
 		if err := CommonPrepare(cmd, ctx)(c, args); err != nil {
 			return err
+		}
+
+		mode, err := c.Flags().GetString("mode")
+		if err == nil {
+			if mode != "async" && mode != "sync" {
+				return fmt.Errorf("only sync/async modes are supported")
+			}
+			ctx.Parameters.GeneralParams = append(ctx.Parameters.GeneralParams, fmt.Sprintf("async=%t", mode == "async"))
 		}
 
 		if ctx.Client == nil {
@@ -198,6 +207,29 @@ func AddQueryingFlags(flags *pflag.FlagSet, parameters *query.Parameters) {
 // AddCommonQueryFlag adds the CLI param that provides general query parameters
 func AddCommonQueryFlag(flags *pflag.FlagSet, parameters *query.Parameters) {
 	flags.StringArrayVarP(&parameters.GeneralParams, "param", "", nil, "Additional query parameters in the form key=value")
+}
+
+// AddModeFlag adds the --mode flag for SM calls.
+func AddModeFlag(flags *pflag.FlagSet, defValue string) {
+	flags.StringP("mode", "", defValue, "How calls to SM are performed sync or async")
+}
+
+// CommonHandleAsyncExecution handles async execution of SM calls
+func CommonHandleAsyncExecution(ctx *Context, location string, message string) {
+	operation, err := ctx.Client.Status(location, &query.Parameters{})
+	if err != nil {
+		output.PrintMessage(ctx.Output, message)
+		output.PrintMessage(ctx.Output, "smctl status %s\n", location)
+		output.PrintMessage(ctx.Output, "Error while polling for operation: %s\n", err)
+		return
+	}
+	if operation.State != string(types.IN_PROGRESS) {
+		output.PrintServiceManagerObject(ctx.Output, output.FormatText, operation)
+		return
+	}
+
+	output.PrintMessage(ctx.Output, message)
+	output.PrintMessage(ctx.Output, "smctl status %s\n", location)
 }
 
 //CommonConfirmationPrompt provides common logic for confirmation of an operation

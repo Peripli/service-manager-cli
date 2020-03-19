@@ -19,6 +19,7 @@ package broker
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Peripli/service-manager-cli/pkg/query"
 
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/spf13/cobra"
@@ -62,8 +63,11 @@ func (ubc *UpdateBrokerCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (ubc *UpdateBrokerCmd) Run() error {
-	ubc.Parameters.FieldQuery = append(ubc.Parameters.FieldQuery, fmt.Sprintf("name eq '%s'", ubc.name))
-	toUpdateBrokers, err := ubc.Client.ListBrokers(&ubc.Parameters)
+	toUpdateBrokers, err := ubc.Client.ListBrokers(&query.Parameters{
+		FieldQuery: []string{
+			fmt.Sprintf("name eq '%s'", ubc.name),
+		},
+	})
 	if err != nil {
 		return err
 	}
@@ -71,14 +75,16 @@ func (ubc *UpdateBrokerCmd) Run() error {
 		return fmt.Errorf("broker with name %s not found", ubc.name)
 	}
 	toUpdateBroker := toUpdateBrokers.Brokers[0]
-	result, err := ubc.Client.UpdateBroker(toUpdateBroker.ID, ubc.updatedBroker, &ubc.Parameters)
+	result, location, err := ubc.Client.UpdateBroker(toUpdateBroker.ID, ubc.updatedBroker, &ubc.Parameters)
 	if err != nil {
 		return err
 	}
-
+	if len(location) != 0 {
+		cmd.CommonHandleAsyncExecution(ubc.Context, location, fmt.Sprintf("Service Broker %s successfully scheduled for update. To see status of the operation use:\n", toUpdateBroker.Name))
+		return nil
+	}
 	output.PrintServiceManagerObject(ubc.Output, ubc.outputFormat, result)
 	output.Println(ubc.Output)
-
 	return nil
 }
 
@@ -102,6 +108,7 @@ smctl update-broker broker '{"name": "new-name", "description": "new-description
 
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddCommonQueryFlag(result.Flags(), &ubc.Parameters)
+	cmd.AddModeFlag(result.Flags(), "sync")
 
 	return result
 }

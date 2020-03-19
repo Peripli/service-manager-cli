@@ -32,7 +32,6 @@ type GetInstanceCmd struct {
 	*cmd.Context
 
 	instanceName string
-	prepare      cmd.PrepareFunc
 	outputFormat output.Format
 }
 
@@ -56,13 +55,9 @@ func (gb *GetInstanceCmd) Run() error {
 		return nil
 	}
 
-	resultInstances := &types.ServiceInstances{}
+	resultInstances := &types.ServiceInstances{Vertical: true}
 	for _, instance := range instances.ServiceInstances {
-		inst, err := gb.Client.GetInstanceByID(instance.ID, &query.Parameters{
-			GeneralParams: []string{
-				"last_op=true",
-			},
-		})
+		inst, err := gb.Client.GetInstanceByID(instance.ID, &gb.Parameters)
 		if err != nil {
 			return err
 		}
@@ -71,7 +66,6 @@ func (gb *GetInstanceCmd) Run() error {
 
 	output.PrintServiceManagerObject(gb.Output, gb.outputFormat, resultInstances)
 	output.Println(gb.Output)
-
 	return nil
 }
 
@@ -98,13 +92,12 @@ func (gb *GetInstanceCmd) HideUsage() bool {
 
 // Prepare returns cobra command
 func (gb *GetInstanceCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
-	gb.prepare = prepare
 	result := &cobra.Command{
 		Use:     "get-instance [name]",
-		Aliases: []string{"gb"},
+		Aliases: []string{"gi"},
 		Short:   "Get single instance",
 		Long:    `Get single instance by its name`,
-		PreRunE: gb.prepare(gb, gb.Context),
+		PreRunE: prepare(gb, gb.Context),
 		RunE:    cmd.RunE(gb),
 	}
 

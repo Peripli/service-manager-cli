@@ -19,6 +19,7 @@ package types
 import (
 	"fmt"
 	"github.com/Peripli/service-manager/pkg/types"
+	"strconv"
 )
 
 // Platform defines the data of a platform.
@@ -31,6 +32,7 @@ type Platform struct {
 	Updated     string       `json:"updated_at,omitempty" yaml:"updated_at,omitempty"`
 	Credentials *Credentials `json:"credentials,omitempty" yaml:"credentials,omitempty"`
 	Labels      types.Labels `json:"labels,omitempty" yaml:"labels,omitempty"`
+	Ready       bool         `json:"ready,omitempty" yaml:"ready,omitempty"`
 }
 
 // Message title of the table
@@ -88,10 +90,10 @@ func (p *Platforms) Message() string {
 // TableData returns the data to populate a table
 func (p *Platforms) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"ID", "Name", "Type", "Description", "Created", "Updated", "Labels"}
+	result.Headers = []string{"ID", "Name", "Type", "Description", "Created", "Updated", "Ready", "Labels"}
 
 	for _, platform := range p.Platforms {
-		row := []string{platform.ID, platform.Name, platform.Type, platform.Description, platform.Created, platform.Updated, formatLabels(platform.Labels)}
+		row := []string{platform.ID, platform.Name, platform.Type, platform.Description, platform.Created, platform.Updated, strconv.FormatBool(platform.Ready), formatLabels(platform.Labels)}
 		result.Data = append(result.Data, row)
 	}
 

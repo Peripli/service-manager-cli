@@ -1,8 +1,6 @@
 package binding
 
 import (
-	"testing"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -13,24 +11,31 @@ import (
 	"github.com/Peripli/service-manager-cli/pkg/types"
 )
 
-func TestGetBindingCmd(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "")
-}
-
 var _ = Describe("Get binding command test", func() {
 	var client *smclientfakes.FakeClient
 	var command *GetBindingCmd
 	var buffer *bytes.Buffer
+
+	instance1 := types.ServiceInstance{
+		ID:   "1",
+		Name: "instance-name1",
+	}
+
+	instance2 := types.ServiceInstance{
+		ID:   "2",
+		Name: "instance-name2",
+	}
 	binding := types.ServiceBinding{
-		Name:              "binding1",
-		ServiceInstanceID: "1",
-		ID:                "id1",
+		Name:                "binding1",
+		ServiceInstanceID:   "1",
+		ServiceInstanceName: "instance-name1",
+		ID:                  "id1",
 	}
 	binding2 := types.ServiceBinding{
-		Name:              "binding1",
-		ServiceInstanceID: "2",
-		ID:                "id2",
+		Name:                "binding1",
+		ServiceInstanceID:   "2",
+		ServiceInstanceName: "instance-name2",
+		ID:                  "id2",
 	}
 
 	BeforeEach(func() {
@@ -39,6 +44,8 @@ var _ = Describe("Get binding command test", func() {
 		client.ListBindingsReturns(&types.ServiceBindings{ServiceBindings: []types.ServiceBinding{binding}}, nil)
 		context := &cmd.Context{Output: buffer, Client: client}
 		command = NewGetBindingCmd(context)
+		client.GetInstanceByIDReturnsOnCall(0, &instance1, nil)
+		client.GetInstanceByIDReturnsOnCall(1, &instance2, nil)
 	})
 
 	executeWithArgs := func(args ...string) error {
@@ -60,7 +67,7 @@ var _ = Describe("Get binding command test", func() {
 	Context("when more than one binding with same name exists", func() {
 		var response *types.ServiceBindings
 		BeforeEach(func() {
-			response = &types.ServiceBindings{ServiceBindings: []types.ServiceBinding{binding, binding2}}
+			response = &types.ServiceBindings{ServiceBindings: []types.ServiceBinding{binding, binding2}, Vertical: true}
 			client.ListBindingsReturns(response, nil)
 		})
 
@@ -90,7 +97,7 @@ var _ = Describe("Get binding command test", func() {
 			err := executeWithArgs("binding1")
 
 			Expect(err).ShouldNot(HaveOccurred())
-			result := &types.ServiceBindings{ServiceBindings: []types.ServiceBinding{binding}}
+			result := &types.ServiceBindings{ServiceBindings: []types.ServiceBinding{binding}, Vertical: true}
 			Expect(buffer.String()).To(ContainSubstring(result.TableData().String()))
 		})
 	})

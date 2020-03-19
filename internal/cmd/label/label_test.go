@@ -3,6 +3,7 @@ package label
 import (
 	"bytes"
 	"errors"
+	smtypes "github.com/Peripli/service-manager/pkg/types"
 	"testing"
 
 	"io/ioutil"
@@ -11,7 +12,6 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
-	"github.com/Peripli/service-manager/pkg/query"
 	"github.com/Peripli/service-manager/pkg/util"
 	"github.com/Peripli/service-manager/pkg/web"
 	. "github.com/onsi/ginkgo"
@@ -60,7 +60,7 @@ var _ = Describe("Label Command test", func() {
 
 			It("should pass arguments properly", func() {
 				labelChanges = &types.LabelChanges{
-					LabelChanges: []*query.LabelChange{{Key: "key", Operation: "add_values", Values: []string{"val1", "val2", "val3"}}},
+					LabelChanges: []*smtypes.LabelChange{{Key: "key", Operation: "add_values", Values: []string{"val1", "val2", "val3"}}},
 				}
 				err := validLabelExecution("platform", "id", "add-values", "key", "--val", "val1", "--val", "val2", "--val", "val3")
 

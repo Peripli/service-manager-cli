@@ -18,10 +18,9 @@ package broker
 
 import (
 	"fmt"
-	"io"
-	"strings"
-
 	"github.com/Peripli/service-manager-cli/internal/output"
+	"github.com/Peripli/service-manager-cli/pkg/query"
+	"io"
 
 	"github.com/spf13/cobra"
 
@@ -31,7 +30,6 @@ import (
 // DeleteBrokerCmd wraps the smctl delete-broker command
 type DeleteBrokerCmd struct {
 	*cmd.Context
-	prepare cmd.PrepareFunc
 
 	input io.Reader
 	force bool
@@ -57,16 +55,28 @@ func (dbc *DeleteBrokerCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (dbc *DeleteBrokerCmd) Run() error {
-	dbc.Parameters.FieldQuery = append(dbc.Parameters.FieldQuery, fmt.Sprintf("name eq '%s'", dbc.name))
-	if err := dbc.Client.DeleteBrokers(&dbc.Parameters); err != nil {
-		if strings.Contains(err.Error(), "StatusCode: 404") {
-			output.PrintMessage(dbc.Output, "Service Broker(s) not found.\n")
-			return nil
-		}
-		output.PrintMessage(dbc.Output, "Could not delete broker(s). Reason: ")
+	toDeleteBrokers, err := dbc.Client.ListBrokers(&query.Parameters{
+		FieldQuery: []string{
+			fmt.Sprintf("name eq '%s'", dbc.name),
+		},
+	})
+	if err != nil {
 		return err
 	}
-	output.PrintMessage(dbc.Output, "Service Broker(s) successfully deleted.\n")
+	if len(toDeleteBrokers.Brokers) < 1 {
+		output.PrintMessage(dbc.Output, "Service Broker not found.\n")
+		return nil
+	}
+	location, err := dbc.Client.DeleteBroker(toDeleteBrokers.Brokers[0].ID, &dbc.Parameters)
+	if err != nil {
+		output.PrintMessage(dbc.Output, "Could not delete broker. Reason: ")
+		return err
+	}
+	if len(location) != 0 {
+		cmd.CommonHandleAsyncExecution(dbc.Context, location, fmt.Sprintf("Service Broker %s successfully scheduled for deletion. To see status of the operation use:\n", dbc.name))
+		return nil
+	}
+	output.PrintMessage(dbc.Output, "Service Broker successfully deleted.\n")
 	return nil
 }
 
@@ -91,18 +101,18 @@ func (dbc *DeleteBrokerCmd) PrintDeclineMessage() {
 
 // Prepare returns cobra command
 func (dbc *DeleteBrokerCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
-	dbc.prepare = prepare
 	result := &cobra.Command{
 		Use:     "delete-broker [name]",
 		Aliases: []string{"db"},
-		Short:   "Deletes brokers",
-		Long:    `Delete one or more brokers with name.`,
-		PreRunE: dbc.prepare(dbc, dbc.Context),
+		Short:   "Deletes broker",
+		Long:    `Deletes broker by name.`,
+		PreRunE: prepare(dbc, dbc.Context),
 		RunE:    cmd.RunE(dbc),
 	}
 
 	result.Flags().BoolVarP(&dbc.force, "force", "f", false, "Force delete without confirmation")
 	cmd.AddCommonQueryFlag(result.Flags(), &dbc.Parameters)
+	cmd.AddModeFlag(result.Flags(), "sync")
 
 	return result
 }

@@ -20,7 +20,7 @@ before_script:
 
 script:
   # Execute static checks
-  - gometalinter --vendor ./...
+  - gometalinter --cyclo-over=13 --vendor ./...
 
   # Execute tests and generate coverage for all the packages except fakes and tests
   - go test ./... -coverpkg $(go list ./... | egrep -v "fakes|test" | paste -sd "," -) -coverprofile=profile.cov

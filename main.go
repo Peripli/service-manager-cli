@@ -28,6 +28,7 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/cmd/offering"
 	"github.com/Peripli/service-manager-cli/internal/cmd/plan"
 	"github.com/Peripli/service-manager-cli/internal/cmd/platform"
+	"github.com/Peripli/service-manager-cli/internal/cmd/status"
 	"github.com/Peripli/service-manager-cli/internal/cmd/version"
 	"github.com/Peripli/service-manager-cli/internal/cmd/visibility"
 	"github.com/Peripli/service-manager-cli/pkg/auth"
@@ -61,6 +62,8 @@ func main() {
 			curl.NewCurlCmd(context, fs),
 			binding.NewListBindingsCmd(context),
 			binding.NewGetBindingCmd(context),
+			binding.NewBindCmd(context),
+			binding.NewUnbindCmd(context, os.Stdin),
 			broker.NewRegisterBrokerCmd(context),
 			broker.NewGetBrokerCmd(context),
 			broker.NewListBrokersCmd(context),
@@ -78,8 +81,11 @@ func main() {
 			offering.NewMarketplaceCmd(context),
 			plan.NewListPlansCmd(context),
 			label.NewLabelCmd(context),
+			status.NewStatusCmd(context),
 			instance.NewListInstancesCmd(context),
 			instance.NewGetInstanceCmd(context),
+			instance.NewProvisionCmd(context),
+			instance.NewDeprovisionCmd(context, os.Stdin),
 		},
 		PrepareFn: cmd.SmPrepare,
 	}

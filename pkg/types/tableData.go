@@ -16,14 +16,28 @@
 
 package types
 
+import (
+	"fmt"
+	"github.com/Peripli/service-manager/pkg/types"
+	"strings"
+)
+
 // TableData holds data for table header and content
 type TableData struct {
-	Headers []string
-	Data    [][]string
+	Headers  []string
+	Data     [][]string
+	Vertical bool
 }
 
 // String implements Stringer interface
 func (table *TableData) String() string {
+	if table.Vertical {
+		return table.verticalTable()
+	}
+	return table.horizontalTable()
+}
+
+func (table *TableData) horizontalTable() string {
 	output := ""
 	if len(table.Data) == 0 {
 		return output
@@ -52,14 +66,44 @@ func (table *TableData) String() string {
 	return output
 }
 
-func (table *TableData) fieldsLen() []int {
+func (table *TableData) verticalTable() string {
+	output := ""
+	if len(table.Data) == 0 {
+		return output
+	}
+
+	headerLen := table.headerLen()
+	maxHeaderLen := max(headerLen...)
+
+	dataLen := table.dataLen()
+	maxDataLen := max(dataLen...)
+
+	for i, header := range table.Headers {
+		output += "| "
+		output += pad(header, maxHeaderLen)
+		output += "| "
+		for _, row := range table.Data {
+			output += pad(row[i], maxDataLen)
+			output += "| "
+		}
+		output += "\n"
+	}
+
+	return output
+}
+
+func (table *TableData) headerLen() []int {
 	fieldLen := make([]int, len(table.Headers))
 	for i, header := range table.Headers {
 		if fieldLen[i] < len(header)+2 {
 			fieldLen[i] = len(header) + 2
 		}
 	}
+	return fieldLen
+}
 
+func (table *TableData) dataLen() []int {
+	fieldLen := make([]int, len(table.Headers))
 	for _, row := range table.Data {
 		for i, cell := range row {
 			if fieldLen[i] < len(cell)+2 {
@@ -68,6 +112,17 @@ func (table *TableData) fieldsLen() []int {
 		}
 	}
 
+	return fieldLen
+}
+
+func (table *TableData) fieldsLen() []int {
+	fieldLen := make([]int, len(table.Headers))
+	headerLen := table.headerLen()
+	dataLen := table.dataLen()
+
+	for i := range fieldLen {
+		fieldLen[i] = max(headerLen[i], dataLen[i])
+	}
 	return fieldLen
 }
 
@@ -89,4 +144,29 @@ func line(p int) string {
 	}
 
 	return result
+}
+
+func max(arr ...int) int {
+	tmp := arr[0]
+	for _, i := range arr {
+		if i > tmp {
+			tmp = i
+		}
+	}
+	return tmp
+}
+
+func formatLabels(labels types.Labels) string {
+	formattedLabels := make([]string, 0, len(labels))
+	for i, v := range labels {
+		formattedLabels = append(formattedLabels, i+"="+strings.Join(v, ","))
+	}
+	return strings.Join(formattedLabels, " ")
+}
+
+func formatLastOp(operation *types.Operation) string {
+	if operation.State != types.FAILED {
+		return fmt.Sprintf("%s %s", operation.Type, operation.State)
+	}
+	return fmt.Sprintf("%s %s %s", operation.Type, operation.State, operation.Errors)
 }

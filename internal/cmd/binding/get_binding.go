@@ -27,12 +27,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// GetBindingCmd wraps the smctl list-brokers command
+// GetBindingCmd wraps the smctl get-binding command
 type GetBindingCmd struct {
 	*cmd.Context
 
 	bindingName  string
-	prepare      cmd.PrepareFunc
 	outputFormat output.Format
 }
 
@@ -56,16 +55,17 @@ func (gb *GetBindingCmd) Run() error {
 		return nil
 	}
 
-	resultBindings := &types.ServiceBindings{}
+	resultBindings := &types.ServiceBindings{Vertical: true}
 	for _, binding := range bindings.ServiceBindings {
-		bd, err := gb.Client.GetBindingByID(binding.ID, &query.Parameters{
-			GeneralParams: []string{
-				"last_op=true",
-			},
-		})
+		bd, err := gb.Client.GetBindingByID(binding.ID, &gb.Parameters)
 		if err != nil {
 			return err
 		}
+		instance, err := gb.Client.GetInstanceByID(bd.ServiceInstanceID, &query.Parameters{})
+		if err != nil {
+			return err
+		}
+		bd.ServiceInstanceName = instance.Name
 		resultBindings.ServiceBindings = append(resultBindings.ServiceBindings, *bd)
 	}
 
@@ -98,13 +98,12 @@ func (gb *GetBindingCmd) HideUsage() bool {
 
 // Prepare returns cobra command
 func (gb *GetBindingCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
-	gb.prepare = prepare
 	result := &cobra.Command{
 		Use:     "get-binding [name]",
 		Aliases: []string{"gsb"},
 		Short:   "Get single binding",
 		Long:    `Get single binding by its name`,
-		PreRunE: gb.prepare(gb, gb.Context),
+		PreRunE: prepare(gb, gb.Context),
 		RunE:    cmd.RunE(gb),
 	}
 

@@ -59,6 +59,7 @@ func (rbc *RegisterBrokerCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result.Flags().StringVarP(&rbc.basicString, "basic", "b", "", "Sets the username and password for basic authentication. Format is <username:password>.")
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddCommonQueryFlag(result.Flags(), &rbc.Parameters)
+	cmd.AddModeFlag(result.Flags(), "sync")
 
 	return result
 }
@@ -85,11 +86,15 @@ func (rbc *RegisterBrokerCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (rbc *RegisterBrokerCmd) Run() error {
-	resultBroker, err := rbc.Client.RegisterBroker(&rbc.broker, &rbc.Parameters)
+	resultBroker, location, err := rbc.Client.RegisterBroker(&rbc.broker, &rbc.Parameters)
 	if err != nil {
 		return err
 	}
 
+	if len(location) != 0 {
+		cmd.CommonHandleAsyncExecution(rbc.Context, location, fmt.Sprintf("Service Broker %s successfully scheduled for registration. To see status of the operation use:\n", rbc.broker.Name))
+		return nil
+	}
 	output.PrintServiceManagerObject(rbc.Output, rbc.outputFormat, resultBroker)
 	output.Println(rbc.Output)
 	return nil

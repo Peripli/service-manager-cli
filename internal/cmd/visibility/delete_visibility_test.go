@@ -3,21 +3,14 @@ package visibility
 import (
 	"bytes"
 
-	"io/ioutil"
-	"net/http"
-	"testing"
-
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 	"github.com/Peripli/service-manager/pkg/util"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"io/ioutil"
+	"net/http"
 )
-
-func TestDeleteVisibilityCmd(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "")
-}
 
 var _ = Describe("Delete visibility command test", func() {
 
