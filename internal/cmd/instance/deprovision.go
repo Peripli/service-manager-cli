@@ -111,7 +111,6 @@ func (dbc *DeprovisionCmd) PrintDeclineMessage() {
 func (dbc *DeprovisionCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
 		Use:     "deprovision [name]",
-		Aliases: []string{"db"},
 		Short:   "Deletes service instance",
 		Long:    `Deletes service instance by name.`,
 		PreRunE: prepare(dbc, dbc.Context),
