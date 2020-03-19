@@ -42,7 +42,7 @@ type ServiceBinding struct {
 	RouteServiceURL string          `json:"route_service_url,omitempty"`
 	VolumeMounts    json.RawMessage `json:"-" yaml:"-"`
 	Endpoints       json.RawMessage `json:"-" yaml:"-"`
-	Context         json.RawMessage `json:"-" yaml:"-"`
+	Context         json.RawMessage `json:"context,omitempty" yaml:"context,omitempty"`
 	BindResource    json.RawMessage `json:"-" yaml:"-"`
 
 	Ready bool `json:"ready,omitempty" yaml:"ready,omitempty"`
