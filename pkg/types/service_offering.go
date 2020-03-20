@@ -19,9 +19,10 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Peripli/service-manager/pkg/types"
 	"strconv"
 	"strings"
+
+	"github.com/Peripli/service-manager/pkg/types"
 )
 
 // ServiceOffering defines the data of a service offering.
@@ -63,14 +64,14 @@ func (so *ServiceOffering) IsEmpty() bool {
 // TableData returns the data to populate a table
 func (so *ServiceOffering) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"Name", "Plans", "Description", "Broker Name", "Broker ID"}
+	result.Headers = []string{"Name", "Plans", "Description", "Broker ID"}
 
 	plans := make([]string, len(so.Plans))
 	for i, v := range so.Plans {
 		plans[i] = v.Name
 	}
 
-	row := []string{so.Name, strings.Join(plans, ", "), so.Description, so.BrokerName, so.BrokerID}
+	row := []string{so.Name, strings.Join(plans, ", "), so.Description, so.BrokerID}
 	result.Data = append(result.Data, row)
 
 	return result
@@ -104,7 +105,7 @@ func (m *Marketplace) IsEmpty() bool {
 // TableData returns the data to populate a table
 func (m *Marketplace) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"Name", "Plans", "Description", "Broker Name", "Broker ID"}
+	result.Headers = []string{"Name", "Plans", "Description", "Broker ID"}
 
 	for _, v := range m.ServiceOfferings {
 		plans := make([]string, len(v.Plans))
@@ -112,7 +113,7 @@ func (m *Marketplace) TableData() *TableData {
 			plans[i] = v.Name
 		}
 
-		row := []string{v.Name, strings.Join(plans, ", "), v.Description, v.BrokerName, v.BrokerID}
+		row := []string{v.Name, strings.Join(plans, ", "), v.Description, v.BrokerID}
 		result.Data = append(result.Data, row)
 	}
 

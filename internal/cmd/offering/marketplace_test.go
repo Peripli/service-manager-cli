@@ -31,7 +31,6 @@ var _ = Describe("Marketplace command test", func() {
 		Name:        "no-plan-offering",
 		Plans:       []types.ServicePlan{},
 		Description: "desc",
-		BrokerName:  "broker",
 		BrokerID:    "id",
 	}
 
@@ -39,7 +38,6 @@ var _ = Describe("Marketplace command test", func() {
 		Name:        "offering1",
 		Plans:       []types.ServicePlan{plan1},
 		Description: "desc",
-		BrokerName:  "broker1",
 		BrokerID:    "id1",
 	}
 
@@ -47,7 +45,6 @@ var _ = Describe("Marketplace command test", func() {
 		Name:        "offering2",
 		Plans:       []types.ServicePlan{plan1, plan2},
 		Description: "desc",
-		BrokerName:  "broker2",
 		BrokerID:    "id2",
 	}
 
