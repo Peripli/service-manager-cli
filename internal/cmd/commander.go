@@ -34,7 +34,6 @@ import (
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
-	"github.com/Peripli/service-manager/pkg/types"
 )
 
 var supportedFormats = map[string]output.Format{
@@ -216,18 +215,6 @@ func AddModeFlag(flags *pflag.FlagSet, defValue string) {
 
 // CommonHandleAsyncExecution handles async execution of SM calls
 func CommonHandleAsyncExecution(ctx *Context, location string, message string) {
-	operation, err := ctx.Client.Status(location, &query.Parameters{})
-	if err != nil {
-		output.PrintMessage(ctx.Output, message)
-		output.PrintMessage(ctx.Output, "smctl status %s\n", location)
-		output.PrintMessage(ctx.Output, "Error while polling for operation: %s\n", err)
-		return
-	}
-	if operation.State != string(types.IN_PROGRESS) {
-		output.PrintServiceManagerObject(ctx.Output, output.FormatText, operation)
-		return
-	}
-
 	output.PrintMessage(ctx.Output, message)
 	output.PrintMessage(ctx.Output, "smctl status %s\n", location)
 }
