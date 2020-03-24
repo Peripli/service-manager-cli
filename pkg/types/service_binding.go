@@ -43,6 +43,7 @@ type ServiceBinding struct {
 	VolumeMounts    json.RawMessage `json:"-" yaml:"-"`
 	Endpoints       json.RawMessage `json:"-" yaml:"-"`
 	Context         json.RawMessage `json:"context,omitempty" yaml:"context,omitempty"`
+	Parameters      json.RawMessage `json:"parameters,omitempty" yaml:"parameters,omitempty"`
 	BindResource    json.RawMessage `json:"-" yaml:"-"`
 
 	Ready bool `json:"ready,omitempty" yaml:"ready,omitempty"`

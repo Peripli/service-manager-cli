@@ -17,6 +17,7 @@
 package binding
 
 import (
+	"encoding/json"
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/pkg/query"
@@ -30,8 +31,9 @@ import (
 type BindCmd struct {
 	*cmd.Context
 
-	binding      types.ServiceBinding
-	instanceName string
+	binding        types.ServiceBinding
+	instanceName   string
+	parametersJSON string
 
 	outputFormat output.Format
 }
@@ -53,6 +55,7 @@ func (bc *BindCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	}
 
 	result.Flags().StringVarP(&bc.binding.ServiceInstanceID, "id", "", "", "ID of the service instance. Required when name is ambiguous")
+	result.Flags().StringVarP(&bc.parametersJSON, "parameters", "c", "", "Valid JSON object containing binding parameters")
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddCommonQueryFlag(result.Flags(), &bc.Parameters)
 	cmd.AddModeFlag(result.Flags(), "async")
@@ -91,6 +94,7 @@ func (bc *BindCmd) Run() error {
 		bc.binding.ServiceInstanceID = instanceToBind.ServiceInstances[0].ID
 	}
 
+	bc.binding.Parameters = json.RawMessage(bc.parametersJSON)
 	resultBinding, location, err := bc.Client.Bind(&bc.binding, &bc.Parameters)
 	if err != nil {
 		return err
