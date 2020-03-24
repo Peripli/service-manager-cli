@@ -240,7 +240,6 @@ func CommonConfirmationPrompt(message string, ctx *Context, input io.Reader) (bo
 		return false, err
 	}
 	return positiveResponses[string(resp)], nil
-
 }
 
 //CommonPrintDeclineMessage provides common confirmation declined message
