@@ -18,6 +18,7 @@ package binding
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Peripli/service-manager-cli/pkg/types"
 
@@ -59,6 +60,10 @@ func (gb *GetBindingCmd) Run() error {
 	for _, binding := range bindings.ServiceBindings {
 		bd, err := gb.Client.GetBindingByID(binding.ID, &gb.Parameters)
 		if err != nil {
+			// The binding could be deleted after List and before Get
+			if strings.Contains(err.Error(), "StatusCode: 404") {
+				continue
+			}
 			return err
 		}
 		instance, err := gb.Client.GetInstanceByID(bd.ServiceInstanceID, &query.Parameters{})
@@ -67,6 +72,11 @@ func (gb *GetBindingCmd) Run() error {
 		}
 		bd.ServiceInstanceName = instance.Name
 		resultBindings.ServiceBindings = append(resultBindings.ServiceBindings, *bd)
+	}
+
+	if len(resultBindings.ServiceBindings) < 1 {
+		output.PrintMessage(gb.Output, "No binding found with name: %s", gb.bindingName)
+		return nil
 	}
 
 	output.PrintServiceManagerObject(gb.Output, gb.outputFormat, resultBindings)
