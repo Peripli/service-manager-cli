@@ -18,6 +18,7 @@ package broker
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Peripli/service-manager-cli/pkg/query"
 
@@ -58,6 +59,11 @@ func (gb *GetBrokerCmd) Run() error {
 	id := brokers.Brokers[0].ID
 	broker, err := gb.Client.GetBrokerByID(id, &gb.Parameters)
 	if err != nil {
+		// The broker could be deleted after List and before Get
+		if strings.Contains(err.Error(), "StatusCode: 404") {
+			output.PrintMessage(gb.Output, "No broker found with name: %s", gb.name)
+			return nil
+		}
 		return err
 	}
 	output.PrintServiceManagerObject(gb.Output, gb.outputFormat, broker)

@@ -18,6 +18,7 @@ package instance
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Peripli/service-manager-cli/pkg/types"
 
@@ -59,9 +60,18 @@ func (gb *GetInstanceCmd) Run() error {
 	for _, instance := range instances.ServiceInstances {
 		inst, err := gb.Client.GetInstanceByID(instance.ID, &gb.Parameters)
 		if err != nil {
+			// The instance could be deleted after List and before Get
+			if strings.Contains(err.Error(), "StatusCode: 404") {
+				continue
+			}
 			return err
 		}
 		resultInstances.ServiceInstances = append(resultInstances.ServiceInstances, *inst)
+	}
+
+	if len(resultInstances.ServiceInstances) < 1 {
+		output.PrintMessage(gb.Output, "No instance found with name: %s", gb.instanceName)
+		return nil
 	}
 
 	output.PrintServiceManagerObject(gb.Output, gb.outputFormat, resultInstances)
