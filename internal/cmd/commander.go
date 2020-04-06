@@ -129,7 +129,7 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 				}
 			}
 
-			ctx.Client = smclient.NewClient(oidcClient, settings.URL)
+			ctx.Client = smclient.NewClient(ctx.Ctx, oidcClient, settings.URL)
 		}
 
 		return nil
