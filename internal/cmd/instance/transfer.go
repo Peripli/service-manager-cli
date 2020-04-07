@@ -101,11 +101,11 @@ func (trc *TransferCmd) Run() error {
 			return err
 		}
 		if len(instances.ServiceInstances) == 0 {
-			return fmt.Errorf("No instances found with name %s", trc.instanceName)
+			return fmt.Errorf("no instances found with name %s", trc.instanceName)
 		}
 
 		if len(instances.ServiceInstances) > 1 {
-			return fmt.Errorf("More than 1 instance found with name %s. Use --id flag to specify one", trc.instanceName)
+			return fmt.Errorf("more than 1 instance found with name %s. Use --id flag to specify one", trc.instanceName)
 		}
 
 		trc.instanceID = instances.ServiceInstances[0].ID

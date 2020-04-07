@@ -120,7 +120,7 @@ var _ = Describe("Transfer Command test", func() {
 			Context("when no instance id is provided", func() {
 				It("should require flag for instance id", func() {
 					err := invalidTransferCommandExecution("instance-name", "--from", "from_platform", "--to", "to_platform")
-					Expect(err.Error()).To(Equal("More than 1 instance found with name instance-name. Use --id flag to specify one"))
+					Expect(err.Error()).To(Equal("more than 1 instance found with name instance-name. Use --id flag to specify one"))
 				})
 			})
 
@@ -141,7 +141,7 @@ var _ = Describe("Transfer Command test", func() {
 
 			It("should fail to transfer", func() {
 				err := invalidTransferCommandExecution("no-instance", "--from", "from_platform", "--to", "to_platform")
-				Expect(err.Error()).To(Equal("No instances found with name no-instance"))
+				Expect(err.Error()).To(Equal("no instances found with name no-instance"))
 			})
 		})
 
