@@ -62,6 +62,7 @@ type Client interface {
 
 	ListInstances(*query.Parameters) (*types.ServiceInstances, error)
 	GetInstanceByID(string, *query.Parameters) (*types.ServiceInstance, error)
+	UpdateInstance(string, *types.ServiceInstance, *query.Parameters) (*types.ServiceInstance, string, error)
 	Provision(*types.ServiceInstance, *query.Parameters) (*types.ServiceInstance, string, error)
 	Deprovision(string, *query.Parameters) (string, error)
 
@@ -390,6 +391,15 @@ func (client *serviceManagerClient) delete(url string, q *query.Parameters) (str
 func (client *serviceManagerClient) UpdateBroker(id string, updatedBroker *types.Broker, q *query.Parameters) (*types.Broker, string, error) {
 	var result *types.Broker
 	location, err := client.update(updatedBroker, web.ServiceBrokersURL, id, q, &result)
+	if err != nil {
+		return nil, "", err
+	}
+	return result, location, nil
+}
+
+func (client *serviceManagerClient) UpdateInstance(id string, updatedInstance *types.ServiceInstance, q *query.Parameters) (*types.ServiceInstance, string, error) {
+	var result *types.ServiceInstance
+	location, err := client.update(updatedInstance, web.ServiceInstancesURL, id, q, &result)
 	if err != nil {
 		return nil, "", err
 	}

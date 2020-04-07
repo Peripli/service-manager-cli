@@ -86,6 +86,7 @@ func main() {
 			instance.NewGetInstanceCmd(context),
 			instance.NewProvisionCmd(context),
 			instance.NewDeprovisionCmd(context, os.Stdin),
+			instance.NewTransferCmd(context),
 		},
 		PrepareFn: cmd.SmPrepare,
 	}

@@ -1,9 +1,10 @@
 package instance
 
 import (
-	"github.com/Peripli/service-manager/pkg/util"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/Peripli/service-manager/pkg/util"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
