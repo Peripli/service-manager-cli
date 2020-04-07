@@ -34,6 +34,7 @@ var _ = Describe("Transfer Command test", func() {
 	var client *smclientfakes.FakeClient
 	var command *TransferCmd
 	var buffer *bytes.Buffer
+	var promptBuffer *bytes.Buffer
 
 	var instance *types.ServiceInstance
 
@@ -55,7 +56,7 @@ var _ = Describe("Transfer Command test", func() {
 		return piCmd
 	}
 
-	validSyncTransferExecution := func(args ...string) *cobra.Command {
+	validSyncTransferExecExpect := func(args ...string) *cobra.Command {
 		return validAsyncTransferExecution("", append(args, "--mode", "sync")...)
 	}
 
@@ -67,15 +68,20 @@ var _ = Describe("Transfer Command test", func() {
 
 	BeforeEach(func() {
 		buffer = &bytes.Buffer{}
+		promptBuffer = &bytes.Buffer{}
 		client = &smclientfakes.FakeClient{}
 		context := &cmd.Context{Output: buffer, Client: client}
-		command = NewTransferCmd(context)
+		command = NewTransferCmd(context, promptBuffer)
 	})
 
 	Describe("Valid request", func() {
+		BeforeEach(func() {
+			promptBuffer.WriteString("y")
+		})
+
 		Context("With necessary arguments provided", func() {
 			It("should be transfered successfully", func() {
-				validSyncTransferExecution("instance-name", "--from", "platform_id", "--to", "service-manager")
+				validSyncTransferExecExpect("instance-name", "--from", "platform_id", "--to", "service-manager")
 
 				tableOutputExpected := instance.TableData().String()
 
@@ -89,7 +95,7 @@ var _ = Describe("Transfer Command test", func() {
 			})
 
 			It("Argument values should be as expected", func() {
-				validSyncTransferExecution("instance-name", "--from", "from_platform", "--to", "to_platform")
+				validSyncTransferExecExpect("instance-name", "--from", "from_platform", "--to", "to_platform")
 
 				Expect(command.instanceName).To(Equal("instance-name"))
 				Expect(command.fromPlatformID).To(Equal("from_platform"))
@@ -110,9 +116,6 @@ var _ = Describe("Transfer Command test", func() {
 					},
 				}, nil)
 
-				client.GetInstanceByIDReturns(&types.ServiceInstance{
-					Name: "instance-name",
-				}, nil)
 			})
 			Context("when no instance id is provided", func() {
 				It("should require flag for instance id", func() {
@@ -123,7 +126,7 @@ var _ = Describe("Transfer Command test", func() {
 
 			Context("when instance id is provided", func() {
 				It("should transfer the specified instance id", func() {
-					validSyncTransferExecution("instance-name", "--from", "from_platform", "--to", "to_platform", "--id", "12345")
+					validSyncTransferExecExpect("instance-name", "--from", "from_platform", "--to", "to_platform", "--id", "12345")
 					Expect(buffer.String()).To(ContainSubstring(instance.TableData().String()))
 				})
 			})
@@ -144,28 +147,32 @@ var _ = Describe("Transfer Command test", func() {
 
 		Context("With json output flag", func() {
 			It("should be printed in json output format", func() {
-				validSyncTransferExecution("instance-name", "--from", "from_platform", "--to", "to_platform", "--output", "json")
+				validSyncTransferExecExpect("instance-name", "--from", "from_platform", "--to", "to_platform", "--output", "json")
 
 				jsonByte, _ := json.MarshalIndent(instance, "", "  ")
 				jsonOutputExpected := string(jsonByte) + "\n"
 
-				Expect(buffer.String()).To(Equal(jsonOutputExpected))
+				Expect(buffer.String()).To(ContainSubstring(jsonOutputExpected))
 			})
 		})
 
 		Context("With yaml output flag", func() {
 			It("should be printed in yaml output format", func() {
-				validSyncTransferExecution("instance-name", "--from", "from_platform", "--to", "to_platform", "--output", "yaml")
+				validSyncTransferExecExpect("instance-name", "--from", "from_platform", "--to", "to_platform", "--output", "yaml")
 
 				yamlByte, _ := yaml.Marshal(instance)
 				yamlOutputExpected := string(yamlByte) + "\n"
 
-				Expect(buffer.String()).To(Equal(yamlOutputExpected))
+				Expect(buffer.String()).To(ContainSubstring(yamlOutputExpected))
 			})
 		})
 	})
 
 	Describe("Invalid requests", func() {
+		BeforeEach(func() {
+			promptBuffer.WriteString("y")
+		})
+
 		When("list instances fails", func() {
 			BeforeEach(func() {
 				client.ListInstancesReturns(nil, errors.New("errored"))
@@ -177,7 +184,7 @@ var _ = Describe("Transfer Command test", func() {
 			})
 		})
 
-		When("get instance fails", func() {
+		When("update instance fails", func() {
 			BeforeEach(func() {
 				client.ListInstancesReturnsOnCall(0, &types.ServiceInstances{
 					ServiceInstances: []types.ServiceInstance{
@@ -188,32 +195,6 @@ var _ = Describe("Transfer Command test", func() {
 							Name: "instance-name",
 						},
 					},
-				}, nil)
-
-				client.GetInstanceByIDReturns(nil, errors.New("errored"))
-			})
-
-			It("should return error", func() {
-				err := invalidTransferCommandExecution("instance-name", "--from", "from_platform", "--to", "to_platform", "--id", "1234")
-				Expect(err.Error()).To(Equal("errored"))
-			})
-		})
-
-		When("get instance fails", func() {
-			BeforeEach(func() {
-				client.ListInstancesReturnsOnCall(0, &types.ServiceInstances{
-					ServiceInstances: []types.ServiceInstance{
-						types.ServiceInstance{
-							Name: "instance-name",
-						},
-						types.ServiceInstance{
-							Name: "instance-name",
-						},
-					},
-				}, nil)
-
-				client.GetInstanceByIDReturns(&types.ServiceInstance{
-					Name: "instance-name",
 				}, nil)
 
 				client.UpdateInstanceReturns(nil, "", errors.New("errored"))
@@ -222,6 +203,19 @@ var _ = Describe("Transfer Command test", func() {
 			It("should return error", func() {
 				err := invalidTransferCommandExecution("instance-name", "--from", "from_platform", "--to", "to_platform", "--id", "1234")
 				Expect(err.Error()).To(Equal("errored"))
+			})
+		})
+
+		When("when transfer is declined", func() {
+			BeforeEach(func() {
+				promptBuffer.Reset()
+				promptBuffer.WriteString("n")
+			})
+
+			It("should print appropriate message", func() {
+				validSyncTransferExecExpect("instance-name", "--from", "from_platform", "--to", "to_platform", "--id", "1234")
+
+				Expect(buffer.String()).To(ContainSubstring("Transfer declined"))
 			})
 		})
 	})

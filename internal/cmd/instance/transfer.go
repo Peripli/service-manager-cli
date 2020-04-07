@@ -17,6 +17,8 @@
 package instance
 
 import (
+	"io"
+
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/pkg/query"
@@ -31,6 +33,9 @@ import (
 type TransferCmd struct {
 	*cmd.Context
 
+	input io.Reader
+	force bool
+
 	instanceName   string
 	instanceID     string
 	fromPlatformID string
@@ -40,14 +45,14 @@ type TransferCmd struct {
 }
 
 // NewTransferCmd returns new transfer instance command with context
-func NewTransferCmd(context *cmd.Context) *TransferCmd {
-	return &TransferCmd{Context: context}
+func NewTransferCmd(context *cmd.Context, input io.Reader) *TransferCmd {
+	return &TransferCmd{Context: context, input: input}
 }
 
 // Prepare returns cobra command
 func (trc *TransferCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
-		Use:   "transfer-instance [name]",
+		Use:   "transfer-instance [name] --from [from_plafrom_id] --to [to_platform_id]",
 		Short: "Transfer instance in one platform to another in SM",
 		Long:  `Transfer instance in one platform to another in SM`,
 
@@ -55,6 +60,7 @@ func (trc *TransferCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		RunE:    cmd.RunE(trc),
 	}
 
+	result.Flags().BoolVarP(&trc.force, "force", "f", false, "Force transfer without confirmation")
 	result.Flags().StringVarP(&trc.instanceID, "id", "", "", "Id of the instance. Required in case when there are instances with same name")
 	result.Flags().StringVarP(&trc.fromPlatformID, "from", "", "", "ID of the platform from which you want to move the instance")
 	result.Flags().StringVarP(&trc.toPlatformID, "to", "", "", "ID of the platform to which you want to move the instance")
@@ -84,36 +90,32 @@ func (trc *TransferCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (trc *TransferCmd) Run() error {
-	var instance *types.ServiceInstance
-	instances, err := trc.Client.ListInstances(&query.Parameters{
-		FieldQuery: []string{
-			fmt.Sprintf("name eq '%s'", trc.instanceName),
-			fmt.Sprintf("platform_id eq '%s'", trc.fromPlatformID),
-		},
-	})
-	if err != nil {
-		return err
-	}
-	if len(instances.ServiceInstances) == 0 {
-		return fmt.Errorf("No instances found with name %s", trc.instanceName)
-	}
-
-	if len(instances.ServiceInstances) > 1 {
-		if len(trc.instanceID) == 0 {
-			return fmt.Errorf("More than 1 instance found with name %s. Use --id flag to specify one", trc.instanceName)
-		}
-		instance, err = trc.Client.GetInstanceByID(trc.instanceID, nil)
+	if trc.instanceID == "" {
+		instances, err := trc.Client.ListInstances(&query.Parameters{
+			FieldQuery: []string{
+				fmt.Sprintf("name eq '%s'", trc.instanceName),
+				fmt.Sprintf("platform_id eq '%s'", trc.fromPlatformID),
+			},
+		})
 		if err != nil {
 			return err
 		}
-	} else {
-		instance = &instances.ServiceInstances[0]
+		if len(instances.ServiceInstances) == 0 {
+			return fmt.Errorf("No instances found with name %s", trc.instanceName)
+		}
+
+		if len(instances.ServiceInstances) > 1 {
+			return fmt.Errorf("More than 1 instance found with name %s. Use --id flag to specify one", trc.instanceName)
+		}
+
+		trc.instanceID = instances.ServiceInstances[0].ID
 	}
 
-	resultInstance, location, err := trc.Client.UpdateInstance(instance.ID, &types.ServiceInstance{
+	resultInstance, location, err := trc.Client.UpdateInstance(trc.instanceID, &types.ServiceInstance{
 		PlatformID: trc.toPlatformID,
 	}, nil)
 	if err != nil {
+		output.PrintMessage(trc.Output, "Could not transfer service instance. Reason: ")
 		return err
 	}
 
@@ -124,6 +126,20 @@ func (trc *TransferCmd) Run() error {
 	output.PrintServiceManagerObject(trc.Output, trc.outputFormat, resultInstance)
 	output.Println(trc.Output)
 	return nil
+}
+
+// AskForConfirmation asks the user to confirm deletion
+func (trc *TransferCmd) AskForConfirmation() (bool, error) {
+	if !trc.force {
+		message := fmt.Sprintf("Do you really want to transfer service instance with name [%s] to platform with id %s (Y/n): ", trc.instanceName, trc.toPlatformID)
+		return cmd.CommonConfirmationPrompt(message, trc.Context, trc.input)
+	}
+	return true, nil
+}
+
+// PrintDeclineMessage prints confirmation decline message to the user
+func (trc *TransferCmd) PrintDeclineMessage() {
+	output.PrintMessage(trc.Output, "Transfer declined")
 }
 
 // SetOutputFormat set output format
