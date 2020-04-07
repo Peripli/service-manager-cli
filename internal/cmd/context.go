@@ -17,6 +17,7 @@
 package cmd
 
 import (
+	"context"
 	"github.com/Peripli/service-manager-cli/pkg/query"
 	"io"
 
@@ -26,6 +27,8 @@ import (
 
 // Context is used as a context for the commands
 type Context struct {
+	Ctx context.Context
+
 	// Output should be used when printing in commands, instead of directly writing to stdout/stderr, to enable unit testing.
 	Output io.Writer
 

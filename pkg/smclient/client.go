@@ -21,6 +21,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/Peripli/service-manager/pkg/log"
 	"io"
 	"net/http"
 
@@ -83,6 +84,7 @@ type Client interface {
 }
 
 type serviceManagerClient struct {
+	ctx        context.Context
 	config     *ClientConfig
 	httpClient auth.Client
 }
@@ -122,8 +124,8 @@ func NewClientWithAuth(httpClient auth.Client, config *ClientConfig) (Client, er
 }
 
 // NewClient returns new SM client which will use the http client provided to make calls
-func NewClient(httpClient auth.Client, URL string) Client {
-	return &serviceManagerClient{config: &ClientConfig{URL: URL}, httpClient: httpClient}
+func NewClient(ctx context.Context, httpClient auth.Client, URL string) Client {
+	return &serviceManagerClient{ctx: ctx, config: &ClientConfig{URL: URL}, httpClient: httpClient}
 }
 
 func (client *serviceManagerClient) GetInfo(q *query.Parameters) (*types.Info, error) {
@@ -335,7 +337,7 @@ func (client *serviceManagerClient) Status(url string, q *query.Parameters) (*ty
 
 func (client *serviceManagerClient) list(result interface{}, url string, q *query.Parameters) error {
 	fullURL := httputil.NormalizeURL(client.config.URL) + BuildURL(url, q)
-	return util.ListAll(context.Background(), client.httpClient.Do, fullURL, result)
+	return util.ListAll(client.ctx, client.httpClient.Do, fullURL, result)
 }
 
 func (client *serviceManagerClient) get(result interface{}, url string, q *query.Parameters) error {
@@ -472,6 +474,7 @@ func (client *serviceManagerClient) Call(method string, smpath string, body io.R
 	}
 	req.Header.Add("Content-Type", "application/json")
 
+	log.C(client.ctx).Debugf("Sending request %s %s", req.Method, req.URL)
 	resp, err := client.httpClient.Do(req)
 	if err != nil {
 		return nil, err

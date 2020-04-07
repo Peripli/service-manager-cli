@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -245,7 +246,7 @@ var _ = Describe("Instance test", func() {
 
 		Context("When invalid config is set", func() {
 			It("should return error", func() {
-				client = smclient.NewClient(fakeAuthClient, "invalidURL")
+				client = smclient.NewClient(context.TODO(),fakeAuthClient, "invalidURL")
 				_, location, err := client.Provision(instance, params)
 
 				Expect(err).Should(HaveOccurred())

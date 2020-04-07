@@ -17,6 +17,8 @@
 package main
 
 import (
+	"context"
+
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/cmd/binding"
 	"github.com/Peripli/service-manager-cli/internal/cmd/broker"
@@ -44,49 +46,51 @@ func oidcAuthBuilder(options *auth.Options) (auth.Authenticator, *auth.Options, 
 }
 
 func main() {
-	context := &cmd.Context{}
-	rootCmd := cmd.BuildRootCommand(context)
+	cmdContext := &cmd.Context{
+		Ctx: context.Background(),
+	}
+	rootCmd := cmd.BuildRootCommand(cmdContext)
 	fs := afero.NewOsFs()
 
 	normalCommandsGroup := cmd.Group{
 		Commands: []cmd.CommandPreparator{
-			login.NewLoginCmd(context, os.Stdin, oidcAuthBuilder),
-			version.NewVersionCmd(context),
-			info.NewInfoCmd(context),
+			login.NewLoginCmd(cmdContext, os.Stdin, oidcAuthBuilder),
+			version.NewVersionCmd(cmdContext),
+			info.NewInfoCmd(cmdContext),
 		},
 		PrepareFn: cmd.CommonPrepare,
 	}
 
 	smCommandsGroup := cmd.Group{
 		Commands: []cmd.CommandPreparator{
-			curl.NewCurlCmd(context, fs),
-			binding.NewListBindingsCmd(context),
-			binding.NewGetBindingCmd(context),
-			binding.NewBindCmd(context),
-			binding.NewUnbindCmd(context, os.Stdin),
-			broker.NewRegisterBrokerCmd(context),
-			broker.NewGetBrokerCmd(context),
-			broker.NewListBrokersCmd(context),
-			broker.NewDeleteBrokerCmd(context, os.Stdin),
-			broker.NewUpdateBrokerCmd(context),
-			platform.NewRegisterPlatformCmd(context),
-			platform.NewListPlatformsCmd(context),
-			platform.NewDeletePlatformCmd(context, os.Stdin),
-			platform.NewUpdatePlatformCmd(context),
-			visibility.NewRegisterVisibilityCmd(context),
-			visibility.NewListVisibilitiesCmd(context),
-			visibility.NewUpdateVisibilityCmd(context),
-			visibility.NewDeleteVisibilityCmd(context, os.Stdin),
-			offering.NewListOfferingsCmd(context),
-			offering.NewMarketplaceCmd(context),
-			plan.NewListPlansCmd(context),
-			label.NewLabelCmd(context),
-			status.NewStatusCmd(context),
-			instance.NewListInstancesCmd(context),
-			instance.NewGetInstanceCmd(context),
-			instance.NewProvisionCmd(context),
-			instance.NewDeprovisionCmd(context, os.Stdin),
-			instance.NewTransferCmd(context, os.Stdin),
+			curl.NewCurlCmd(cmdContext, fs),
+			binding.NewListBindingsCmd(cmdContext),
+			binding.NewGetBindingCmd(cmdContext),
+			binding.NewBindCmd(cmdContext),
+			binding.NewUnbindCmd(cmdContext, os.Stdin),
+			broker.NewRegisterBrokerCmd(cmdContext),
+			broker.NewGetBrokerCmd(cmdContext),
+			broker.NewListBrokersCmd(cmdContext),
+			broker.NewDeleteBrokerCmd(cmdContext, os.Stdin),
+			broker.NewUpdateBrokerCmd(cmdContext),
+			platform.NewRegisterPlatformCmd(cmdContext),
+			platform.NewListPlatformsCmd(cmdContext),
+			platform.NewDeletePlatformCmd(cmdContext, os.Stdin),
+			platform.NewUpdatePlatformCmd(cmdContext),
+			visibility.NewRegisterVisibilityCmd(cmdContext),
+			visibility.NewListVisibilitiesCmd(cmdContext),
+			visibility.NewUpdateVisibilityCmd(cmdContext),
+			visibility.NewDeleteVisibilityCmd(cmdContext, os.Stdin),
+			offering.NewListOfferingsCmd(cmdContext),
+			offering.NewMarketplaceCmd(cmdContext),
+			plan.NewListPlansCmd(cmdContext),
+			label.NewLabelCmd(cmdContext),
+			status.NewStatusCmd(cmdContext),
+			instance.NewListInstancesCmd(cmdContext),
+			instance.NewGetInstanceCmd(cmdContext),
+			instance.NewProvisionCmd(cmdContext),
+			instance.NewDeprovisionCmd(cmdContext, os.Stdin),
+			instance.NewTransferCmd(cmdContext, os.Stdin),
 		},
 		PrepareFn: cmd.SmPrepare,
 	}

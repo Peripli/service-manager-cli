@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
 	"net/http"
 
@@ -35,7 +36,7 @@ var _ = Describe("Label test", func() {
 
 	Context("When invalid config is set", func() {
 		It("should return error", func() {
-			client = smclient.NewClient(fakeAuthClient, "invalidURL")
+			client = smclient.NewClient(context.TODO(),fakeAuthClient, "invalidURL")
 			err := client.Label(web.ServiceBrokersURL, "id", labelChanges, params)
 			Expect(err).Should(HaveOccurred())
 		})

@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -151,5 +152,5 @@ var _ = AfterEach(func() {
 var _ = JustBeforeEach(func() {
 	smServer = httptest.NewServer(createSMHandler())
 	fakeAuthClient = &FakeAuthClient{AccessToken: validToken}
-	client = smclient.NewClient(fakeAuthClient, smServer.URL)
+	client = smclient.NewClient(context.TODO(), fakeAuthClient, smServer.URL)
 })
