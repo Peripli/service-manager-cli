@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/Peripli/service-manager-cli/pkg/smclient"
 	"github.com/Peripli/service-manager/pkg/web"
@@ -243,7 +244,7 @@ var _ = Describe("Binding test", func() {
 
 		Context("When invalid config is set", func() {
 			It("should return error", func() {
-				client = smclient.NewClient(fakeAuthClient, "invalidURL")
+				client = smclient.NewClient(context.TODO(), fakeAuthClient, "invalidURL")
 				_, location, err := client.Bind(binding, params)
 
 				Expect(err).Should(HaveOccurred())

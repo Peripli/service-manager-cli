@@ -115,7 +115,7 @@ func (lc *Cmd) Run() error {
 	httpClient := util.BuildHTTPClient(lc.sslDisabled)
 
 	if lc.Client == nil {
-		lc.Client = smclient.NewClient(httpClient, lc.serviceManagerURL)
+		lc.Client = smclient.NewClient(lc.Ctx, httpClient, lc.serviceManagerURL)
 	}
 
 	info, err := lc.Client.GetInfo(&lc.Parameters)
