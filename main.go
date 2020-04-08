@@ -18,6 +18,7 @@ package main
 
 import (
 	"context"
+
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/cmd/binding"
 	"github.com/Peripli/service-manager-cli/internal/cmd/broker"
@@ -89,6 +90,7 @@ func main() {
 			instance.NewGetInstanceCmd(cmdContext),
 			instance.NewProvisionCmd(cmdContext),
 			instance.NewDeprovisionCmd(cmdContext, os.Stdin),
+			instance.NewTransferCmd(cmdContext, os.Stdin),
 		},
 		PrepareFn: cmd.SmPrepare,
 	}

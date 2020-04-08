@@ -372,6 +372,23 @@ type FakeClient struct {
 		result2 string
 		result3 error
 	}
+	UpdateInstanceStub        func(string, *types.ServiceInstance, *query.Parameters) (*types.ServiceInstance, string, error)
+	updateInstanceMutex       sync.RWMutex
+	updateInstanceArgsForCall []struct {
+		arg1 string
+		arg2 *types.ServiceInstance
+		arg3 *query.Parameters
+	}
+	updateInstanceReturns struct {
+		result1 *types.ServiceInstance
+		result2 string
+		result3 error
+	}
+	updateInstanceReturnsOnCall map[int]struct {
+		result1 *types.ServiceInstance
+		result2 string
+		result3 error
+	}
 	UpdatePlatformStub        func(string, *types.Platform, *query.Parameters) (*types.Platform, error)
 	updatePlatformMutex       sync.RWMutex
 	updatePlatformArgsForCall []struct {
@@ -2067,6 +2084,74 @@ func (fake *FakeClient) UpdateBrokerReturnsOnCall(i int, result1 *types.Broker, 
 	}{result1, result2, result3}
 }
 
+func (fake *FakeClient) UpdateInstance(arg1 string, arg2 *types.ServiceInstance, arg3 *query.Parameters) (*types.ServiceInstance, string, error) {
+	fake.updateInstanceMutex.Lock()
+	ret, specificReturn := fake.updateInstanceReturnsOnCall[len(fake.updateInstanceArgsForCall)]
+	fake.updateInstanceArgsForCall = append(fake.updateInstanceArgsForCall, struct {
+		arg1 string
+		arg2 *types.ServiceInstance
+		arg3 *query.Parameters
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("UpdateInstance", []interface{}{arg1, arg2, arg3})
+	fake.updateInstanceMutex.Unlock()
+	if fake.UpdateInstanceStub != nil {
+		return fake.UpdateInstanceStub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2, ret.result3
+	}
+	fakeReturns := fake.updateInstanceReturns
+	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
+}
+
+func (fake *FakeClient) UpdateInstanceCallCount() int {
+	fake.updateInstanceMutex.RLock()
+	defer fake.updateInstanceMutex.RUnlock()
+	return len(fake.updateInstanceArgsForCall)
+}
+
+func (fake *FakeClient) UpdateInstanceCalls(stub func(string, *types.ServiceInstance, *query.Parameters) (*types.ServiceInstance, string, error)) {
+	fake.updateInstanceMutex.Lock()
+	defer fake.updateInstanceMutex.Unlock()
+	fake.UpdateInstanceStub = stub
+}
+
+func (fake *FakeClient) UpdateInstanceArgsForCall(i int) (string, *types.ServiceInstance, *query.Parameters) {
+	fake.updateInstanceMutex.RLock()
+	defer fake.updateInstanceMutex.RUnlock()
+	argsForCall := fake.updateInstanceArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeClient) UpdateInstanceReturns(result1 *types.ServiceInstance, result2 string, result3 error) {
+	fake.updateInstanceMutex.Lock()
+	defer fake.updateInstanceMutex.Unlock()
+	fake.UpdateInstanceStub = nil
+	fake.updateInstanceReturns = struct {
+		result1 *types.ServiceInstance
+		result2 string
+		result3 error
+	}{result1, result2, result3}
+}
+
+func (fake *FakeClient) UpdateInstanceReturnsOnCall(i int, result1 *types.ServiceInstance, result2 string, result3 error) {
+	fake.updateInstanceMutex.Lock()
+	defer fake.updateInstanceMutex.Unlock()
+	fake.UpdateInstanceStub = nil
+	if fake.updateInstanceReturnsOnCall == nil {
+		fake.updateInstanceReturnsOnCall = make(map[int]struct {
+			result1 *types.ServiceInstance
+			result2 string
+			result3 error
+		})
+	}
+	fake.updateInstanceReturnsOnCall[i] = struct {
+		result1 *types.ServiceInstance
+		result2 string
+		result3 error
+	}{result1, result2, result3}
+}
+
 func (fake *FakeClient) UpdatePlatform(arg1 string, arg2 *types.Platform, arg3 *query.Parameters) (*types.Platform, error) {
 	fake.updatePlatformMutex.Lock()
 	ret, specificReturn := fake.updatePlatformReturnsOnCall[len(fake.updatePlatformArgsForCall)]
@@ -2252,6 +2337,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.unbindMutex.RUnlock()
 	fake.updateBrokerMutex.RLock()
 	defer fake.updateBrokerMutex.RUnlock()
+	fake.updateInstanceMutex.RLock()
+	defer fake.updateInstanceMutex.RUnlock()
 	fake.updatePlatformMutex.RLock()
 	defer fake.updatePlatformMutex.RUnlock()
 	fake.updateVisibilityMutex.RLock()
