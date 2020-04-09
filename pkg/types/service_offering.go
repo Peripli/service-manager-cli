@@ -36,6 +36,7 @@ type ServiceOffering struct {
 	Bindable             bool   `json:"bindable,omitempty" yaml:"bindable,omitempty"`
 	InstancesRetrievable bool   `json:"instances_retrievable,omitempty" yaml:"instances_retrievable,omitempty"`
 	BindingsRetrievable  bool   `json:"bindings_retrievable,omitempty" yaml:"bindings_retrievable,omitempty"`
+	AllowContextUpdates  bool   `json:"allow_context_updates,omitempty" yaml:"allow_context_updates,omitempty"`
 	PlanUpdatable        bool   `json:"plan_updateable,omitempty" yaml:"plan_updateable,omitempty"`
 	CatalogID            string `json:"catalog_id,omitempty" yaml:"catalog_id,omitempty"`
 	CatalogName          string `json:"catalog_name,omitempty" yaml:"catalog_name,omitempty"`
