@@ -132,10 +132,10 @@ func (sp *ServicePlans) IsEmpty() bool {
 // TableData returns the data to populate a table
 func (sp *ServicePlans) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"ID", "Name", "Description", "Offering ID", "Ready"}
+	result.Headers = []string{"ID", "Name", "Description", "Offering ID", "Ready", "Labels"}
 
 	for _, v := range sp.ServicePlans {
-		row := []string{v.ID, v.Name, v.Description, v.ServiceOfferingID, strconv.FormatBool(v.Ready)}
+		row := []string{v.ID, v.Name, v.Description, v.ServiceOfferingID, strconv.FormatBool(v.Ready), formatLabels(v.Labels)}
 		result.Data = append(result.Data, row)
 	}
 
