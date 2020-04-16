@@ -1,6 +1,6 @@
 ## How to introduce new Command?
 
-### Implements interfaces
+### Required interfaces
 
 * `/internal/cmd`.`CommandPreparator` 
     - `Prepare()` provides the `cobra.Command` and should attach any flags
@@ -9,7 +9,7 @@
 * `/internal/cmd`.`Command`
     - `Run()` executes the main logic behind the command
 
-### Optinal interfaces
+### Optional interfaces
 
 * `/internal/cmd`.`FormattedCommand` should be implemented if the command supports different output formatting through a --format or -f flag
     - `SetOutputFormat` - sets the output format
