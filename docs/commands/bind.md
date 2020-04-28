@@ -4,7 +4,7 @@
 
 `smctl bind`
 
-Creates a binding in Service Manager to an instance with the provided name.
+Creates a service binding in Service Manager to an instance with the provided name.
 
 ## Usage
 
