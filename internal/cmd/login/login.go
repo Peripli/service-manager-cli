@@ -107,6 +107,7 @@ func (lc *Cmd) Validate(args []string) error {
 		return err
 	}
 
+
 	return nil
 }
 
@@ -139,7 +140,11 @@ func (lc *Cmd) Run() error {
 	}
 	token, err := lc.getToken(authStrategy)
 	if err != nil {
-		return cliErr.New("could not login", err)
+		description := "could not login"
+		if len(lc.Parameters.GeneralParams) == 0 {
+			description += " in case of tenant subdomain param required"
+		}
+		return cliErr.New(description, err)
 	}
 
 	settings := &configuration.Settings{
