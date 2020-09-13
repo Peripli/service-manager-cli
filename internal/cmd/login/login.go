@@ -107,7 +107,6 @@ func (lc *Cmd) Validate(args []string) error {
 		return err
 	}
 
-
 	return nil
 }
 
