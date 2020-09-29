@@ -34,6 +34,7 @@ type GetBindingCmd struct {
 
 	bindingName  string
 	outputFormat output.Format
+	bindingParams bool
 }
 
 // NewGetBindingCmd returns new get status command with context
@@ -54,6 +55,9 @@ func (gb *GetBindingCmd) Run() error {
 	if len(bindings.ServiceBindings) < 1 {
 		output.PrintMessage(gb.Output, "No binding found with name: %s", gb.bindingName)
 		return nil
+	}
+	if gb.bindingParams {
+		return gb.printParameters(bindings)
 	}
 
 	resultBindings := &types.ServiceBindings{Vertical: true}
@@ -84,6 +88,32 @@ func (gb *GetBindingCmd) Run() error {
 
 	return nil
 }
+
+
+func (gb *GetBindingCmd) printParameters(bindings *types.ServiceBindings) error {
+	for _, binding := range bindings.ServiceBindings {
+		parameters, err := gb.Client.GetBindingParameters(binding.ID, &gb.Parameters)
+		if err != nil {
+			// The binding could be deleted after List and before Get
+			if strings.Contains(err.Error(), "StatusCode: 404") {
+				continue
+			}
+			output.PrintMessage(gb.Output, "Unable to show parameters for service binding id: %s", binding.ID)
+			output.PrintMessage(gb.Output, "The error is: %s", err)
+			continue
+		}
+		if len(parameters) == 0 {
+			output.PrintMessage(gb.Output, "No parameters are set for service binding id: %s", binding.ID)
+			continue
+		}
+		output.PrintMessage(gb.Output, "Showing parameters for service binding id: %s", binding.ID)
+		output.PrintMessage(gb.Output, "The parameters are: %s", parameters)
+	}
+
+	output.Println(gb.Output)
+	return nil
+}
+
 
 // Validate validates command's arguments
 func (gb *GetBindingCmd) Validate(args []string) error {
@@ -117,6 +147,7 @@ func (gb *GetBindingCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		RunE:    cmd.RunE(gb),
 	}
 
+	result.Flags().BoolVar(&gb.bindingParams, "binding-params", false, "Get service binding params")
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddCommonQueryFlag(result.Flags(), &gb.Parameters)
 

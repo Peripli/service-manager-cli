@@ -33,6 +33,7 @@ type GetInstanceCmd struct {
 	*cmd.Context
 
 	instanceName string
+	instanceParams bool
 	outputFormat output.Format
 }
 
@@ -55,6 +56,9 @@ func (gb *GetInstanceCmd) Run() error {
 		output.PrintMessage(gb.Output, "No instance found with name: %s", gb.instanceName)
 		return nil
 	}
+	if gb.instanceParams {
+		return gb.printParameters(instances)
+	}
 
 	resultInstances := &types.ServiceInstances{Vertical: true}
 	for _, instance := range instances.ServiceInstances {
@@ -75,6 +79,30 @@ func (gb *GetInstanceCmd) Run() error {
 	}
 
 	output.PrintServiceManagerObject(gb.Output, gb.outputFormat, resultInstances)
+	output.Println(gb.Output)
+	return nil
+}
+
+func (gb *GetInstanceCmd) printParameters(instances *types.ServiceInstances) error {
+	for _, instance := range instances.ServiceInstances {
+		parameters, err := gb.Client.GetInstanceParameters(instance.ID, &gb.Parameters)
+		if err != nil {
+			// The instance could be deleted after List and before Get
+			if strings.Contains(err.Error(), "StatusCode: 404") {
+				continue
+			}
+			output.PrintMessage(gb.Output, "Unable to show parameters for service instance id: %s", instance.ID)
+			output.PrintMessage(gb.Output, "The error is: %s", err)
+			continue
+		}
+		if len(parameters) == 0 {
+			output.PrintMessage(gb.Output, "No parameters are set for service instance id: %s", instance.ID)
+			continue
+		}
+		output.PrintMessage(gb.Output, "Showing parameters for service instance id: %s", instance.ID)
+		output.PrintMessage(gb.Output, "The parameters are: %s", parameters)
+	}
+
 	output.Println(gb.Output)
 	return nil
 }
@@ -111,6 +139,7 @@ func (gb *GetInstanceCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		RunE:    cmd.RunE(gb),
 	}
 
+	result.Flags().BoolVar(&gb.instanceParams, "instance-params", false, "Get service instance params")
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddCommonQueryFlag(result.Flags(), &gb.Parameters)
 
