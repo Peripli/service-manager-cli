@@ -7,7 +7,7 @@
 Get detailed information about the service binding with provided name.
 
 ## Usage
-
+// TODO update
 `smctl get-binding [name] [flags]`
 
 ## Aliases

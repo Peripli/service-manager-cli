@@ -279,18 +279,18 @@ func (client *serviceManagerClient) ListInstances(q *query.Parameters) (*types.S
 	return instances, err
 }
 const (
-	ParametersURL="/parameters"
+	parametersURL="/parameters"
 )
 func (client *serviceManagerClient) GetInstanceParameters(id string, q *query.Parameters) (map[string]string, error) {
 	parameters := make(map[string]string)
-	err := client.list(&parameters, web.ServiceInstancesURL+"/"+id+ParametersURL, q)
+	err := client.list(&parameters, web.ServiceInstancesURL+"/"+id+parametersURL, q)
 
 	return parameters, err
 }
 
 func (client *serviceManagerClient) GetBindingParameters(id string, q *query.Parameters) (map[string]string, error) {
 	parameters := make(map[string]string)
-	err := client.get(parameters, web.ServiceBindingsURL+"/"+id+"/"+ParametersURL, q)
+	err := client.get(parameters, web.ServiceBindingsURL+"/"+id+"/"+parametersURL, q)
 
 	return parameters, err
 }

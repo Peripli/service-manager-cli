@@ -7,7 +7,7 @@
 Get detailed information about the service instance with provided name.
 
 ## Usage
-
+// TODO update
 `smctl get-instance [name] [flags]`
 
 ## Aliases
