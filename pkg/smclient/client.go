@@ -94,7 +94,7 @@ func NewClientWithAuth(httpClient auth.Client, config *ClientConfig) (Client, er
 	if httpClient == nil {
 		httpClient = http.DefaultClient
 	}
-	client := &serviceManagerClient{config: config, httpClient: httpClient}
+	client := &serviceManagerClient{ctx: context.Background(), config: config, httpClient: httpClient}
 	info, err := client.GetInfo(nil)
 	if err != nil {
 		return nil, err
@@ -118,7 +118,7 @@ func NewClientWithAuth(httpClient auth.Client, config *ClientConfig) (Client, er
 		return nil, err
 	}
 	authClient := oidc.NewClient(authOptions, token)
-	client = &serviceManagerClient{config: config, httpClient: authClient}
+	client = &serviceManagerClient{ctx: context.Background(), config: config, httpClient: authClient}
 
 	return client, nil
 }
