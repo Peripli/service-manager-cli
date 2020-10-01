@@ -33,8 +33,8 @@ type GetInstanceCmd struct {
 	*cmd.Context
 
 	instanceName string
-	instanceParams bool
 	outputFormat output.Format
+	instanceParams *bool
 }
 
 // NewGetInstanceCmd returns new get status command with context
@@ -56,7 +56,7 @@ func (gb *GetInstanceCmd) Run() error {
 		output.PrintMessage(gb.Output, "No instance found with name: %s", gb.instanceName)
 		return nil
 	}
-	if gb.instanceParams {
+	if *gb.instanceParams {
 		return gb.printParameters(instances)
 	}
 
@@ -138,8 +138,7 @@ func (gb *GetInstanceCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		PreRunE: prepare(gb, gb.Context),
 		RunE:    cmd.RunE(gb),
 	}
-
-	result.Flags().BoolVar(&gb.instanceParams, "instance-params", false, "Get service instance params")
+	gb.instanceParams = result.PersistentFlags().Bool("instance-params", false, "Get service instance params")
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddCommonQueryFlag(result.Flags(), &gb.Parameters)
 

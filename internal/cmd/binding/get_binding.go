@@ -34,7 +34,7 @@ type GetBindingCmd struct {
 
 	bindingName  string
 	outputFormat output.Format
-	bindingParams bool
+	bindingParams *bool
 }
 
 // NewGetBindingCmd returns new get status command with context
@@ -56,7 +56,7 @@ func (gb *GetBindingCmd) Run() error {
 		output.PrintMessage(gb.Output, "No binding found with name: %s", gb.bindingName)
 		return nil
 	}
-	if gb.bindingParams {
+	if *gb.bindingParams {
 		return gb.printParameters(bindings)
 	}
 
@@ -146,8 +146,7 @@ func (gb *GetBindingCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		PreRunE: prepare(gb, gb.Context),
 		RunE:    cmd.RunE(gb),
 	}
-
-	result.Flags().BoolVar(&gb.bindingParams, "binding-params", false, "Get service binding params")
+	gb.bindingParams = result.PersistentFlags().Bool("binding-params",false , "Get service binding params")
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddCommonQueryFlag(result.Flags(), &gb.Parameters)
 
