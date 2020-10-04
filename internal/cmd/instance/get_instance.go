@@ -104,7 +104,7 @@ func (gb *GetInstanceCmd) printParameters(instances *types.ServiceInstances) err
 		output.PrintMessage(gb.Output, "Showing parameters for service instance id: %s \n", instance.ID )
 		output.PrintMessage(gb.Output, "The parameters are: \n"  )
 
-		output.PrintMessage(gb.Output, "%s \n\n", parameters)
+		output.PrintMessage(gb.Output, "%s \n\n", output.PrintParameters(parameters))
 	}
 
 	output.Println(gb.Output)

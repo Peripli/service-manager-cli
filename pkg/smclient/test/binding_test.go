@@ -133,6 +133,87 @@ var _ = Describe("Binding test", func() {
 		})
 	})
 
+	Describe("Get service binding parameters", func() {
+		Context("when there is binding with this id with parameters", func() {
+			BeforeEach(func() {
+				responseBody, _ := json.Marshal(bindingParameters)
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet,
+						Path: web.ServiceBindingsURL + "/" + binding.ID + web.ParametersURL + "/",
+						ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+				}
+			})
+			It("should return parameters", func() {
+				result, err := client.GetBindingParameters(binding.ID, params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(result).To(Equal(bindingParameters))
+			})
+		})
+
+		Context("when there is binding with this id without parameters", func() {
+			bindingParameters := make(map[string]interface{})
+			BeforeEach(func() {
+				responseBody, _ := json.Marshal(bindingParameters)
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet,
+						Path: web.ServiceBindingsURL + "/" + binding.ID + web.ParametersURL + "/",
+						ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+				}
+			})
+			It("should return no parameters", func() {
+				result, err := client.GetBindingParameters(binding.ID, params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(result).To(Equal(bindingParameters))
+			})
+		})
+
+		Context("when there is no binding with this id", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet,
+						Path: web.ServiceBindingsURL + "/" + binding.ID + web.ParametersURL + "/",
+						ResponseStatusCode: http.StatusNotFound},
+				}
+			})
+			It("should return 404", func() {
+				_, err := client.GetBindingParameters(binding.ID, params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+binding.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+
+		Context("when bad gateway status code is returned", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet,
+						Path: web.ServiceBindingsURL + "/" + binding.ID + web.ParametersURL + "/",
+						ResponseStatusCode: http.StatusBadGateway},
+				}
+			})
+			It("should return an error with status code 502", func() {
+				_, err := client.GetBindingParameters(binding.ID, params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+binding.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+
+		Context("when bad request status code is returned", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet,
+						Path: web.ServiceBindingsURL + "/" + binding.ID + web.ParametersURL + "/",
+						ResponseStatusCode: http.StatusBadRequest},
+				}
+			})
+			It("should return an error with status code 400", func() {
+				_, err := client.GetBindingParameters(binding.ID, params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+binding.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+
+			})
+		})
+	})
+
 	Describe("Bind", func() {
 		Context("When valid binding is being created synchronously", func() {
 			BeforeEach(func() {

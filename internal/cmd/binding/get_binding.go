@@ -106,9 +106,11 @@ func (gb *GetBindingCmd) printParameters(bindings *types.ServiceBindings) error 
 			output.PrintMessage(gb.Output, "No parameters are set for service binding id: %s\n\n", binding.ID)
 			continue
 		}
+
+
 		output.PrintMessage(gb.Output, "Showing parameters for service binding id: %s \n", binding.ID)
 		output.PrintMessage(gb.Output, "The parameters are: \n")
-		output.PrintMessage(gb.Output, "%s \n\n ",parameters)
+		output.PrintMessage(gb.Output, "%s \n\n ",output.PrintParameters(parameters))
 	}
 
 	output.Println(gb.Output)
@@ -147,7 +149,7 @@ func (gb *GetBindingCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		PreRunE: prepare(gb, gb.Context),
 		RunE:    cmd.RunE(gb),
 	}
-	gb.bindingParams = result.PersistentFlags().Bool("binding-params",false , "Show service binding configuration parameters")
+	gb.bindingParams = result.PersistentFlags().Bool("binding-params",false , "Show the service binding configuration parameters")
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddCommonQueryFlag(result.Flags(), &gb.Parameters)
 

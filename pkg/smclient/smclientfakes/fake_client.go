@@ -1014,6 +1014,8 @@ func (fake *FakeClient) GetInstanceByID(arg1 string, arg2 *query.Parameters) (*t
 	return fakeReturns.result1, fakeReturns.result2
 }
 
+//HERE
+
 func (fake *FakeClient) GetInstanceByIDCallCount() int {
 	fake.getInstanceByIDMutex.RLock()
 	defer fake.getInstanceByIDMutex.RUnlock()

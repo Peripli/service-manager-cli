@@ -135,6 +135,88 @@ var _ = Describe("Instance test", func() {
 		})
 	})
 
+	Describe("Get service instance parameters", func() {
+		Context("when there is instance with this id with parameters", func() {
+			BeforeEach(func() {
+				responseBody, _ := json.Marshal(instanceParameters)
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet,
+						Path: web.ServiceInstancesURL + "/"+ instance.ID + web.ParametersURL + "/",
+						ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+				}
+			})
+			It("should return parameters", func() {
+				result, err := client.GetInstanceParameters(instance.ID, params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(result).To(Equal(instanceParameters))
+			})
+		})
+
+		Context("when there is instance with this id without parameters", func() {
+			instanceParameters := make(map[string]interface{})
+			BeforeEach(func() {
+				responseBody, _ := json.Marshal(instanceParameters)
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet,
+						Path: web.ServiceInstancesURL + "/"+ instance.ID + web.ParametersURL + "/",
+						ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
+				}
+			})
+			It("should return parameters", func() {
+				result, err := client.GetInstanceParameters(instance.ID, params)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(result).To(Equal(instanceParameters))
+			})
+		})
+
+		Context("when there is no instance with this id", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet,
+						Path: web.ServiceInstancesURL + "/"+ instance.ID + web.ParametersURL + "/",
+						ResponseStatusCode: http.StatusNotFound},
+				}
+			})
+			It("should return 404", func() {
+				_, err := client.GetInstanceParameters(instance.ID, params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+instance.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+
+		Context("when bad gateway status code is returned", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet,
+						Path: web.ServiceInstancesURL + "/"+ instance.ID + web.ParametersURL + "/",
+						ResponseStatusCode: http.StatusBadGateway},
+				}
+			})
+			It("should return an error with status code 502", func() {
+				_, err := client.GetInstanceParameters(instance.ID, params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+instance.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+			})
+		})
+
+		Context("when bad request status code is returned", func() {
+			BeforeEach(func() {
+				handlerDetails = []HandlerDetails{
+					{Method: http.MethodGet,
+						Path: web.ServiceInstancesURL + "/"+ instance.ID + web.ParametersURL + "/",
+						ResponseStatusCode: http.StatusBadRequest},
+				}
+			})
+			It("should return an error with status code 400", func() {
+				_, err := client.GetInstanceParameters(instance.ID, params)
+				Expect(err).Should(HaveOccurred())
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path+instance.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+
+			})
+		})
+	})
+
+
 	Describe("Provision", func() {
 		Context("When valid instance is being provisioned synchronously", func() {
 			BeforeEach(func() {
