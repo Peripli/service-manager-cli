@@ -98,18 +98,18 @@ func (gb *GetBindingCmd) printParameters(bindings *types.ServiceBindings) error 
 			if strings.Contains(err.Error(), "StatusCode: 404") {
 				continue
 			}
-			output.PrintMessage(gb.Output, "Unable to show parameters for service binding id: %s\n", binding.ID)
-			output.PrintMessage(gb.Output, "The error is: %s\n\n", err)
+			output.PrintMessage(gb.Output, "Unable to show configuration parameters for service binding id: %s\n", binding.ID)
+			output.PrintMessage(gb.Output, "The error: %s\n\n", err)
 			continue
 		}
 		if len(parameters) == 0 {
-			output.PrintMessage(gb.Output, "No parameters are set for service binding id: %s\n\n", binding.ID)
+			output.PrintMessage(gb.Output, "No configuration parameters are set for service binding id: %s\n\n", binding.ID)
 			continue
 		}
 
 
-		output.PrintMessage(gb.Output, "Showing parameters for service binding id: %s \n", binding.ID)
-		output.PrintMessage(gb.Output, "The parameters are: \n")
+		output.PrintMessage(gb.Output, "Showing configuration parameters for service binding id: %s \n", binding.ID)
+		output.PrintMessage(gb.Output, "The parameters: \n")
 		output.PrintMessage(gb.Output, "%s \n\n ",output.PrintParameters(parameters))
 	}
 
@@ -149,7 +149,7 @@ func (gb *GetBindingCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		PreRunE: prepare(gb, gb.Context),
 		RunE:    cmd.RunE(gb),
 	}
-	gb.bindingParams = result.PersistentFlags().Bool("binding-params",false , "Show the service binding configuration parameters")
+	gb.bindingParams = result.PersistentFlags().Bool("show-binding-params",false , "Show the service binding configuration parameters")
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddCommonQueryFlag(result.Flags(), &gb.Parameters)
 

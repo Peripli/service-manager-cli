@@ -1,6 +1,7 @@
 package binding
 
 import (
+	"github.com/Peripli/service-manager-cli/internal/output"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -44,8 +45,6 @@ var _ = Describe("Get binding command test", func() {
 		client.ListBindingsReturns(&types.ServiceBindings{ServiceBindings: []types.ServiceBinding{binding}}, nil)
 		context := &cmd.Context{Output: buffer, Client: client}
 		command = NewGetBindingCmd(context)
-		client.GetInstanceByIDReturnsOnCall(0, &instance1, nil)
-		client.GetInstanceByIDReturnsOnCall(1, &instance2, nil)
 	})
 
 	executeWithArgs := func(args ...string) error {
@@ -55,50 +54,119 @@ var _ = Describe("Get binding command test", func() {
 		return commandToRun.Execute()
 	}
 
-	Context("when no binding name is provided", func() {
-		It("should return error", func() {
-			client.GetBindingByIDReturns(&binding, nil)
-			err := executeWithArgs("")
-
-			Expect(err).Should(HaveOccurred())
-		})
-	})
-
-	Context("when more than one binding with same name exists", func() {
-		var response *types.ServiceBindings
+	Describe("Get service binding", func() {
 		BeforeEach(func() {
-			response = &types.ServiceBindings{ServiceBindings: []types.ServiceBinding{binding, binding2}, Vertical: true}
-			client.ListBindingsReturns(response, nil)
+			client.GetInstanceByIDReturnsOnCall(0, &instance1, nil)
+			client.GetInstanceByIDReturnsOnCall(1, &instance2, nil)
+		})
+		Context("when no binding name is provided", func() {
+			It("should return error", func() {
+				client.GetBindingByIDReturns(&binding, nil)
+				err := executeWithArgs("")
+
+				Expect(err).Should(HaveOccurred())
+			})
 		})
 
-		It("should return both bindings", func() {
-			client.GetBindingByIDReturnsOnCall(0, &binding, nil)
-			client.GetBindingByIDReturnsOnCall(1, &binding2, nil)
-			err := executeWithArgs("binding1")
-			Expect(err).ShouldNot(HaveOccurred())
+		Context("when more than one binding with same name exists", func() {
+			var response *types.ServiceBindings
+			BeforeEach(func() {
+				response = &types.ServiceBindings{ServiceBindings: []types.ServiceBinding{binding, binding2}, Vertical: true}
+				client.ListBindingsReturns(response, nil)
+			})
 
-			Expect(buffer.String()).To(ContainSubstring(response.TableData().String()))
+			It("should return both bindings", func() {
+				client.GetBindingByIDReturnsOnCall(0, &binding, nil)
+				client.GetBindingByIDReturnsOnCall(1, &binding2, nil)
+				err := executeWithArgs("binding1")
+				Expect(err).ShouldNot(HaveOccurred())
+
+				Expect(buffer.String()).To(ContainSubstring(response.TableData().String()))
+			})
+		})
+
+		Context("when no known binding name is provided", func() {
+			It("should return no binding", func() {
+				client.ListBindingsReturns(&types.ServiceBindings{}, nil)
+				err := executeWithArgs("unknown")
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buffer.String()).To(ContainSubstring("No binding found with name: unknown"))
+			})
+		})
+
+		Context("when binding with name is found", func() {
+			It("should return its data", func() {
+				client.GetBindingByIDReturns(&binding, nil)
+				err := executeWithArgs("binding1")
+
+				Expect(err).ShouldNot(HaveOccurred())
+				result := &types.ServiceBindings{ServiceBindings: []types.ServiceBinding{binding}, Vertical: true}
+				Expect(buffer.String()).To(ContainSubstring(result.TableData().String()))
+			})
 		})
 	})
 
-	Context("when no known binding name is provided", func() {
-		It("should return no binding", func() {
-			client.ListBindingsReturns(&types.ServiceBindings{}, nil)
-			err := executeWithArgs("unknown")
+	Describe("Get service binding parameters", func() {
+		bindingParameters1 := map[string]interface{}{"param1":"value1","param2":"value2"}
+		bindingParameters2 := make(map[string]interface{})
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buffer.String()).To(ContainSubstring("No binding found with name: unknown"))
+		Context("when no binding name is provided", func() {
+			It("should return error", func() {
+				err := executeWithArgs("", "--show-binding-params")
+
+				Expect(err).Should(HaveOccurred())
+			})
 		})
-	})
 
-	Context("when binding with name is found", func() {
-		It("should return its data", func() {
-			client.GetBindingByIDReturns(&binding, nil)
-			err := executeWithArgs("binding1")
+		Context("when no known binding name is provided", func() {
+			It("should print no binding found", func() {
+				client.ListBindingsReturns(&types.ServiceBindings{}, nil)
+				err := executeWithArgs("unknown", "--show-binding-params")
 
-			Expect(err).ShouldNot(HaveOccurred())
-			result := &types.ServiceBindings{ServiceBindings: []types.ServiceBinding{binding}, Vertical: true}
-			Expect(buffer.String()).To(ContainSubstring(result.TableData().String()))
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buffer.String()).To(ContainSubstring("No binding found with name: unknown"))
+			})
+		})
+
+		Context("when there is binding with this name with parameters", func() {
+			It("should print parameters", func() {
+				client.GetBindingParametersReturns(bindingParameters1, nil)
+				err := executeWithArgs("binding1", "--show-binding-params")
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buffer.String()).To(ContainSubstring(output.PrintParameters(bindingParameters1)))
+			})
+		})
+
+		Context("when there is instance with this name without parameters", func() {
+			It("should print no parameters", func() {
+				client.GetBindingParametersReturns(bindingParameters2, nil)
+				err := executeWithArgs("binding1", "--show-binding-params")
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buffer.String()).To(ContainSubstring("No configuration parameters are set for service binding id: %s", binding.ID))
+			})
+		})
+
+		Context("when two bindings  with same name exists," +
+			"one with parameters and the second without  parameters", func() {
+			var response *types.ServiceBindings
+			BeforeEach(func() {
+				response = &types.ServiceBindings{ServiceBindings: []types.ServiceBinding{binding, binding2}, Vertical: true}
+				client.ListBindingsReturns(response, nil)
+			})
+
+			It("should return both bindings parameters", func() {
+				client.GetBindingParametersReturnsOnCall(0, bindingParameters1 , nil)
+				client.GetBindingParametersReturnsOnCall(1, bindingParameters2, nil)
+				err := executeWithArgs("binding1", "--show-binding-params")
+				Expect(err).ShouldNot(HaveOccurred())
+
+				Expect(buffer.String()).To(ContainSubstring(output.PrintParameters(bindingParameters1)))
+				Expect(buffer.String()).To(ContainSubstring("No configuration parameters are set for service binding id: %s", binding2.ID))
+
+			})
 		})
 	})
 })

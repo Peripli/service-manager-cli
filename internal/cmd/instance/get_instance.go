@@ -93,16 +93,16 @@ func (gb *GetInstanceCmd) printParameters(instances *types.ServiceInstances) err
 			if strings.Contains(err.Error(), "StatusCode: 404") {
 				continue
 			}
-			output.PrintMessage(gb.Output, "Unable to show parameters for service instance id: %s\n", instance.ID)
-			output.PrintMessage(gb.Output, "The error is: %s\n\n", err)
+			output.PrintMessage(gb.Output, "Unable to show configuration parameters for service instance id: %s\n", instance.ID)
+			output.PrintMessage(gb.Output, "The error: %s\n\n", err)
 			continue
 		}
 		if len(parameters) == 0 {
-			output.PrintMessage(gb.Output, "No parameters are set for service instance id: %s\n\n", instance.ID)
+			output.PrintMessage(gb.Output, "No configuration parameters are set for service instance id: %s\n\n", instance.ID)
 			continue
 		}
-		output.PrintMessage(gb.Output, "Showing parameters for service instance id: %s \n", instance.ID )
-		output.PrintMessage(gb.Output, "The parameters are: \n"  )
+		output.PrintMessage(gb.Output, "Showing configuration parameters for service instance id: %s \n", instance.ID )
+		output.PrintMessage(gb.Output, "The parameters: \n"  )
 
 		output.PrintMessage(gb.Output, "%s \n\n", output.PrintParameters(parameters))
 	}
@@ -142,7 +142,7 @@ func (gb *GetInstanceCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		PreRunE: prepare(gb, gb.Context),
 		RunE:    cmd.RunE(gb),
 	}
-	gb.instanceParams = result.PersistentFlags().Bool("instance-params", false, "Show the service instance configuration parameters")
+	gb.instanceParams = result.PersistentFlags().Bool("show-instance-params", false, "Show the service instance configuration parameters")
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddCommonQueryFlag(result.Flags(), &gb.Parameters)
 

@@ -178,7 +178,7 @@ var _ = Describe("Binding test", func() {
 			It("should return 404", func() {
 				_, err := client.GetBindingParameters(binding.ID, params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path+binding.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 
@@ -193,7 +193,7 @@ var _ = Describe("Binding test", func() {
 			It("should return an error with status code 502", func() {
 				_, err := client.GetBindingParameters(binding.ID, params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path+binding.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 
@@ -208,7 +208,7 @@ var _ = Describe("Binding test", func() {
 			It("should return an error with status code 400", func() {
 				_, err := client.GetBindingParameters(binding.ID, params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path+binding.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 
 			})
 		})

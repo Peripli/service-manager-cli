@@ -162,7 +162,7 @@ var _ = Describe("Instance test", func() {
 						ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
-			It("should return parameters", func() {
+			It("should return empty parameters", func() {
 				result, err := client.GetInstanceParameters(instance.ID, params)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result).To(Equal(instanceParameters))
@@ -180,7 +180,7 @@ var _ = Describe("Instance test", func() {
 			It("should return 404", func() {
 				_, err := client.GetInstanceParameters(instance.ID, params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path+instance.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 
@@ -195,7 +195,7 @@ var _ = Describe("Instance test", func() {
 			It("should return an error with status code 502", func() {
 				_, err := client.GetInstanceParameters(instance.ID, params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path+instance.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 			})
 		})
 
@@ -210,7 +210,7 @@ var _ = Describe("Instance test", func() {
 			It("should return an error with status code 400", func() {
 				_, err := client.GetInstanceParameters(instance.ID, params)
 				Expect(err).Should(HaveOccurred())
-				verifyErrorMsg(err.Error(), handlerDetails[0].Path+instance.ID, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
+				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 
 			})
 		})
