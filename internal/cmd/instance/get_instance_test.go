@@ -43,7 +43,7 @@ var _ = Describe("Get instance command test", func() {
 
 	Describe("Get service instance", func() {
 
-		Context("when no instance name is provided", func() {
+		When("no instance name is provided", func() {
 			It("should return error", func() {
 				client.GetInstanceByIDReturns(&instance, nil)
 				err := executeWithArgs("")
@@ -52,7 +52,7 @@ var _ = Describe("Get instance command test", func() {
 			})
 		})
 
-		Context("when more than one instance with same name exists", func() {
+		When("more than one instance with same name exists", func() {
 			var response *types.ServiceInstances
 			BeforeEach(func() {
 				response = &types.ServiceInstances{ServiceInstances: []types.ServiceInstance{instance, instance2}, Vertical: true}
@@ -69,7 +69,7 @@ var _ = Describe("Get instance command test", func() {
 			})
 		})
 
-		Context("when no known instance name is provided", func() {
+		When("no known instance name is provided", func() {
 			It("should return no instance", func() {
 				client.ListInstancesReturns(&types.ServiceInstances{}, nil)
 				err := executeWithArgs("unknown")
@@ -79,7 +79,7 @@ var _ = Describe("Get instance command test", func() {
 			})
 		})
 
-		Context("when instance with name is found", func() {
+		When("instance with name is found", func() {
 			It("should return its data", func() {
 				client.GetInstanceByIDReturns(&instance, nil)
 				err := executeWithArgs("instance1")
@@ -95,7 +95,7 @@ var _ = Describe("Get instance command test", func() {
 		instanceParameters1 := map[string]interface{}{"param1":"value1","param2":"value2"}
 		instanceParameters2 := make(map[string]interface{})
 
-		Context("when no instance name is provided", func() {
+		When("no instance name is provided", func() {
 			It("should return error", func() {
 				err := executeWithArgs("", "--show-instance-params")
 
@@ -103,7 +103,7 @@ var _ = Describe("Get instance command test", func() {
 			})
 		})
 
-		Context("when no known instance name is provided", func() {
+		When("no known instance name is provided", func() {
 			It("should print no instance found", func() {
 				client.ListInstancesReturns(&types.ServiceInstances{}, nil)
 				err := executeWithArgs("unknown", "--show-instance-params")
@@ -113,7 +113,7 @@ var _ = Describe("Get instance command test", func() {
 			})
 		})
 
-		Context("when there is instance with this name with parameters", func() {
+		When("there is instance with this name with parameters", func() {
 			It("should print parameters", func() {
 				client.GetInstanceParametersReturns(instanceParameters1, nil)
 				err := executeWithArgs("instance1", "--show-instance-params")
@@ -123,7 +123,7 @@ var _ = Describe("Get instance command test", func() {
 			})
 		})
 
-		Context("when there is instance with this name without parameters", func() {
+		When("there is instance with this name without parameters", func() {
 			It("should print no parameters", func() {
 				client.GetInstanceParametersReturns(instanceParameters2, nil)
 				err := executeWithArgs("instance1", "--show-instance-params")
@@ -133,7 +133,7 @@ var _ = Describe("Get instance command test", func() {
 			})
 		})
 
-		Context("when two instances with same name exists," +
+		When("two instances with same name exists," +
 			"one with parameters and the second without parameters", func() {
 			var response *types.ServiceInstances
 			BeforeEach(func() {

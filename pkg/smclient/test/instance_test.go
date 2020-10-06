@@ -136,7 +136,7 @@ var _ = Describe("Instance test", func() {
 	})
 
 	Describe("Get service instance parameters", func() {
-		Context("when there is instance with this id with parameters", func() {
+		When("there is instance with this id with parameters", func() {
 			BeforeEach(func() {
 				responseBody, _ := json.Marshal(instanceParameters)
 				handlerDetails = []HandlerDetails{
@@ -152,7 +152,7 @@ var _ = Describe("Instance test", func() {
 			})
 		})
 
-		Context("when there is instance with this id without parameters", func() {
+		When("there is instance with this id without parameters", func() {
 			instanceParameters := make(map[string]interface{})
 			BeforeEach(func() {
 				responseBody, _ := json.Marshal(instanceParameters)
@@ -169,7 +169,7 @@ var _ = Describe("Instance test", func() {
 			})
 		})
 
-		Context("when there is no instance with this id", func() {
+		When("there is no instance with this id", func() {
 			BeforeEach(func() {
 				handlerDetails = []HandlerDetails{
 					{Method: http.MethodGet,
@@ -184,7 +184,7 @@ var _ = Describe("Instance test", func() {
 			})
 		})
 
-		Context("when bad gateway status code is returned", func() {
+		When("bad gateway status code is returned", func() {
 			BeforeEach(func() {
 				handlerDetails = []HandlerDetails{
 					{Method: http.MethodGet,
@@ -199,7 +199,7 @@ var _ = Describe("Instance test", func() {
 			})
 		})
 
-		Context("when bad request status code is returned", func() {
+		When("bad request status code is returned", func() {
 			BeforeEach(func() {
 				handlerDetails = []HandlerDetails{
 					{Method: http.MethodGet,

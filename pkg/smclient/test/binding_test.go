@@ -134,7 +134,7 @@ var _ = Describe("Binding test", func() {
 	})
 
 	Describe("Get service binding parameters", func() {
-		Context("when there is binding with this id with parameters", func() {
+		When("there is binding with this id with parameters", func() {
 			BeforeEach(func() {
 				responseBody, _ := json.Marshal(bindingParameters)
 				handlerDetails = []HandlerDetails{
@@ -150,7 +150,7 @@ var _ = Describe("Binding test", func() {
 			})
 		})
 
-		Context("when there is binding with this id without parameters", func() {
+		When("there is binding with this id without parameters", func() {
 			bindingParameters := make(map[string]interface{})
 			BeforeEach(func() {
 				responseBody, _ := json.Marshal(bindingParameters)
@@ -167,7 +167,7 @@ var _ = Describe("Binding test", func() {
 			})
 		})
 
-		Context("when there is no binding with this id", func() {
+		When("there is no binding with this id", func() {
 			BeforeEach(func() {
 				handlerDetails = []HandlerDetails{
 					{Method: http.MethodGet,
@@ -182,7 +182,7 @@ var _ = Describe("Binding test", func() {
 			})
 		})
 
-		Context("when bad gateway status code is returned", func() {
+		When("bad gateway status code is returned", func() {
 			BeforeEach(func() {
 				handlerDetails = []HandlerDetails{
 					{Method: http.MethodGet,
@@ -197,7 +197,7 @@ var _ = Describe("Binding test", func() {
 			})
 		})
 
-		Context("when bad request status code is returned", func() {
+		When("bad request status code is returned", func() {
 			BeforeEach(func() {
 				handlerDetails = []HandlerDetails{
 					{Method: http.MethodGet,

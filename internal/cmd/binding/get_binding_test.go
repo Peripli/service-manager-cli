@@ -59,7 +59,7 @@ var _ = Describe("Get binding command test", func() {
 			client.GetInstanceByIDReturnsOnCall(0, &instance1, nil)
 			client.GetInstanceByIDReturnsOnCall(1, &instance2, nil)
 		})
-		Context("when no binding name is provided", func() {
+		When("no binding name is provided", func() {
 			It("should return error", func() {
 				client.GetBindingByIDReturns(&binding, nil)
 				err := executeWithArgs("")
@@ -68,7 +68,7 @@ var _ = Describe("Get binding command test", func() {
 			})
 		})
 
-		Context("when more than one binding with same name exists", func() {
+		When("more than one binding with same name exists", func() {
 			var response *types.ServiceBindings
 			BeforeEach(func() {
 				response = &types.ServiceBindings{ServiceBindings: []types.ServiceBinding{binding, binding2}, Vertical: true}
@@ -85,7 +85,7 @@ var _ = Describe("Get binding command test", func() {
 			})
 		})
 
-		Context("when no known binding name is provided", func() {
+		When("no known binding name is provided", func() {
 			It("should return no binding", func() {
 				client.ListBindingsReturns(&types.ServiceBindings{}, nil)
 				err := executeWithArgs("unknown")
@@ -95,7 +95,7 @@ var _ = Describe("Get binding command test", func() {
 			})
 		})
 
-		Context("when binding with name is found", func() {
+		When("binding with name is found", func() {
 			It("should return its data", func() {
 				client.GetBindingByIDReturns(&binding, nil)
 				err := executeWithArgs("binding1")
@@ -111,7 +111,7 @@ var _ = Describe("Get binding command test", func() {
 		bindingParameters1 := map[string]interface{}{"param1":"value1","param2":"value2"}
 		bindingParameters2 := make(map[string]interface{})
 
-		Context("when no binding name is provided", func() {
+		When("no binding name is provided", func() {
 			It("should return error", func() {
 				err := executeWithArgs("", "--show-binding-params")
 
@@ -119,7 +119,7 @@ var _ = Describe("Get binding command test", func() {
 			})
 		})
 
-		Context("when no known binding name is provided", func() {
+		When("no known binding name is provided", func() {
 			It("should print no binding found", func() {
 				client.ListBindingsReturns(&types.ServiceBindings{}, nil)
 				err := executeWithArgs("unknown", "--show-binding-params")
@@ -129,7 +129,7 @@ var _ = Describe("Get binding command test", func() {
 			})
 		})
 
-		Context("when there is binding with this name with parameters", func() {
+		When("there is binding with this name with parameters", func() {
 			It("should print parameters", func() {
 				client.GetBindingParametersReturns(bindingParameters1, nil)
 				err := executeWithArgs("binding1", "--show-binding-params")
@@ -139,7 +139,7 @@ var _ = Describe("Get binding command test", func() {
 			})
 		})
 
-		Context("when there is instance with this name without parameters", func() {
+		When("there is instance with this name without parameters", func() {
 			It("should print no parameters", func() {
 				client.GetBindingParametersReturns(bindingParameters2, nil)
 				err := executeWithArgs("binding1", "--show-binding-params")
@@ -149,7 +149,7 @@ var _ = Describe("Get binding command test", func() {
 			})
 		})
 
-		Context("when two bindings with same name exists," +
+		When("two bindings with same name exists," +
 			"one with parameters and the second without parameters", func() {
 			var response *types.ServiceBindings
 			BeforeEach(func() {
@@ -165,7 +165,6 @@ var _ = Describe("Get binding command test", func() {
 
 				Expect(buffer.String()).To(ContainSubstring(output.PrintParameters(bindingParameters1)))
 				Expect(buffer.String()).To(ContainSubstring("No configuration parameters are set for service binding id: %s", binding2.ID))
-
 			})
 		})
 	})
