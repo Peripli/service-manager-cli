@@ -139,7 +139,7 @@ var _ = Describe("Binding test", func() {
 				responseBody, _ := json.Marshal(bindingParameters)
 				handlerDetails = []HandlerDetails{
 					{Method: http.MethodGet,
-						Path: web.ServiceBindingsURL + "/" + binding.ID + web.ParametersURL + "/",
+						Path: web.ServiceBindingsURL + "/" + binding.ID + web.ParametersURL,
 						ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
@@ -156,7 +156,7 @@ var _ = Describe("Binding test", func() {
 				responseBody, _ := json.Marshal(bindingParameters)
 				handlerDetails = []HandlerDetails{
 					{Method: http.MethodGet,
-						Path: web.ServiceBindingsURL + "/" + binding.ID + web.ParametersURL + "/",
+						Path: web.ServiceBindingsURL + "/" + binding.ID + web.ParametersURL,
 						ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
@@ -171,7 +171,7 @@ var _ = Describe("Binding test", func() {
 			BeforeEach(func() {
 				handlerDetails = []HandlerDetails{
 					{Method: http.MethodGet,
-						Path: web.ServiceBindingsURL + "/" + binding.ID + web.ParametersURL + "/",
+						Path: web.ServiceBindingsURL + "/" + binding.ID + web.ParametersURL,
 						ResponseStatusCode: http.StatusNotFound},
 				}
 			})
@@ -186,7 +186,7 @@ var _ = Describe("Binding test", func() {
 			BeforeEach(func() {
 				handlerDetails = []HandlerDetails{
 					{Method: http.MethodGet,
-						Path: web.ServiceBindingsURL + "/" + binding.ID + web.ParametersURL + "/",
+						Path: web.ServiceBindingsURL + "/" + binding.ID + web.ParametersURL,
 						ResponseStatusCode: http.StatusBadGateway},
 				}
 			})
@@ -201,7 +201,7 @@ var _ = Describe("Binding test", func() {
 			BeforeEach(func() {
 				handlerDetails = []HandlerDetails{
 					{Method: http.MethodGet,
-						Path: web.ServiceBindingsURL + "/" + binding.ID + web.ParametersURL + "/",
+						Path: web.ServiceBindingsURL + "/" + binding.ID + web.ParametersURL,
 						ResponseStatusCode: http.StatusBadRequest},
 				}
 			})

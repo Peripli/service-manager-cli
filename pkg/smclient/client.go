@@ -512,9 +512,3 @@ func BuildURL(baseURL string, q *query.Parameters) string {
 	}
 	return baseURL + "?" + queryParams
 }
-
-func PrintFormatedParameters(parameters map[string]interface{}) string{
-	jsonParameters,_ := json.MarshalIndent(parameters, "", "   ")
-	stringParams := string(jsonParameters)
-	return stringParams
-}

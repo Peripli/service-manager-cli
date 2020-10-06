@@ -40,6 +40,7 @@ var _ = Describe("Get instance command test", func() {
 
 		return commandToRun.Execute()
 	}
+
 	Describe("Get service instance", func() {
 
 		Context("when no instance name is provided", func() {
@@ -133,14 +134,13 @@ var _ = Describe("Get instance command test", func() {
 		})
 
 		Context("when two instances with same name exists," +
-			"one with parameters and the second without  parameters", func() {
+			"one with parameters and the second without parameters", func() {
 			var response *types.ServiceInstances
 			BeforeEach(func() {
 				response = &types.ServiceInstances{ServiceInstances: []types.ServiceInstance{instance, instance2}, Vertical: true}
 				client.ListInstancesReturns(response, nil)
 			})
-
-			It("should return both instances parameters", func() {
+			It("should return parameters for both instances", func() {
 				client.GetInstanceParametersReturnsOnCall(0, instanceParameters1, nil)
 				client.GetInstanceParametersReturnsOnCall(1, instanceParameters2, nil)
 				err := executeWithArgs("instance1", "--show-instance-params")

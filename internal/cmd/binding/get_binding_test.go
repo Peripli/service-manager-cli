@@ -149,15 +149,15 @@ var _ = Describe("Get binding command test", func() {
 			})
 		})
 
-		Context("when two bindings  with same name exists," +
-			"one with parameters and the second without  parameters", func() {
+		Context("when two bindings with same name exists," +
+			"one with parameters and the second without parameters", func() {
 			var response *types.ServiceBindings
 			BeforeEach(func() {
 				response = &types.ServiceBindings{ServiceBindings: []types.ServiceBinding{binding, binding2}, Vertical: true}
 				client.ListBindingsReturns(response, nil)
 			})
 
-			It("should return both bindings parameters", func() {
+			It("should return parameters both bindings", func() {
 				client.GetBindingParametersReturnsOnCall(0, bindingParameters1 , nil)
 				client.GetBindingParametersReturnsOnCall(1, bindingParameters2, nil)
 				err := executeWithArgs("binding1", "--show-binding-params")

@@ -166,7 +166,6 @@ type FakeClient struct {
 		result2 error
 	}
 
-
 	GetInstanceParametersStub        func(string, *query.Parameters) (map[string]interface{}, error)
 	getInstanceParametersMutex       sync.RWMutex
 	getInstanceParametersArgsForCall []struct {

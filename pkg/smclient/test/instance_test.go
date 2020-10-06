@@ -141,7 +141,7 @@ var _ = Describe("Instance test", func() {
 				responseBody, _ := json.Marshal(instanceParameters)
 				handlerDetails = []HandlerDetails{
 					{Method: http.MethodGet,
-						Path: web.ServiceInstancesURL + "/"+ instance.ID + web.ParametersURL + "/",
+						Path: web.ServiceInstancesURL + "/"+ instance.ID + web.ParametersURL,
 						ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
@@ -158,7 +158,7 @@ var _ = Describe("Instance test", func() {
 				responseBody, _ := json.Marshal(instanceParameters)
 				handlerDetails = []HandlerDetails{
 					{Method: http.MethodGet,
-						Path: web.ServiceInstancesURL + "/"+ instance.ID + web.ParametersURL + "/",
+						Path: web.ServiceInstancesURL + "/"+ instance.ID + web.ParametersURL,
 						ResponseBody: responseBody, ResponseStatusCode: http.StatusOK},
 				}
 			})
@@ -173,7 +173,7 @@ var _ = Describe("Instance test", func() {
 			BeforeEach(func() {
 				handlerDetails = []HandlerDetails{
 					{Method: http.MethodGet,
-						Path: web.ServiceInstancesURL + "/"+ instance.ID + web.ParametersURL + "/",
+						Path: web.ServiceInstancesURL + "/"+ instance.ID + web.ParametersURL,
 						ResponseStatusCode: http.StatusNotFound},
 				}
 			})
@@ -188,7 +188,7 @@ var _ = Describe("Instance test", func() {
 			BeforeEach(func() {
 				handlerDetails = []HandlerDetails{
 					{Method: http.MethodGet,
-						Path: web.ServiceInstancesURL + "/"+ instance.ID + web.ParametersURL + "/",
+						Path: web.ServiceInstancesURL + "/"+ instance.ID + web.ParametersURL,
 						ResponseStatusCode: http.StatusBadGateway},
 				}
 			})
@@ -203,7 +203,7 @@ var _ = Describe("Instance test", func() {
 			BeforeEach(func() {
 				handlerDetails = []HandlerDetails{
 					{Method: http.MethodGet,
-						Path: web.ServiceInstancesURL + "/"+ instance.ID + web.ParametersURL + "/",
+						Path: web.ServiceInstancesURL + "/"+ instance.ID + web.ParametersURL,
 						ResponseStatusCode: http.StatusBadRequest},
 				}
 			})
@@ -215,7 +215,6 @@ var _ = Describe("Instance test", func() {
 			})
 		})
 	})
-
 
 	Describe("Provision", func() {
 		Context("When valid instance is being provisioned synchronously", func() {

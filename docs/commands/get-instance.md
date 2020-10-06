@@ -22,7 +22,7 @@ get-instance, gi
 | -o, --output Output format of the command. Possible opitons: json, yaml, text.| No|
 | --config Set the path for the smctl config.json file (default is $HOME/.sm/config.json).|Yes|
 | -v, --verbose Use verbose mode.|Yes|
-| --instance-params  Show the service instance configuration parameters.| No |
+| --show-instance-params  Show the service instance configuration parameters.| No |
 
 ## Example
 
@@ -42,7 +42,7 @@ One service instance.
 ```
 
 ```
-▶ smctl get-instance sample-instance --instance-params
+▶ smctl get-instance sample-instance --show-instance-params
 Showing parameters for service instance id:  0c170e73-28bd-47ea-b3f4-f1ad1dbf3e0a
 The parameters are:
 {

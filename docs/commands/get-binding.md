@@ -22,7 +22,7 @@ get-binding, gsb
 | -o, --output Output format of the command. Possible opitons: json, yaml, text.| No|
 | --config Set the path for the smctl config.json file (default is $HOME/.sm/config.json).|Yes|
 | -v, --verbose Use verbose mode.|Yes|
-| --binding-params  Show service binding configuration parameters.| No |
+| --show-binding-params  Show service binding configuration parameters.| No |
 
 ## Example
 
@@ -42,7 +42,7 @@ One service binding.
 
 
 ```
-▶ smctl get-binding sample-binding --binding-params
+▶ smctl get-binding sample-binding --show-binding-params
 Showing parameters for service binding id:  0c170e73-28bd-47ea-b3f4-f1ad1dbf3e0a
 The parameters are:
 {
