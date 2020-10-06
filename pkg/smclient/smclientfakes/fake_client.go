@@ -108,7 +108,6 @@ type FakeClient struct {
 		result1 *types.ServiceBinding
 		result2 error
 	}
-
 	GetBindingParametersStub        func(string, *query.Parameters) (map[string]interface{}, error)
 	getBindingParametersMutex       sync.RWMutex
 	getBindingParametersArgsForCall []struct {
@@ -123,7 +122,6 @@ type FakeClient struct {
 		result1 map[string]interface{}
 		result2 error
 	}
-
 	GetBrokerByIDStub        func(string, *query.Parameters) (*types.Broker, error)
 	getBrokerByIDMutex       sync.RWMutex
 	getBrokerByIDArgsForCall []struct {
@@ -165,7 +163,6 @@ type FakeClient struct {
 		result1 *types.ServiceInstance
 		result2 error
 	}
-
 	GetInstanceParametersStub        func(string, *query.Parameters) (map[string]interface{}, error)
 	getInstanceParametersMutex       sync.RWMutex
 	getInstanceParametersArgsForCall []struct {
@@ -180,7 +177,6 @@ type FakeClient struct {
 		result1 map[string]interface{}
 		result2 error
 	}
-
 	LabelStub        func(string, string, *types.LabelChanges, *query.Parameters) error
 	labelMutex       sync.RWMutex
 	labelArgsForCall []struct {
