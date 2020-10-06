@@ -89,6 +89,9 @@ var (
 		Context:       json.RawMessage("{}"),
 	}
 
+	instanceParameters = map[string]interface{}{"param1":"value1","param2":"value2"}
+	bindingParameters = map[string]interface{}{"param1":"value1","param2":"value2"}
+
 	binding = &types.ServiceBinding{
 		ID:                "instanceID",
 		Name:              "instance1",

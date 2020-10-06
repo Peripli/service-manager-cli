@@ -1,10 +1,10 @@
 package instance
 
 import (
+	"bytes"
+	"github.com/Peripli/service-manager-cli/internal/output"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
-	"bytes"
 
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
@@ -41,50 +41,115 @@ var _ = Describe("Get instance command test", func() {
 		return commandToRun.Execute()
 	}
 
-	Context("when no instance name is provided", func() {
-		It("should return error", func() {
-			client.GetInstanceByIDReturns(&instance, nil)
-			err := executeWithArgs("")
+	Describe("Get service instance", func() {
 
-			Expect(err).Should(HaveOccurred())
+		When("no instance name is provided", func() {
+			It("should return error", func() {
+				client.GetInstanceByIDReturns(&instance, nil)
+				err := executeWithArgs("")
+
+				Expect(err).Should(HaveOccurred())
+			})
+		})
+
+		When("more than one instance with same name exists", func() {
+			var response *types.ServiceInstances
+			BeforeEach(func() {
+				response = &types.ServiceInstances{ServiceInstances: []types.ServiceInstance{instance, instance2}, Vertical: true}
+				client.ListInstancesReturns(response, nil)
+			})
+
+			It("should return both instances", func() {
+				client.GetInstanceByIDReturnsOnCall(0, &instance, nil)
+				client.GetInstanceByIDReturnsOnCall(1, &instance2, nil)
+				err := executeWithArgs("instance1")
+				Expect(err).ShouldNot(HaveOccurred())
+
+				Expect(buffer.String()).To(ContainSubstring(response.TableData().String()))
+			})
+		})
+
+		When("no known instance name is provided", func() {
+			It("should return no instance", func() {
+				client.ListInstancesReturns(&types.ServiceInstances{}, nil)
+				err := executeWithArgs("unknown")
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buffer.String()).To(ContainSubstring("No instance found with name: unknown"))
+			})
+		})
+
+		When("instance with name is found", func() {
+			It("should return its data", func() {
+				client.GetInstanceByIDReturns(&instance, nil)
+				err := executeWithArgs("instance1")
+
+				Expect(err).ShouldNot(HaveOccurred())
+				result := &types.ServiceInstances{ServiceInstances: []types.ServiceInstance{instance}, Vertical: true}
+				Expect(buffer.String()).To(ContainSubstring(result.TableData().String()))
+			})
 		})
 	})
 
-	Context("when more than one instance with same name exists", func() {
-		var response *types.ServiceInstances
-		BeforeEach(func() {
-			response = &types.ServiceInstances{ServiceInstances: []types.ServiceInstance{instance, instance2}, Vertical: true}
-			client.ListInstancesReturns(response, nil)
+	Describe("Get service instance parameters", func() {
+		instanceParameters1 := map[string]interface{}{"param1":"value1","param2":"value2"}
+		instanceParameters2 := make(map[string]interface{})
+
+		When("no instance name is provided", func() {
+			It("should return error", func() {
+				err := executeWithArgs("", "--show-instance-params")
+
+				Expect(err).Should(HaveOccurred())
+			})
 		})
 
-		It("should return both instances", func() {
-			client.GetInstanceByIDReturnsOnCall(0, &instance, nil)
-			client.GetInstanceByIDReturnsOnCall(1, &instance2, nil)
-			err := executeWithArgs("instance1")
-			Expect(err).ShouldNot(HaveOccurred())
+		When("no known instance name is provided", func() {
+			It("should print no instance found", func() {
+				client.ListInstancesReturns(&types.ServiceInstances{}, nil)
+				err := executeWithArgs("unknown", "--show-instance-params")
 
-			Expect(buffer.String()).To(ContainSubstring(response.TableData().String()))
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buffer.String()).To(ContainSubstring("No instance found with name: unknown"))
+			})
 		})
-	})
 
-	Context("when no known instance name is provided", func() {
-		It("should return no instance", func() {
-			client.ListInstancesReturns(&types.ServiceInstances{}, nil)
-			err := executeWithArgs("unknown")
+		When("there is instance with this name with parameters", func() {
+			It("should print parameters", func() {
+				client.GetInstanceParametersReturns(instanceParameters1, nil)
+				err := executeWithArgs("instance1", "--show-instance-params")
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buffer.String()).To(ContainSubstring("No instance found with name: unknown"))
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buffer.String()).To(ContainSubstring(output.PrintParameters(instanceParameters1)))
+			})
 		})
-	})
 
-	Context("when instance with name is found", func() {
-		It("should return its data", func() {
-			client.GetInstanceByIDReturns(&instance, nil)
-			err := executeWithArgs("instance1")
+		When("there is instance with this name without parameters", func() {
+			It("should print no parameters", func() {
+				client.GetInstanceParametersReturns(instanceParameters2, nil)
+				err := executeWithArgs("instance1", "--show-instance-params")
 
-			Expect(err).ShouldNot(HaveOccurred())
-			result := &types.ServiceInstances{ServiceInstances: []types.ServiceInstance{instance}, Vertical: true}
-			Expect(buffer.String()).To(ContainSubstring(result.TableData().String()))
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buffer.String()).To(ContainSubstring("No configuration parameters are set for service instance id: %s", instance.ID))
+			})
+		})
+
+		When("two instances with same name exists," +
+			"one with parameters and the second without parameters", func() {
+			var response *types.ServiceInstances
+			BeforeEach(func() {
+				response = &types.ServiceInstances{ServiceInstances: []types.ServiceInstance{instance, instance2}, Vertical: true}
+				client.ListInstancesReturns(response, nil)
+			})
+			It("should return parameters for both instances", func() {
+				client.GetInstanceParametersReturnsOnCall(0, instanceParameters1, nil)
+				client.GetInstanceParametersReturnsOnCall(1, instanceParameters2, nil)
+				err := executeWithArgs("instance1", "--show-instance-params")
+				Expect(err).ShouldNot(HaveOccurred())
+
+				Expect(buffer.String()).To(ContainSubstring(output.PrintParameters(instanceParameters1)))
+				Expect(buffer.String()).To(ContainSubstring("No configuration parameters are set for service instance id: %s", instance2.ID))
+
+			})
 		})
 	})
 })

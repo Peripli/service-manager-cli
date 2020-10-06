@@ -108,6 +108,20 @@ type FakeClient struct {
 		result1 *types.ServiceBinding
 		result2 error
 	}
+	GetBindingParametersStub        func(string, *query.Parameters) (map[string]interface{}, error)
+	getBindingParametersMutex       sync.RWMutex
+	getBindingParametersArgsForCall []struct {
+		arg1 string
+		arg2 *query.Parameters
+	}
+	getBindingParametersReturns struct {
+		result1 map[string]interface{}
+		result2 error
+	}
+	getBindingParametersReturnsOnCall map[int]struct {
+		result1 map[string]interface{}
+		result2 error
+	}
 	GetBrokerByIDStub        func(string, *query.Parameters) (*types.Broker, error)
 	getBrokerByIDMutex       sync.RWMutex
 	getBrokerByIDArgsForCall []struct {
@@ -147,6 +161,20 @@ type FakeClient struct {
 	}
 	getInstanceByIDReturnsOnCall map[int]struct {
 		result1 *types.ServiceInstance
+		result2 error
+	}
+	GetInstanceParametersStub        func(string, *query.Parameters) (map[string]interface{}, error)
+	getInstanceParametersMutex       sync.RWMutex
+	getInstanceParametersArgsForCall []struct {
+		arg1 string
+		arg2 *query.Parameters
+	}
+	getInstanceParametersReturns struct {
+		result1 map[string]interface{}
+		result2 error
+	}
+	getInstanceParametersReturnsOnCall map[int]struct {
+		result1 map[string]interface{}
 		result2 error
 	}
 	LabelStub        func(string, string, *types.LabelChanges, *query.Parameters) error
@@ -868,6 +896,70 @@ func (fake *FakeClient) GetBindingByIDReturnsOnCall(i int, result1 *types.Servic
 	}{result1, result2}
 }
 
+func (fake *FakeClient) GetBindingParameters(arg1 string, arg2 *query.Parameters) (map[string]interface{}, error) {
+	fake.getBindingParametersMutex.Lock()
+	ret, specificReturn := fake.getBindingParametersReturnsOnCall[len(fake.getBindingParametersArgsForCall)]
+	fake.getBindingParametersArgsForCall = append(fake.getBindingParametersArgsForCall, struct {
+		arg1 string
+		arg2 *query.Parameters
+	}{arg1, arg2})
+	fake.recordInvocation("GetBindingParameters", []interface{}{arg1, arg2})
+	fake.getBindingParametersMutex.Unlock()
+	if fake.GetBindingParametersStub != nil {
+		return fake.GetBindingParametersStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.getBindingParametersReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeClient) GetBindingParametersCallCount() int {
+	fake.getBindingParametersMutex.RLock()
+	defer fake.getBindingParametersMutex.RUnlock()
+	return len(fake.getBindingParametersArgsForCall)
+}
+
+func (fake *FakeClient) GetBindingParametersCalls(stub func(string, *query.Parameters) (map[string]interface{}, error)) {
+	fake.getBindingParametersMutex.Lock()
+	defer fake.getBindingParametersMutex.Unlock()
+	fake.GetBindingParametersStub = stub
+}
+
+func (fake *FakeClient) GetBindingParametersArgsForCall(i int) (string, *query.Parameters) {
+	fake.getBindingParametersMutex.RLock()
+	defer fake.getBindingParametersMutex.RUnlock()
+	argsForCall := fake.getBindingParametersArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeClient) GetBindingParametersReturns(result1 map[string]interface{}, result2 error) {
+	fake.getBindingParametersMutex.Lock()
+	defer fake.getBindingParametersMutex.Unlock()
+	fake.GetBindingParametersStub = nil
+	fake.getBindingParametersReturns = struct {
+		result1 map[string]interface{}
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) GetBindingParametersReturnsOnCall(i int, result1 map[string]interface{}, result2 error) {
+	fake.getBindingParametersMutex.Lock()
+	defer fake.getBindingParametersMutex.Unlock()
+	fake.GetBindingParametersStub = nil
+	if fake.getBindingParametersReturnsOnCall == nil {
+		fake.getBindingParametersReturnsOnCall = make(map[int]struct {
+			result1 map[string]interface{}
+			result2 error
+		})
+	}
+	fake.getBindingParametersReturnsOnCall[i] = struct {
+		result1 map[string]interface{}
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeClient) GetBrokerByID(arg1 string, arg2 *query.Parameters) (*types.Broker, error) {
 	fake.getBrokerByIDMutex.Lock()
 	ret, specificReturn := fake.getBrokerByIDReturnsOnCall[len(fake.getBrokerByIDArgsForCall)]
@@ -1055,6 +1147,70 @@ func (fake *FakeClient) GetInstanceByIDReturnsOnCall(i int, result1 *types.Servi
 	}
 	fake.getInstanceByIDReturnsOnCall[i] = struct {
 		result1 *types.ServiceInstance
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) GetInstanceParameters(arg1 string, arg2 *query.Parameters) (map[string]interface{}, error) {
+	fake.getInstanceParametersMutex.Lock()
+	ret, specificReturn := fake.getInstanceParametersReturnsOnCall[len(fake.getInstanceParametersArgsForCall)]
+	fake.getInstanceParametersArgsForCall = append(fake.getInstanceParametersArgsForCall, struct {
+		arg1 string
+		arg2 *query.Parameters
+	}{arg1, arg2})
+	fake.recordInvocation("GetInstanceParameters", []interface{}{arg1, arg2})
+	fake.getInstanceParametersMutex.Unlock()
+	if fake.GetInstanceParametersStub != nil {
+		return fake.GetInstanceParametersStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.getInstanceParametersReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeClient) GetInstanceParametersCallCount() int {
+	fake.getInstanceParametersMutex.RLock()
+	defer fake.getInstanceParametersMutex.RUnlock()
+	return len(fake.getInstanceParametersArgsForCall)
+}
+
+func (fake *FakeClient) GetInstanceParametersCalls(stub func(string, *query.Parameters) (map[string]interface{}, error)) {
+	fake.getInstanceParametersMutex.Lock()
+	defer fake.getInstanceParametersMutex.Unlock()
+	fake.GetInstanceParametersStub = stub
+}
+
+func (fake *FakeClient) GetInstanceParametersArgsForCall(i int) (string, *query.Parameters) {
+	fake.getInstanceParametersMutex.RLock()
+	defer fake.getInstanceParametersMutex.RUnlock()
+	argsForCall := fake.getInstanceParametersArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeClient) GetInstanceParametersReturns(result1 map[string]interface{}, result2 error) {
+	fake.getInstanceParametersMutex.Lock()
+	defer fake.getInstanceParametersMutex.Unlock()
+	fake.GetInstanceParametersStub = nil
+	fake.getInstanceParametersReturns = struct {
+		result1 map[string]interface{}
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) GetInstanceParametersReturnsOnCall(i int, result1 map[string]interface{}, result2 error) {
+	fake.getInstanceParametersMutex.Lock()
+	defer fake.getInstanceParametersMutex.Unlock()
+	fake.GetInstanceParametersStub = nil
+	if fake.getInstanceParametersReturnsOnCall == nil {
+		fake.getInstanceParametersReturnsOnCall = make(map[int]struct {
+			result1 map[string]interface{}
+			result2 error
+		})
+	}
+	fake.getInstanceParametersReturnsOnCall[i] = struct {
+		result1 map[string]interface{}
 		result2 error
 	}{result1, result2}
 }
@@ -2299,12 +2455,16 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.deprovisionMutex.RUnlock()
 	fake.getBindingByIDMutex.RLock()
 	defer fake.getBindingByIDMutex.RUnlock()
+	fake.getBindingParametersMutex.RLock()
+	defer fake.getBindingParametersMutex.RUnlock()
 	fake.getBrokerByIDMutex.RLock()
 	defer fake.getBrokerByIDMutex.RUnlock()
 	fake.getInfoMutex.RLock()
 	defer fake.getInfoMutex.RUnlock()
 	fake.getInstanceByIDMutex.RLock()
 	defer fake.getInstanceByIDMutex.RUnlock()
+	fake.getInstanceParametersMutex.RLock()
+	defer fake.getInstanceParametersMutex.RUnlock()
 	fake.labelMutex.RLock()
 	defer fake.labelMutex.RUnlock()
 	fake.listBindingsMutex.RLock()

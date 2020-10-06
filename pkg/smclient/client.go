@@ -63,12 +63,14 @@ type Client interface {
 
 	ListInstances(*query.Parameters) (*types.ServiceInstances, error)
 	GetInstanceByID(string, *query.Parameters) (*types.ServiceInstance, error)
+	GetInstanceParameters(string, *query.Parameters) (map[string]interface{}, error)
 	UpdateInstance(string, *types.ServiceInstance, *query.Parameters) (*types.ServiceInstance, string, error)
 	Provision(*types.ServiceInstance, *query.Parameters) (*types.ServiceInstance, string, error)
 	Deprovision(string, *query.Parameters) (string, error)
 
 	ListBindings(*query.Parameters) (*types.ServiceBindings, error)
 	GetBindingByID(string, *query.Parameters) (*types.ServiceBinding, error)
+	GetBindingParameters(string, *query.Parameters) (map[string]interface{}, error)
 	Bind(*types.ServiceBinding, *query.Parameters) (*types.ServiceBinding, string, error)
 	Unbind(string, *query.Parameters) (string, error)
 
@@ -276,6 +278,13 @@ func (client *serviceManagerClient) ListInstances(q *query.Parameters) (*types.S
 
 	return instances, err
 }
+// GetInstanceParameters returns service instance configuration parameters
+func (client *serviceManagerClient) GetInstanceParameters(id string, q *query.Parameters) (map[string]interface{}, error) {
+	parameters := make(map[string]interface{})
+	err := client.get(&parameters, web.ServiceInstancesURL + "/" + id + web.ParametersURL, q)
+
+	return parameters, err
+}
 
 // GetInstanceByID returns instance registered in the Service Manager satisfying provided queries
 func (client *serviceManagerClient) GetInstanceByID(id string, q *query.Parameters) (*types.ServiceInstance, error) {
@@ -293,6 +302,14 @@ func (client *serviceManagerClient) ListBindings(q *query.Parameters) (*types.Se
 	err := client.list(&bindings.ServiceBindings, web.ServiceBindingsURL, q)
 
 	return bindings, err
+}
+
+// GetBindingParameters returns service binding configuration parameters
+func (client *serviceManagerClient) GetBindingParameters(id string, q *query.Parameters) (map[string]interface{}, error) {
+	parameters := make(map[string]interface{})
+	err := client.get(&parameters, web.ServiceBindingsURL + "/" + id + web.ParametersURL, q)
+
+	return parameters, err
 }
 
 // GetBindingByID returns binding registered in the Service Manager satisfying provided queries

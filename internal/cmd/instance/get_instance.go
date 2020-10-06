@@ -34,6 +34,7 @@ type GetInstanceCmd struct {
 
 	instanceName string
 	outputFormat output.Format
+	instanceParams *bool
 }
 
 // NewGetInstanceCmd returns new get status command with context
@@ -55,6 +56,9 @@ func (gb *GetInstanceCmd) Run() error {
 		output.PrintMessage(gb.Output, "No instance found with name: %s", gb.instanceName)
 		return nil
 	}
+	if *gb.instanceParams {
+		return gb.printParameters(instances)
+	}
 
 	resultInstances := &types.ServiceInstances{Vertical: true}
 	for _, instance := range instances.ServiceInstances {
@@ -75,6 +79,34 @@ func (gb *GetInstanceCmd) Run() error {
 	}
 
 	output.PrintServiceManagerObject(gb.Output, gb.outputFormat, resultInstances)
+	output.Println(gb.Output)
+	return nil
+}
+
+func (gb *GetInstanceCmd) printParameters(instances *types.ServiceInstances) error {
+
+
+	for _, instance := range instances.ServiceInstances {
+		parameters, err := gb.Client.GetInstanceParameters(instance.ID, &gb.Parameters)
+		if err != nil {
+			// The instance could be deleted after List and before Get
+			if strings.Contains(err.Error(), "StatusCode: 404") {
+				continue
+			}
+			output.PrintMessage(gb.Output, "Unable to show configuration parameters for service instance id: %s\n", instance.ID)
+			output.PrintMessage(gb.Output, "The error: %s\n\n", err)
+			continue
+		}
+		if len(parameters) == 0 {
+			output.PrintMessage(gb.Output, "No configuration parameters are set for service instance id: %s\n\n", instance.ID)
+			continue
+		}
+		output.PrintMessage(gb.Output, "Showing configuration parameters for service instance id: %s \n", instance.ID )
+		output.PrintMessage(gb.Output, "The parameters: \n"  )
+
+		output.PrintMessage(gb.Output, "%s \n\n", output.PrintParameters(parameters))
+	}
+
 	output.Println(gb.Output)
 	return nil
 }
@@ -110,7 +142,7 @@ func (gb *GetInstanceCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		PreRunE: prepare(gb, gb.Context),
 		RunE:    cmd.RunE(gb),
 	}
-
+	gb.instanceParams = result.PersistentFlags().Bool("show-instance-params", false, "Show the service instance configuration parameters")
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddCommonQueryFlag(result.Flags(), &gb.Parameters)
 

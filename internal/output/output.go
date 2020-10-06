@@ -19,6 +19,7 @@ package output
 import (
 	"fmt"
 	"io"
+	"encoding/json"
 
 	"github.com/Peripli/service-manager-cli/pkg/types"
 )
@@ -102,4 +103,10 @@ func PrintFormat(wr io.Writer, outputFormat Format, encodedObject []byte, conver
 	}
 	printer.Print(wr, object)
 	return nil
+}
+// PrintParameters convert map to string
+func PrintParameters(parameters map[string]interface{}) string{
+	jsonParameters,_ := json.MarshalIndent(parameters, "", "   ")
+	stringParams := string(jsonParameters)
+	return stringParams
 }
