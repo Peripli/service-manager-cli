@@ -157,7 +157,7 @@ var _ = Describe("Get binding command test", func() {
 				client.ListBindingsReturns(response, nil)
 			})
 
-			It("should return parameters both bindings", func() {
+			It("should print parameters for both bindings", func() {
 				client.GetBindingParametersReturnsOnCall(0, bindingParameters1 , nil)
 				client.GetBindingParametersReturnsOnCall(1, bindingParameters2, nil)
 				err := executeWithArgs("binding1", "--show-binding-params")

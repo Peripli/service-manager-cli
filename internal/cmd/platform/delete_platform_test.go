@@ -40,84 +40,137 @@ var _ = Describe("Delete platforms command test", func() {
 		return commandToRun.Execute()
 	}
 
-	Context("when existing platform is being deleted forcefully", func() {
-		It("should list success message", func() {
-			client.DeletePlatformsReturns(nil)
-			err := executeWithArgs([]string{"platform-name", "-f"})
+	Describe("delete platform", func() {
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buffer.String()).To(ContainSubstring("Platform(s) successfully deleted."))
+		When("existing platform is being deleted forcefully", func() {
+			It("should list success message", func() {
+				client.DeletePlatformsReturns(nil)
+				err := executeWithArgs([]string{"platform-name", "-f"})
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buffer.String()).To(ContainSubstring("Platform(s) successfully deleted."))
+			})
+		})
+
+		When("existing platform is being deleted", func() {
+			It("should list success message when confirmed", func() {
+				client.DeletePlatformsReturns(nil)
+				promptBuffer.WriteString("y")
+				err := executeWithArgs([]string{"platform-name"})
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buffer.String()).To(ContainSubstring("Platform(s) successfully deleted."))
+			})
+
+			It("should print delete declined when declined", func() {
+				client.DeletePlatformsReturns(nil)
+				promptBuffer.WriteString("n")
+				err := executeWithArgs([]string{"platform-name"})
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buffer.String()).To(ContainSubstring("Delete declined"))
+			})
+		})
+
+		When("generic parameter flag is used", func() {
+			It("should pass it to SM", func() {
+				client.DeletePlatformsReturns(nil)
+				promptBuffer.WriteString("y")
+				param := "parameterKey=parameterValue"
+				err := executeWithArgs([]string{"platform-name", "--param", param})
+				Expect(err).ShouldNot(HaveOccurred())
+
+				args := client.DeletePlatformsArgsForCall(0)
+
+				Expect(args.GeneralParams).To(ConsistOf(param))
+				Expect(args.FieldQuery).To(ConsistOf("name eq 'platform-name'"))
+				Expect(args.LabelQuery).To(BeEmpty())
+			})
+		})
+
+		When("non-existing platform is being deleted", func() {
+			It("should return message", func() {
+				body := ioutil.NopCloser(bytes.NewReader([]byte("")))
+				expectedError := util.HandleResponseError(&http.Response{Body: body, StatusCode: http.StatusNotFound})
+				client.DeletePlatformsReturns(expectedError)
+				err := executeWithArgs([]string{"non-existing-name", "-f"})
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buffer.String()).To(ContainSubstring("Platform(s) not found."))
+			})
+		})
+
+		When("SM returns error", func() {
+			It("should return error message", func() {
+				body := ioutil.NopCloser(bytes.NewReader([]byte("")))
+				expectedError := util.HandleResponseError(&http.Response{Body: body, StatusCode: http.StatusInternalServerError})
+				client.DeletePlatformsReturns(expectedError)
+				err := executeWithArgs([]string{"name", "-f"})
+
+				Expect(err).Should(HaveOccurred())
+				Expect(buffer.String()).To(ContainSubstring("Could not delete platform(s). Reason:"))
+
+			})
+		})
+
+		When("no arguments are provided", func() {
+			It("should print required arguments", func() {
+				client.DeletePlatformsReturns(nil)
+				err := executeWithArgs([]string{})
+
+				Expect(err).Should(HaveOccurred())
+				Expect(err).To(MatchError("single [name] is required"))
+			})
 		})
 	})
 
-	Context("when existing platform is being deleted", func() {
-		It("should list success message when confirmed", func() {
-			client.DeletePlatformsReturns(nil)
-			promptBuffer.WriteString("y")
-			err := executeWithArgs([]string{"platform-name"})
+	Describe("cascade delete platform", func() {
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buffer.String()).To(ContainSubstring("Platform(s) successfully deleted."))
+		When("platform exists", func() {
+			It("should print cascade delete successfully scheduled", func() {
+				location := "/v1/platforms/dac3db36-df28-4b06-a5bd-dcc38a918c8c/operations/1a3e795d-819c-4661-89b5-344adb2ec26a"
+
+				client.CascadeDeletePlatformReturns(location, nil)
+				err := executeWithArgs([]string{"platform-name", "--cascade-delete", "-f"})
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buffer.String()).To(ContainSubstring("Cascade delete successfully scheduled"))
+			})
 		})
 
-		It("should print delete declined when declined", func() {
-			client.DeletePlatformsReturns(nil)
-			promptBuffer.WriteString("n")
-			err := executeWithArgs([]string{"platform-name"})
+		When("platform does not exist", func() {
+			It("should print platform not found", func() {
+				body := ioutil.NopCloser(bytes.NewReader([]byte("")))
+				expectedError := util.HandleResponseError(&http.Response{Body: body, StatusCode: http.StatusNotFound})
+				client.CascadeDeletePlatformReturns("", expectedError)
+				err := executeWithArgs([]string{"non-existing-name", "--cascade-delete", "-f"})
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buffer.String()).To(ContainSubstring("Delete declined"))
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buffer.String()).To(ContainSubstring("Platform not found."))
+			})
 		})
-	})
 
-	Context("when generic parameter flag is used", func() {
-		It("should pass it to SM", func() {
-			client.DeletePlatformsReturns(nil)
-			promptBuffer.WriteString("y")
-			param := "parameterKey=parameterValue"
-			err := executeWithArgs([]string{"platform-name", "--param", param})
-			Expect(err).ShouldNot(HaveOccurred())
+		When("error is returned", func() {
+			It("should print could not cascade delete platform. Reason", func() {
+				body := ioutil.NopCloser(bytes.NewReader([]byte("")))
+				expectedError := util.HandleResponseError(&http.Response{Body: body, StatusCode: http.StatusInternalServerError})
+				client.CascadeDeletePlatformReturns("", expectedError)
+				promptBuffer.WriteString("y")
+				err := executeWithArgs([]string{"platform2", "--cascade-delete"})
 
-			args := client.DeletePlatformsArgsForCall(0)
-
-			Expect(args.GeneralParams).To(ConsistOf(param))
-			Expect(args.FieldQuery).To(ConsistOf("name eq 'platform-name'"))
-			Expect(args.LabelQuery).To(BeEmpty())
+				Expect(err).Should(HaveOccurred())
+				Expect(buffer.String()).To(ContainSubstring("Could not cascade-delete platform. Reason:"))
+			})
 		})
-	})
 
-	Context("when non-existing platform is being deleted", func() {
-		It("should return message", func() {
-			body := ioutil.NopCloser(bytes.NewReader([]byte("")))
-			expectedError := util.HandleResponseError(&http.Response{Body: body, StatusCode: http.StatusNotFound})
-			client.DeletePlatformsReturns(expectedError)
-			err := executeWithArgs([]string{"non-existing-name", "-f"})
+		When("no platform name is provided", func() {
+			It("should print required arguments", func() {
+				err := executeWithArgs([]string{"", "--cascade-delete"})
 
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buffer.String()).To(ContainSubstring("Platform(s) not found."))
-		})
-	})
-
-	Context("when SM returns error", func() {
-		It("should return error message", func() {
-			body := ioutil.NopCloser(bytes.NewReader([]byte("")))
-			expectedError := util.HandleResponseError(&http.Response{Body: body, StatusCode: http.StatusInternalServerError})
-			client.DeletePlatformsReturns(expectedError)
-			err := executeWithArgs([]string{"name", "-f"})
-
-			Expect(err).Should(HaveOccurred())
-			Expect(buffer.String()).To(ContainSubstring("Could not delete platform(s). Reason:"))
-
+				Expect(err).Should(HaveOccurred())
+				Expect(err).To(MatchError("single [name] is required"))
+			})
 		})
 	})
 
-	Context("when no arguments are provided", func() {
-		It("should print required arguments", func() {
-			client.DeletePlatformsReturns(nil)
-			err := executeWithArgs([]string{})
-
-			Expect(err).Should(HaveOccurred())
-			Expect(err).To(MatchError("single [name] is required"))
-		})
-	})
 })

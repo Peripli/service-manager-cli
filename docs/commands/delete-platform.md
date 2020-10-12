@@ -23,6 +23,15 @@ delete-platform, dp
     Help for <i>delete-platform</i> command. 
   </p>
 </details>
+<details>
+  <summary>cascade-delete</summary>
+  <p>
+    <code>--cascade-delete</code> 
+  </p>
+  <p>
+    Cascade delete for <i>delete-platform</i> command. 
+  </p>
+</details>
 
 ## Global Flags
 <details>
@@ -49,4 +58,10 @@ delete-platform, dp
 > smctl delete-platform sample-platform
 
 Platform with name: sample-platform successfully deleted
+```
+```bash
+> smctl delete-platform sample-platform --cascade-delete
+
+Cascade delete successfully scheduled for platform: sample-platform. To see status of the operation use:
+smctl status /v1/platforms/baea022b-64c0-43d4-a9b0-e1ae64af51cd/operations/f8ca64af-e889-4a45-ad41-f1baa2e427c2
 ```
