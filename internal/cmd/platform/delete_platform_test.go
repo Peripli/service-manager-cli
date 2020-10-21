@@ -126,12 +126,18 @@ var _ = Describe("Delete platforms command test", func() {
 
 	Describe("cascade delete platform", func() {
 
+		platform1 := types.Platform{
+			Name:       "platform1",
+			ID:         "id1",
+		}
+
 		When("platform exists", func() {
 			It("should print cascade delete successfully scheduled", func() {
-				location := "/v1/platforms/dac3db36-df28-4b06-a5bd-dcc38a918c8c/operations/1a3e795d-819c-4661-89b5-344adb2ec26a"
+				client.ListPlatformsReturns(&types.Platforms{Platforms: []types.Platform{platform1}}, nil)
+				location := "/v1/platforms/id1/operations/1a3e795d-819c-4661-89b5-344adb2ec26a"
 
 				client.CascadeDeletePlatformReturns(location, nil)
-				err := executeWithArgs([]string{"platform-name", "--cascade-delete", "-f"})
+				err := executeWithArgs([]string{platform1.Name, "--cascade-delete", "-f"})
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buffer.String()).To(ContainSubstring("Cascade delete successfully scheduled"))
@@ -139,27 +145,25 @@ var _ = Describe("Delete platforms command test", func() {
 		})
 
 		When("platform does not exist", func() {
-			It("should print platform not found", func() {
-				body := ioutil.NopCloser(bytes.NewReader([]byte("")))
-				expectedError := util.HandleResponseError(&http.Response{Body: body, StatusCode: http.StatusNotFound})
-				client.CascadeDeletePlatformReturns("", expectedError)
+			It("should print platform(s) not found", func() {
+				client.ListPlatformsReturns(&types.Platforms{}, nil)
 				err := executeWithArgs([]string{"non-existing-name", "--cascade-delete", "-f"})
 
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(buffer.String()).To(ContainSubstring("Platform not found."))
+				Expect(buffer.String()).To(ContainSubstring("Platform(s) not found."))
 			})
 		})
 
 		When("error is returned", func() {
-			It("should print could not cascade delete platform. Reason", func() {
+			It("should print could not cascade delete platform", func() {
+				client.ListPlatformsReturns(&types.Platforms{Platforms: []types.Platform{platform1}}, nil)
 				body := ioutil.NopCloser(bytes.NewReader([]byte("")))
 				expectedError := util.HandleResponseError(&http.Response{Body: body, StatusCode: http.StatusInternalServerError})
 				client.CascadeDeletePlatformReturns("", expectedError)
 				promptBuffer.WriteString("y")
-				err := executeWithArgs([]string{"platform2", "--cascade-delete"})
+				_ = executeWithArgs([]string{platform1.Name, "--cascade-delete"})
 
-				Expect(err).Should(HaveOccurred())
-				Expect(buffer.String()).To(ContainSubstring("Could not cascade-delete platform. Reason:"))
+				Expect(buffer.String()).To(ContainSubstring("Could not cascade-delete platform"))
 			})
 		})
 

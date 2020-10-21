@@ -44,10 +44,11 @@ type FakeClient struct {
 		result1 *http.Response
 		result2 error
 	}
-	CascadeDeletePlatformStub        func(*query.Parameters) (string, error)
+	CascadeDeletePlatformStub        func(string, *query.Parameters) (string, error)
 	cascadeDeletePlatformMutex       sync.RWMutex
 	cascadeDeletePlatformArgsForCall []struct {
-		arg1 *query.Parameters
+		arg1 string
+		arg2 *query.Parameters
 	}
 	cascadeDeletePlatformReturns struct {
 		result1 string
@@ -597,16 +598,17 @@ func (fake *FakeClient) CallReturnsOnCall(i int, result1 *http.Response, result2
 	}{result1, result2}
 }
 
-func (fake *FakeClient) CascadeDeletePlatform(arg1 *query.Parameters) (string, error) {
+func (fake *FakeClient) CascadeDeletePlatform(arg1 string, arg2 *query.Parameters) (string, error) {
 	fake.cascadeDeletePlatformMutex.Lock()
 	ret, specificReturn := fake.cascadeDeletePlatformReturnsOnCall[len(fake.cascadeDeletePlatformArgsForCall)]
 	fake.cascadeDeletePlatformArgsForCall = append(fake.cascadeDeletePlatformArgsForCall, struct {
-		arg1 *query.Parameters
-	}{arg1})
-	fake.recordInvocation("CascadeDeletePlatform", []interface{}{arg1})
+		arg1 string
+		arg2 *query.Parameters
+	}{arg1, arg2})
+	fake.recordInvocation("CascadeDeletePlatform", []interface{}{arg1, arg2})
 	fake.cascadeDeletePlatformMutex.Unlock()
 	if fake.CascadeDeletePlatformStub != nil {
-		return fake.CascadeDeletePlatformStub(arg1)
+		return fake.CascadeDeletePlatformStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -621,17 +623,17 @@ func (fake *FakeClient) CascadeDeletePlatformCallCount() int {
 	return len(fake.cascadeDeletePlatformArgsForCall)
 }
 
-func (fake *FakeClient) CascadeDeletePlatformCalls(stub func(*query.Parameters) (string, error)) {
+func (fake *FakeClient) CascadeDeletePlatformCalls(stub func(string, *query.Parameters) (string, error)) {
 	fake.cascadeDeletePlatformMutex.Lock()
 	defer fake.cascadeDeletePlatformMutex.Unlock()
 	fake.CascadeDeletePlatformStub = stub
 }
 
-func (fake *FakeClient) CascadeDeletePlatformArgsForCall(i int) *query.Parameters {
+func (fake *FakeClient) CascadeDeletePlatformArgsForCall(i int) (string, *query.Parameters) {
 	fake.cascadeDeletePlatformMutex.RLock()
 	defer fake.cascadeDeletePlatformMutex.RUnlock()
 	argsForCall := fake.cascadeDeletePlatformArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeClient) CascadeDeletePlatformReturns(result1 string, result2 error) {

@@ -279,13 +279,13 @@ var _ = Describe("Platform test", func() {
 		When("a platform exists", func() {
 			var locationHeader string
 			BeforeEach(func() {
-				locationHeader = "/v1/platforms/dac3db36-df28-4b06-a5bd-dcc38a918c8c/operations/1a3e795d-819c-4661-89b5-344adb2ec26a"
+				locationHeader = "/v1/platforms/platformID/operations/1a3e795d-819c-4661-89b5-344adb2ec26a"
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.PlatformsURL, ResponseStatusCode: http.StatusAccepted, Headers: map[string]string{"Location": locationHeader}},
+					{Method: http.MethodDelete, Path: web.PlatformsURL + "/"+ platform.ID, ResponseStatusCode: http.StatusAccepted, Headers: map[string]string{"Location": locationHeader}},
 				}
 			})
 			It("should return location of operation scheduled for platform cascade delete", func() {
-				location, err := client.CascadeDeletePlatform(params)
+				location, err := client.CascadeDeletePlatform(platform.ID,  params)
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(location).Should(Equal(locationHeader))
@@ -296,11 +296,11 @@ var _ = Describe("Platform test", func() {
 			BeforeEach(func() {
 				responseBody := []byte("{}")
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.PlatformsURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
+					{Method: http.MethodDelete, Path: web.PlatformsURL + "/"+ platform.ID, ResponseBody: responseBody, ResponseStatusCode: http.StatusCreated},
 				}
 			})
 			It("should return error with non-expected status code, location should be nil", func() {
-				location, err := client.CascadeDeletePlatform(params)
+				location, err := client.CascadeDeletePlatform(platform.ID, params)
 				Expect(err).Should(HaveOccurred())
 				Expect(location).Should(Equal(""))
 				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
@@ -311,11 +311,11 @@ var _ = Describe("Platform test", func() {
 			BeforeEach(func() {
 				responseBody := []byte(`{ "description": "Resource not found" }`)
 				handlerDetails = []HandlerDetails{
-					{Method: http.MethodDelete, Path: web.PlatformsURL, ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
+					{Method: http.MethodDelete, Path: web.PlatformsURL + "/"+ platform.ID, ResponseBody: responseBody, ResponseStatusCode: http.StatusNotFound},
 				}
 			})
 			It("should return 404", func() {
-				location, err := client.CascadeDeletePlatform(params)
+				location, err := client.CascadeDeletePlatform(platform.ID, params)
 				Expect(err).Should(HaveOccurred())
 				Expect(location).Should(Equal(""))
 				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)

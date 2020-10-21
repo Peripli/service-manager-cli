@@ -46,7 +46,7 @@ type Client interface {
 	ListPlatforms(*query.Parameters) (*types.Platforms, error)
 	UpdatePlatform(string, *types.Platform, *query.Parameters) (*types.Platform, error)
 	DeletePlatforms(*query.Parameters) error
-	CascadeDeletePlatform(*query.Parameters) (string, error)
+	CascadeDeletePlatform(id string, q *query.Parameters) (string, error)
 
 	RegisterBroker(*types.Broker, *query.Parameters) (*types.Broker, string, error)
 	GetBrokerByID(string, *query.Parameters) (*types.Broker, error)
@@ -380,8 +380,8 @@ func (client *serviceManagerClient) DeletePlatforms(q *query.Parameters) error {
 	return err
 }
 
-func (client *serviceManagerClient) CascadeDeletePlatform(q *query.Parameters) (string, error) {
-	location, err := client.delete(web.PlatformsURL, q)
+func (client *serviceManagerClient) CascadeDeletePlatform(id string, q *query.Parameters) (string, error) {
+	location, err := client.delete(web.PlatformsURL + "/" + id, q)
 	return location, err
 }
 
