@@ -98,7 +98,7 @@ func (upc *UpdatePlatformCmd) HideUsage() bool {
 // Prepare returns cobra command
 func (upc *UpdatePlatformCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
-		Use:     "update-platform [name] <json_platform> ",
+		Use:     "update-platform [name] <json_platform>",
 		Aliases: []string{"up"},
 		Short:   "Updates platform",
 		Long: `Update platform with name.
