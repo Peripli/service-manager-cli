@@ -96,6 +96,7 @@ func (trc *TransferCmd) Run() error {
 				fmt.Sprintf("name eq '%s'", trc.instanceName),
 				fmt.Sprintf("platform_id eq '%s'", trc.fromPlatformID),
 			},
+			GeneralParams: trc.Parameters.GeneralParams,
 		})
 		if err != nil {
 			return err
