@@ -19,7 +19,6 @@ package binding
 import (
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
-	"github.com/Peripli/service-manager-cli/pkg/query"
 	"github.com/spf13/cobra"
 )
 
@@ -43,7 +42,7 @@ func (li *ListBindingsCmd) Run() error {
 	}
 
 	for i := range bindings.ServiceBindings {
-		instance, err := li.Client.GetInstanceByID(bindings.ServiceBindings[i].ServiceInstanceID, &query.Parameters{})
+		instance, err := li.Client.GetInstanceByID(bindings.ServiceBindings[i].ServiceInstanceID, &li.Parameters)
 		if err != nil {
 			return err
 		}

@@ -71,7 +71,7 @@ func (gb *GetBindingCmd) Run() error {
 			}
 			return err
 		}
-		instance, err := gb.Client.GetInstanceByID(bd.ServiceInstanceID, &query.Parameters{})
+		instance, err := gb.Client.GetInstanceByID(bd.ServiceInstanceID, &gb.Parameters)
 		if err != nil {
 			return err
 		}
