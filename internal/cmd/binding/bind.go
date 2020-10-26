@@ -81,6 +81,7 @@ func (bc *BindCmd) Run() error {
 			FieldQuery: []string{
 				fmt.Sprintf("name eq '%s'", bc.instanceName),
 			},
+			GeneralParams: bc.Parameters.GeneralParams,
 		})
 		if err != nil {
 			return err

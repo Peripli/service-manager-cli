@@ -47,6 +47,7 @@ func (gb *GetBrokerCmd) Run() error {
 		FieldQuery: []string{
 			fmt.Sprintf("name eq '%s'", gb.name),
 		},
+		GeneralParams: gb.Parameters.GeneralParams,
 	})
 	if err != nil {
 		return err

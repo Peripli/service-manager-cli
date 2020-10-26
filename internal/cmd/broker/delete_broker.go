@@ -59,6 +59,7 @@ func (dbc *DeleteBrokerCmd) Run() error {
 		FieldQuery: []string{
 			fmt.Sprintf("name eq '%s'", dbc.name),
 		},
+		GeneralParams: dbc.Parameters.GeneralParams,
 	})
 	if err != nil {
 		return err

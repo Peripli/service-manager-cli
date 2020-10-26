@@ -67,6 +67,7 @@ func (ubc *UpdateBrokerCmd) Run() error {
 		FieldQuery: []string{
 			fmt.Sprintf("name eq '%s'", ubc.name),
 		},
+		GeneralParams: ubc.Parameters.GeneralParams,
 	})
 	if err != nil {
 		return err

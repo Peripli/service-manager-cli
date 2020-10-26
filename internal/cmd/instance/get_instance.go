@@ -32,8 +32,8 @@ import (
 type GetInstanceCmd struct {
 	*cmd.Context
 
-	instanceName string
-	outputFormat output.Format
+	instanceName   string
+	outputFormat   output.Format
 	instanceParams *bool
 }
 
@@ -48,6 +48,7 @@ func (gb *GetInstanceCmd) Run() error {
 		FieldQuery: []string{
 			fmt.Sprintf("name eq '%s'", gb.instanceName),
 		},
+		GeneralParams: gb.Parameters.GeneralParams,
 	})
 	if err != nil {
 		return err
@@ -85,7 +86,6 @@ func (gb *GetInstanceCmd) Run() error {
 
 func (gb *GetInstanceCmd) printParameters(instances *types.ServiceInstances) error {
 
-
 	for _, instance := range instances.ServiceInstances {
 		parameters, err := gb.Client.GetInstanceParameters(instance.ID, &gb.Parameters)
 		if err != nil {
@@ -101,8 +101,8 @@ func (gb *GetInstanceCmd) printParameters(instances *types.ServiceInstances) err
 			output.PrintMessage(gb.Output, "No configuration parameters are set for service instance id: %s\n\n", instance.ID)
 			continue
 		}
-		output.PrintMessage(gb.Output, "Showing configuration parameters for service instance id: %s \n", instance.ID )
-		output.PrintMessage(gb.Output, "The parameters: \n"  )
+		output.PrintMessage(gb.Output, "Showing configuration parameters for service instance id: %s \n", instance.ID)
+		output.PrintMessage(gb.Output, "The parameters: \n")
 
 		output.PrintMessage(gb.Output, "%s \n\n", output.PrintParameters(parameters))
 	}

@@ -84,6 +84,7 @@ func (pi *ProvisionCmd) Run() error {
 		FieldQuery: []string{
 			fmt.Sprintf("name eq '%s'", pi.offeringName),
 		},
+		GeneralParams: pi.Parameters.GeneralParams,
 	})
 	if err != nil {
 		return err
@@ -103,6 +104,7 @@ func (pi *ProvisionCmd) Run() error {
 			FieldQuery: []string{
 				fmt.Sprintf("name eq '%s'", pi.brokerName),
 			},
+			GeneralParams: pi.Parameters.GeneralParams,
 		})
 		if err != nil {
 			return err
@@ -123,6 +125,7 @@ func (pi *ProvisionCmd) Run() error {
 			fmt.Sprintf("name eq '%s'", pi.planName),
 			fmt.Sprintf("service_offering_id eq '%s'", pi.instance.ServiceID),
 		},
+		GeneralParams: pi.Parameters.GeneralParams,
 	})
 	if err != nil {
 		return err
