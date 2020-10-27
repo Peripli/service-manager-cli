@@ -110,15 +110,6 @@ var _ = Describe("Update platform command test", func() {
 				_, _, args := client.UpdatePlatformArgsForCall(0)
 				Expect(args.GeneralParams).To(ConsistOf("regenerateCredentials=true"))
 			})
-
-			It("argument values should be as expected", func() {
-				validUpdatePlatformExecution("platform", `{"type":"newType"}`)
-
-				id, platform, _ := client.UpdatePlatformArgsForCall(0)
-
-				Expect(id).To(Equal("id"))
-				Expect(platform).To(Equal(&types.Platform{Type: "newType"}))
-			})
 		})
 	})
 
