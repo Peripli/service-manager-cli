@@ -108,7 +108,7 @@ smctl update-platform platform '{"name": "new-name", "description": "new-descrip
 		RunE:    cmd.RunE(upc),
 	}
 
-	result.Flags().BoolVarP(&upc.regenerateCredentials, "regenerate-credentials", "c", false, "Indicates whether credentials regeneration required")
+	result.Flags().BoolVarP(&upc.regenerateCredentials, "regenerate-credentials", "c", false, "Whether to regenerate credentials. \nNote that once you have regenerated credentials, the previous credentials are no longer usable")
 
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddCommonQueryFlag(result.Flags(), &upc.Parameters)
