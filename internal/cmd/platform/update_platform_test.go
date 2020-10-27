@@ -103,7 +103,7 @@ var _ = Describe("Update platform command test", func() {
 			})
 		})
 
-		Context("With regenerate-credentials flag", func() {
+		Context("With regenerate-credentials query parameter", func() {
 			It("platform should be updated", func() {
 				validUpdatePlatformExecution("platform", "--regenerate-credentials")
 
