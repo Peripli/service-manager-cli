@@ -31,9 +31,10 @@ import (
 type UpdatePlatformCmd struct {
 	*cmd.Context
 
-	outputFormat    output.Format
-	name            string
-	updatedPlatform *types.Platform
+	outputFormat          output.Format
+	name                  string
+	regenerateCredentials bool
+	updatedPlatform       *types.Platform
 }
 
 // NewUpdatePlatformCmd returns new update-platform command with context
@@ -49,8 +50,12 @@ func (upc *UpdatePlatformCmd) Validate(args []string) error {
 
 	upc.name = args[0]
 
-	if len(args) < 2 {
+	if len(args) < 2 && !upc.regenerateCredentials {
 		return fmt.Errorf("nothing to update. Platform JSON is not provided")
+	}
+
+	if upc.updatedPlatform == nil && upc.regenerateCredentials {
+		return nil
 	}
 
 	if err := json.Unmarshal([]byte(args[1]), &upc.updatedPlatform); err != nil {
@@ -71,6 +76,9 @@ func (upc *UpdatePlatformCmd) Run() error {
 		return fmt.Errorf("platform with name %s not found", upc.name)
 	}
 	toUpdatePlatform := toUpdatePlatforms.Platforms[0]
+	if upc.regenerateCredentials {
+		upc.Parameters.GeneralParams = append(upc.Parameters.GeneralParams, "regenerateCredentials=true")
+	}
 	result, err := upc.Client.UpdatePlatform(toUpdatePlatform.ID, upc.updatedPlatform, &upc.Parameters)
 	if err != nil {
 		return err
@@ -99,6 +107,8 @@ smctl update-platform platform '{"name": "new-name", "description": "new-descrip
 		PreRunE: prepare(upc, upc.Context),
 		RunE:    cmd.RunE(upc),
 	}
+
+	result.Flags().BoolVarP(&upc.regenerateCredentials, "regenerate-credentials", "c", false, "Whether to regenerate credentials. \nNote that once you have regenerated credentials, the previous credentials are no longer usable")
 
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddCommonQueryFlag(result.Flags(), &upc.Parameters)

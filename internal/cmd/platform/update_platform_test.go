@@ -102,6 +102,15 @@ var _ = Describe("Update platform command test", func() {
 				Expect(args.LabelQuery).To(BeEmpty())
 			})
 		})
+
+		Context("With regenerate-credentials flag", func() {
+			It("platform should be updated", func() {
+				validUpdatePlatformExecution("platform", "--regenerate-credentials")
+
+				_, _, args := client.UpdatePlatformArgsForCall(0)
+				Expect(args.GeneralParams).To(ConsistOf("regenerateCredentials=true"))
+			})
+		})
 	})
 
 	Describe("Invalid request", func() {
