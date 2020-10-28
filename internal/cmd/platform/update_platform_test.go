@@ -104,7 +104,7 @@ var _ = Describe("Update platform command test", func() {
 		})
 
 		Context("With regenerate-credentials flag", func() {
-			It("platform should be updated", func() {
+			It("platform should pass it to SM", func() {
 				validUpdatePlatformExecution("platform", "--regenerate-credentials")
 
 				_, _, args := client.UpdatePlatformArgsForCall(0)
