@@ -54,12 +54,10 @@ func (upc *UpdatePlatformCmd) Validate(args []string) error {
 		return fmt.Errorf("nothing to update. Platform JSON is not provided")
 	}
 
-	if upc.updatedPlatform == nil && upc.regenerateCredentials {
-		return nil
-	}
-
-	if err := json.Unmarshal([]byte(args[1]), &upc.updatedPlatform); err != nil {
-		return fmt.Errorf("platform JSON is invalid. Reason: %s", err.Error())
+	if upc.updatedPlatform != nil {
+		if err := json.Unmarshal([]byte(args[1]), &upc.updatedPlatform); err != nil {
+			return fmt.Errorf("platform JSON is invalid. Reason: %s", err.Error())
+		}
 	}
 
 	return nil
