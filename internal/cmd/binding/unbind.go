@@ -83,6 +83,7 @@ func (ubc *UnbindCmd) Run() error {
 			FieldQuery: []string{
 				fmt.Sprintf("name eq '%s'", ubc.instanceName),
 			},
+			GeneralParams: ubc.Parameters.GeneralParams,
 		})
 		if err != nil {
 			return err
@@ -99,6 +100,7 @@ func (ubc *UnbindCmd) Run() error {
 				fmt.Sprintf("name eq '%s'", ubc.bindingName),
 				fmt.Sprintf("service_instance_id eq '%s'", instanceToUnbind.ServiceInstances[0].ID),
 			},
+			GeneralParams: ubc.Parameters.GeneralParams,
 		})
 		if err != nil {
 			return err

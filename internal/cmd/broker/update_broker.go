@@ -67,6 +67,7 @@ func (ubc *UpdateBrokerCmd) Run() error {
 		FieldQuery: []string{
 			fmt.Sprintf("name eq '%s'", ubc.name),
 		},
+		GeneralParams: ubc.Parameters.GeneralParams,
 	})
 	if err != nil {
 		return err
@@ -101,7 +102,7 @@ func (ubc *UpdateBrokerCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		Short:   "Updates broker",
 		Long: `Update broker with name.
 Example:
-smctl update-broker broker '{"name": "new-name", "description": "new-description", "broker-url": "http://broker.com", "credentials": { "basic": { "username": "admin", "password": "admin" } }}'`,
+smctl update-broker broker '{"name": "new-name", "description": "new-description", "broker_url": "http://broker.com", "credentials": { "basic": { "username": "admin", "password": "admin" } }}'`,
 		PreRunE: prepare(ubc, ubc.Context),
 		RunE:    cmd.RunE(ubc),
 	}

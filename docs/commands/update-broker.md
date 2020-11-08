@@ -10,7 +10,7 @@ smctl update-broker [name] <json_broker> [flags]
 
 ## Example
 ```bash
-smctl update-broker broker '{"name": "new-name", "description": "new-description", "broker-url": "http://broker.com", "credentials": { "basic": { "username": "admin", "password": "admin" } }}'
+smctl update-broker broker '{"name": "new-name", "description": "new-description", "broker_url": "http://broker.com", "credentials": { "basic": { "username": "admin", "password": "admin" } }}'
 ```
 
 ## Aliases
