@@ -34,9 +34,9 @@ import (
 type DeletePlatformCmd struct {
 	*cmd.Context
 
-	input             io.Reader
-	force             bool
-	cascadeDeleteFlag *bool
+	input       io.Reader
+	force       bool
+	cascadeFlag *bool
 
 	name string
 }
@@ -48,7 +48,7 @@ func NewDeletePlatformCmd(context *cmd.Context, input io.Reader) *DeletePlatform
 
 // Validate validates command's arguments
 func (dpc *DeletePlatformCmd) Validate(args []string) error {
-	if len(args) != 1 || len(args[0]) < 1{
+	if len(args) != 1 || len(args[0]) < 1 {
 		return fmt.Errorf("single [name] is required")
 	}
 
@@ -60,7 +60,7 @@ func (dpc *DeletePlatformCmd) Validate(args []string) error {
 // Run runs the command's logic
 func (dpc *DeletePlatformCmd) Run() error {
 
-	if *dpc.cascadeDeleteFlag {
+	if *dpc.cascadeFlag {
 		return dpc.cascadeDelete()
 	}
 
@@ -107,7 +107,7 @@ func (dpc *DeletePlatformCmd) cascadeDelete() error {
 			continue
 		}
 		if len(location) != 0 {
-			cmd.CommonHandleAsyncExecution(dpc.Context, location, fmt.Sprintf("Cascade delete successfully scheduled for platform id: %s . " +
+			cmd.CommonHandleAsyncExecution(dpc.Context, location, fmt.Sprintf("Cascade delete successfully scheduled for platform id: %s . "+
 				"To see status of the operation use:\n", platform.ID))
 			continue
 		}
@@ -148,7 +148,7 @@ func (dpc *DeletePlatformCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		PreRunE: prepare(dpc, dpc.Context),
 		RunE:    cmd.RunE(dpc),
 	}
-	dpc.cascadeDeleteFlag = result.PersistentFlags().Bool("cascade-delete", false, "Cascade delete platform with all the associated resources")
+	dpc.cascadeFlag = result.PersistentFlags().Bool("cascade", false, "Cascade delete platform with all the associated resources")
 	result.Flags().BoolVarP(&dpc.force, "force", "f", false, "Force delete without confirmation")
 	cmd.AddCommonQueryFlag(result.Flags(), &dpc.Parameters)
 

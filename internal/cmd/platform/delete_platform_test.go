@@ -127,8 +127,8 @@ var _ = Describe("Delete platforms command test", func() {
 	Describe("cascade delete platform", func() {
 
 		platform1 := types.Platform{
-			Name:       "platform1",
-			ID:         "id1",
+			Name: "platform1",
+			ID:   "id1",
 		}
 
 		When("platform exists", func() {
@@ -137,7 +137,7 @@ var _ = Describe("Delete platforms command test", func() {
 				location := "/v1/platforms/id1/operations/1a3e795d-819c-4661-89b5-344adb2ec26a"
 
 				client.CascadeDeletePlatformReturns(location, nil)
-				err := executeWithArgs([]string{platform1.Name, "--cascade-delete", "-f"})
+				err := executeWithArgs([]string{platform1.Name, "--cascade", "-f"})
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buffer.String()).To(ContainSubstring("Cascade delete successfully scheduled"))
@@ -147,7 +147,7 @@ var _ = Describe("Delete platforms command test", func() {
 		When("platform does not exist", func() {
 			It("should print platform(s) not found", func() {
 				client.ListPlatformsReturns(&types.Platforms{}, nil)
-				err := executeWithArgs([]string{"non-existing-name", "--cascade-delete", "-f"})
+				err := executeWithArgs([]string{"non-existing-name", "--cascade", "-f"})
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buffer.String()).To(ContainSubstring("Platform(s) not found."))
@@ -161,7 +161,7 @@ var _ = Describe("Delete platforms command test", func() {
 				expectedError := util.HandleResponseError(&http.Response{Body: body, StatusCode: http.StatusInternalServerError})
 				client.CascadeDeletePlatformReturns("", expectedError)
 				promptBuffer.WriteString("y")
-				_ = executeWithArgs([]string{platform1.Name, "--cascade-delete"})
+				_ = executeWithArgs([]string{platform1.Name, "--cascade"})
 
 				Expect(buffer.String()).To(ContainSubstring("Could not cascade-delete platform"))
 			})
@@ -169,7 +169,7 @@ var _ = Describe("Delete platforms command test", func() {
 
 		When("no platform name is provided", func() {
 			It("should print required arguments", func() {
-				err := executeWithArgs([]string{"", "--cascade-delete"})
+				err := executeWithArgs([]string{"", "--cascade"})
 
 				Expect(err).Should(HaveOccurred())
 				Expect(err).To(MatchError("single [name] is required"))

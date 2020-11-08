@@ -26,7 +26,7 @@ delete-platform, dp
 <details>
   <summary>cascade-delete</summary>
   <p>
-    <code>--cascade-delete</code> 
+    <code>--cascade</code> 
   </p>
   <p>
     Cascade delete for <i>delete-platform</i> command. 
@@ -60,7 +60,7 @@ delete-platform, dp
 Platform with name: sample-platform successfully deleted
 ```
 ```bash
-> smctl delete-platform sample-platform --cascade-delete
+> smctl delete-platform sample-platform --cascade
 
 Cascade delete successfully scheduled for platform: sample-platform. To see status of the operation use:
 smctl status /v1/platforms/baea022b-64c0-43d4-a9b0-e1ae64af51cd/operations/f8ca64af-e889-4a45-ad41-f1baa2e427c2
