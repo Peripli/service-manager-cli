@@ -85,10 +85,10 @@ type Client interface {
 	Call(method string, smpath string, body io.Reader, q *query.Parameters) (*http.Response, error)
 }
 
-type serviceManagerClient struct {
-	ctx        context.Context
-	config     *ClientConfig
-	httpClient auth.Client
+type ServiceManagerClient struct {
+	Context    context.Context
+	Config     *ClientConfig
+	HttpClient auth.Client
 }
 
 // NewClientWithAuth returns new SM Client configured with the provided configuration
@@ -96,7 +96,7 @@ func NewClientWithAuth(httpClient auth.Client, config *ClientConfig) (Client, er
 	if httpClient == nil {
 		httpClient = http.DefaultClient
 	}
-	client := &serviceManagerClient{ctx: context.Background(), config: config, httpClient: httpClient}
+	client := &ServiceManagerClient{Context: context.Background(), Config: config, HttpClient: httpClient}
 	info, err := client.GetInfo(nil)
 	if err != nil {
 		return nil, err
@@ -120,17 +120,17 @@ func NewClientWithAuth(httpClient auth.Client, config *ClientConfig) (Client, er
 		return nil, err
 	}
 	authClient := oidc.NewClient(authOptions, token)
-	client = &serviceManagerClient{ctx: context.Background(), config: config, httpClient: authClient}
+	client = &ServiceManagerClient{Context: context.Background(), Config: config, HttpClient: authClient}
 
 	return client, nil
 }
 
 // NewClient returns new SM client which will use the http client provided to make calls
 func NewClient(ctx context.Context, httpClient auth.Client, URL string) Client {
-	return &serviceManagerClient{ctx: ctx, config: &ClientConfig{URL: URL}, httpClient: httpClient}
+	return &ServiceManagerClient{Context: ctx, Config: &ClientConfig{URL: URL}, HttpClient: httpClient}
 }
 
-func (client *serviceManagerClient) GetInfo(q *query.Parameters) (*types.Info, error) {
+func (client *ServiceManagerClient) GetInfo(q *query.Parameters) (*types.Info, error) {
 	response, err := client.Call(http.MethodGet, web.InfoURL, nil, q)
 	if err != nil {
 		return nil, err
@@ -150,7 +150,7 @@ func (client *serviceManagerClient) GetInfo(q *query.Parameters) (*types.Info, e
 }
 
 // RegisterPlatform registers a platform in the service manager
-func (client *serviceManagerClient) RegisterPlatform(platform *types.Platform, q *query.Parameters) (*types.Platform, error) {
+func (client *ServiceManagerClient) RegisterPlatform(platform *types.Platform, q *query.Parameters) (*types.Platform, error) {
 	var newPlatform *types.Platform
 	_, err := client.register(platform, web.PlatformsURL, q, &newPlatform)
 	if err != nil {
@@ -160,7 +160,7 @@ func (client *serviceManagerClient) RegisterPlatform(platform *types.Platform, q
 }
 
 // RegisterBroker registers a broker in the service manager
-func (client *serviceManagerClient) RegisterBroker(broker *types.Broker, q *query.Parameters) (*types.Broker, string, error) {
+func (client *ServiceManagerClient) RegisterBroker(broker *types.Broker, q *query.Parameters) (*types.Broker, string, error) {
 	var newBroker *types.Broker
 	location, err := client.register(broker, web.ServiceBrokersURL, q, &newBroker)
 	if err != nil {
@@ -170,7 +170,7 @@ func (client *serviceManagerClient) RegisterBroker(broker *types.Broker, q *quer
 }
 
 // RegisterVisibility registers a visibility in the service manager
-func (client *serviceManagerClient) RegisterVisibility(visibility *types.Visibility, q *query.Parameters) (*types.Visibility, error) {
+func (client *ServiceManagerClient) RegisterVisibility(visibility *types.Visibility, q *query.Parameters) (*types.Visibility, error) {
 	var newVisibility *types.Visibility
 	_, err := client.register(visibility, web.VisibilitiesURL, q, &newVisibility)
 	if err != nil {
@@ -180,7 +180,7 @@ func (client *serviceManagerClient) RegisterVisibility(visibility *types.Visibil
 }
 
 // Provision provisions a new service instance in service manager
-func (client *serviceManagerClient) Provision(instance *types.ServiceInstance, q *query.Parameters) (*types.ServiceInstance, string, error) {
+func (client *ServiceManagerClient) Provision(instance *types.ServiceInstance, q *query.Parameters) (*types.ServiceInstance, string, error) {
 	var newInstance *types.ServiceInstance
 	location, err := client.register(instance, web.ServiceInstancesURL, q, &newInstance)
 	if err != nil {
@@ -190,7 +190,7 @@ func (client *serviceManagerClient) Provision(instance *types.ServiceInstance, q
 }
 
 // Bind creates binding to an instance in service manager
-func (client *serviceManagerClient) Bind(binding *types.ServiceBinding, q *query.Parameters) (*types.ServiceBinding, string, error) {
+func (client *ServiceManagerClient) Bind(binding *types.ServiceBinding, q *query.Parameters) (*types.ServiceBinding, string, error) {
 	var newBinding *types.ServiceBinding
 	location, err := client.register(binding, web.ServiceBindingsURL, q, &newBinding)
 	if err != nil {
@@ -199,7 +199,7 @@ func (client *serviceManagerClient) Bind(binding *types.ServiceBinding, q *query
 	return newBinding, location, nil
 }
 
-func (client *serviceManagerClient) register(resource interface{}, url string, q *query.Parameters, result interface{}) (string, error) {
+func (client *ServiceManagerClient) register(resource interface{}, url string, q *query.Parameters, result interface{}) (string, error) {
 	requestBody, err := json.Marshal(resource)
 	if err != nil {
 		return "", err
@@ -222,7 +222,7 @@ func (client *serviceManagerClient) register(resource interface{}, url string, q
 }
 
 // GetBrokerByID returns broker registered in the Service Manager satisfying provided queries
-func (client *serviceManagerClient) GetBrokerByID(id string, q *query.Parameters) (*types.Broker, error) {
+func (client *ServiceManagerClient) GetBrokerByID(id string, q *query.Parameters) (*types.Broker, error) {
 	broker := &types.Broker{}
 	err := client.get(broker, web.ServiceBrokersURL+"/"+id, &query.Parameters{
 		GeneralParams: q.GeneralParams,
@@ -232,7 +232,7 @@ func (client *serviceManagerClient) GetBrokerByID(id string, q *query.Parameters
 }
 
 // ListBrokers returns brokers registered in the Service Manager satisfying provided queries
-func (client *serviceManagerClient) ListBrokers(q *query.Parameters) (*types.Brokers, error) {
+func (client *ServiceManagerClient) ListBrokers(q *query.Parameters) (*types.Brokers, error) {
 	brokers := &types.Brokers{}
 	err := client.list(&brokers.Brokers, web.ServiceBrokersURL, q)
 
@@ -240,7 +240,7 @@ func (client *serviceManagerClient) ListBrokers(q *query.Parameters) (*types.Bro
 }
 
 // ListPlatforms returns platforms registered in the Service Manager satisfying provided queries
-func (client *serviceManagerClient) ListPlatforms(q *query.Parameters) (*types.Platforms, error) {
+func (client *ServiceManagerClient) ListPlatforms(q *query.Parameters) (*types.Platforms, error) {
 	platforms := &types.Platforms{}
 	err := client.list(&platforms.Platforms, web.PlatformsURL, q)
 
@@ -248,7 +248,7 @@ func (client *serviceManagerClient) ListPlatforms(q *query.Parameters) (*types.P
 }
 
 // ListOfferings returns offerings registered in the Service Manager satisfying provided queries
-func (client *serviceManagerClient) ListOfferings(q *query.Parameters) (*types.ServiceOfferings, error) {
+func (client *ServiceManagerClient) ListOfferings(q *query.Parameters) (*types.ServiceOfferings, error) {
 	offerings := &types.ServiceOfferings{}
 	err := client.list(&offerings.ServiceOfferings, web.ServiceOfferingsURL, q)
 
@@ -256,7 +256,7 @@ func (client *serviceManagerClient) ListOfferings(q *query.Parameters) (*types.S
 }
 
 // ListPlans returns plans registered in the Service Manager satisfying provided queries
-func (client *serviceManagerClient) ListPlans(q *query.Parameters) (*types.ServicePlans, error) {
+func (client *ServiceManagerClient) ListPlans(q *query.Parameters) (*types.ServicePlans, error) {
 	plans := &types.ServicePlans{}
 	err := client.list(&plans.ServicePlans, web.ServicePlansURL, q)
 
@@ -264,7 +264,7 @@ func (client *serviceManagerClient) ListPlans(q *query.Parameters) (*types.Servi
 }
 
 // ListVisibilities returns visibilities registered in the Service Manager satisfying provided queries
-func (client *serviceManagerClient) ListVisibilities(q *query.Parameters) (*types.Visibilities, error) {
+func (client *ServiceManagerClient) ListVisibilities(q *query.Parameters) (*types.Visibilities, error) {
 	visibilities := &types.Visibilities{}
 	err := client.list(&visibilities.Visibilities, web.VisibilitiesURL, q)
 
@@ -272,14 +272,14 @@ func (client *serviceManagerClient) ListVisibilities(q *query.Parameters) (*type
 }
 
 // ListInstances returns service instances registered in the Service Manager satisfying provided queries
-func (client *serviceManagerClient) ListInstances(q *query.Parameters) (*types.ServiceInstances, error) {
+func (client *ServiceManagerClient) ListInstances(q *query.Parameters) (*types.ServiceInstances, error) {
 	instances := &types.ServiceInstances{}
 	err := client.list(&instances.ServiceInstances, web.ServiceInstancesURL, q)
 
 	return instances, err
 }
 // GetInstanceParameters returns service instance configuration parameters
-func (client *serviceManagerClient) GetInstanceParameters(id string, q *query.Parameters) (map[string]interface{}, error) {
+func (client *ServiceManagerClient) GetInstanceParameters(id string, q *query.Parameters) (map[string]interface{}, error) {
 	parameters := make(map[string]interface{})
 	err := client.get(&parameters, web.ServiceInstancesURL + "/" + id + web.ParametersURL, q)
 
@@ -287,7 +287,7 @@ func (client *serviceManagerClient) GetInstanceParameters(id string, q *query.Pa
 }
 
 // GetInstanceByID returns instance registered in the Service Manager satisfying provided queries
-func (client *serviceManagerClient) GetInstanceByID(id string, q *query.Parameters) (*types.ServiceInstance, error) {
+func (client *ServiceManagerClient) GetInstanceByID(id string, q *query.Parameters) (*types.ServiceInstance, error) {
 	instance := &types.ServiceInstance{}
 	err := client.get(instance, web.ServiceInstancesURL+"/"+id, &query.Parameters{
 		GeneralParams: q.GeneralParams,
@@ -297,7 +297,7 @@ func (client *serviceManagerClient) GetInstanceByID(id string, q *query.Paramete
 }
 
 // ListBindings returns service bindings registered in the Service Manager satisfying provided queries
-func (client *serviceManagerClient) ListBindings(q *query.Parameters) (*types.ServiceBindings, error) {
+func (client *ServiceManagerClient) ListBindings(q *query.Parameters) (*types.ServiceBindings, error) {
 	bindings := &types.ServiceBindings{}
 	err := client.list(&bindings.ServiceBindings, web.ServiceBindingsURL, q)
 
@@ -305,7 +305,7 @@ func (client *serviceManagerClient) ListBindings(q *query.Parameters) (*types.Se
 }
 
 // GetBindingParameters returns service binding configuration parameters
-func (client *serviceManagerClient) GetBindingParameters(id string, q *query.Parameters) (map[string]interface{}, error) {
+func (client *ServiceManagerClient) GetBindingParameters(id string, q *query.Parameters) (map[string]interface{}, error) {
 	parameters := make(map[string]interface{})
 	err := client.get(&parameters, web.ServiceBindingsURL + "/" + id + web.ParametersURL, q)
 
@@ -313,7 +313,7 @@ func (client *serviceManagerClient) GetBindingParameters(id string, q *query.Par
 }
 
 // GetBindingByID returns binding registered in the Service Manager satisfying provided queries
-func (client *serviceManagerClient) GetBindingByID(id string, q *query.Parameters) (*types.ServiceBinding, error) {
+func (client *ServiceManagerClient) GetBindingByID(id string, q *query.Parameters) (*types.ServiceBinding, error) {
 	binding := &types.ServiceBinding{}
 	err := client.get(binding, web.ServiceBindingsURL+"/"+id, &query.Parameters{
 		GeneralParams: q.GeneralParams,
@@ -323,7 +323,7 @@ func (client *serviceManagerClient) GetBindingByID(id string, q *query.Parameter
 }
 
 // Marketplace returns service offerings satisfying provided queries
-func (client *serviceManagerClient) Marketplace(q *query.Parameters) (*types.Marketplace, error) {
+func (client *ServiceManagerClient) Marketplace(q *query.Parameters) (*types.Marketplace, error) {
 	marketplace := &types.Marketplace{}
 	err := client.list(&marketplace.ServiceOfferings, web.ServiceOfferingsURL, q)
 	if err != nil {
@@ -343,7 +343,7 @@ func (client *serviceManagerClient) Marketplace(q *query.Parameters) (*types.Mar
 	return marketplace, nil
 }
 
-func (client *serviceManagerClient) Status(url string, q *query.Parameters) (*types.Operation, error) {
+func (client *ServiceManagerClient) Status(url string, q *query.Parameters) (*types.Operation, error) {
 	operation := &types.Operation{}
 	err := client.get(operation, url, &query.Parameters{
 		GeneralParams: q.GeneralParams,
@@ -352,12 +352,12 @@ func (client *serviceManagerClient) Status(url string, q *query.Parameters) (*ty
 	return operation, err
 }
 
-func (client *serviceManagerClient) list(result interface{}, url string, q *query.Parameters) error {
-	fullURL := httputil.NormalizeURL(client.config.URL) + BuildURL(url, q)
-	return util.ListAll(client.ctx, client.httpClient.Do, fullURL, result)
+func (client *ServiceManagerClient) list(result interface{}, url string, q *query.Parameters) error {
+	fullURL := httputil.NormalizeURL(client.Config.URL) + BuildURL(url, q)
+	return util.ListAll(client.Context, client.HttpClient.Do, fullURL, result)
 }
 
-func (client *serviceManagerClient) get(result interface{}, url string, q *query.Parameters) error {
+func (client *ServiceManagerClient) get(result interface{}, url string, q *query.Parameters) error {
 	resp, err := client.Call(http.MethodGet, url, nil, q)
 	if err != nil {
 		return err
@@ -370,29 +370,29 @@ func (client *serviceManagerClient) get(result interface{}, url string, q *query
 	return httputil.UnmarshalResponse(resp, &result)
 }
 
-func (client *serviceManagerClient) DeleteBroker(id string, q *query.Parameters) (string, error) {
+func (client *ServiceManagerClient) DeleteBroker(id string, q *query.Parameters) (string, error) {
 	return client.delete(web.ServiceBrokersURL+"/"+id, q)
 }
 
-func (client *serviceManagerClient) DeletePlatforms(q *query.Parameters) error {
+func (client *ServiceManagerClient) DeletePlatforms(q *query.Parameters) error {
 	_, err := client.delete(web.PlatformsURL, q)
 	return err
 }
 
-func (client *serviceManagerClient) DeleteVisibilities(q *query.Parameters) error {
+func (client *ServiceManagerClient) DeleteVisibilities(q *query.Parameters) error {
 	_, err := client.delete(web.VisibilitiesURL, q)
 	return err
 }
 
-func (client *serviceManagerClient) Deprovision(id string, q *query.Parameters) (string, error) {
+func (client *ServiceManagerClient) Deprovision(id string, q *query.Parameters) (string, error) {
 	return client.delete(web.ServiceInstancesURL+"/"+id, q)
 }
 
-func (client *serviceManagerClient) Unbind(id string, q *query.Parameters) (string, error) {
+func (client *ServiceManagerClient) Unbind(id string, q *query.Parameters) (string, error) {
 	return client.delete(web.ServiceBindingsURL+"/"+id, q)
 }
 
-func (client *serviceManagerClient) delete(url string, q *query.Parameters) (string, error) {
+func (client *ServiceManagerClient) delete(url string, q *query.Parameters) (string, error) {
 	resp, err := client.Call(http.MethodDelete, url, nil, q)
 	if err != nil {
 		return "", err
@@ -407,7 +407,7 @@ func (client *serviceManagerClient) delete(url string, q *query.Parameters) (str
 	}
 }
 
-func (client *serviceManagerClient) UpdateBroker(id string, updatedBroker *types.Broker, q *query.Parameters) (*types.Broker, string, error) {
+func (client *ServiceManagerClient) UpdateBroker(id string, updatedBroker *types.Broker, q *query.Parameters) (*types.Broker, string, error) {
 	var result *types.Broker
 	location, err := client.update(updatedBroker, web.ServiceBrokersURL, id, q, &result)
 	if err != nil {
@@ -416,7 +416,7 @@ func (client *serviceManagerClient) UpdateBroker(id string, updatedBroker *types
 	return result, location, nil
 }
 
-func (client *serviceManagerClient) UpdateInstance(id string, updatedInstance *types.ServiceInstance, q *query.Parameters) (*types.ServiceInstance, string, error) {
+func (client *ServiceManagerClient) UpdateInstance(id string, updatedInstance *types.ServiceInstance, q *query.Parameters) (*types.ServiceInstance, string, error) {
 	var result *types.ServiceInstance
 	location, err := client.update(updatedInstance, web.ServiceInstancesURL, id, q, &result)
 	if err != nil {
@@ -425,7 +425,7 @@ func (client *serviceManagerClient) UpdateInstance(id string, updatedInstance *t
 	return result, location, nil
 }
 
-func (client *serviceManagerClient) UpdatePlatform(id string, updatedPlatform *types.Platform, q *query.Parameters) (*types.Platform, error) {
+func (client *ServiceManagerClient) UpdatePlatform(id string, updatedPlatform *types.Platform, q *query.Parameters) (*types.Platform, error) {
 	result := &types.Platform{}
 	_, err := client.update(updatedPlatform, web.PlatformsURL, id, q, &result)
 	if err != nil {
@@ -434,7 +434,7 @@ func (client *serviceManagerClient) UpdatePlatform(id string, updatedPlatform *t
 	return result, nil
 }
 
-func (client *serviceManagerClient) UpdateVisibility(id string, updatedVisibility *types.Visibility, q *query.Parameters) (*types.Visibility, error) {
+func (client *ServiceManagerClient) UpdateVisibility(id string, updatedVisibility *types.Visibility, q *query.Parameters) (*types.Visibility, error) {
 	result := &types.Visibility{}
 	_, err := client.update(updatedVisibility, web.VisibilitiesURL, id, q, &result)
 	if err != nil {
@@ -443,7 +443,7 @@ func (client *serviceManagerClient) UpdateVisibility(id string, updatedVisibilit
 	return result, nil
 }
 
-func (client *serviceManagerClient) update(resource interface{}, url string, id string, q *query.Parameters, result interface{}) (string, error) {
+func (client *ServiceManagerClient) update(resource interface{}, url string, id string, q *query.Parameters, result interface{}) (string, error) {
 	requestBody, err := json.Marshal(resource)
 	if err != nil {
 		return "", err
@@ -464,7 +464,7 @@ func (client *serviceManagerClient) update(resource interface{}, url string, id 
 	}
 }
 
-func (client *serviceManagerClient) Label(url string, id string, change *types.LabelChanges, q *query.Parameters) error {
+func (client *ServiceManagerClient) Label(url string, id string, change *types.LabelChanges, q *query.Parameters) error {
 	requestBody, err := json.Marshal(change)
 	if err != nil {
 		return err
@@ -482,8 +482,8 @@ func (client *serviceManagerClient) Label(url string, id string, change *types.L
 	return nil
 }
 
-func (client *serviceManagerClient) Call(method string, smpath string, body io.Reader, q *query.Parameters) (*http.Response, error) {
-	fullURL := httputil.NormalizeURL(client.config.URL) + BuildURL(smpath, q)
+func (client *ServiceManagerClient) Call(method string, smpath string, body io.Reader, q *query.Parameters) (*http.Response, error) {
+	fullURL := httputil.NormalizeURL(client.Config.URL) + BuildURL(smpath, q)
 
 	req, err := http.NewRequest(method, fullURL, body)
 	if err != nil {
@@ -491,14 +491,14 @@ func (client *serviceManagerClient) Call(method string, smpath string, body io.R
 	}
 	req.Header.Add("Content-Type", "application/json")
 
-	log.C(client.ctx).Debugf("Sending request %s %s", req.Method, req.URL)
-	resp, err := client.httpClient.Do(req)
+	log.C(client.Context).Debugf("Sending request %s %s", req.Method, req.URL)
+	resp, err := client.HttpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return nil, util.HandleResponseError(resp)
+		return resp, util.HandleResponseError(resp)
 	}
 
 	return resp, nil
