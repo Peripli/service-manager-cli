@@ -285,7 +285,7 @@ var _ = Describe("Platform test", func() {
 				}
 			})
 			It("should return location of operation scheduled for platform cascade delete", func() {
-				location, err := client.CascadeDeletePlatform(platform.ID,  params)
+				location, err := client.DeletePlatform(platform.ID,  params)
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(location).Should(Equal(locationHeader))
@@ -300,7 +300,7 @@ var _ = Describe("Platform test", func() {
 				}
 			})
 			It("should return error with non-expected status code, location should be nil", func() {
-				location, err := client.CascadeDeletePlatform(platform.ID, params)
+				location, err := client.DeletePlatform(platform.ID, params)
 				Expect(err).Should(HaveOccurred())
 				Expect(location).Should(Equal(""))
 				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
@@ -315,7 +315,7 @@ var _ = Describe("Platform test", func() {
 				}
 			})
 			It("should return 404", func() {
-				location, err := client.CascadeDeletePlatform(platform.ID, params)
+				location, err := client.DeletePlatform(platform.ID, params)
 				Expect(err).Should(HaveOccurred())
 				Expect(location).Should(Equal(""))
 				verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)

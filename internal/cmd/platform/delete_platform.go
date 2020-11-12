@@ -97,7 +97,7 @@ func (dpc *DeletePlatformCmd) cascadeDelete() error {
 	dpc.Parameters.GeneralParams = append(dpc.Parameters.GeneralParams, fmt.Sprintf("%s=%s", web.QueryParamAsync, "true"))
 
 	for _, platform := range platforms.Platforms {
-		location, err := dpc.Client.CascadeDeletePlatform(platform.ID, &dpc.Parameters)
+		location, err := dpc.Client.DeletePlatform(platform.ID, &dpc.Parameters)
 		if err != nil {
 			// The platform could be deleted after List and before Delete
 			if strings.Contains(err.Error(), "StatusCode: 404") {

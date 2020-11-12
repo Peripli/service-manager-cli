@@ -136,11 +136,24 @@ var _ = Describe("Delete platforms command test", func() {
 				client.ListPlatformsReturns(&types.Platforms{Platforms: []types.Platform{platform1}}, nil)
 				location := "/v1/platforms/id1/operations/1a3e795d-819c-4661-89b5-344adb2ec26a"
 
-				client.CascadeDeletePlatformReturns(location, nil)
+				client.DeletePlatformReturns(location, nil)
 				err := executeWithArgs([]string{platform1.Name, "--cascade", "-f"})
 
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(buffer.String()).To(ContainSubstring("Cascade delete successfully scheduled"))
+			})
+		})
+		When("platform is active", func() {
+			It("should return error message", func() {
+				client.ListPlatformsReturns(&types.Platforms{Platforms: []types.Platform{platform1}}, nil)
+				body := ioutil.NopCloser(bytes.NewReader([]byte("Active platform cannot be deleted")))
+				expectedError := util.HandleResponseError(&http.Response{Body: body, StatusCode: http.StatusUnprocessableEntity})
+				client.DeletePlatformReturns("", expectedError)
+				err := executeWithArgs([]string{platform1.Name, "--cascade", "-f"})
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(buffer.String()).To(ContainSubstring("Could not cascade-delete platform id1. Reason: request failed: StatusCode: 422 Body: Active platform cannot be deleted"))
+
 			})
 		})
 
@@ -159,7 +172,7 @@ var _ = Describe("Delete platforms command test", func() {
 				client.ListPlatformsReturns(&types.Platforms{Platforms: []types.Platform{platform1}}, nil)
 				body := ioutil.NopCloser(bytes.NewReader([]byte("")))
 				expectedError := util.HandleResponseError(&http.Response{Body: body, StatusCode: http.StatusInternalServerError})
-				client.CascadeDeletePlatformReturns("", expectedError)
+				client.DeletePlatformReturns("", expectedError)
 				promptBuffer.WriteString("y")
 				_ = executeWithArgs([]string{platform1.Name, "--cascade"})
 
