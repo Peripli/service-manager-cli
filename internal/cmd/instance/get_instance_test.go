@@ -140,7 +140,7 @@ var _ = Describe("Get instance command test", func() {
 				response = &types.ServiceInstances{ServiceInstances: []types.ServiceInstance{instance, instance2}, Vertical: true}
 				client.ListInstancesReturns(response, nil)
 			})
-			It("should return parameters for both instances", func() {
+			It("should print parameters for both instances", func() {
 				client.GetInstanceParametersReturnsOnCall(0, instanceParameters1, nil)
 				client.GetInstanceParametersReturnsOnCall(1, instanceParameters2, nil)
 				err := executeWithArgs("instance1", "--show-instance-params")

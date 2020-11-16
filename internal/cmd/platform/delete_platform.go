@@ -18,6 +18,8 @@ package platform
 
 import (
 	"fmt"
+	"github.com/Peripli/service-manager-cli/pkg/query"
+	"github.com/Peripli/service-manager/pkg/web"
 	"io"
 	"strings"
 
@@ -32,8 +34,9 @@ import (
 type DeletePlatformCmd struct {
 	*cmd.Context
 
-	input io.Reader
-	force bool
+	input       io.Reader
+	force       bool
+	cascadeFlag *bool
 
 	name string
 }
@@ -45,7 +48,7 @@ func NewDeletePlatformCmd(context *cmd.Context, input io.Reader) *DeletePlatform
 
 // Validate validates command's arguments
 func (dpc *DeletePlatformCmd) Validate(args []string) error {
-	if len(args) != 1 {
+	if len(args) != 1 || len(args[0]) < 1 {
 		return fmt.Errorf("single [name] is required")
 	}
 
@@ -56,6 +59,11 @@ func (dpc *DeletePlatformCmd) Validate(args []string) error {
 
 // Run runs the command's logic
 func (dpc *DeletePlatformCmd) Run() error {
+
+	if *dpc.cascadeFlag {
+		return dpc.cascadeDelete()
+	}
+
 	dpc.Parameters.FieldQuery = append(dpc.Parameters.FieldQuery, fmt.Sprintf("name eq '%s'", dpc.name))
 
 	if err := dpc.Client.DeletePlatforms(&dpc.Parameters); err != nil {
@@ -67,6 +75,47 @@ func (dpc *DeletePlatformCmd) Run() error {
 		return err
 	}
 	output.PrintMessage(dpc.Output, "Platform(s) successfully deleted.\n")
+	return nil
+}
+
+func (dpc *DeletePlatformCmd) cascadeDelete() error {
+
+	platforms, err := dpc.Client.ListPlatforms(&query.Parameters{
+		FieldQuery: []string{
+			fmt.Sprintf("name eq '%s'", dpc.name),
+		},
+	})
+	if err != nil {
+		return err
+	}
+	if len(platforms.Platforms) < 1 {
+		output.PrintMessage(dpc.Output, "Platform(s) not found.")
+		return nil
+	}
+
+	dpc.Parameters.GeneralParams = append(dpc.Parameters.GeneralParams, fmt.Sprintf("%s=%s", web.QueryParamCascade, "true"))
+	dpc.Parameters.GeneralParams = append(dpc.Parameters.GeneralParams, fmt.Sprintf("%s=%s", web.QueryParamAsync, "true"))
+
+	for _, platform := range platforms.Platforms {
+		location, err := dpc.Client.DeletePlatform(platform.ID, &dpc.Parameters)
+		if err != nil {
+			// The platform could be deleted after List and before Delete
+			if strings.Contains(err.Error(), "StatusCode: 404") {
+				continue
+			}
+			output.PrintMessage(dpc.Output, "Could not cascade-delete platform %s. Reason: %s\n", platform.ID, err)
+			continue
+		}
+		if len(location) != 0 {
+			cmd.CommonHandleAsyncExecution(dpc.Context, location, fmt.Sprintf("Cascade delete successfully scheduled for platform id: %s . "+
+				"To see status of the operation use:\n", platform.ID))
+			continue
+		}
+
+		// Something went wrong in SM.
+		// SM must return location>0, because it's async flow
+		output.PrintMessage(dpc.Output, "Error: Unable to get operation ID for platform %s.\n", platform.ID)
+	}
 	return nil
 }
 
@@ -99,7 +148,7 @@ func (dpc *DeletePlatformCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		PreRunE: prepare(dpc, dpc.Context),
 		RunE:    cmd.RunE(dpc),
 	}
-
+	dpc.cascadeFlag = result.PersistentFlags().Bool("cascade", false, "Cascade delete platform with all the associated resources")
 	result.Flags().BoolVarP(&dpc.force, "force", "f", false, "Force delete without confirmation")
 	cmd.AddCommonQueryFlag(result.Flags(), &dpc.Parameters)
 
