@@ -18,7 +18,6 @@ package platform
 
 import (
 	"fmt"
-
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/pkg/types"
@@ -31,6 +30,8 @@ type RegisterPlatformCmd struct {
 	*cmd.Context
 
 	platform types.Platform
+
+	authenticationType string
 
 	outputFormat output.Format
 }
@@ -63,6 +64,7 @@ func (rpc *RegisterPlatformCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command 
 	}
 
 	result.Flags().StringVarP(&rpc.platform.ID, "id", "i", "", "external platform ID")
+	result.Flags().StringVarP((*string)(&rpc.authenticationType), "auth-type", "", "basic", `Authentication type: "basic" or "oauth"`)
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddCommonQueryFlag(result.Flags(), &rpc.Parameters)
 
@@ -87,6 +89,9 @@ func (rpc *RegisterPlatformCmd) Validate(args []string) error {
 
 // Run runs command's logic
 func (rpc *RegisterPlatformCmd) Run() error {
+	if rpc.authenticationType == "oauth" {
+		rpc.Parameters.GeneralParams = append(rpc.Parameters.GeneralParams, "authType=oauth")
+	}
 	resultPlatform, err := rpc.Client.RegisterPlatform(&rpc.platform, &rpc.Parameters)
 	if err != nil {
 		return err

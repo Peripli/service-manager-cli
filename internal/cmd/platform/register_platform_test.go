@@ -87,6 +87,18 @@ var _ = Describe("Register Platform Command test", func() {
 			})
 		})
 
+		Context("With auth-type flag provided", func() {
+			It("Flag value should be as expected", func() {
+				args := []string{"validName", "validType", "--auth-type", "oauth"}
+
+				err := validRegisterPlatformExecution(args...)
+				_, params := client.RegisterPlatformArgsForCall(0)
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(params.GeneralParams).To(ConsistOf("authType=oauth"))
+			})
+		})
+
 		Context("With description provided", func() {
 			It("Description value should be as expected", func() {
 				err := validRegisterPlatformExecution("validName", "validType", "validDescription")
