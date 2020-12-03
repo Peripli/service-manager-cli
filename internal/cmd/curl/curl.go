@@ -57,8 +57,8 @@ func (c *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
 		Use:     "curl [path]",
 		Aliases: []string{"c"},
-		Short:   "call arbitrary SM endpoint",
-		Long:    `call arbitrary SM endpoint`,
+		Short:   "Call arbitrary SM endpoint",
+		Long:    `Call arbitrary SM endpoint`,
 
 		PreRunE: prepare(c, c.Context),
 		RunE:    cmd.RunE(c),
