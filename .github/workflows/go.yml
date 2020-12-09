@@ -23,7 +23,12 @@ jobs:
 
     - name: Get dependencies
       run: |
-        go get -v -t -d ./...
+        go get github.com/onsi/gomega
+        go get github.com/onsi/ginkgo/ginkgo
+        go get github.com/alecthomas/gometalinter
+        go get golang.org/x/tools/cmd/cover
+        go get github.com/mattn/goveralls
+        gometalinter --install --update
         if [ -f Gopkg.toml ]; then
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             dep ensure
@@ -33,4 +38,4 @@ jobs:
       run: go build -v ./...
 
     - name: Test
-      run: go test -v ./...
+      run: go test ./... -coverpkg $(go list ./... | egrep -v "fakes|test" | paste -sd "," -) -coverprofile=profile.cov
