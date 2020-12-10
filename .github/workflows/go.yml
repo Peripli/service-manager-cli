@@ -29,6 +29,7 @@ jobs:
       working-directory: ${{ env.GOPATH }}/src/github.com/${{ github.repository }}
       run: |
         curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+        dep ensure --vendor-only -v
     
     - name: Test
       working-directory: ${{ env.GOPATH }}/src/github.com/${{ github.repository }}
