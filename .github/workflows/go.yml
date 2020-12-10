@@ -9,7 +9,7 @@ on:
 jobs:
 
   build:
-    name: Pipeline
+    name: Build
     env:
       GOPATH: ${{ github.workspace }}
     runs-on: ubuntu-latest
