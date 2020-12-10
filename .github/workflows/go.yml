@@ -5,11 +5,13 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
-
+    
 jobs:
 
   build:
-    name: Build
+    name: Pipeline
+    env:
+      GOPATH: ${{ github.workspace }}
     runs-on: ubuntu-latest
     steps:
 
@@ -20,17 +22,14 @@ jobs:
 
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
-
+      with:
+        path: ${{ env.GOPATH }}/src/github.com/${{ github.repository }}
+        
     - name: Get dependencies
+      working-directory: ${{ env.GOPATH }}/src/github.com/${{ github.repository }}
       run: |
-        go get -v -t -d ./...
-        if [ -f Gopkg.toml ]; then
-            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-            dep ensure
-        fi
-
-    - name: Build
-      run: go build -v ./...
-
+        curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+    
     - name: Test
-      run: go test -v ./...
+      working-directory: ${{ env.GOPATH }}/src/github.com/${{ github.repository }}
+      run: go test ./... -coverpkg $(go list ./... | egrep -v "fakes|test" | paste -sd "," -) -coverprofile=profile.cov
