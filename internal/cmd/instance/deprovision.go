@@ -77,10 +77,8 @@ func (dbc *DeprovisionCmd) Run() error {
 		dbc.id = toDeprovision.ServiceInstances[0].ID
 	}
 
-
 	if dbc.purge {
-		dbc.Parameters.GeneralParams = append(dbc.Parameters.GeneralParams, fmt.Sprintf("force=%t", ubc.purge))
-		dbc.Parameters.GeneralParams = append(dbc.Parameters.GeneralParams, fmt.Sprintf("cascade=%t", ubc.purge))
+		dbc.Parameters.GeneralParams = append(dbc.Parameters.GeneralParams, "force=true", "cascade=true")
 	}
 	location, err := dbc.Client.Deprovision(dbc.id, &dbc.Parameters)
 	if err != nil {

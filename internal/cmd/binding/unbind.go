@@ -115,8 +115,7 @@ func (ubc *UnbindCmd) Run() error {
 	}
 
 	if ubc.purge {
-		ubc.Parameters.GeneralParams = append(ubc.Parameters.GeneralParams, fmt.Sprintf("force=%t", ubc.purge))
-		ubc.Parameters.GeneralParams = append(ubc.Parameters.GeneralParams, fmt.Sprintf("cascade=%t", ubc.purge))
+		ubc.Parameters.GeneralParams = append(ubc.Parameters.GeneralParams, "force=true", "cascade=true")
 	}
 
 	location, err := ubc.Client.Unbind(ubc.bindingID, &ubc.Parameters)
