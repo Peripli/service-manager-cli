@@ -33,6 +33,7 @@ type DeprovisionCmd struct {
 
 	input io.Reader
 	force bool
+	purge bool
 
 	name string
 	id   string
@@ -76,6 +77,11 @@ func (dbc *DeprovisionCmd) Run() error {
 		dbc.id = toDeprovision.ServiceInstances[0].ID
 	}
 
+
+	if dbc.purge {
+		dbc.Parameters.GeneralParams = append(dbc.Parameters.GeneralParams, fmt.Sprintf("force=%t", ubc.purge))
+		dbc.Parameters.GeneralParams = append(dbc.Parameters.GeneralParams, fmt.Sprintf("cascade=%t", ubc.purge))
+	}
 	location, err := dbc.Client.Deprovision(dbc.id, &dbc.Parameters)
 	if err != nil {
 		output.PrintMessage(dbc.Output, "Could not delete service instance. Reason: ")
@@ -119,6 +125,7 @@ func (dbc *DeprovisionCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	}
 
 	result.Flags().BoolVarP(&dbc.force, "force", "f", false, "Force delete without confirmation")
+	result.Flags().BoolVarP(&dbc.purge, "purge", "", false, "Purge instance")
 	result.Flags().StringVarP(&dbc.id, "id", "", "", "ID of the service instance. Required when name is ambiguous")
 	cmd.AddCommonQueryFlag(result.Flags(), &dbc.Parameters)
 	cmd.AddModeFlag(result.Flags(), "async")
