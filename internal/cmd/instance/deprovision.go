@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/pkg/query"
+	"github.com/Peripli/service-manager/pkg/web"
 	"io"
 
 	"github.com/spf13/cobra"
@@ -77,8 +78,10 @@ func (dbc *DeprovisionCmd) Run() error {
 		dbc.id = toDeprovision.ServiceInstances[0].ID
 	}
 
+
 	if dbc.purge {
-		dbc.Parameters.GeneralParams = append(dbc.Parameters.GeneralParams, "force=true", "cascade=true")
+		dbc.Parameters.GeneralParams = append(dbc.Parameters.GeneralParams, fmt.Sprintf("%s=%s", web.QueryParamCascade, "true"))
+		dbc.Parameters.GeneralParams = append(dbc.Parameters.GeneralParams, fmt.Sprintf("%s=%s", web.QueryParamForce, "true"))
 	}
 	location, err := dbc.Client.Deprovision(dbc.id, &dbc.Parameters)
 	if err != nil {

@@ -21,6 +21,7 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/pkg/query"
+	"github.com/Peripli/service-manager/pkg/web"
 	"github.com/spf13/cobra"
 	"io"
 )
@@ -115,7 +116,8 @@ func (ubc *UnbindCmd) Run() error {
 	}
 
 	if ubc.purge {
-		ubc.Parameters.GeneralParams = append(ubc.Parameters.GeneralParams, "force=true", "cascade=true")
+		ubc.Parameters.GeneralParams = append(ubc.Parameters.GeneralParams, fmt.Sprintf("%s=%s", web.QueryParamCascade, "true"))
+		ubc.Parameters.GeneralParams = append(ubc.Parameters.GeneralParams, fmt.Sprintf("%s=%s", web.QueryParamForce, "true"))
 	}
 
 	location, err := ubc.Client.Unbind(ubc.bindingID, &ubc.Parameters)
