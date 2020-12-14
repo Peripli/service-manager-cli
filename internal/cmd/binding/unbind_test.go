@@ -1,7 +1,9 @@
 package binding
 
 import (
+	"fmt"
 	"github.com/Peripli/service-manager/pkg/util"
+	"github.wdf.sap.corp/SvcManager/service-manager/pkg/web"
 	"io/ioutil"
 	"net/http"
 
@@ -113,7 +115,9 @@ var _ = Describe("Unbind command test", func() {
 
 			_, args := client.UnbindArgsForCall(0)
 
-			Expect(args.GeneralParams).To(ConsistOf("cascade=true", "force=true"))
+			cascadeParam := fmt.Sprintf("%s=%s", web.QueryParamCascade, "true")
+			forceDeleteParam := fmt.Sprintf("%s=%s", web.QueryParamForce, "true")
+			Expect(args.GeneralParams).To(ConsistOf(cascadeParam, forceDeleteParam))
 			Expect(args.FieldQuery).To(BeEmpty())
 			Expect(args.LabelQuery).To(BeEmpty())
 		})

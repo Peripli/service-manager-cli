@@ -1,6 +1,8 @@
 package instance
 
 import (
+	"fmt"
+	"github.wdf.sap.corp/SvcManager/service-manager/pkg/web"
 	"io/ioutil"
 	"net/http"
 
@@ -55,6 +57,16 @@ var _ = Describe("Deprovision command test", func() {
 		})
 	})
 
+	Context("when existing instance is being deleted forcefully with force-delete", func() {
+		It("should list success message", func() {
+			client.DeprovisionReturns("", nil)
+			err := executeWithArgs("instance-name", "-force-delete", "-f")
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(buffer.String()).To(ContainSubstring("Service Instance instance-name successfully scheduled for deletion"))
+		})
+	})
+
 	Context("when existing instance is being deleted", func() {
 		It("should list success message when confirmed", func() {
 			client.DeprovisionReturns("", nil)
@@ -86,6 +98,23 @@ var _ = Describe("Deprovision command test", func() {
 			_, args := client.DeprovisionArgsForCall(0)
 
 			Expect(args.GeneralParams).To(ConsistOf(param, "async=true"))
+			Expect(args.FieldQuery).To(BeEmpty())
+			Expect(args.LabelQuery).To(BeEmpty())
+		})
+	})
+
+	Context("when force-delete parameter flag is used", func() {
+		It("should pass it to SM", func() {
+			client.DeprovisionReturns("", nil)
+			promptBuffer.WriteString("y")
+			err := executeWithArgs("instance-name", "--force-delete")
+			Expect(err).ShouldNot(HaveOccurred())
+
+			_, args := client.DeprovisionArgsForCall(0)
+
+			cascadeParam := fmt.Sprintf("%s=%s", web.QueryParamCascade, "true")
+			forceDeleteParam := fmt.Sprintf("%s=%s", web.QueryParamForce, "true")
+			Expect(args.GeneralParams).To(ConsistOf(cascadeParam, forceDeleteParam))
 			Expect(args.FieldQuery).To(BeEmpty())
 			Expect(args.LabelQuery).To(BeEmpty())
 		})
