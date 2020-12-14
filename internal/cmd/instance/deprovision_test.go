@@ -2,7 +2,7 @@ package instance
 
 import (
 	"fmt"
-	"github.wdf.sap.corp/SvcManager/service-manager/pkg/web"
+	"github.com/Peripli/service-manager/pkg/web"
 	"io/ioutil"
 	"net/http"
 
