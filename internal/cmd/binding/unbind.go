@@ -30,9 +30,9 @@ import (
 type UnbindCmd struct {
 	*cmd.Context
 
-	input io.Reader
-	force bool
-	purge bool
+	input       io.Reader
+	force       bool
+	forceDelete bool
 
 	instanceName string
 	bindingID    string
@@ -57,7 +57,7 @@ func (ubc *UnbindCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 
 	result.Flags().StringVarP(&ubc.bindingID, "id", "", "", "ID of the service binding. Required when name is ambiguous")
 	result.Flags().BoolVarP(&ubc.force, "force", "f", false, "Force delete without confirmation")
-	result.Flags().BoolVarP(&ubc.purge, "purge", "", false, "Purge binding")
+	result.Flags().BoolVarP(&ubc.forceDelete, "force-delete", "", false, "force-delete binding")
 	cmd.AddCommonQueryFlag(result.Flags(), &ubc.Parameters)
 	cmd.AddModeFlag(result.Flags(), "async")
 
@@ -115,7 +115,7 @@ func (ubc *UnbindCmd) Run() error {
 		ubc.bindingID = bindingsToDelete.ServiceBindings[0].ID
 	}
 
-	if ubc.purge {
+	if ubc.forceDelete {
 		ubc.Parameters.GeneralParams = append(ubc.Parameters.GeneralParams, fmt.Sprintf("%s=%s", web.QueryParamCascade, "true"))
 		ubc.Parameters.GeneralParams = append(ubc.Parameters.GeneralParams, fmt.Sprintf("%s=%s", web.QueryParamForce, "true"))
 	}
