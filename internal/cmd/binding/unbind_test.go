@@ -60,10 +60,10 @@ var _ = Describe("Unbind command test", func() {
 		})
 	})
 
-	Context("when existing binding is being deleted forcefully with delete-force", func() {
+	Context("when existing binding is being deleted forcefully with hard-delete", func() {
 		It("should list success message", func() {
 			client.UnbindReturns("", nil)
-			err := executeWithArgs("instance-name", "binding-name", "--delete-force","-f")
+			err := executeWithArgs("instance-name", "binding-name", "--hard-delete","-f")
 
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(buffer.String()).To(ContainSubstring("Service Binding successfully deleted"))
@@ -106,11 +106,11 @@ var _ = Describe("Unbind command test", func() {
 		})
 	})
 
-	Context("when delete-force parameter flag is used", func() {
+	Context("when hard-delete parameter flag is used", func() {
 		It("should pass it to SM with force=true and cascade=true", func() {
 			client.UnbindReturns("", nil)
 			promptBuffer.WriteString("y")
-			err := executeWithArgs("instance-name", "binding-name", "--delete-force")
+			err := executeWithArgs("instance-name", "binding-name", "--hard-delete")
 			Expect(err).ShouldNot(HaveOccurred())
 
 			_, args := client.UnbindArgsForCall(0)

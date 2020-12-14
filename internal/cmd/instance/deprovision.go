@@ -126,7 +126,7 @@ func (dbc *DeprovisionCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	}
 
 	result.Flags().BoolVarP(&dbc.force, "force", "f", false, "Force delete without confirmation")
-	result.Flags().BoolVarP(&dbc.forceDelete, "delete-force", "", false, "Force delete instance")
+	result.Flags().BoolVarP(&dbc.forceDelete, "hard-delete", "", false, "Force delete instance")
 	result.Flags().StringVarP(&dbc.id, "id", "", "", "ID of the service instance. Required when name is ambiguous")
 	cmd.AddCommonQueryFlag(result.Flags(), &dbc.Parameters)
 	cmd.AddModeFlag(result.Flags(), "async")
