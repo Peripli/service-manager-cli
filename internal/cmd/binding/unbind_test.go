@@ -66,7 +66,7 @@ var _ = Describe("Unbind command test", func() {
 			err := executeWithArgs("instance-name", "binding-name", "--force-delete","-f")
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buffer.String()).To(ContainSubstring("Service Binding binding-name successfully scheduled for deletion"))
+			Expect(buffer.String()).To(ContainSubstring("Service Binding successfully deleted"))
 		})
 	})
 
@@ -117,7 +117,8 @@ var _ = Describe("Unbind command test", func() {
 
 			cascadeParam := fmt.Sprintf("%s=%s", web.QueryParamCascade, "true")
 			forceDeleteParam := fmt.Sprintf("%s=%s", web.QueryParamForce, "true")
-			Expect(args.GeneralParams).To(ConsistOf(cascadeParam, forceDeleteParam))
+			asyncParam := "async=true"
+			Expect(args.GeneralParams).To(ConsistOf(cascadeParam, forceDeleteParam, asyncParam))
 			Expect(args.FieldQuery).To(BeEmpty())
 			Expect(args.LabelQuery).To(BeEmpty())
 		})
