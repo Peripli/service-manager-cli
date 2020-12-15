@@ -1,6 +1,6 @@
 # Service Manager CLI
 
-[![Build Status](https://travis-ci.org/Peripli/service-manager-cli.svg?branch=master)](https://travis-ci.org/Peripli/service-manager-cli)
+[![Build Status](https://github.com/Peripli/service-manager-cli/workflows/Go/badge.svg)](https://github.com/Peripli/service-manager-cli/actions)
 [![Coverage Status](https://coveralls.io/repos/github/Peripli/service-manager-cli/badge.svg)](https://coveralls.io/github/Peripli/service-manager-cli)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/Peripli/service-manager-cli/blob/master/LICENSE)
 
