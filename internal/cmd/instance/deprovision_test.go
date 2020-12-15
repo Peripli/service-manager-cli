@@ -57,16 +57,6 @@ var _ = Describe("Deprovision command test", func() {
 		})
 	})
 
-	Context("when existing instance is being deleted forcefully with hard-delete", func() {
-		It("should list success message", func() {
-			client.DeprovisionReturns("", nil)
-			err := executeWithArgs("instance-name", "--hard-delete", "-f")
-
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buffer.String()).To(ContainSubstring("Service Instance successfully deleted"))
-		})
-	})
-
 	Context("when existing instance is being deleted", func() {
 		It("should list success message when confirmed", func() {
 			client.DeprovisionReturns("", nil)

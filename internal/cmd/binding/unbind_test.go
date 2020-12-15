@@ -59,17 +59,6 @@ var _ = Describe("Unbind command test", func() {
 			Expect(buffer.String()).To(ContainSubstring("Service Binding successfully deleted."))
 		})
 	})
-
-	Context("when existing binding is being deleted forcefully with hard-delete", func() {
-		It("should list success message", func() {
-			client.UnbindReturns("", nil)
-			err := executeWithArgs("instance-name", "binding-name", "--hard-delete","-f")
-
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(buffer.String()).To(ContainSubstring("Service Binding successfully deleted"))
-		})
-	})
-
 	Context("when existing binding is being deleted", func() {
 		It("should list success message when confirmed", func() {
 			client.UnbindReturns("", nil)
