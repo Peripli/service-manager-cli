@@ -32,9 +32,9 @@ import (
 type DeprovisionCmd struct {
 	*cmd.Context
 
-	input       io.Reader
-	force       bool
-	forceDelete bool
+	input io.Reader
+	force bool
+	purge bool
 
 	name string
 	id   string
@@ -79,7 +79,7 @@ func (dbc *DeprovisionCmd) Run() error {
 	}
 
 
-	if dbc.forceDelete {
+	if dbc.purge {
 		dbc.Parameters.GeneralParams = append(dbc.Parameters.GeneralParams, fmt.Sprintf("%s=%s", web.QueryParamCascade, "true"))
 		dbc.Parameters.GeneralParams = append(dbc.Parameters.GeneralParams, fmt.Sprintf("%s=%s", web.QueryParamForce, "true"))
 	}
@@ -126,7 +126,7 @@ func (dbc *DeprovisionCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	}
 
 	result.Flags().BoolVarP(&dbc.force, "force", "f", false, "Force delete without confirmation")
-	result.Flags().BoolVarP(&dbc.forceDelete, "purge", "", false, "Delete this resource and all its related data")
+	result.Flags().BoolVarP(&dbc.purge, "purge", "", false, "Delete this resource and all its related data")
 	result.Flags().StringVarP(&dbc.id, "id", "", "", "ID of the service instance. Required when name is ambiguous")
 	cmd.AddCommonQueryFlag(result.Flags(), &dbc.Parameters)
 	cmd.AddModeFlag(result.Flags(), "async")
