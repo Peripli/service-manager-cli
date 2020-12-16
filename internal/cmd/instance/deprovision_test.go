@@ -97,15 +97,15 @@ var _ = Describe("Deprovision command test", func() {
 		It("should pass it to SM", func() {
 			client.DeprovisionReturns("", nil)
 			promptBuffer.WriteString("y")
-			err := executeWithArgs("instance-name", "--force-delete")
+			err := executeWithArgs("instance-name", "--purge")
 			Expect(err).ShouldNot(HaveOccurred())
 
 			_, args := client.DeprovisionArgsForCall(0)
 
 			cascadeParam := fmt.Sprintf("%s=%s", web.QueryParamCascade, "true")
-			forceDeleteParam := fmt.Sprintf("%s=%s", web.QueryParamForce, "true")
+			forceParam := fmt.Sprintf("%s=%s", web.QueryParamForce, "true")
 			asyncParam := "async=true"
-			Expect(args.GeneralParams).To(ConsistOf(cascadeParam, forceDeleteParam, asyncParam))
+			Expect(args.GeneralParams).To(ConsistOf(cascadeParam, forceParam, asyncParam))
 			Expect(args.FieldQuery).To(BeEmpty())
 			Expect(args.LabelQuery).To(BeEmpty())
 		})

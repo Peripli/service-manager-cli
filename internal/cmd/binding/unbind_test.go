@@ -95,19 +95,19 @@ var _ = Describe("Unbind command test", func() {
 		})
 	})
 
-	Context("when hard-delete parameter flag is used", func() {
+	Context("when purge parameter flag is used", func() {
 		It("should pass it to SM with force=true and cascade=true", func() {
 			client.UnbindReturns("", nil)
 			promptBuffer.WriteString("y")
-			err := executeWithArgs("instance-name", "binding-name", "--hard-delete")
+			err := executeWithArgs("instance-name", "binding-name", "--purge")
 			Expect(err).ShouldNot(HaveOccurred())
 
 			_, args := client.UnbindArgsForCall(0)
 
 			cascadeParam := fmt.Sprintf("%s=%s", web.QueryParamCascade, "true")
-			forceDeleteParam := fmt.Sprintf("%s=%s", web.QueryParamForce, "true")
+			forceParam := fmt.Sprintf("%s=%s", web.QueryParamForce, "true")
 			asyncParam := "async=true"
-			Expect(args.GeneralParams).To(ConsistOf(cascadeParam, forceDeleteParam, asyncParam))
+			Expect(args.GeneralParams).To(ConsistOf(cascadeParam, forceParam, asyncParam))
 			Expect(args.FieldQuery).To(BeEmpty())
 			Expect(args.LabelQuery).To(BeEmpty())
 		})

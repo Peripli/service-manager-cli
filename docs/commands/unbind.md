@@ -16,6 +16,7 @@ Deletes a service binding.
 |--------|-----------|
 | -h, --help  Help for unbind command.| No |
 | -f, --force Force delete without confirmation | No |
+| --purge Delete this resource and all its related data | No |
 | --id ID of the service binding. Required when name is ambiguous| No |
 | --mode  How calls to Service Manager are performed sync or async (default "async")| No |
 | -o, --output Output format of the command. Possible opitons: json, yaml, text.| No|
