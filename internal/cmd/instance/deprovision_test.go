@@ -93,11 +93,11 @@ var _ = Describe("Deprovision command test", func() {
 		})
 	})
 
-	Context("when hard-delete parameter flag is used", func() {
+	Context("when force-delete parameter flag is used", func() {
 		It("should pass it to SM", func() {
 			client.DeprovisionReturns("", nil)
 			promptBuffer.WriteString("y")
-			err := executeWithArgs("instance-name", "--hard-delete")
+			err := executeWithArgs("instance-name", "--force-delete")
 			Expect(err).ShouldNot(HaveOccurred())
 
 			_, args := client.DeprovisionArgsForCall(0)
