@@ -12,6 +12,7 @@ The SM CLI provides commands for creating, listing, updating and deleting servic
 
 #### Login
 * [login][2]
+* [logout][26]
 
 #### Brokers
 * [register-broker][3]
@@ -83,3 +84,4 @@ The SM CLI provides commands for creating, listing, updating and deleting servic
 [23]: commands/info.md
 [24]: commands/version.md
 [25]: commands/help.md
+[26]: commands/logout.md
