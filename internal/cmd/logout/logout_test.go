@@ -61,7 +61,7 @@ var _ = Describe("Logout Command test", func() {
 			})
 		})
 
-		Context("With no logged in user", func() {
+		Context("with no logged in user", func() {
 			BeforeEach(func() {
 				settings = &configuration.Settings{
 					Token: auth.Token{},
