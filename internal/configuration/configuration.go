@@ -147,7 +147,7 @@ func (smCfg *smConfiguration) Load() (*Settings, error) {
 	settings.ClientSecret = smCfg.viperEnv.Get("client_secret").(string)
 
 	if err := settings.Validate(); err != nil {
-		return nil, err
+		return settings, err
 	}
 
 	return settings, nil
