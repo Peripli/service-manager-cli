@@ -18,7 +18,6 @@ package main
 
 import (
 	"context"
-
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/cmd/binding"
 	"github.com/Peripli/service-manager-cli/internal/cmd/broker"
@@ -27,6 +26,7 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/cmd/instance"
 	"github.com/Peripli/service-manager-cli/internal/cmd/label"
 	"github.com/Peripli/service-manager-cli/internal/cmd/login"
+	"github.com/Peripli/service-manager-cli/internal/cmd/logout"
 	"github.com/Peripli/service-manager-cli/internal/cmd/offering"
 	"github.com/Peripli/service-manager-cli/internal/cmd/plan"
 	"github.com/Peripli/service-manager-cli/internal/cmd/platform"
@@ -56,6 +56,7 @@ func main() {
 		Commands: []cmd.CommandPreparator{
 			login.NewLoginCmd(cmdContext, os.Stdin, oidcAuthBuilder),
 			version.NewVersionCmd(cmdContext),
+			logout.NewLogoutCmd(cmdContext),
 			info.NewInfoCmd(cmdContext),
 		},
 		PrepareFn: cmd.CommonPrepare,
