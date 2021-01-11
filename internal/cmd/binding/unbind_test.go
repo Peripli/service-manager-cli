@@ -95,11 +95,11 @@ var _ = Describe("Unbind command test", func() {
 		})
 	})
 
-	Context("when purge parameter flag is used", func() {
+	Context("when force-delete parameter flag is used", func() {
 		It("should pass it to SM with force=true and cascade=true", func() {
 			client.UnbindReturns("", nil)
 			promptBuffer.WriteString("y")
-			err := executeWithArgs("instance-name", "binding-name", "--purge")
+			err := executeWithArgs("instance-name", "binding-name", "--force-delete")
 			Expect(err).ShouldNot(HaveOccurred())
 
 			_, args := client.UnbindArgsForCall(0)

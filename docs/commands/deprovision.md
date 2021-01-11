@@ -16,7 +16,7 @@ Deletes a service instance.
 |--------|-----------|
 | -h, --help  Help for deprovision command.| No |
 | -f, --force Force delete - without confirmation | No |
-| --purge Delete this resource and all its related data | No |
+| --force-delete Delete this resource and all its related data | No |
 | --id ID of the service instance. Required when name is ambiguous | No |
 | --mode How calls to Service Manager are performed sync or async (default "async") | No |
 | --config Set the path for the smctl config.json file (default is $HOME/.sm/config.json).|Yes|
