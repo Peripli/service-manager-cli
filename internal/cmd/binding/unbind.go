@@ -56,7 +56,7 @@ func (ubc *UnbindCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	}
 
 	forceUsage := "Use this parameter to delete a resource without raising a confirmation message."
-	forceDeleteUsage := "Delete the service binding and all of its associated resources from the database. Use this parameter if service instance cannot be properly deleted. This parameters can only be used by operators with technical access."
+	forceDeleteUsage := "Delete the service binding and all of its associated resources from the database. Use this parameter if the service binding cannot be properly deleted. This parameter can only be used by operators with technical access."
 
 	result.Flags().BoolVarP(&ubc.force, "force", "f", false, forceUsage)
 	result.Flags().BoolVarP(&ubc.forceDelete, "force-delete", "", false, forceDeleteUsage)
