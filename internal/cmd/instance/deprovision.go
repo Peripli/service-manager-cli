@@ -125,9 +125,11 @@ func (dbc *DeprovisionCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		RunE:    cmd.RunE(dbc),
 	}
 
-	result.Flags().BoolVarP(&dbc.force, "force", "f", false, "Force delete without confirmation")
-	result.Flags().BoolVarP(&dbc.forceDelete, "force-delete", "", false, "Delete this resource and all its related data")
-	result.Flags().StringVarP(&dbc.id, "id", "", "", "ID of the service instance. Required when name is ambiguous")
+	forceUsage := "Use this parameter to delete a resource without raising a confirmation message."
+	forceDeleteUsage := "Delete the service instance and all of its associated resources from the database. Use this parameter if service instance cannot be properly deleted. This parameters can only be used by operators with technical access."
+	result.Flags().BoolVarP(&dbc.force, "force", "f", false, forceUsage)
+	result.Flags().BoolVarP(&dbc.forceDelete, "force-delete", "", false, forceDeleteUsage)
+	result.Flags().StringVarP(&dbc.id, "id", "", "", "ID of the service instance. Required when name is ambiguous.")
 	cmd.AddCommonQueryFlag(result.Flags(), &dbc.Parameters)
 	cmd.AddModeFlag(result.Flags(), "async")
 
