@@ -16,12 +16,12 @@ Deletes a service binding.
 |--------|-----------|
 | -h, --help  Help for unbind command. | No |
 | -f, --force Use this parameter to delete a resource without raising a confirmation message. | No |
-| --force-delete Delete the service binding and all of its associated resources from the database. Use this parameter if service instance cannot be properly deleted. This parameters can only be used by operators with technical access. | No |
+| --force-delete Delete the service binding and all of its associated resources from the database. Use this parameter if the service binding cannot be properly deleted. This parameter can only be used by operators with technical access. | No |
 | --id ID of the service binding. Required when name is ambiguous. | No |
-| --mode  How calls to Service Manager are performed sync or async (default "async"). | No |
-| -o, --output Output format of the command. Possible options: json, yaml, text. | No |
+| --mode  Whether to use synchronous or asynchronous calls to Service Management. The default value is 'async'. | No |
+| -o, --output The output format of the command. Options: json, yaml, text. | No |
 | --config Set the path for the smctl config.json file (default is $HOME/.sm/config.json). | Yes |
-| -v, --verbose Use verbose mode. | Yes |
+| -v, --verbose Use the Verbose mode. | Yes |
 
 ## Example
 
