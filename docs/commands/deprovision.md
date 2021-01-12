@@ -16,7 +16,7 @@ Deletes a service instance.
 |--------|-----------|
 | -h, --help Help for deprovision command.| No |
 | -f, --force Use this parameter to delete a resource without raising a confirmation message. | No |
-| --force-delete Delete the service instance and all of its associated resources from the database, including all service bindings. Use this parameter if the service instance cannot be properly deleted. This parameter can only be used by operators with technical access. | No |
+| --force-delete Delete the service instance and all of its associated resources from the database, including all its service bindings. Use this parameter if the service instance cannot be properly deleted. This parameter can only be used by operators with technical access. | No |
 | --id ID of the service instance. Required when name is ambiguous. | No |
 | --mode Whether to use synchronous or asynchronous calls to Service Management. The default value is 'async'. | No |
 | --config Set the path for the smctl config.json file (default is $HOME/.sm/config.json). | Yes |

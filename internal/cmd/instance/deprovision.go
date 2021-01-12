@@ -126,7 +126,7 @@ func (dbc *DeprovisionCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	}
 
 	forceUsage := "Use this parameter to delete a resource without raising a confirmation message."
-	forceDeleteUsage := "Delete the service instance and all of its associated resources from the database, including all service bindings. Use this parameter if the service instance cannot be properly deleted. This parameter can only be used by operators with technical access."
+	forceDeleteUsage := "Delete the service instance and all of its associated resources from the database, including all its service bindings. Use this parameter if the service instance cannot be properly deleted. This parameter can only be used by operators with technical access."
 	result.Flags().BoolVarP(&dbc.force, "force", "f", false, forceUsage)
 	result.Flags().BoolVarP(&dbc.forceDelete, "force-delete", "", false, forceDeleteUsage)
 	result.Flags().StringVarP(&dbc.id, "id", "", "", "ID of the service instance. Required when name is ambiguous.")
