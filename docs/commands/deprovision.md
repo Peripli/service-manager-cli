@@ -20,7 +20,7 @@ Deletes a service instance.
 | --id ID of the service instance. Required when name is ambiguous. | No |
 | --mode How calls to Service Manager are performed sync or async (default "async"). | No |
 | --config Set the path for the smctl config.json file (default is $HOME/.sm/config.json). | Yes |
-| -v, --verbose Use verbose mode. | Yes |
+| -v, --verbose Use the Verbose mode. | Yes |
 
 ## Example
 
