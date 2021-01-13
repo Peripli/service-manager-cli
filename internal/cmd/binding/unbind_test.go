@@ -113,6 +113,23 @@ var _ = Describe("Unbind command test", func() {
 		})
 	})
 
+	Context("when user don't use the force-delete parameter", func() {
+		It("should not pass the parameters (force & cascade) to SM", func() {
+			client.UnbindReturns("", nil)
+			promptBuffer.WriteString("y")
+			err := executeWithArgs("instance-name", "binding-name", "--force")
+			Expect(err).ShouldNot(HaveOccurred())
+
+			_, args := client.UnbindArgsForCall(0)
+
+			cascadeParam := fmt.Sprintf("%s=%s", web.QueryParamCascade, "true")
+			forceParam := fmt.Sprintf("%s=%s", web.QueryParamForce, "true")
+			Expect(args.GeneralParams).ToNot(ConsistOf(cascadeParam, forceParam))
+			Expect(args.FieldQuery).To(BeEmpty())
+			Expect(args.LabelQuery).To(BeEmpty())
+		})
+	})
+
 	Context("With sync flag", func() {
 		It("should pass it to SM", func() {
 			client.UnbindReturns("", nil)
