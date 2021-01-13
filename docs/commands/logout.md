@@ -1,7 +1,7 @@
 # smctl version
 
 ## Overview
-`smctl logout` allows to logout from service manager.
+`smctl logout` Allows you to log out from service manager.
 
 ## Usage
 ```bash
@@ -23,7 +23,7 @@ smctl logout
     <code>--verbose</code> (alias: <code>-v</code>)
   </p>
   <p>
-    Use verbose mode.
+    Use the Verbose mode.
   </p>
 </details>
 
