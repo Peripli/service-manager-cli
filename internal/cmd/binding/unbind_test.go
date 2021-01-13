@@ -113,7 +113,7 @@ var _ = Describe("Unbind command test", func() {
 		})
 	})
 
-	Context("when user don't use the force-delete parameter", func() {
+	Context("when force-delete parameter not in use", func() {
 		It("should not pass the parameters (force & cascade) to SM", func() {
 			client.UnbindReturns("", nil)
 			promptBuffer.WriteString("y")

@@ -110,7 +110,7 @@ var _ = Describe("Deprovision command test", func() {
 			Expect(args.LabelQuery).To(BeEmpty())
 		})
 	})
-	Context("when user don't use the force-delete parameter", func() {
+	Context("when force-delete parameter not in use", func() {
 		It("should not pass the parameters (force & cascade) to SM", func() {
 			client.DeprovisionReturns("", nil)
 			promptBuffer.WriteString("y")
