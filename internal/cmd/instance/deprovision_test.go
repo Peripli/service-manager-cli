@@ -110,6 +110,22 @@ var _ = Describe("Deprovision command test", func() {
 			Expect(args.LabelQuery).To(BeEmpty())
 		})
 	})
+	Context("when force-delete parameter not in use", func() {
+		It("should not pass the parameters (force & cascade) to SM", func() {
+			client.DeprovisionReturns("", nil)
+			promptBuffer.WriteString("y")
+			err := executeWithArgs("instance-name", "--force")
+			Expect(err).ShouldNot(HaveOccurred())
+
+			_, args := client.DeprovisionArgsForCall(0)
+
+			cascadeParam := fmt.Sprintf("%s=%s", web.QueryParamCascade, "true")
+			forceParam := fmt.Sprintf("%s=%s", web.QueryParamForce, "true")
+			Expect(args.GeneralParams).ToNot(ConsistOf(cascadeParam, forceParam))
+			Expect(args.FieldQuery).To(BeEmpty())
+			Expect(args.LabelQuery).To(BeEmpty())
+		})
+	})
 
 	Context("With sync flag", func() {
 		It("should pass it to SM", func() {
