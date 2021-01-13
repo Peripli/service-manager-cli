@@ -14,12 +14,13 @@ Deletes a service instance.
 
 |Optional|Global Flag|
 |--------|-----------|
-| -h, --help  Help for deprovision command.| No |
-| -f, --force Force delete - without confirmation | No |
-| --id ID of the service instance. Required when name is ambiguous | No |
-| --mode How calls to Service Manager are performed sync or async (default "async") | No |
-| --config Set the path for the smctl config.json file (default is $HOME/.sm/config.json).|Yes|
-| -v, --verbose Use verbose mode.|Yes|
+| -h, --help Help for deprovision command.| No |
+| -f, --force Use this parameter to delete a resource without raising a confirmation message. | No |
+| --force-delete Delete the service instance and all of its associated resources from the database, including all its service bindings. Use this parameter if the service instance cannot be properly deleted. This parameter can only be used by operators with technical access. | No |
+| --id ID of the service instance. Required when name is ambiguous. | No |
+| --mode Whether to use synchronous or asynchronous calls to Service Management. The default value is 'async'. | No |
+| --config Set the path for the smctl config.json file (default is $HOME/.sm/config.json). | Yes |
+| -v, --verbose Use the Verbose mode. | Yes |
 
 ## Example
 

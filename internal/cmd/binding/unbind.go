@@ -21,6 +21,7 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/pkg/query"
+	"github.com/Peripli/service-manager/pkg/web"
 	"github.com/spf13/cobra"
 	"io"
 )
@@ -31,6 +32,7 @@ type UnbindCmd struct {
 
 	input io.Reader
 	force bool
+	forceDelete bool
 
 	instanceName string
 	bindingID    string
@@ -53,8 +55,12 @@ func (ubc *UnbindCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		RunE:    cmd.RunE(ubc),
 	}
 
-	result.Flags().StringVarP(&ubc.bindingID, "id", "", "", "ID of the service binding. Required when name is ambiguous")
-	result.Flags().BoolVarP(&ubc.force, "force", "f", false, "Force delete without confirmation")
+	forceUsage := "Use this parameter to delete a resource without raising a confirmation message."
+	forceDeleteUsage := "Delete the service binding and all of its associated resources from the database. Use this parameter if the service binding cannot be properly deleted. This parameter can only be used by operators with technical access."
+
+	result.Flags().BoolVarP(&ubc.force, "force", "f", false, forceUsage)
+	result.Flags().BoolVarP(&ubc.forceDelete, "force-delete", "", false, forceDeleteUsage)
+	result.Flags().StringVarP(&ubc.bindingID, "id", "", "", "ID of the service binding. Required when name is ambiguous.")
 	cmd.AddCommonQueryFlag(result.Flags(), &ubc.Parameters)
 	cmd.AddModeFlag(result.Flags(), "async")
 
@@ -110,6 +116,11 @@ func (ubc *UnbindCmd) Run() error {
 			return nil
 		}
 		ubc.bindingID = bindingsToDelete.ServiceBindings[0].ID
+	}
+
+	if ubc.forceDelete {
+		ubc.Parameters.GeneralParams = append(ubc.Parameters.GeneralParams, fmt.Sprintf("%s=%s", web.QueryParamCascade, "true"))
+		ubc.Parameters.GeneralParams = append(ubc.Parameters.GeneralParams, fmt.Sprintf("%s=%s", web.QueryParamForce, "true"))
 	}
 
 	location, err := ubc.Client.Unbind(ubc.bindingID, &ubc.Parameters)

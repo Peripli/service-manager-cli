@@ -1,6 +1,8 @@
 package instance
 
 import (
+	"fmt"
+	"github.com/Peripli/service-manager/pkg/web"
 	"io/ioutil"
 	"net/http"
 
@@ -86,6 +88,24 @@ var _ = Describe("Deprovision command test", func() {
 			_, args := client.DeprovisionArgsForCall(0)
 
 			Expect(args.GeneralParams).To(ConsistOf(param, "async=true"))
+			Expect(args.FieldQuery).To(BeEmpty())
+			Expect(args.LabelQuery).To(BeEmpty())
+		})
+	})
+
+	Context("when forceDelete flag is used", func() {
+		It("should pass it to SM", func() {
+			client.DeprovisionReturns("", nil)
+			promptBuffer.WriteString("y")
+			err := executeWithArgs("instance-name", "--force-delete")
+			Expect(err).ShouldNot(HaveOccurred())
+
+			_, args := client.DeprovisionArgsForCall(0)
+
+			cascadeParam := fmt.Sprintf("%s=%s", web.QueryParamCascade, "true")
+			forceParam := fmt.Sprintf("%s=%s", web.QueryParamForce, "true")
+			asyncParam := "async=true"
+			Expect(args.GeneralParams).To(ConsistOf(cascadeParam, forceParam, asyncParam))
 			Expect(args.FieldQuery).To(BeEmpty())
 			Expect(args.LabelQuery).To(BeEmpty())
 		})

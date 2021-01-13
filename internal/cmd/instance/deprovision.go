@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/pkg/query"
+	"github.com/Peripli/service-manager/pkg/web"
 	"io"
 
 	"github.com/spf13/cobra"
@@ -33,6 +34,7 @@ type DeprovisionCmd struct {
 
 	input io.Reader
 	force bool
+	forceDelete bool
 
 	name string
 	id   string
@@ -76,6 +78,11 @@ func (dbc *DeprovisionCmd) Run() error {
 		dbc.id = toDeprovision.ServiceInstances[0].ID
 	}
 
+
+	if dbc.forceDelete {
+		dbc.Parameters.GeneralParams = append(dbc.Parameters.GeneralParams, fmt.Sprintf("%s=%s", web.QueryParamCascade, "true"))
+		dbc.Parameters.GeneralParams = append(dbc.Parameters.GeneralParams, fmt.Sprintf("%s=%s", web.QueryParamForce, "true"))
+	}
 	location, err := dbc.Client.Deprovision(dbc.id, &dbc.Parameters)
 	if err != nil {
 		output.PrintMessage(dbc.Output, "Could not delete service instance. Reason: ")
@@ -118,8 +125,11 @@ func (dbc *DeprovisionCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		RunE:    cmd.RunE(dbc),
 	}
 
-	result.Flags().BoolVarP(&dbc.force, "force", "f", false, "Force delete without confirmation")
-	result.Flags().StringVarP(&dbc.id, "id", "", "", "ID of the service instance. Required when name is ambiguous")
+	forceUsage := "Use this parameter to delete a resource without raising a confirmation message."
+	forceDeleteUsage := "Delete the service instance and all of its associated resources from the database, including all its service bindings. Use this parameter if the service instance cannot be properly deleted. This parameter can only be used by operators with technical access."
+	result.Flags().BoolVarP(&dbc.force, "force", "f", false, forceUsage)
+	result.Flags().BoolVarP(&dbc.forceDelete, "force-delete", "", false, forceDeleteUsage)
+	result.Flags().StringVarP(&dbc.id, "id", "", "", "ID of the service instance. Required when name is ambiguous.")
 	cmd.AddCommonQueryFlag(result.Flags(), &dbc.Parameters)
 	cmd.AddModeFlag(result.Flags(), "async")
 

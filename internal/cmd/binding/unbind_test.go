@@ -1,7 +1,9 @@
 package binding
 
 import (
+	"fmt"
 	"github.com/Peripli/service-manager/pkg/util"
+	"github.com/Peripli/service-manager/pkg/web"
 	"io/ioutil"
 	"net/http"
 
@@ -57,7 +59,6 @@ var _ = Describe("Unbind command test", func() {
 			Expect(buffer.String()).To(ContainSubstring("Service Binding successfully deleted."))
 		})
 	})
-
 	Context("when existing binding is being deleted", func() {
 		It("should list success message when confirmed", func() {
 			client.UnbindReturns("", nil)
@@ -89,6 +90,24 @@ var _ = Describe("Unbind command test", func() {
 			_, args := client.UnbindArgsForCall(0)
 
 			Expect(args.GeneralParams).To(ConsistOf(param, "async=true"))
+			Expect(args.FieldQuery).To(BeEmpty())
+			Expect(args.LabelQuery).To(BeEmpty())
+		})
+	})
+
+	Context("when force-delete parameter flag is used", func() {
+		It("should pass it to SM with force=true and cascade=true", func() {
+			client.UnbindReturns("", nil)
+			promptBuffer.WriteString("y")
+			err := executeWithArgs("instance-name", "binding-name", "--force-delete")
+			Expect(err).ShouldNot(HaveOccurred())
+
+			_, args := client.UnbindArgsForCall(0)
+
+			cascadeParam := fmt.Sprintf("%s=%s", web.QueryParamCascade, "true")
+			forceParam := fmt.Sprintf("%s=%s", web.QueryParamForce, "true")
+			asyncParam := "async=true"
+			Expect(args.GeneralParams).To(ConsistOf(cascadeParam, forceParam, asyncParam))
 			Expect(args.FieldQuery).To(BeEmpty())
 			Expect(args.LabelQuery).To(BeEmpty())
 		})
