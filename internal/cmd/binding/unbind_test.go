@@ -124,7 +124,7 @@ var _ = Describe("Unbind command test", func() {
 
 			cascadeParam := fmt.Sprintf("%s=%s", web.QueryParamCascade, "true")
 			forceParam := fmt.Sprintf("%s=%s", web.QueryParamForce, "true")
-			Expect(args.GeneralParams).ToNot(ConsistOf(cascadeParam, forceParam))
+			Expect(args.GeneralParams).To(ConsistOf(cascadeParam, forceParam))
 			Expect(args.FieldQuery).To(BeEmpty())
 			Expect(args.LabelQuery).To(BeEmpty())
 		})
