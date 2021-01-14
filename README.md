@@ -1,4 +1,4 @@
-# Service Manager CLI
+# Service Manager CLI 
 
 [![Build Status](https://github.com/Peripli/service-manager-cli/workflows/Go/badge.svg)](https://github.com/Peripli/service-manager-cli/actions)
 [![Coverage Status](https://coveralls.io/repos/github/Peripli/service-manager-cli/badge.svg)](https://coveralls.io/github/Peripli/service-manager-cli)
