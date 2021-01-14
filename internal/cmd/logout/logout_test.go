@@ -76,7 +76,7 @@ var _ = Describe("Logout Command test", func() {
 				err := ic.Execute()
 				Expect(err).ShouldNot(HaveOccurred())
 				print(buffer.String())
-				Expect(buffer.String()).To(ContainSubstring("You are currently logged out."))
+				Expect(buffer.String()).To(ContainSubstring("You are already logged out."))
 			})
 		})
 	})

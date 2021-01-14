@@ -40,7 +40,7 @@ func (vc *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		Use:     "logout",
 		Aliases: []string{"v"},
 		Short:   "Logs the user out",
-		Long:    `Logs the user out and deletes the active client access token.`,
+		Long:    `Logs the user out of the system and deletes the active client access token.`,
 
 		PreRunE: prepare(vc, vc.Context),
 		RunE:    cmd.RunE(vc),
@@ -55,7 +55,7 @@ func (vc *Cmd) Run() error {
 
 	if config != nil && err != nil {
 		if config.Token.AccessToken == "" {
-			output.PrintMessage(vc.Output, "You are currently logged out.\n")
+			output.PrintMessage(vc.Output, "You are already logged out.\n")
 			return nil
 		}
 	}
