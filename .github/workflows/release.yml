@@ -14,9 +14,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Set APP_VERSION env
-          run: echo APP_VERSION=$(git describe --tags) >> ${GITHUB_ENV}
+        run: echo APP_VERSION=$(git describe --tags) >> ${GITHUB_ENV}
       - name: Set GIT_COMMIT env
-          run: echo GIT_COMMIT=$(git rev-list -1 HEAD) >> ${GITHUB_ENV}
+        run: echo GIT_COMMIT=$(git rev-list -1 HEAD) >> ${GITHUB_ENV}
       - uses: wangyoucao577/go-release-action@v1.11
         with:
           binary_name: smctl 
