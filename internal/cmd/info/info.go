@@ -55,7 +55,7 @@ func (ic *Cmd) Run() error {
 		output.PrintMessage(ic.Output, "There is no logged user. Use \"smctl login\" to log in.\n")
 	} else {
 		output.PrintMessage(ic.Output, "Service Manager URL: %s\n", clientConfig.URL)
-		output.PrintMessage(ic.Output, "Logged user: %s\n", clientConfig.User)
+		output.PrintMessage(ic.Output, "User: %s\n", clientConfig.User)
 	}
 
 	return nil

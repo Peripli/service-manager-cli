@@ -98,8 +98,8 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 
 		if ctx.Client == nil {
 			settings, err := ctx.Configuration.Load()
-			if err != nil {
-				if isNotExistError(err) {
+			if err != nil || settings.AccessToken == "" {
+				if isNotExistError(err) || settings.AccessToken == "" {
 					return errors.New(`no logged user, use "smctl login" to log in`)
 				}
 				return err // error is descriptive enough, no need to wrap it
