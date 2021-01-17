@@ -81,6 +81,10 @@ type ConfirmedCommand interface {
 // PrepareFunc is function type which executes common prepare logic for commands
 type PrepareFunc func(cmd Command, ctx *Context) func(*cobra.Command, []string) error
 
+func newMissingLoginError() error {
+	return errors.New(`no logged user, use "smctl login" to log in`)
+}
+
 // SmPrepare creates a SM client for SM commands
 func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 	return func(c *cobra.Command, args []string) error {
@@ -100,9 +104,12 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 			settings, err := ctx.Configuration.Load()
 			if err != nil {
 				if isNotExistError(err) {
-					return errors.New(`no logged user, use "smctl login" to log in`)
+					return newMissingLoginError()
 				}
 				return err // error is descriptive enough, no need to wrap it
+			}
+			if settings.AccessToken == "" {
+				return newMissingLoginError()
 			}
 
 			oidcClient := oidc.NewClient(&auth.Options{
