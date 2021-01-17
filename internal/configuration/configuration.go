@@ -53,7 +53,7 @@ func (settings Settings) Validate() error {
 		return errors.New("user must not be empty")
 	}
 	if settings.AccessToken == "" {
-		return errors.New("token must not be empty")
+		return errors.New("There is no logged user. Use \"smctl login\" to log in.\n")
 	}
 	return nil
 }
