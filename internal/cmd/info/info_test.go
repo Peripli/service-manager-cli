@@ -55,7 +55,7 @@ var _ = Describe("Login Command test", func() {
 				err := ic.Execute()
 
 				Expect(buffer.String()).To(ContainSubstring(fmt.Sprintf("Service Manager URL: %s\n", settings.URL)))
-				Expect(buffer.String()).To(ContainSubstring(fmt.Sprintf("Logged user: %s\n", settings.User)))
+				Expect(buffer.String()).To(ContainSubstring(fmt.Sprintf("User: %s\n", settings.User)))
 				Expect(err).ShouldNot(HaveOccurred())
 			})
 		})
