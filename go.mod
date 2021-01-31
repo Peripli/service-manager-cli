@@ -5,7 +5,7 @@ go 1.13
 require (
 	github.com/InVisionApp/go-health v2.1.0+incompatible // indirect
 	github.com/InVisionApp/go-logger v1.0.1 // indirect
-	github.com/Peripli/service-manager v0.18.6
+	github.com/Peripli/service-manager v0.18.7-0.20210131140341-a199050d9407
 	github.com/antlr/antlr4 v0.0.0-20210126045851-8b05471e6cd8 // indirect
 	github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
@@ -21,7 +21,7 @@ require (
 	github.com/nxadm/tail v1.4.6 // indirect
 	github.com/onrik/logrus v0.8.0 // indirect
 	github.com/onsi/ginkgo v1.14.2
-	github.com/onsi/gomega v1.10.1
+	github.com/onsi/gomega v1.10.3
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/sirupsen/logrus v1.7.0 // indirect
 	github.com/spf13/afero v1.5.1
