@@ -5,8 +5,8 @@ go 1.13
 require (
 	github.com/InVisionApp/go-health v2.1.0+incompatible // indirect
 	github.com/InVisionApp/go-logger v1.0.1 // indirect
-	github.com/Peripli/service-manager v0.18.7-0.20210131140341-a199050d9407
-	github.com/antlr/antlr4 v0.0.0-20210126045851-8b05471e6cd8 // indirect
+	github.com/Peripli/service-manager v0.18.7
+	github.com/antlr/antlr4 v0.0.0-20210203043838-a60c32d36933 // indirect
 	github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
@@ -20,7 +20,7 @@ require (
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/nxadm/tail v1.4.6 // indirect
 	github.com/onrik/logrus v0.8.0 // indirect
-	github.com/onsi/ginkgo v1.14.2
+	github.com/onsi/ginkgo v1.15.0
 	github.com/onsi/gomega v1.10.3
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/sirupsen/logrus v1.7.0 // indirect
@@ -31,12 +31,12 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.7.1
 	github.com/subosito/gotenv v1.2.0 // indirect
-	github.com/tidwall/gjson v1.6.7 // indirect
+	github.com/tidwall/gjson v1.6.8 // indirect
 	github.com/ugorji/go v1.1.4 // indirect
 	github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77 // indirect
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777 // indirect
-	golang.org/x/oauth2 v0.0.0-20210125201302-af13f521f196
+	golang.org/x/oauth2 v0.0.0-20210201163806-010130855d6c
 	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c // indirect
 	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf // indirect
 	golang.org/x/text v0.3.5 // indirect
