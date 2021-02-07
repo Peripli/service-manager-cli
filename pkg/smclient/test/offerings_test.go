@@ -13,32 +13,10 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Marketplace test", func() {
-	Context("when there are offerings provided", func() {
-		BeforeEach(func() {
-			offerings := types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{*initialOffering}}
-			offeringResponseBody, _ := json.Marshal(offerings)
+var _ = Describe("Offerings test", func() {
 
-			plans := types.ServicePlans{ServicePlans: []types.ServicePlan{*plan}}
-			plansResponseBody, _ := json.Marshal(plans)
+	Context("supported environment parameter provided", func() {
 
-			brokerResponseBody, _ := json.Marshal(broker)
-
-			handlerDetails = []HandlerDetails{
-				{Method: http.MethodGet, Path: web.ServiceOfferingsURL, ResponseBody: offeringResponseBody, ResponseStatusCode: http.StatusOK},
-				{Method: http.MethodGet, Path: web.ServicePlansURL, ResponseBody: plansResponseBody, ResponseStatusCode: http.StatusOK},
-				{Method: http.MethodGet, Path: web.ServiceBrokersURL + "/", ResponseBody: brokerResponseBody, ResponseStatusCode: http.StatusOK},
-			}
-		})
-		It("should return all with plans and broker name populated", func() {
-			result, err := client.Marketplace(params)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(result.ServiceOfferings).To(HaveLen(1))
-			Expect(result.ServiceOfferings[0]).To(Equal(*resultOffering))
-		})
-	})
-
-	Context("when supported environment parameter provided", func() {
 		of1 := &types.ServiceOffering{
 			ID:          "of1",
 			Name:        "of1",
@@ -145,9 +123,9 @@ var _ = Describe("Marketplace test", func() {
 			BrokerID:    "of5",
 			Plans:       []types.ServicePlan{*plan_supports_test_env},
 		}
+
 		Context("when plans with explicit and any supported platform provided", func() {
 			BeforeEach(func() {
-
 				offerings := types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{
 					*of1,
 					*of2,
@@ -202,7 +180,7 @@ var _ = Describe("Marketplace test", func() {
 				}
 			})
 			It("should return all offerings with all plans if any environment requested", func() {
-				result, err := client.Marketplace(&cliquery.Parameters{
+				result, err := client.ListOfferings(&cliquery.Parameters{
 					GeneralParams: []string{"key=value"},
 					Environment:   "any",
 				})
@@ -215,7 +193,7 @@ var _ = Describe("Marketplace test", func() {
 				Expect(result.ServiceOfferings[4]).To(Equal(*rof5_with_plan_test_env))
 			})
 			It("should return offerings with cloudfoundry supported plans if cloudfoundry environment requested", func() {
-				result, err := client.Marketplace(&cliquery.Parameters{
+				result, err := client.ListOfferings(&cliquery.Parameters{
 					GeneralParams: []string{"key=value"},
 					Environment:   "cloudfoundry",
 				})
@@ -227,7 +205,7 @@ var _ = Describe("Marketplace test", func() {
 				Expect(result.ServiceOfferings[3]).To(Equal(*rof4_with_plan_cf_and_k8s))
 			})
 			It("should return offerings with k8s supported plans if k8s environment requested", func() {
-				result, err := client.Marketplace(&cliquery.Parameters{
+				result, err := client.ListOfferings(&cliquery.Parameters{
 					GeneralParams: []string{"key=value"},
 					Environment:   "kubernetes",
 				})
@@ -238,7 +216,7 @@ var _ = Describe("Marketplace test", func() {
 				Expect(result.ServiceOfferings[2]).To(Equal(*rof4_with_plan_cf_and_k8s))
 			})
 			It("should return offerings with test-env supported plans if test-env environment requested", func() {
-				result, err := client.Marketplace(&cliquery.Parameters{
+				result, err := client.ListOfferings(&cliquery.Parameters{
 					GeneralParams: []string{"key=value"},
 					Environment:   "test-env",
 				})
@@ -248,7 +226,7 @@ var _ = Describe("Marketplace test", func() {
 				Expect(result.ServiceOfferings[1]).To(Equal(*rof5_with_plan_test_env))
 			})
 			It("should return offerings with any supported plans if non-existing environment requested", func() {
-				result, err := client.Marketplace(&cliquery.Parameters{
+				result, err := client.ListOfferings(&cliquery.Parameters{
 					GeneralParams: []string{"key=value"},
 					Environment:   "non-existing",
 				})
@@ -306,55 +284,13 @@ var _ = Describe("Marketplace test", func() {
 				}
 			})
 			It("should return empty response if non existing environment requested", func() {
-				result, err := client.Marketplace(&cliquery.Parameters{
+				result, err := client.ListOfferings(&cliquery.Parameters{
 					GeneralParams: []string{"key=value"},
 					Environment:   "non-existing",
 				})
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(result.ServiceOfferings).To(HaveLen(0))
 			})
-		})
-	})
-
-	Context("when there are no offerings provided", func() {
-		BeforeEach(func() {
-			offerings := types.ServiceOfferings{}
-			offeringResponseBody, _ := json.Marshal(offerings)
-
-			handlerDetails = []HandlerDetails{
-				{Method: http.MethodGet, Path: web.ServiceOfferingsURL, ResponseBody: offeringResponseBody, ResponseStatusCode: http.StatusOK},
-			}
-		})
-		It("should return an empty array", func() {
-			result, err := client.Marketplace(params)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(result.ServiceOfferings).To(HaveLen(0))
-		})
-	})
-
-	Context("when invalid status code is returned", func() {
-		BeforeEach(func() {
-			handlerDetails = []HandlerDetails{
-				{Method: http.MethodGet, Path: web.ServiceOfferingsURL, ResponseStatusCode: http.StatusCreated},
-			}
-		})
-		It("should handle status code != 200", func() {
-			_, err := client.Marketplace(params)
-			Expect(err).Should(HaveOccurred())
-			verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
-		})
-	})
-
-	Context("when invalid status code is returned", func() {
-		BeforeEach(func() {
-			handlerDetails = []HandlerDetails{
-				{Method: http.MethodGet, Path: web.ServiceOfferingsURL, ResponseStatusCode: http.StatusBadRequest},
-			}
-		})
-		It("should handle status code > 299", func() {
-			_, err := client.Marketplace(params)
-			Expect(err).Should(HaveOccurred())
-			verifyErrorMsg(err.Error(), handlerDetails[0].Path, handlerDetails[0].ResponseBody, handlerDetails[0].ResponseStatusCode)
 		})
 	})
 })
