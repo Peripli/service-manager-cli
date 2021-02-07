@@ -31,11 +31,12 @@ func (c *FakeAuthClient) Do(req *http.Request) (*http.Response, error) {
 }
 
 type HandlerDetails struct {
-	Method             string
-	Path               string
-	ResponseBody       []byte
-	ResponseStatusCode int
-	Headers            map[string]string
+	Method               string
+	Path                 string
+	ResponseBody         []byte
+	ResponseBodyProvider func(req *http.Request) []byte
+	ResponseStatusCode   int
+	Headers              map[string]string
 }
 
 func TestSMClient(t *testing.T) {
@@ -89,8 +90,8 @@ var (
 		Context:       json.RawMessage("{}"),
 	}
 
-	instanceParameters = map[string]interface{}{"param1":"value1","param2":"value2"}
-	bindingParameters = map[string]interface{}{"param1":"value1","param2":"value2"}
+	instanceParameters = map[string]interface{}{"param1": "value1", "param2": "value2"}
+	bindingParameters  = map[string]interface{}{"param1": "value1", "param2": "value2"}
 
 	binding = &types.ServiceBinding{
 		ID:                "instanceID",
@@ -130,6 +131,9 @@ var createSMHandler = func() http.Handler {
 				return
 			}
 			response.WriteHeader(v.ResponseStatusCode)
+			if v.ResponseBodyProvider != nil {
+				v.ResponseBody = v.ResponseBodyProvider(req)
+			}
 			response.Write(v.ResponseBody)
 		})
 	}
@@ -145,6 +149,7 @@ var verifyErrorMsg = func(errorMsg, path string, body []byte, statusCode int) {
 var _ = BeforeEach(func() {
 	params = &cliquery.Parameters{
 		GeneralParams: []string{"key=value"},
+		Environment:   "any",
 	}
 })
 

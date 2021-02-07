@@ -19,6 +19,7 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -106,7 +107,7 @@ func (m *Marketplace) IsEmpty() bool {
 // TableData returns the data to populate a table
 func (m *Marketplace) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"Name", "Plans", "Description", "Broker ID"}
+	result.Headers = []string{"Name", "Plans", "Description", "Broker ID", "Supported Environments"}
 
 	for _, v := range m.ServiceOfferings {
 		plans := make([]string, len(v.Plans))
@@ -114,11 +115,30 @@ func (m *Marketplace) TableData() *TableData {
 			plans[i] = v.Name
 		}
 
-		row := []string{v.Name, strings.Join(plans, ", "), v.Description, v.BrokerID}
+		row := []string{v.Name, strings.Join(plans, ", "), v.Description, v.BrokerID, formatServiceOfferingSupportedEnvironments(v)}
 		result.Data = append(result.Data, row)
 	}
 
 	return result
+}
+
+func formatServiceOfferingSupportedEnvironments(offering ServiceOffering) string {
+	if offering.Plans == nil {
+		return ""
+	}
+	offeringPlatformsMap := make(map[string]bool)
+	var offeringPlatforms []string
+	for _, plan := range offering.Plans {
+		planPlatforms, _ := plan.MetadataSupportedPlatformsProperty()
+		for _, platform := range planPlatforms {
+			if offeringPlatformsMap[platform] != true {
+				offeringPlatformsMap[platform] = true
+				offeringPlatforms = append(offeringPlatforms, platform)
+			}
+		}
+	}
+	sort.Strings(offeringPlatforms)
+	return strings.Join(offeringPlatforms, ", ")
 }
 
 // ServiceOfferings wraps an array of service offerings
@@ -149,10 +169,10 @@ func (so *ServiceOfferings) IsEmpty() bool {
 // TableData returns the data to populate a table
 func (so *ServiceOfferings) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"ID", "Name", "Description", "Broker ID", "Ready", "Labels"}
+	result.Headers = []string{"ID", "Name", "Description", "Broker ID", "Ready", "Labels", "Supported Environments"}
 
 	for _, v := range so.ServiceOfferings {
-		row := []string{v.ID, v.Name, v.Description, v.BrokerID, strconv.FormatBool(v.Ready), formatLabels(v.Labels)}
+		row := []string{v.ID, v.Name, v.Description, v.BrokerID, strconv.FormatBool(v.Ready), formatLabels(v.Labels), formatServiceOfferingSupportedEnvironments(v)}
 		result.Data = append(result.Data, row)
 	}
 

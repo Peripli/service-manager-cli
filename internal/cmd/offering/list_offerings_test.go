@@ -38,6 +38,22 @@ var _ = Describe("List offerings command test", func() {
 		Name:        "offering1",
 		Description: "desc",
 		BrokerID:    "id",
+		Plans: []types.ServicePlan{
+			{
+				ID:                "id1",
+				Name:              "plan1",
+				Description:       "desc",
+				ServiceOfferingID: "id1",
+				Metadata:          []byte("{\"supportedPlatforms\": [\"cloudfoundry\"]}"),
+			},
+			{
+				ID:                "id1",
+				Name:              "plan1",
+				Description:       "desc",
+				ServiceOfferingID: "id1",
+				Metadata:          []byte("{\"supportedPlatforms\": [\"kubernetes\"]}"),
+			},
+		},
 	}
 
 	offering2 := types.ServiceOffering{
@@ -176,6 +192,42 @@ var _ = Describe("List offerings command test", func() {
 
 			Expect(err).Should(HaveOccurred())
 			Expect(err).To(MatchError("unknown output: invalid"))
+		})
+	})
+
+	Context("when platform flag is used", func() {
+		It("should filter results by given specific environment", func() {
+			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1}}
+			client.ListOfferingsReturns(result, nil)
+			err := executeWithArgs([]string{"--supported-environment", "cloudfoundry"})
+
+			args := client.ListOfferingsArgsForCall(0)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(args.Environment).To(Equal("cloudfoundry"))
+			Expect(buffer.String()).To(ContainSubstring(result.TableData().String()))
+		})
+		It("should display all plans if any environment requested", func() {
+			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1, offering2}}
+			client.ListOfferingsReturns(result, nil)
+			err := executeWithArgs([]string{"--supported-environment", "any"})
+
+			args := client.ListOfferingsArgsForCall(0)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(args.Environment).To(Equal("any"))
+			Expect(buffer.String()).To(ContainSubstring(result.TableData().String()))
+		})
+		It("should display all plans by default", func() {
+			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1, offering2}}
+			client.ListOfferingsReturns(result, nil)
+			err := executeWithArgs([]string{})
+
+			args := client.ListOfferingsArgsForCall(0)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(args.Environment).To(Equal("any"))
+			Expect(buffer.String()).To(ContainSubstring(result.TableData().String()))
 		})
 	})
 

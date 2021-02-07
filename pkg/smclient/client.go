@@ -22,10 +22,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Peripli/service-manager/pkg/log"
+	"github.com/Peripli/service-manager/pkg/util"
+	"github.com/Peripli/service-manager/pkg/util/slice"
 	"io"
 	"net/http"
-
-	"github.com/Peripli/service-manager/pkg/util"
 
 	"github.com/Peripli/service-manager/pkg/web"
 
@@ -251,17 +251,60 @@ func (client *serviceManagerClient) ListPlatforms(q *query.Parameters) (*types.P
 // ListOfferings returns offerings registered in the Service Manager satisfying provided queries
 func (client *serviceManagerClient) ListOfferings(q *query.Parameters) (*types.ServiceOfferings, error) {
 	offerings := &types.ServiceOfferings{}
+	q.GeneralParams = append(q.GeneralParams, "all_platforms=true")
 	err := client.list(&offerings.ServiceOfferings, web.ServiceOfferingsURL, q)
+	if err != nil {
+		return nil, err
+	}
+	for i, so := range offerings.ServiceOfferings {
+		plans := &types.ServicePlansForOffering{}
+		err := client.list(&plans.ServicePlans, web.ServicePlansURL, &query.Parameters{
+			FieldQuery:    []string{fmt.Sprintf("service_offering_id eq '%s'", so.ID)},
+			GeneralParams: q.GeneralParams,
+		})
+		if err != nil {
+			return nil, err
+		}
+		offerings.ServiceOfferings[i].Plans = plans.ServicePlans
+	}
 
-	return offerings, err
+	if q.Environment == "any" {
+		return offerings, nil
+	}
+
+	filteredOfferings := &types.ServiceOfferings{}
+	for _, so := range offerings.ServiceOfferings {
+		for _, p := range so.Plans {
+			sp, err := p.MetadataSupportedPlatformsProperty()
+			if err == nil && (slice.StringsAnyEquals(sp, q.Environment) || slice.StringsAnyEquals(sp, "any")) {
+				filteredOfferings.ServiceOfferings = append(filteredOfferings.ServiceOfferings, so)
+				break
+			}
+		}
+	}
+	return filteredOfferings, nil
 }
 
 // ListPlans returns plans registered in the Service Manager satisfying provided queries
 func (client *serviceManagerClient) ListPlans(q *query.Parameters) (*types.ServicePlans, error) {
 	plans := &types.ServicePlans{}
+	q.GeneralParams = append(q.GeneralParams, "all_platforms=true")
 	err := client.list(&plans.ServicePlans, web.ServicePlansURL, q)
+	if err != nil {
+		return nil, err
+	}
+	if q.Environment == "any" {
+		return plans, nil
+	}
 
-	return plans, err
+	filteredPlans := &types.ServicePlans{}
+	for _, p := range plans.ServicePlans {
+		sp, err := p.MetadataSupportedPlatformsProperty()
+		if err == nil && (slice.StringsAnyEquals(sp, q.Environment) || slice.StringsAnyEquals(sp, "any")) {
+			filteredPlans.ServicePlans = append(filteredPlans.ServicePlans, p)
+		}
+	}
+	return filteredPlans, nil
 }
 
 // ListVisibilities returns visibilities registered in the Service Manager satisfying provided queries
@@ -279,10 +322,11 @@ func (client *serviceManagerClient) ListInstances(q *query.Parameters) (*types.S
 
 	return instances, err
 }
+
 // GetInstanceParameters returns service instance configuration parameters
 func (client *serviceManagerClient) GetInstanceParameters(id string, q *query.Parameters) (map[string]interface{}, error) {
 	parameters := make(map[string]interface{})
-	err := client.get(&parameters, web.ServiceInstancesURL + "/" + id + web.ParametersURL, q)
+	err := client.get(&parameters, web.ServiceInstancesURL+"/"+id+web.ParametersURL, q)
 
 	return parameters, err
 }
@@ -308,7 +352,7 @@ func (client *serviceManagerClient) ListBindings(q *query.Parameters) (*types.Se
 // GetBindingParameters returns service binding configuration parameters
 func (client *serviceManagerClient) GetBindingParameters(id string, q *query.Parameters) (map[string]interface{}, error) {
 	parameters := make(map[string]interface{})
-	err := client.get(&parameters, web.ServiceBindingsURL + "/" + id + web.ParametersURL, q)
+	err := client.get(&parameters, web.ServiceBindingsURL+"/"+id+web.ParametersURL, q)
 
 	return parameters, err
 }
@@ -326,6 +370,7 @@ func (client *serviceManagerClient) GetBindingByID(id string, q *query.Parameter
 // Marketplace returns service offerings satisfying provided queries
 func (client *serviceManagerClient) Marketplace(q *query.Parameters) (*types.Marketplace, error) {
 	marketplace := &types.Marketplace{}
+	q.GeneralParams = append(q.GeneralParams, "all_platforms=true")
 	err := client.list(&marketplace.ServiceOfferings, web.ServiceOfferingsURL, q)
 	if err != nil {
 		return nil, err
@@ -341,7 +386,21 @@ func (client *serviceManagerClient) Marketplace(q *query.Parameters) (*types.Mar
 		}
 		marketplace.ServiceOfferings[i].Plans = plans.ServicePlans
 	}
-	return marketplace, nil
+	if q.Environment == "any" {
+		return marketplace, nil
+	}
+
+	filteredMarketplace := &types.Marketplace{}
+	for _, so := range marketplace.ServiceOfferings {
+		for _, p := range so.Plans {
+			sp, err := p.MetadataSupportedPlatformsProperty()
+			if err == nil && (slice.StringsAnyEquals(sp, q.Environment) || slice.StringsAnyEquals(sp, "any")) {
+				filteredMarketplace.ServiceOfferings = append(filteredMarketplace.ServiceOfferings, so)
+				break
+			}
+		}
+	}
+	return filteredMarketplace, nil
 }
 
 func (client *serviceManagerClient) Status(url string, q *query.Parameters) (*types.Operation, error) {
@@ -381,7 +440,7 @@ func (client *serviceManagerClient) DeletePlatforms(q *query.Parameters) error {
 }
 
 func (client *serviceManagerClient) DeletePlatform(id string, q *query.Parameters) (string, error) {
-	location, err := client.delete(web.PlatformsURL + "/" + id, q)
+	location, err := client.delete(web.PlatformsURL+"/"+id, q)
 	return location, err
 }
 

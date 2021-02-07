@@ -70,6 +70,7 @@ func (lp *ListPlansCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddQueryingFlags(result.Flags(), &lp.Parameters)
 	cmd.AddCommonQueryFlag(result.Flags(), &lp.Parameters)
+	cmd.AddSupportedEnvironmentFlag(result.Flags(), &lp.Parameters)
 
 	return result
 }

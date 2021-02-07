@@ -56,6 +56,22 @@ var _ = Describe("List plans command test", func() {
 		ServiceOfferingID: "offering_id1",
 	}
 
+	plan3 := types.ServicePlan{
+		ID:                "id3",
+		Name:              "plan3",
+		Description:       "desc",
+		ServiceOfferingID: "offering_id1",
+		Metadata:          []byte("{\"supportedPlatforms\": [\"cloudfoundry\"]}"),
+	}
+
+	plan4 := types.ServicePlan{
+		ID:                "id4",
+		Name:              "plan4",
+		Description:       "desc",
+		ServiceOfferingID: "offering_id1",
+		Metadata:          []byte("{\"supportedPlatforms\": [\"cloudfoundry\"]}"),
+	}
+
 	BeforeEach(func() {
 		buffer = &bytes.Buffer{}
 		client = &smclientfakes.FakeClient{}
@@ -129,6 +145,42 @@ var _ = Describe("List plans command test", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(args.FieldQuery).To(ConsistOf(param))
 			Expect(args.LabelQuery).To(BeEmpty())
+		})
+	})
+
+	Context("when platform flag is used", func() {
+		It("should filter results by given specific environment", func() {
+			result := &types.ServicePlans{ServicePlans: []types.ServicePlan{plan1, plan2, plan3}}
+			client.ListPlansReturns(result, nil)
+			err := executeWithArgs([]string{"--supported-environment", "cloudfoundry"})
+
+			args := client.ListPlansArgsForCall(0)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(args.Environment).To(Equal("cloudfoundry"))
+			Expect(buffer.String()).To(ContainSubstring(result.TableData().String()))
+		})
+		It("should display all plans if any supported environment", func() {
+			result := &types.ServicePlans{ServicePlans: []types.ServicePlan{plan1, plan2, plan3, plan4}}
+			client.ListPlansReturns(result, nil)
+			err := executeWithArgs([]string{"--supported-environment", "any"})
+
+			args := client.ListPlansArgsForCall(0)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(args.Environment).To(Equal("any"))
+			Expect(buffer.String()).To(ContainSubstring(result.TableData().String()))
+		})
+		It("should display all plans by default", func() {
+			result := &types.ServicePlans{ServicePlans: []types.ServicePlan{plan1, plan2, plan3, plan4}}
+			client.ListPlansReturns(result, nil)
+			err := executeWithArgs([]string{})
+
+			args := client.ListPlansArgsForCall(0)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(args.Environment).To(Equal("any"))
+			Expect(buffer.String()).To(ContainSubstring(result.TableData().String()))
 		})
 	})
 

@@ -20,7 +20,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Peripli/service-manager/pkg/types"
+	"sort"
 	"strconv"
+	"strings"
 )
 
 // ServicePlan defines the data of a service plan.
@@ -58,9 +60,9 @@ func (sp *ServicePlan) IsEmpty() bool {
 // TableData returns the data to populate a table
 func (sp *ServicePlan) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"Plan", "Description", "ID"}
-
-	row := []string{sp.Name, sp.Description, sp.ID}
+	result.Headers = []string{"Plan", "Description", "ID", "Supported Environments"}
+	environments, _ := formatPlanSupportedEnvironments(*sp)
+	row := []string{sp.Name, sp.Description, sp.ID, environments}
 	result.Data = append(result.Data, row)
 
 	return result
@@ -69,6 +71,34 @@ func (sp *ServicePlan) TableData() *TableData {
 // ServicePlansForOffering wraps an array of service plans for marketplace command
 type ServicePlansForOffering struct {
 	ServicePlans []ServicePlan `json:"items" yaml:"items"`
+}
+
+type PlanMetadataWithSupportedPlatforms struct {
+	SupportedPlatforms []string `json:"supportedPlatforms,omitempty"`
+}
+
+func planDefaultSupportedEnvironments() []string {
+	return []string{"any"}
+}
+
+func (sp *ServicePlan) MetadataSupportedPlatformsProperty() ([]string, error) {
+	if sp.Metadata == nil {
+		return planDefaultSupportedEnvironments(), nil
+	}
+	metadataJson, err := sp.Metadata.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	metadata := &PlanMetadataWithSupportedPlatforms{}
+	err = json.Unmarshal(metadataJson, metadata)
+	if err != nil {
+		return nil, err
+	}
+	if len(metadata.SupportedPlatforms) == 0 {
+		return planDefaultSupportedEnvironments(), nil
+	}
+	sort.Strings(metadata.SupportedPlatforms)
+	return metadata.SupportedPlatforms, nil
 }
 
 // Message title of the table
@@ -132,12 +162,21 @@ func (sp *ServicePlans) IsEmpty() bool {
 // TableData returns the data to populate a table
 func (sp *ServicePlans) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"ID", "Name", "Description", "Offering ID", "Ready", "Labels"}
+	result.Headers = []string{"ID", "Name", "Description", "Offering ID", "Ready", "Labels", "Supported Environments"}
 
 	for _, v := range sp.ServicePlans {
-		row := []string{v.ID, v.Name, v.Description, v.ServiceOfferingID, strconv.FormatBool(v.Ready), formatLabels(v.Labels)}
+		environments, _ := formatPlanSupportedEnvironments(v)
+		row := []string{v.ID, v.Name, v.Description, v.ServiceOfferingID, strconv.FormatBool(v.Ready), formatLabels(v.Labels), environments}
 		result.Data = append(result.Data, row)
 	}
 
 	return result
+}
+
+func formatPlanSupportedEnvironments(plan ServicePlan) (string, error) {
+	environments, err := plan.MetadataSupportedPlatformsProperty()
+	if err != nil {
+		return "", err
+	}
+	return strings.Join(environments, ", "), nil
 }

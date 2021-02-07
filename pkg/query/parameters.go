@@ -12,6 +12,7 @@ type Parameters struct {
 	FieldQuery    []string
 	LabelQuery    []string
 	GeneralParams []string
+	Environment   string
 }
 
 // Encode encodes the parameters as URL query parameters

@@ -84,6 +84,7 @@ func (m *MarketplaceCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	cmd.AddFormatFlag(result.Flags())
 	result.Flags().StringVarP(&m.offering, "service", "s", "", "Plan details for a single service offering")
 	cmd.AddCommonQueryFlag(result.Flags(), &m.Parameters)
+	cmd.AddSupportedEnvironmentFlag(result.Flags(), &m.Parameters)
 
 	return result
 }
