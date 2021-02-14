@@ -44,6 +44,7 @@ func NewGetInstanceCmd(context *cmd.Context) *GetInstanceCmd {
 
 // Run runs the command's logic
 func (gb *GetInstanceCmd) Run() error {
+	gb.Parameters.GeneralParams = append(gb.Parameters.GeneralParams, "attach_last_operations=true")
 	instances, err := gb.Client.ListInstances(&query.Parameters{
 		FieldQuery: []string{
 			fmt.Sprintf("name eq '%s'", gb.instanceName),
