@@ -143,6 +143,7 @@ var _ = Describe("Marketplace command test", func() {
 		})
 	})
 
+
 	Context("when format flag is used", func() {
 		It("should print offerings in json", func() {
 			result := &types.Marketplace{ServiceOfferings: []types.ServiceOffering{offering1}}

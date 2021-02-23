@@ -25,7 +25,7 @@ import (
 // ListPlansCmd wraps the smctl list-plans command
 type ListPlansCmd struct {
 	*cmd.Context
-
+	environment string
 	outputFormat output.Format
 }
 
@@ -62,11 +62,11 @@ func (lp *ListPlansCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
 		Use:     "list-plans",
 		Short:   "List service-plans",
-		Long:    `List all service-plans.`,
+		Long:    `List service-plans.`,
 		PreRunE: prepare(lp, lp.Context),
 		RunE:    cmd.RunE(lp),
 	}
-
+	cmd.AddSupportedEnvironmentFlag(result.Flags(), &lp.Parameters, "Filters service plans by supported environments")
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddQueryingFlags(result.Flags(), &lp.Parameters)
 	cmd.AddCommonQueryFlag(result.Flags(), &lp.Parameters)

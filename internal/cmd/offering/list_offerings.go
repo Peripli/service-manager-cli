@@ -25,7 +25,6 @@ import (
 // ListOfferingsCmd wraps the smctl list-offerings command
 type ListOfferingsCmd struct {
 	*cmd.Context
-
 	outputFormat output.Format
 }
 
@@ -63,11 +62,11 @@ func (lo *ListOfferingsCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		Use:     "list-offerings",
 		Aliases: []string{"lo"},
 		Short:   "List service-offerings",
-		Long:    `List all service-offerings.`,
+		Long:    `List service-offerings.`,
 		PreRunE: prepare(lo, lo.Context),
 		RunE:    cmd.RunE(lo),
 	}
-
+	cmd.AddSupportedEnvironmentFlag(result.Flags(), &lo.Parameters, "Filters service offerings by supported environments")
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddQueryingFlags(result.Flags(), &lo.Parameters)
 	cmd.AddCommonQueryFlag(result.Flags(), &lo.Parameters)
