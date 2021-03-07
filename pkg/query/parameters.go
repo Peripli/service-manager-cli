@@ -12,7 +12,7 @@ type Parameters struct {
 	FieldQuery    []string
 	LabelQuery    []string
 	GeneralParams []string
-	Environment		string
+	Environment   string
 }
 
 // Encode encodes the parameters as URL query parameters
@@ -30,7 +30,7 @@ func (p *Parameters) Encode() string {
 	if len(p.LabelQuery) > 0 {
 		v.Set(string(smquery.LabelQuery), strings.Join(p.LabelQuery, " and "))
 	}
-	if len(p.Environment)>0{
+	if len(p.Environment) > 0 {
 		v.Set("environment", p.Environment)
 	}
 

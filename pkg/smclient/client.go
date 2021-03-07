@@ -252,6 +252,7 @@ func (client *serviceManagerClient) ListPlatforms(q *query.Parameters) (*types.P
 func (client *serviceManagerClient) ListOfferings(q *query.Parameters) (*types.ServiceOfferings, error) {
 	offerings := &types.ServiceOfferings{}
 	err := client.list(&offerings.ServiceOfferings, web.ServiceOfferingsURL, q)
+
 	return offerings, err
 }
 
