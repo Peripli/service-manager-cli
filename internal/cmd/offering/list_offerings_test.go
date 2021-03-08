@@ -108,6 +108,18 @@ var _ = Describe("List offerings command test", func() {
 		})
 	})
 
+	Context("when environment flag is used", func() {
+		It("should pass enviromant as query param", func() {
+			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1}}
+			client.ListOfferingsReturns(result, nil)
+			err := executeWithArgs([]string{"--environment", "kubernetes"})
+			Expect(err).ShouldNot(HaveOccurred())
+			args := client.ListOfferingsArgsForCall(0)
+			Expect(args.Environment).To(Equal("kubernetes"))
+
+		})
+	})
+
 	Context("when field query flag is used", func() {
 		It("should pass it to SM", func() {
 			result := &types.ServiceOfferings{ServiceOfferings: []types.ServiceOffering{offering1}}

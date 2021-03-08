@@ -260,7 +260,6 @@ func (client *serviceManagerClient) ListOfferings(q *query.Parameters) (*types.S
 func (client *serviceManagerClient) ListPlans(q *query.Parameters) (*types.ServicePlans, error) {
 	plans := &types.ServicePlans{}
 	err := client.list(&plans.ServicePlans, web.ServicePlansURL, q)
-
 	return plans, err
 }
 
@@ -333,6 +332,7 @@ func (client *serviceManagerClient) Marketplace(q *query.Parameters) (*types.Mar
 	for i, so := range marketplace.ServiceOfferings {
 		plans := &types.ServicePlansForOffering{}
 		err := client.list(&plans.ServicePlans, web.ServicePlansURL, &query.Parameters{
+			Environment: q.Environment,
 			FieldQuery:    []string{fmt.Sprintf("service_offering_id eq '%s'", so.ID)},
 			GeneralParams: q.GeneralParams,
 		})

@@ -93,6 +93,18 @@ var _ = Describe("Marketplace command test", func() {
 		})
 	})
 
+	Context("when environment flag is used", func() {
+		It("should pass environment as query param", func() {
+			result := &types.Marketplace{ServiceOfferings: []types.ServiceOffering{offering1, offering2}}
+			client.MarketplaceReturns(result, nil)
+			err := executeWithArgs([]string{"--environment", "kubernetes"})
+			Expect(err).ShouldNot(HaveOccurred())
+			args := client.MarketplaceArgsForCall(0)
+			Expect(args.Environment).To(Equal("kubernetes"))
+
+		})
+	})
+
 	Context("when generic parameter is used", func() {
 		It("should pass it to SM", func() {
 			result := &types.Marketplace{ServiceOfferings: []types.ServiceOffering{noPlanOffering}}

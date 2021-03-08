@@ -117,6 +117,17 @@ var _ = Describe("List plans command test", func() {
 		})
 	})
 
+	Context("when environment flag is used", func() {
+		It("should pass environment as query param", func() {
+			result := &types.ServicePlans{ServicePlans: []types.ServicePlan{plan1}}
+			client.ListPlansReturns(result, nil)
+			err := executeWithArgs([]string{"--environment", "kubernetes"})
+			Expect(err).ShouldNot(HaveOccurred())
+			args := client.ListPlansArgsForCall(0)
+			Expect(args.Environment).To(Equal("kubernetes"))
+
+		})
+	})
 	Context("when field query flag is used", func() {
 		It("should pass it to SM", func() {
 			result := &types.ServicePlans{ServicePlans: []types.ServicePlan{plan1}}

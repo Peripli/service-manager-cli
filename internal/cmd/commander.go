@@ -214,6 +214,10 @@ func AddQueryingFlags(flags *pflag.FlagSet, parameters *query.Parameters) {
 func AddCommonQueryFlag(flags *pflag.FlagSet, parameters *query.Parameters) {
 	flags.StringArrayVarP(&parameters.GeneralParams, "param", "", nil, "Additional query parameters in the form key=value")
 }
+func AddSupportedEnvironmentFlag(flags *pflag.FlagSet, parameters *query.Parameters, description string) {
+	flags.StringVarP(&parameters.Environment, "environment", "e", "", description)
+}
+
 
 // AddModeFlag adds the --mode flag for SM calls.
 func AddModeFlag(flags *pflag.FlagSet, defValue string) {
