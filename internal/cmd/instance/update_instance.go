@@ -18,13 +18,11 @@ package instance
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/pkg/query"
 	"github.com/Peripli/service-manager-cli/pkg/types"
-	"io"
-
-	"fmt"
 
 	"github.com/spf13/cobra"
 )
@@ -32,8 +30,6 @@ import (
 // TransferCmd wraps the smctl provision command
 type UpdateCmd struct {
 	*cmd.Context
-
-	input           io.Reader
 	instance        types.ServiceInstance
 	instanceName    string
 	planName        string
@@ -42,8 +38,8 @@ type UpdateCmd struct {
 }
 
 // NewTransferCmd returns new transfer instance command with context
-func NewUpdateInstanceCmd(context *cmd.Context, input io.Reader) *UpdateCmd {
-	return &UpdateCmd{Context: context, input: input, instance: types.ServiceInstance{}}
+func NewUpdateInstanceCmd(context *cmd.Context) *UpdateCmd {
+	return &UpdateCmd{Context: context,instance: types.ServiceInstance{}}
 }
 
 // Prepare returns cobra command
