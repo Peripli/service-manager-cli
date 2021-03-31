@@ -61,7 +61,7 @@ type Client interface {
 
 	ListOfferings(*query.Parameters) (*types.ServiceOfferings, error)
 	ListPlans(*query.Parameters) (*types.ServicePlans, error)
-
+	GetPlanByID(string,*query.Parameters) (*types.ServicePlan, error)
 	ListInstances(*query.Parameters) (*types.ServiceInstances, error)
 	GetInstanceByID(string, *query.Parameters) (*types.ServiceInstance, error)
 	GetInstanceParameters(string, *query.Parameters) (map[string]interface{}, error)
@@ -284,6 +284,15 @@ func (client *serviceManagerClient) GetInstanceParameters(id string, q *query.Pa
 	err := client.get(&parameters, web.ServiceInstancesURL + "/" + id + web.ParametersURL, q)
 
 	return parameters, err
+}
+// GetPlanByID returns pla by id
+func (client *serviceManagerClient) GetPlanByID(id string, q *query.Parameters) (*types.ServicePlan, error) {
+	plan := &types.ServicePlan{}
+	err := client.get(plan, web.ServicePlansURL+"/"+id, &query.Parameters{
+		GeneralParams: q.GeneralParams,
+	})
+
+	return plan, err
 }
 
 // GetInstanceByID returns instance registered in the Service Manager satisfying provided queries

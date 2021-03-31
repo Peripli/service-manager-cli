@@ -33,39 +33,35 @@ import (
 type UpdateCmd struct {
 	*cmd.Context
 
-	input io.Reader
-
-	instanceName   string
-	instanceID     string
-	planName       string
-	planId         string
-	parametersJSON string
-	outputFormat   output.Format
+	input           io.Reader
+	instance        types.ServiceInstance
+	instanceName    string
+	planName        string
+	parametersJSON  string
+	outputFormat    output.Format
 }
 
 // NewTransferCmd returns new transfer instance command with context
 func NewUpdateInstanceCmd(context *cmd.Context, input io.Reader) *UpdateCmd {
-	return &UpdateCmd{Context: context, input: input}
+	return &UpdateCmd{Context: context, input: input, instance: types.ServiceInstance{}}
 }
 
 // Prepare returns cobra command
 func (uc *UpdateCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
-		Use:   "update-instance [name] --plan-name new-plan-name  --parameters new-configuration-parameters",
+		Use:   "update-instance [name] --id service-instance-id --new-name new-service-name --plan new-plan-name --instance-params new-configuration-parameters",
 		Short: "Update a service instance",
-		Long:  `Update an existing service instance. You can update its name, associated service plan, or configuration parameters`,
+		Long:  `Update the name, associated plan, and configuration parameters of an existing service instance`,
 
 		PreRunE: prepare(uc, uc.Context),
 		RunE:    cmd.RunE(uc),
 	}
-
-	result.Flags().StringVarP(&uc.instanceID, "id", "", "", "Id of the instance. Required in case when there are instances with same name")
-	result.Flags().StringVarP(&uc.instanceName, "name", "", "", "The name of the service instance to update")
-	result.Flags().StringVarP(&uc.planName, "plan-name", "", "", "The name of the new service plan to use for the instance")
-	result.Flags().StringVarP(&uc.planId, "plan-id", "", "", "The name of the new service plan to use for the instance.")
-	result.Flags().StringVarP(&uc.parametersJSON, "parameters", "c", "", "Valid JSON object containing instance configuration parameters")
+	result.Flags().StringVarP(&uc.instance.ID, "id", "", "", "The id of the service instance to update")
+	result.Flags().StringVarP(&uc.instance.Name, "new-name", "", "", "The new name of the service instance")
+	result.Flags().StringVarP(&uc.planName, "plan", "", "", "The name of the new service plan to use for the instance")
+	result.Flags().StringVarP(&uc.parametersJSON, "instance-params", "c", "", "Valid JSON object containing instance configuration parameters")
 	cmd.AddFormatFlag(result.Flags())
-
+	cmd.AddModeFlag(result.Flags(), "async")
 	return result
 }
 
@@ -74,14 +70,12 @@ func (uc *UpdateCmd) Validate(args []string) error {
 		return fmt.Errorf("name is required")
 	}
 	uc.instanceName = args[0]
-
 	return nil
 }
 
 func (uc *UpdateCmd) Run() error {
-	var serviceOfferingId string = ""
-	var servicePlanId string = ""
-	if uc.instanceID == "" {
+	var instanceBeforeUpdate *types.ServiceInstance
+	if uc.instance.ID == "" {
 		instances, err := uc.Client.ListInstances(&query.Parameters{
 			FieldQuery: []string{
 				fmt.Sprintf("name eq '%s'", uc.instanceName),
@@ -98,37 +92,55 @@ func (uc *UpdateCmd) Run() error {
 		if len(instances.ServiceInstances) > 1 {
 			return fmt.Errorf("more than 1 instance found with name %s. Use --id flag to specify one", uc.instanceName)
 		}
+		instanceBeforeUpdate = &instances.ServiceInstances[0]
 
-		uc.instanceID = instances.ServiceInstances[0].ID
-		serviceOfferingId = instances.ServiceInstances[0].ServiceID
-	}
-	plans, err := uc.Client.ListPlans(&query.Parameters{
-		FieldQuery: []string{
-			fmt.Sprintf("name eq '%s'", uc.planName),
-			fmt.Sprintf("service_instance_id eq '%s'", serviceOfferingId),
-		},
-		GeneralParams: uc.Parameters.GeneralParams,
-	})
-	if err != nil {
-		return err
-	}
-	if len(plans.ServicePlans) != 1 {
-		return fmt.Errorf("exactly one service plan with name %s for offering with id %s expected", uc.planName, serviceOfferingId)
+	} else {
+		instance, err := uc.Client.GetInstanceByID(uc.instance.ID, nil)
+		if err != nil {
+			return err
+		}
+		instanceBeforeUpdate = instance
+
 	}
 
-	servicePlanId = plans.ServicePlans[0].ID
-	resultInstance, location, err := uc.Client.UpdateInstance(uc.instanceID, &types.ServiceInstance{
-		ID:            uc.instanceID,
-		ServicePlanID: servicePlanId,
-		Parameters:    json.RawMessage(uc.parametersJSON),
-	}, nil)
+	if uc.planName != "" {
+		currentPlan, err := uc.Client.GetPlanByID(instanceBeforeUpdate.ServicePlanID, &uc.Parameters)
+		if err != nil {
+			return err
+		}
+
+		plans, err := uc.Client.ListPlans(&query.Parameters{
+			FieldQuery: []string{
+				fmt.Sprintf("catalog_name eq '%s'", uc.planName),
+				fmt.Sprintf("service_offering_id eq '%s'", currentPlan.ServiceOfferingID),
+			},
+			GeneralParams: uc.Parameters.GeneralParams,
+		})
+
+		if err != nil {
+			return err
+		}
+		if len(plans.ServicePlans) == 0 {
+			return fmt.Errorf("service plan with name %s for offering with id %s not found", uc.planName, currentPlan.ServiceOfferingID)
+		}
+		if len(plans.ServicePlans) > 1 {
+			return fmt.Errorf("exactly one service plan with name %s for offering with id %s expected", uc.planName, currentPlan.ServiceOfferingID)
+		}
+
+		uc.instance.ServicePlanID = plans.ServicePlans[0].ID
+	}
+	if len(uc.parametersJSON) > 0 {
+		uc.instance.Parameters = json.RawMessage(uc.parametersJSON)
+	}
+
+	resultInstance, location, err := uc.Client.UpdateInstance(instanceBeforeUpdate.ID, &uc.instance, &uc.Parameters)
 	if err != nil {
 		output.PrintMessage(uc.Output, "Could not update service instance. Reason: ")
 		return err
 	}
 
 	if len(location) != 0 {
-		cmd.CommonHandleAsyncExecution(uc.Context, location, fmt.Sprintf("Service Instance %s successfully scheduled for update. To see status of the operation use:\n", uc.instanceName, location))
+		cmd.CommonHandleAsyncExecution(uc.Context, location, fmt.Sprintf("Service Instance %s successfully scheduled for update. To see status of the operation use:\n", uc.instance.Name))
 		return nil
 	}
 	output.PrintServiceManagerObject(uc.Output, uc.outputFormat, resultInstance)
