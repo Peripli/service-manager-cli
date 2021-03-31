@@ -9,6 +9,9 @@ import (
 	. "github.com/onsi/gomega"
 	"fmt"
 	"errors"
+	"io/ioutil"
+	"github.com/Peripli/service-manager/pkg/util"
+	"net/http"
 )
 
 var _ = Describe("update instance command test", func() {
@@ -165,6 +168,37 @@ var _ = Describe("update instance command test", func() {
 				It("should return an error", func() {
 					err := invalidUpdateInstanceCommandExecution("instance-name", "--new-name", "new name", "--plan", plan.CatalogName)
 					Expect(err.Error()).To(ContainSubstring(fmt.Sprintf("exactly one service plan with name %s for offering with id %s expected", plan.CatalogName, plan.ServiceOfferingID)))
+				})
+			})
+
+			Context("update instance", func() {
+				BeforeEach(func() {
+					plans = &types.ServicePlans{
+						ServicePlans: []types.ServicePlan{
+							{ID: "plandid",
+								ServiceOfferingID: "offeringid",
+								CatalogName:       "small"},
+						},
+					}
+				})
+				Context("With http response error from http client", func() {
+					It("should return error's description", func() {
+						body := ioutil.NopCloser(bytes.NewReader([]byte("HTTP response error")))
+						expectedError := util.HandleResponseError(&http.Response{Body: body})
+						client.UpdateInstanceReturns(nil, "", expectedError)
+						err := invalidUpdateInstanceCommandExecution("instance-name", "plan", "small")
+						Expect(err).Should(HaveOccurred())
+						Expect(err.Error()).To(ContainSubstring("HTTP response error"))
+					})
+				})
+
+				Context("With invalid output format", func() {
+					It("should return error", func() {
+						invFormat := "invalid-format"
+						err := invalidUpdateInstanceCommandExecution("validName", "--plan", "small", "--output", invFormat)
+						Expect(err).Should(HaveOccurred())
+						Expect(err.Error()).To(Equal("unknown output: " + invFormat))
+					})
 				})
 			})
 
