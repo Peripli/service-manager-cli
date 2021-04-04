@@ -27,7 +27,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// TransferCmd wraps the smctl provision command
 type UpdateCmd struct {
 	*cmd.Context
 	instance        types.ServiceInstance
@@ -37,7 +36,7 @@ type UpdateCmd struct {
 	outputFormat    output.Format
 }
 
-// NewTransferCmd returns new transfer instance command with context
+
 func NewUpdateInstanceCmd(context *cmd.Context) *UpdateCmd {
 	return &UpdateCmd{Context: context,instance: types.ServiceInstance{}}
 }
