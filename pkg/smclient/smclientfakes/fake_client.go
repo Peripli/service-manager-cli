@@ -463,6 +463,23 @@ type FakeClient struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+
+	GetPlanByIDStub        func(string, *query.Parameters) (*types.ServicePlan, error)
+	getPlanByIDMutex       sync.RWMutex
+	getPlanByIDArgsForCall []struct {
+		arg1 string
+		arg2 *query.Parameters
+	}
+	getPlanByIDReturns struct {
+		result1 *types.ServicePlan
+		result2 error
+	}
+	getPlanByIDReturnsOnCall map[int]struct {
+		result1 *types.ServicePlan
+		result2 error
+	}
+
+
 }
 
 func (fake *FakeClient) Bind(arg1 *types.ServiceBinding, arg2 *query.Parameters) (*types.ServiceBinding, string, error) {
@@ -1289,6 +1306,70 @@ func (fake *FakeClient) GetInstanceParametersReturnsOnCall(i int, result1 map[st
 	}
 	fake.getInstanceParametersReturnsOnCall[i] = struct {
 		result1 map[string]interface{}
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) GetPlanByID(arg1 string, arg2 *query.Parameters) (*types.ServicePlan, error) {
+	fake.getPlanByIDMutex.Lock()
+	ret, specificReturn := fake.getPlanByIDReturnsOnCall[len(fake.getPlanByIDArgsForCall)]
+	fake.getPlanByIDArgsForCall = append(fake.getPlanByIDArgsForCall, struct {
+		arg1 string
+		arg2 *query.Parameters
+	}{arg1, arg2})
+	fake.recordInvocation("GetPlanByID", []interface{}{arg1, arg2})
+	fake.getPlanByIDMutex.Unlock()
+	if fake.GetPlanByIDStub != nil {
+		return fake.GetPlanByIDStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.getPlanByIDReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeClient) GetPlanByIDCallCount() int {
+	fake.getPlanByIDMutex.RLock()
+	defer fake.getPlanByIDMutex.RUnlock()
+	return len(fake.getPlanByIDArgsForCall)
+}
+
+func (fake *FakeClient) GetPlanByIDCalls(stub func(string, *query.Parameters) (*types.ServicePlan, error)) {
+	fake.getPlanByIDMutex.Lock()
+	defer fake.getPlanByIDMutex.Unlock()
+	fake.GetPlanByIDStub = stub
+}
+
+func (fake *FakeClient) GetPlanByIDArgsForCall(i int) (string, *query.Parameters) {
+	fake.getPlanByIDMutex.RLock()
+	defer fake.getPlanByIDMutex.RUnlock()
+	argsForCall := fake.getPlanByIDArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeClient) GetPlanByIDReturns(result1 *types.ServicePlan, result2 error) {
+	fake.getPlanByIDMutex.Lock()
+	defer fake.getPlanByIDMutex.Unlock()
+	fake.GetPlanByIDStub = nil
+	fake.getPlanByIDReturns = struct {
+		result1 *types.ServicePlan
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) GetPlanByIDReturnsOnCall(i int, result1 *types.ServicePlan, result2 error) {
+	fake.getPlanByIDMutex.Lock()
+	defer fake.getPlanByIDMutex.Unlock()
+	fake.GetPlanByIDStub = nil
+	if fake.getPlanByIDReturnsOnCall == nil {
+		fake.getPlanByIDReturnsOnCall = make(map[int]struct {
+			result1 *types.ServicePlan
+			result2 error
+		})
+	}
+	fake.getPlanByIDReturnsOnCall[i] = struct {
+		result1 *types.ServicePlan
 		result2 error
 	}{result1, result2}
 }
