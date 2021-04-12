@@ -13,6 +13,9 @@ To use the Service Manager CLI you need to download and install it first:
 
 ### Approach 1: Manual installation
 
+### Enable Go Modules
+`` export GO111MODULE=on ``
+
 #### Download CLI
 `` go get github.com/Peripli/service-manager-cli``
 
