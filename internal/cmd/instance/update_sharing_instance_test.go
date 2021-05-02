@@ -128,7 +128,7 @@ var _ = Describe("Update sharing instance command test", func() {
 					})
 				})
 
-				Context("With json output flag", func() {
+				Context("with json output flag", func() {
 					It("should be printed in json output format", func() {
 						validSyncUpdateSharingExect("instance-name", "--output", "json")
 						jsonByte, _ := json.MarshalIndent(instance, "", "  ")
@@ -137,7 +137,7 @@ var _ = Describe("Update sharing instance command test", func() {
 					})
 				})
 
-				Context("With yaml output flag", func() {
+				Context("with yaml output flag", func() {
 					It("should be printed in yaml output format", func() {
 						validSyncUpdateSharingExect("instance-name", "--output", "yaml")
 						yamlByte, _ := yaml.Marshal(instance)
@@ -207,7 +207,7 @@ var _ = Describe("Update sharing instance command test", func() {
 
 				})
 
-				Context("With invalid output format", func() {
+				Context("with invalid output format", func() {
 					It("should return error", func() {
 						invFormat := "invalid-format"
 						err := invalidUpdateSharingCommandExecution("instance name", "--output", invFormat)
