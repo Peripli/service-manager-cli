@@ -33,6 +33,7 @@ type UpdateSharingCmd struct {
 	instanceID   string
 	outputFormat output.Format
 	share        bool
+	action       string
 }
 
 // NewUpdateSharingCmd returns new share/unshare instance command with context
@@ -47,16 +48,18 @@ func (shc *UpdateSharingCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		RunE:    cmd.RunE(shc),
 	}
 	if shc.share {
+		shc.action = "share"
 		result.Use = "share-instance [name] --id service-instance-id "
 		result.Short = "Share a service instance"
 		result.Long = `Share a service instance so that it can be consumed from various platforms in your subaccount.
 Instance can be shared only if it was created with the plan that supports instance sharing. For more information, see the documentation of the service whose instance you want to share.`
 	} else {
+		shc.action = "unshare"
 		result.Use = "unshare-instance [name] --id service-instance-id "
 		result.Short = "Unshare a service instance"
 		result.Long = `Unshare a service instance to disable its consumption from any but the original platform in which it was created in your subaccount. If an instance you want to unshare has references, an error is returned`
 	}
-	result.Flags().StringVarP(&shc.instanceID, "id", "", "", "Id of the instance. Required in case when there are instances with same name")
+	result.Flags().StringVarP(&shc.instanceID, "id", "", "", cmd.INSTANCE_ID_DESCRIPTION)
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddModeFlag(result.Flags(), "async")
 
@@ -85,11 +88,11 @@ func (shc *UpdateSharingCmd) Run() error {
 			return err
 		}
 		if len(instances.ServiceInstances) == 0 {
-			return fmt.Errorf("no instances found with name %s", shc.instanceName)
+			return fmt.Errorf(cmd.NO_INSTANCES_FOUND, shc.instanceName)
 		}
 
 		if len(instances.ServiceInstances) > 1 {
-			return fmt.Errorf("more than 1 instance found with name %s. Use --id flag to specify one", shc.instanceName)
+			return fmt.Errorf(cmd.FOUND_TOO_MANY_INSTANCES, shc.instanceName, shc.action)
 		}
 
 		shc.instanceID = instances.ServiceInstances[0].ID
@@ -99,21 +102,16 @@ func (shc *UpdateSharingCmd) Run() error {
 	}, nil)
 	var message = ""
 	if err != nil {
-		if shc.share {
-			message = "Could not share service instance. Reason: "
-		} else {
-			message = "Could not unshare service instance. Reason: "
-		}
-		output.PrintMessage(shc.Output, message)
+		output.PrintMessage(shc.Output, fmt.Sprintf("Couldn't %s the service instance. Reason:",shc.action))
 		return err
 	}
 
 	if len(location) != 0 {
 		if shc.share {
-			message = fmt.Sprintf("Service Instance %s successfully scheduled for sharing. To see status of the operation use:\n", shc.instanceName)
+			message = fmt.Sprintf("Service instance \"%s\" successfully scheduled for sharing. To see the status of the operation, use: \n", shc.instanceName)
 
 		} else {
-			message = fmt.Sprintf("Service Instance %s successfully scheduled for unsharing. To see status of the operation use:\n", shc.instanceName)
+			message = fmt.Sprintf("Service instance \"%s\" successfully scheduled for unsharing. To see the status of the operation, use: \n", shc.instanceName)
 		}
 		cmd.CommonHandleAsyncExecution(shc.Context, location, message)
 		return nil

@@ -61,7 +61,7 @@ func (trc *TransferCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	}
 
 	result.Flags().BoolVarP(&trc.force, "force", "f", false, "Force transfer without confirmation")
-	result.Flags().StringVarP(&trc.instanceID, "id", "", "", "Id of the instance. Required in case when there are instances with same name")
+	result.Flags().StringVarP(&trc.instanceID, "id", "", "", cmd.INSTANCE_ID_DESCRIPTION)
 	result.Flags().StringVarP(&trc.fromPlatformID, "from", "", "", "ID of the platform from which you want to move the instance")
 	result.Flags().StringVarP(&trc.toPlatformID, "to", "", "", "ID of the platform to which you want to move the instance")
 	cmd.AddFormatFlag(result.Flags())
@@ -102,11 +102,11 @@ func (trc *TransferCmd) Run() error {
 			return err
 		}
 		if len(instances.ServiceInstances) == 0 {
-			return fmt.Errorf("no instances found with name %s", trc.instanceName)
+			return fmt.Errorf(cmd.NO_INSTANCES_FOUND, trc.instanceName)
 		}
 
 		if len(instances.ServiceInstances) > 1 {
-			return fmt.Errorf("more than 1 instance found with name %s. Use --id flag to specify one", trc.instanceName)
+			return fmt.Errorf(cmd.FOUND_TOO_MANY_INSTANCES, trc.instanceName, "transfer")
 		}
 
 		trc.instanceID = instances.ServiceInstances[0].ID

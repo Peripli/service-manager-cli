@@ -78,10 +78,10 @@ var _ = Describe("Update sharing instance command test", func() {
 	tests := []testCase{
 		testCase{true, "share",
 			"successfully scheduled for sharing",
-			"Could not share service instance"},
+			"Couldn't share the service instance. Reason:"},
 		testCase{false, "unshare",
 			"successfully scheduled for unsharing",
-			"Could not unshare service instance"},
+			"Couldn't unshare the service instance. Reason:"},
 	}
 	for _, test := range tests {
 		Describe(fmt.Sprintf("%s instance", test.title), func() {
@@ -161,7 +161,7 @@ var _ = Describe("Update sharing instance command test", func() {
 					Context("by name", func() {
 						It("should return an error", func() {
 							err := invalidUpdateSharingCommandExecution("instance-name")
-							Expect(err.Error()).To(ContainSubstring(fmt.Sprintf("no instances found with name %s", "instance-name")))
+							Expect(err.Error()).To(ContainSubstring(fmt.Sprintf(cmd.NO_INSTANCES_FOUND, "instance-name")))
 						})
 
 					})
@@ -182,7 +182,7 @@ var _ = Describe("Update sharing instance command test", func() {
 					})
 					It("should return an error", func() {
 						err := invalidUpdateSharingCommandExecution("instance-name")
-						Expect(err.Error()).To(ContainSubstring(fmt.Sprintf("more than 1 instance found with name %s", "instance-name")))
+						Expect(err.Error()).To(ContainSubstring(fmt.Sprintf(cmd.FOUND_TOO_MANY_INSTANCES, "instance-name",test.title)))
 					})
 
 				})

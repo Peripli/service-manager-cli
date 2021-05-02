@@ -29,16 +29,15 @@ import (
 
 type UpdateCmd struct {
 	*cmd.Context
-	instance        types.ServiceInstance
-	instanceName    string
-	planName        string
-	parametersJSON  string
-	outputFormat    output.Format
+	instance       types.ServiceInstance
+	instanceName   string
+	planName       string
+	parametersJSON string
+	outputFormat   output.Format
 }
 
-
 func NewUpdateInstanceCmd(context *cmd.Context) *UpdateCmd {
-	return &UpdateCmd{Context: context,instance: types.ServiceInstance{}}
+	return &UpdateCmd{Context: context, instance: types.ServiceInstance{}}
 }
 
 // Prepare returns cobra command
@@ -81,11 +80,12 @@ func (uc *UpdateCmd) Run() error {
 			return err
 		}
 		if len(instances.ServiceInstances) == 0 {
-			return fmt.Errorf("no instances found with name %s", uc.instanceName)
+			return fmt.Errorf(cmd.NO_INSTANCES_FOUND, uc.instanceName)
 		}
 
 		if len(instances.ServiceInstances) > 1 {
-			return fmt.Errorf("more than 1 instance found with name %s. Use --id flag to specify one", uc.instanceName)
+			return fmt.Errorf(cmd.FOUND_TOO_MANY_INSTANCES, uc.instanceName, "update")
+
 		}
 		instanceBeforeUpdate = &instances.ServiceInstances[0]
 
