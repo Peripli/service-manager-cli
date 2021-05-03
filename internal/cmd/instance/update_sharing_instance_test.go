@@ -72,16 +72,12 @@ var _ = Describe("Update sharing instance command test", func() {
 	type testCase struct {
 		share        bool
 		title        string
-		asyncMessage string
 		errorMessage string
 	}
 	tests := []testCase{
 		testCase{true, "share",
-			"successfully scheduled for sharing",
 			"Couldn't share the service instance. Reason:"},
-		testCase{false, "unshare",
-			"successfully scheduled for unsharing",
-			"Couldn't unshare the service instance. Reason:"},
+		testCase{false, "unshare", "Couldn't unshare the service instance. Reason:"},
 	}
 	for _, test := range tests {
 		Describe(fmt.Sprintf("%s instance", test.title), func() {
@@ -91,25 +87,6 @@ var _ = Describe("Update sharing instance command test", func() {
 				context := &cmd.Context{Output: buffer, Client: client}
 				command = NewUpdateSharingCmd(context, test.share)
 			})
-			Context("valid async", func() {
-				It("should print status command", func() {
-					validAsyncUpdateSharingExecution("location",
-						"myinstancename")
-					Expect(buffer.String()).To(ContainSubstring(`smctl status location`))
-					Expect(buffer.String()).To(ContainSubstring(test.asyncMessage))
-				})
-				Context("with id", func() {
-					It("should print status command", func() {
-						validAsyncUpdateSharingExecution("location",
-							"myinstancename", "--id", "serviceinstanceid")
-						Expect(buffer.String()).To(ContainSubstring(`smctl status location`))
-						Expect(buffer.String()).To(ContainSubstring(test.asyncMessage))
-					})
-				})
-
-
-			})
-
 
 			Context("valid sync", func() {
 				Context("with name", func() {

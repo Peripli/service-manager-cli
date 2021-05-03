@@ -61,8 +61,6 @@ Instance can be shared only if it was created with the plan that supports instan
 	}
 	result.Flags().StringVarP(&shc.instanceID, "id", "", "", cmd.INSTANCE_ID_DESCRIPTION)
 	cmd.AddFormatFlag(result.Flags())
-	cmd.AddModeFlag(result.Flags(), "async")
-
 	return result
 }
 
@@ -97,25 +95,15 @@ func (shc *UpdateSharingCmd) Run() error {
 
 		shc.instanceID = instances.ServiceInstances[0].ID
 	}
-	resultInstance, location, err := shc.Client.UpdateInstance(shc.instanceID, &types.ServiceInstance{
+	resultInstance, _, err := shc.Client.UpdateInstance(shc.instanceID, &types.ServiceInstance{
 		Shared: shc.share,
 	}, nil)
-	var message = ""
+
 	if err != nil {
-		output.PrintMessage(shc.Output, fmt.Sprintf("Couldn't %s the service instance. Reason:",shc.action))
+		output.PrintMessage(shc.Output, fmt.Sprintf("Couldn't %s the service instance. Reason:", shc.action))
 		return err
 	}
 
-	if len(location) != 0 {
-		if shc.share {
-			message = fmt.Sprintf("Service instance \"%s\" successfully scheduled for sharing. To see the status of the operation, use: \n", shc.instanceName)
-
-		} else {
-			message = fmt.Sprintf("Service instance \"%s\" successfully scheduled for unsharing. To see the status of the operation, use: \n", shc.instanceName)
-		}
-		cmd.CommonHandleAsyncExecution(shc.Context, location, message)
-		return nil
-	}
 	output.PrintServiceManagerObject(shc.Output, shc.outputFormat, resultInstance)
 	output.Println(shc.Output)
 	return nil
