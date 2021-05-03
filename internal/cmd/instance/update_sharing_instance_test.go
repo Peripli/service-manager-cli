@@ -38,7 +38,7 @@ var _ = Describe("Update sharing instance command test", func() {
 	var buffer *bytes.Buffer
 	var instance *types.ServiceInstance
 	var instances *types.ServiceInstances
-	validAsyncUpdateSharingExecution := func(location string, args ...string) *cobra.Command {
+	validUpdateSharingExecution := func(args ...string) *cobra.Command {
 		instance = &types.ServiceInstance{
 			Name: args[0],
 		}
@@ -53,16 +53,14 @@ var _ = Describe("Update sharing instance command test", func() {
 
 		client.StatusReturns(operation, nil)
 		client.ListInstancesReturns(&types.ServiceInstances{ServiceInstances: []types.ServiceInstance{*instance}}, nil)
-		client.UpdateInstanceReturns(instance, location, nil)
+		client.UpdateInstanceReturns(instance, "", nil)
 		piCmd := command.Prepare(cmd.SmPrepare)
 		piCmd.SetArgs(args)
 		Expect(piCmd.Execute()).ToNot(HaveOccurred())
 		return piCmd
 	}
 
-	validSyncUpdateSharingExect := func(args ...string) *cobra.Command {
-		return validAsyncUpdateSharingExecution("", append(args, "--mode", "sync")...)
-	}
+
 
 	invalidUpdateSharingCommandExecution := func(args ...string) error {
 		shCmd := command.Prepare(cmd.SmPrepare)
@@ -91,7 +89,7 @@ var _ = Describe("Update sharing instance command test", func() {
 			Context("valid sync", func() {
 				Context("with name", func() {
 					It("should print object", func() {
-						validSyncUpdateSharingExect("myinstancename")
+						validUpdateSharingExecution("myinstancename")
 						tableOutputExpected := instance.TableData().String()
 						Expect(buffer.String()).To(ContainSubstring(tableOutputExpected))
 					})
@@ -99,7 +97,7 @@ var _ = Describe("Update sharing instance command test", func() {
 				})
 				Context("with id", func() {
 					It("should print object", func() {
-						validSyncUpdateSharingExect("myinstancename", "--id", "serviceinstanceid")
+						validUpdateSharingExecution("myinstancename", "--id", "serviceinstanceid")
 						tableOutputExpected := instance.TableData().String()
 						Expect(buffer.String()).To(ContainSubstring(tableOutputExpected))
 					})
@@ -107,7 +105,7 @@ var _ = Describe("Update sharing instance command test", func() {
 
 				Context("with json output flag", func() {
 					It("should be printed in json output format", func() {
-						validSyncUpdateSharingExect("instance-name", "--output", "json")
+						validUpdateSharingExecution("instance-name", "--output", "json")
 						jsonByte, _ := json.MarshalIndent(instance, "", "  ")
 						jsonOutputExpected := string(jsonByte) + "\n"
 						Expect(buffer.String()).To(ContainSubstring(jsonOutputExpected))
@@ -116,7 +114,7 @@ var _ = Describe("Update sharing instance command test", func() {
 
 				Context("with yaml output flag", func() {
 					It("should be printed in yaml output format", func() {
-						validSyncUpdateSharingExect("instance-name", "--output", "yaml")
+						validUpdateSharingExecution("instance-name", "--output", "yaml")
 						yamlByte, _ := yaml.Marshal(instance)
 						yamlOutputExpected := string(yamlByte) + "\n"
 						Expect(buffer.String()).To(ContainSubstring(yamlOutputExpected))
