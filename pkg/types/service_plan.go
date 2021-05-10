@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Peripli/service-manager/pkg/types"
+	"github.com/tidwall/gjson"
 	"strconv"
 )
 
@@ -132,12 +133,20 @@ func (sp *ServicePlans) IsEmpty() bool {
 // TableData returns the data to populate a table
 func (sp *ServicePlans) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"ID", "Name", "Description", "Offering ID", "Ready", "Labels"}
+	result.Headers = []string{"ID", "Name", "Shareable", "Description", "Offering ID", "Ready", "Labels"}
 
 	for _, v := range sp.ServicePlans {
-		row := []string{v.ID, v.Name, v.Description, v.ServiceOfferingID, strconv.FormatBool(v.Ready), formatLabels(v.Labels)}
+		row := []string{v.ID, v.Name, strconv.FormatBool(v.ShareableProperty()), v.Description, v.ServiceOfferingID, strconv.FormatBool(v.Ready), formatLabels(v.Labels)}
 		result.Data = append(result.Data, row)
 	}
 
 	return result
+}
+
+func (sp *ServicePlan) ShareableProperty() bool {
+	if sp.Metadata == nil {
+		return false
+	}
+	return gjson.GetBytes(sp.Metadata, "supportInstanceSharing").Bool()
+
 }

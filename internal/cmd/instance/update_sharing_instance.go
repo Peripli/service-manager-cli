@@ -21,6 +21,7 @@ import (
 	"github.com/Peripli/service-manager-cli/internal/output"
 	"github.com/Peripli/service-manager-cli/pkg/query"
 	"github.com/Peripli/service-manager-cli/pkg/types"
+	"github.com/Peripli/service-manager/pkg/web"
 
 	"fmt"
 
@@ -52,7 +53,7 @@ func (shc *UpdateSharingCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 		result.Use = "share-instance [name] --id service-instance-id "
 		result.Short = "Share a service instance"
 		result.Long = `Share a service instance so that it can be consumed from various platforms in your subaccount.
-Instance can be shared only if it was created with the plan that supports instance sharing. For more information, see the documentation of the service whose instance you want to share.`
+Instance can be shared only if it was created with the plan that supports instance sharing. For more information, see the documentation of the service whose instance you want to share. To check if the service instance was created with a shareable plan, use 'smctl list-plans'.`
 	} else {
 		shc.action = "unshare"
 		result.Use = "unshare-instance [name] --id service-instance-id "
@@ -95,12 +96,14 @@ func (shc *UpdateSharingCmd) Run() error {
 
 		shc.instanceID = instances.ServiceInstances[0].ID
 	}
+	shc.Parameters.GeneralParams = append(shc.Parameters.GeneralParams, fmt.Sprintf("%s=%s", web.QueryParamAsync, "false"))
 	resultInstance, _, err := shc.Client.UpdateInstance(shc.instanceID, &types.ServiceInstance{
 		Shared: shc.share,
-	}, nil)
-
+	}, &query.Parameters{
+		GeneralParams: shc.Parameters.GeneralParams,
+	})
 	if err != nil {
-		output.PrintMessage(shc.Output, fmt.Sprintf("Couldn't %s the service instance. Reason:", shc.action))
+		output.PrintMessage(shc.Output, fmt.Sprintf("Couldn't %s the service instance. ", shc.action))
 		return err
 	}
 
