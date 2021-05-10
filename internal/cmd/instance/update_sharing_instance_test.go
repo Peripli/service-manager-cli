@@ -68,17 +68,15 @@ var _ = Describe("Update sharing instance command test", func() {
 		return shCmd.Execute()
 	}
 	type testCase struct {
-		share        bool
-		title        string
-		errorMessage string
+		share       bool
+		commandName string
 	}
 	tests := []testCase{
-		testCase{true, "share",
-			"Couldn't share the service instance. Reason:"},
-		testCase{false, "unshare", "Couldn't unshare the service instance. Reason:"},
+		testCase{true, "share"},
+		testCase{false, "unshare"},
 	}
 	for _, test := range tests {
-		Describe(fmt.Sprintf("%s instance", test.title), func() {
+		Describe(fmt.Sprintf("%s instance", test.commandName), func() {
 			BeforeEach(func() {
 				buffer = &bytes.Buffer{}
 				client = &smclientfakes.FakeClient{}
@@ -157,7 +155,7 @@ var _ = Describe("Update sharing instance command test", func() {
 					})
 					It("should return an error", func() {
 						err := invalidUpdateSharingCommandExecution("instance-name")
-						Expect(err.Error()).To(ContainSubstring(fmt.Sprintf(cmd.FOUND_TOO_MANY_INSTANCES, "instance-name",test.title)))
+						Expect(err.Error()).To(ContainSubstring(fmt.Sprintf(cmd.FOUND_TOO_MANY_INSTANCES, "instance-name",test.commandName)))
 					})
 
 				})
@@ -178,6 +176,8 @@ var _ = Describe("Update sharing instance command test", func() {
 						err := invalidUpdateSharingCommandExecution("instance-name")
 						Expect(err).Should(HaveOccurred())
 						Expect(err.Error()).To(ContainSubstring("HTTP response error"))
+						Expect(buffer.String()).To(ContainSubstring(fmt.Sprintf("Couldn't %s the service instance. ", test.commandName)))
+
 					})
 
 				})
