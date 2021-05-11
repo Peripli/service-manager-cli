@@ -42,9 +42,9 @@ type ServiceInstance struct {
 	Context         json.RawMessage `json:"context,omitempty" yaml:"context,omitempty"`
 	PreviousValues  json.RawMessage `json:"-" yaml:"-"`
 
-	Ready         bool             `json:"ready" yaml:"ready"`
-	Usable        bool             `json:"usable" yaml:"usable"`
-	Shared        bool             `json:"shared,omitempty" yaml:"shared,omitempty"`
+	Ready         bool             `json:"ready,omitempty" yaml:"ready,omitempty"`
+	Usable        bool             `json:"usable,omitempty" yaml:"usable,omitempty"`
+	Shared        bool             `json:"shared" yaml:"shared"`
 	LastOperation *types.Operation `json:"last_operation,omitempty" yaml:"last_operation,omitempty"`
 }
 
