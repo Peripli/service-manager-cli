@@ -97,8 +97,10 @@ func (shc *UpdateSharingCmd) Run() error {
 		shc.instanceID = instances.ServiceInstances[0].ID
 	}
 	shc.Parameters.GeneralParams = append(shc.Parameters.GeneralParams, fmt.Sprintf("%s=%s", web.QueryParamAsync, "false"))
+	shared:=new(bool)
+	*shared = shc.share
 	resultInstance, _, err := shc.Client.UpdateInstance(shc.instanceID, &types.ServiceInstance{
-		Shared: shc.share,
+		Shared: shared,
 	}, &query.Parameters{
 		GeneralParams: shc.Parameters.GeneralParams,
 	})
