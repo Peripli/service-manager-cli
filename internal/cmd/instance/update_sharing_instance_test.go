@@ -60,8 +60,6 @@ var _ = Describe("Update sharing instance command test", func() {
 		return piCmd
 	}
 
-
-
 	invalidUpdateSharingCommandExecution := func(args ...string) error {
 		shCmd := command.Prepare(cmd.SmPrepare)
 		shCmd.SetArgs(args)
@@ -126,17 +124,29 @@ var _ = Describe("Update sharing instance command test", func() {
 
 				})
 
-				Context("when service instance not found", func() {
+				When("invalid flag", func() {
+					It("should return an error", func() {
+						err := invalidUpdateSharingCommandExecution("instance name", "--fl", "fff")
+						Expect(err).Should(HaveOccurred())
+						Expect(err.Error()).To(ContainSubstring("unknown flag: --fl"))
+					})
+				})
+				When("async is used", func() {
+					It("should return an error", func() {
+						err := invalidUpdateSharingCommandExecution("instance name", "--mode", "async")
+						Expect(err).Should(HaveOccurred())
+						Expect(err.Error()).To(ContainSubstring("unknown flag: --mode"))
+					})
+				})
+
+				When("service instance not found", func() {
 					BeforeEach(func() {
 						instances = &types.ServiceInstances{}
 					})
 
-					Context("by name", func() {
-						It("should return an error", func() {
-							err := invalidUpdateSharingCommandExecution("instance-name")
-							Expect(err.Error()).To(ContainSubstring(fmt.Sprintf(cmd.NO_INSTANCES_FOUND, "instance-name")))
-						})
-
+					It("should return an error", func() {
+						err := invalidUpdateSharingCommandExecution("instance-name")
+						Expect(err.Error()).To(ContainSubstring(fmt.Sprintf(cmd.NO_INSTANCES_FOUND, "instance-name")))
 					})
 
 				})
@@ -155,7 +165,7 @@ var _ = Describe("Update sharing instance command test", func() {
 					})
 					It("should return an error", func() {
 						err := invalidUpdateSharingCommandExecution("instance-name")
-						Expect(err.Error()).To(ContainSubstring(fmt.Sprintf(cmd.FOUND_TOO_MANY_INSTANCES, "instance-name",test.commandName)))
+						Expect(err.Error()).To(ContainSubstring(fmt.Sprintf(cmd.FOUND_TOO_MANY_INSTANCES, "instance-name", test.commandName)))
 					})
 
 				})
