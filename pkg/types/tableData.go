@@ -156,6 +156,12 @@ func max(arr ...int) int {
 	return tmp
 }
 
+func formatNullableBool(val *bool) string{
+	if val == nil {
+		return "false"
+	}
+	return fmt.Sprintf("%v", *val)
+}
 func formatLabels(labels types.Labels) string {
 	formattedLabels := make([]string, 0, len(labels))
 	for i, v := range labels {

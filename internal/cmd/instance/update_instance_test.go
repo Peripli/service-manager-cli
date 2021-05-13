@@ -171,7 +171,7 @@ var _ = Describe("update instance command test", func() {
 			Context("by name", func() {
 				It("should return an error", func() {
 					err := invalidUpdateInstanceCommandExecution("instance-name", "--new-name", "new name")
-					Expect(err.Error()).To(ContainSubstring(fmt.Sprintf("no instances found with name %s", "instance-name")))
+					Expect(err.Error()).To(ContainSubstring(fmt.Sprintf(cmd.NO_INSTANCES_FOUND, "instance-name")))
 				})
 
 			})
@@ -203,7 +203,7 @@ var _ = Describe("update instance command test", func() {
 			})
 			It("should return an error", func() {
 				err := invalidUpdateInstanceCommandExecution("instance-name", "--new-name", "new name")
-				Expect(err.Error()).To(ContainSubstring(fmt.Sprintf("more than 1 instance found with name %s", "instance-name")))
+				Expect(err.Error()).To(ContainSubstring(fmt.Sprintf(cmd.FOUND_TOO_MANY_INSTANCES, "instance-name","update")))
 			})
 
 		})

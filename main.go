@@ -93,6 +93,9 @@ func main() {
 			instance.NewDeprovisionCmd(cmdContext, os.Stdin),
 			instance.NewTransferCmd(cmdContext, os.Stdin),
 			instance.NewUpdateInstanceCmd(cmdContext),
+			instance.NewUpdateSharingCmd(cmdContext,true),
+			instance.NewUpdateSharingCmd(cmdContext,false),
+
 
 		},
 		PrepareFn: cmd.SmPrepare,

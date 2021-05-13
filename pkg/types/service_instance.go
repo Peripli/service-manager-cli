@@ -19,8 +19,6 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
-
 	"github.com/Peripli/service-manager/pkg/types"
 )
 
@@ -42,9 +40,9 @@ type ServiceInstance struct {
 	Context         json.RawMessage `json:"context,omitempty" yaml:"context,omitempty"`
 	PreviousValues  json.RawMessage `json:"-" yaml:"-"`
 
-	Ready  bool `json:"ready" yaml:"ready"`
-	Usable bool `json:"usable" yaml:"usable"`
-
+	Ready         *bool             `json:"ready,omitempty" yaml:"ready,omitempty"`
+	Usable        *bool             `json:"usable,omitempty" yaml:"usable,omitempty"`
+	Shared        *bool             `json:"shared,omitempty" yaml:"shared,omitempty"`
 	LastOperation *types.Operation `json:"last_operation,omitempty" yaml:"last_operation,omitempty"`
 }
 
@@ -61,13 +59,13 @@ func (si *ServiceInstance) IsEmpty() bool {
 // TableData returns the data to populate a table
 func (si *ServiceInstance) TableData() *TableData {
 	result := &TableData{Vertical: true}
-	result.Headers = []string{"ID", "Name", "Service Plan ID", "Platform ID", "Created", "Updated", "Ready", "Usable", "Labels", "Last Op"}
+	result.Headers = []string{"ID", "Name", "Service Plan ID", "Platform ID", "Shared", "Created", "Updated", "Ready", "Usable", "Labels", "Last Op"}
 
 	lastState := "-"
 	if si.LastOperation != nil {
 		lastState = formatLastOp(si.LastOperation)
 	}
-	row := []string{si.ID, si.Name, si.ServicePlanID, si.PlatformID, si.CreatedAt, si.UpdatedAt, strconv.FormatBool(si.Ready), strconv.FormatBool(si.Usable), formatLabels(si.Labels), lastState}
+	row := []string{si.ID, si.Name, si.ServicePlanID, si.PlatformID, formatNullableBool(si.Shared), si.CreatedAt, si.UpdatedAt, formatNullableBool(si.Ready), formatNullableBool(si.Usable), formatLabels(si.Labels), lastState}
 	result.Data = append(result.Data, row)
 
 	return result
@@ -102,7 +100,7 @@ func (si *ServiceInstances) IsEmpty() bool {
 // TableData returns the data to populate a table
 func (si *ServiceInstances) TableData() *TableData {
 	result := &TableData{Vertical: si.Vertical}
-	result.Headers = []string{"ID", "Name", "Service Plan ID", "Platform ID", "Created", "Updated", "Ready", "Usable", "Labels"}
+	result.Headers = []string{"ID", "Name", "Service Plan ID", "Platform ID", "Shared", "Created", "Updated", "Ready", "Usable", "Labels"}
 
 	addLastOpColumn := false
 	for _, instance := range si.ServiceInstances {
@@ -111,7 +109,7 @@ func (si *ServiceInstances) TableData() *TableData {
 			lastState = formatLastOp(instance.LastOperation)
 			addLastOpColumn = true
 		}
-		row := []string{instance.ID, instance.Name, instance.ServicePlanID, instance.PlatformID, instance.CreatedAt, instance.UpdatedAt, strconv.FormatBool(instance.Ready), strconv.FormatBool(instance.Usable), formatLabels(instance.Labels), lastState}
+		row := []string{instance.ID, instance.Name, instance.ServicePlanID, instance.PlatformID, formatNullableBool(instance.Shared), instance.CreatedAt, instance.UpdatedAt, formatNullableBool(instance.Ready), formatNullableBool(instance.Usable), formatLabels(instance.Labels), lastState}
 		result.Data = append(result.Data, row)
 	}
 

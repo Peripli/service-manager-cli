@@ -20,7 +20,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-
+	"fmt"
 	"github.com/Peripli/service-manager-cli/internal/cmd"
 	"github.com/Peripli/service-manager-cli/pkg/smclient/smclientfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
@@ -120,7 +120,7 @@ var _ = Describe("Transfer Command test", func() {
 			Context("when no instance id is provided", func() {
 				It("should require flag for instance id", func() {
 					err := invalidTransferCommandExecution("instance-name", "--from", "from_platform", "--to", "to_platform")
-					Expect(err.Error()).To(Equal("more than 1 instance found with name instance-name. Use --id flag to specify one"))
+					Expect(err.Error()).To(Equal(fmt.Sprintf(cmd.FOUND_TOO_MANY_INSTANCES,"instance-name","transfer")))
 				})
 			})
 
@@ -141,7 +141,8 @@ var _ = Describe("Transfer Command test", func() {
 
 			It("should fail to transfer", func() {
 				err := invalidTransferCommandExecution("no-instance", "--from", "from_platform", "--to", "to_platform")
-				Expect(err.Error()).To(Equal("no instances found with name no-instance"))
+				message:=fmt.Sprintf(cmd.NO_INSTANCES_FOUND,"no-instance")
+				Expect(err.Error()).To(Equal(message))
 			})
 		})
 
