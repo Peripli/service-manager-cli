@@ -19,6 +19,7 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Peripli/service-manager/pkg/instance_sharing"
 	"github.com/Peripli/service-manager/pkg/types"
 	"github.com/tidwall/gjson"
 	"strconv"
@@ -147,6 +148,6 @@ func (sp *ServicePlan) ShareableProperty() bool {
 	if sp.Metadata == nil {
 		return false
 	}
-	return gjson.GetBytes(sp.Metadata, "supportInstanceSharing").Bool()
+	return gjson.GetBytes(sp.Metadata, instance_sharing.SupportsInstanceSharingKey).Bool()
 
 }
