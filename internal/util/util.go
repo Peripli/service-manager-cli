@@ -18,8 +18,10 @@ package util
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
@@ -63,6 +65,46 @@ func BuildHTTPClient(sslDisabled bool) *http.Client {
 	}
 	if sslDisabled {
 		client.Transport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	}
+
+	return client
+}
+
+// BuildHTTPClientWithCert builds https mTLS client
+func BuildHTTPClientWithCert(certPath, keyPath string) *http.Client {
+	var cert tls.Certificate
+	var err error
+	cert, err = tls.LoadX509KeyPair(certPath, keyPath)
+	if err != nil {
+		// todo - define error
+		//log.Fatalf("Error creating x509 keypair from client cert file %s and client key file %s", *clientCertFile, *clientKeyFile)
+	}
+
+	caCert, err := ioutil.ReadFile(certPath)
+	if err != nil {
+		//log.Fatalf("Error opening cert file %s, Error: %s", *caCertFile, err)
+	}
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+
+	client := &http.Client{
+		Timeout: time.Second * 10,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				Certificates: []tls.Certificate{cert},
+				RootCAs:      caCertPool,
+			},
+			Proxy: http.ProxyFromEnvironment,
+			DialContext: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+				DualStack: true,
+			}).DialContext,
+			MaxIdleConns:          100,
+			IdleConnTimeout:       90 * time.Second,
+			TLSHandshakeTimeout:   10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+		},
 	}
 
 	return client

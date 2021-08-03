@@ -171,6 +171,23 @@ var _ = Describe("Login Command test", func() {
 				})
 			}
 		})
+
+		FContext("With mTLS, cert & key & client id are provided through flags", func() {
+			It("executes login and saved access token", func() {
+				lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=client-credentials", "--cert=cert.pem", "--key=key.pem", "--client-id=smctl"})
+
+				credentialsBuffer.WriteString("user\n")
+
+				err := lc.Execute()
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(outputBuffer.String()).To(ContainSubstring("Logged in successfully.\n"))
+
+				savedConfig := config.SaveArgsForCall(0)
+				Expect(savedConfig.ClientID).To(Equal(""))
+				Expect(savedConfig.ClientSecret).To(Equal(""))
+			})
+		})
 	})
 
 	Describe("Invalid request", func() {

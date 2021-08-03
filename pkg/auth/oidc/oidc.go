@@ -20,9 +20,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
-
 	"github.com/Peripli/service-manager/pkg/log"
+	"net/http"
 
 	"github.com/Peripli/service-manager-cli/internal/util"
 	"github.com/Peripli/service-manager-cli/pkg/auth"
@@ -44,7 +43,13 @@ type OpenIDStrategy struct {
 
 // NewOpenIDStrategy returns OpenId auth strategy
 func NewOpenIDStrategy(options *auth.Options) (*OpenIDStrategy, *auth.Options, error) {
-	httpClient := util.BuildHTTPClient(options.SSLDisabled)
+	var httpClient *http.Client
+	if len(options.Certificate) > 0 && len(options.Key) > 0 {
+		httpClient = util.BuildHTTPClientWithCert(options.Certificate, options.Key)
+	} else {
+		httpClient = util.BuildHTTPClient(options.SSLDisabled)
+	}
+
 	httpClient.Timeout = options.Timeout
 
 	openIDConfig, err := fetchOpenidConfiguration(options.IssuerURL, httpClient.Do)
