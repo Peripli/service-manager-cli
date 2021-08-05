@@ -91,8 +91,8 @@ func BuildHTTPClientWithCert(certPath, keyPath string) *http.Client {
 		Timeout: time.Second * 10,
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
-				Certificates: []tls.Certificate{cert},
 				RootCAs:      caCertPool,
+				Certificates: []tls.Certificate{cert},
 			},
 			Proxy: http.ProxyFromEnvironment,
 			DialContext: (&net.Dialer{

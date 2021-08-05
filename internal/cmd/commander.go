@@ -118,6 +118,7 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 				ClientID:              settings.ClientID,
 				ClientSecret:          settings.ClientSecret,
 				IssuerURL:             settings.IssuerURL,
+				IssuerCertURL:         settings.IssuerCertURL,
 				SSLDisabled:           settings.SSLDisabled,
 				TokenBasicAuth:        settings.TokenBasicAuth,
 			}, &settings.Token)
@@ -217,7 +218,6 @@ func AddCommonQueryFlag(flags *pflag.FlagSet, parameters *query.Parameters) {
 func AddSupportedEnvironmentFlag(flags *pflag.FlagSet, parameters *query.Parameters, description string) {
 	flags.StringVarP(&parameters.Environment, "environment", "e", "", description)
 }
-
 
 // AddModeFlag adds the --mode flag for SM calls.
 func AddModeFlag(flags *pflag.FlagSet, defValue string) {

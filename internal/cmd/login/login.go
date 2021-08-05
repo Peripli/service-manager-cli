@@ -20,6 +20,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"github.com/Peripli/service-manager-cli/pkg/types"
 	"io"
 	"syscall"
 
@@ -52,7 +53,7 @@ type Cmd struct {
 	sslDisabled        bool
 	clientID           string
 	clientSecret       string
-	certificate        string
+	cert               string
 	key                string
 	authenticationFlow auth.Flow
 
@@ -83,7 +84,7 @@ func (lc *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result.Flags().StringVarP(&lc.password, "password", "p", "", "Password")
 	result.Flags().StringVarP(&lc.clientID, "client-id", "", "", "Client id used for OAuth flow")
 	result.Flags().StringVarP(&lc.clientSecret, "client-secret", "", defaultClientSecret, "Client secret used for OAuth flow")
-	result.Flags().StringVarP(&lc.certificate, "cert", "", "", "Client certificate")
+	result.Flags().StringVarP(&lc.cert, "cert", "", "", "Client cert")
 	result.Flags().StringVarP(&lc.key, "key", "", "", "Client private key")
 	result.Flags().BoolVarP(&lc.sslDisabled, "skip-ssl-validation", "", false, "Skip verification of the OAuth endpoint. Not recommended!")
 	result.Flags().StringVarP((*string)(&lc.authenticationFlow), "auth-flow", "", string(auth.PasswordGrant), `Authentication flow (grant type): "client-credentials" or "password-grant"`)
@@ -122,9 +123,14 @@ func (lc *Cmd) Run() error {
 		lc.Client = smclient.NewClient(lc.Ctx, httpClient, lc.serviceManagerURL)
 	}
 
-	info, err := lc.Client.GetInfo(&lc.Parameters)
-	if err != nil {
-		return cliErr.New("Could not get Service Manager info", err)
+	//info, err := lc.Client.GetInfo(&lc.Parameters)
+	//if err != nil {
+	//	return cliErr.New("Could not get Service Manager info", err)
+	//}
+	info := &types.Info{
+		TokenIssuerCertURL: "https://x509-test.authentication.cert.stagingaws.hanavlab.ondemand.com",
+		TokenIssuerURL:     "https://x509-test.authentication.stagingaws.hanavlab.ondemand.com",
+		TokenBasicAuth:     false,
 	}
 
 	options := &auth.Options{
@@ -133,9 +139,10 @@ func (lc *Cmd) Run() error {
 		ClientID:       lc.clientID,
 		ClientSecret:   lc.clientSecret,
 		IssuerURL:      info.TokenIssuerURL,
+		IssuerCertURL:  info.TokenIssuerCertURL,
 		TokenBasicAuth: info.TokenBasicAuth,
 		SSLDisabled:    lc.sslDisabled,
-		Certificate:    lc.certificate,
+		Cert:           lc.cert,
 		Key:            lc.key,
 	}
 
@@ -157,13 +164,14 @@ func (lc *Cmd) Run() error {
 		Token: *token,
 
 		IssuerURL:             info.TokenIssuerURL,
+		IssuerCertURL:         info.TokenIssuerCertURL,
 		AuthorizationEndpoint: options.AuthorizationEndpoint,
 		TokenEndpoint:         options.TokenEndpoint,
 		TokenBasicAuth:        info.TokenBasicAuth,
-		Certificate:           options.Certificate,
+		Cert:                  options.Cert,
 		Key:                   options.Key,
 	}
-	if len(options.Certificate) > 0 && len(options.Key) > 0 {
+	if len(options.Cert) > 0 && len(options.Key) > 0 {
 		settings.ClientID = options.ClientID
 	}
 	if options.ClientID == defaultClientID && options.ClientSecret == defaultClientSecret {
@@ -200,8 +208,8 @@ func (lc *Cmd) validateLoginFlow() error {
 		if len(lc.clientID) == 0 && len(lc.clientSecret) == 0 {
 			return errors.New("clientID/clientSecret should not be empty when using client credentials flow")
 		}
-		if len(lc.clientID) == 0 && len(lc.certificate) == 0 && len(lc.key) == 0 {
-			return errors.New("clientID/certificate/key should not be empty when using mTLS credentials flow")
+		if len(lc.clientID) == 0 && len(lc.cert) == 0 && len(lc.key) == 0 {
+			return errors.New("clientID/cert/key should not be empty when using mTLS credentials flow")
 		}
 	case auth.PasswordGrant:
 		return lc.validatePasswordGrant()

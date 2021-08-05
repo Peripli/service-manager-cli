@@ -44,24 +44,31 @@ type OpenIDStrategy struct {
 // NewOpenIDStrategy returns OpenId auth strategy
 func NewOpenIDStrategy(options *auth.Options) (*OpenIDStrategy, *auth.Options, error) {
 	var httpClient *http.Client
-	if len(options.Certificate) > 0 && len(options.Key) > 0 {
-		httpClient = util.BuildHTTPClientWithCert(options.Certificate, options.Key)
+	if len(options.Cert) > 0 && len(options.Key) > 0 {
+		httpClient = util.BuildHTTPClientWithCert(options.Cert, options.Key)
 	} else {
 		httpClient = util.BuildHTTPClient(options.SSLDisabled)
 	}
 
 	httpClient.Timeout = options.Timeout
 
-	openIDConfig, err := fetchOpenidConfiguration(options.IssuerURL, httpClient.Do)
-	if err != nil {
-		return nil, nil, fmt.Errorf("error occurred while fetching openid configuration: %s", err)
+	var oauthConfig *oauth2.Config
+	var ccConfig *clientcredentials.Config
+	if options.Cert != "" && options.Key != "" {
+		options.AuthorizationEndpoint = "https://x509-test.authentication.cert.stagingaws.hanavlab.ondemand.com/oauth/authorize"
+		options.TokenEndpoint = "https://x509-test.authentication.cert.stagingaws.hanavlab.ondemand.com/oauth/token"
+	} else {
+		openIDConfig, err := fetchOpenidConfiguration(options.IssuerURL, httpClient.Do)
+		if err != nil {
+			return nil, nil, fmt.Errorf("error occurred while fetching openid configuration: %s", err)
+		}
+		options.AuthorizationEndpoint = openIDConfig.AuthorizationEndpoint
+		options.TokenEndpoint = openIDConfig.TokenEndpoint
 	}
-	options.AuthorizationEndpoint = openIDConfig.AuthorizationEndpoint
-	options.TokenEndpoint = openIDConfig.TokenEndpoint
 
-	oauthConfig := newOauth2Config(options)
+	oauthConfig = newOauth2Config(options)
 
-	ccConfig := newClientCredentialsConfig(options)
+	ccConfig = newClientCredentialsConfig(options)
 
 	return &OpenIDStrategy{
 		oauth2Config: oauthConfig,
