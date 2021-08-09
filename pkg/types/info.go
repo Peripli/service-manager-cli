@@ -18,9 +18,8 @@ package types
 
 // Info contains the url of a token issuer
 type Info struct {
-	TokenIssuerURL     string `json:"token_issuer_url"`
-	TokenIssuerCertURL string `json:"token_issuer_certurl"`
-	TokenBasicAuth     bool   `json:"token_basic_auth"`
+	TokenIssuerURL string `json:"token_issuer_url"`
+	TokenBasicAuth bool   `json:"token_basic_auth"`
 }
 
 // DefaultInfo contains default values

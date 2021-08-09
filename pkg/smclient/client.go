@@ -104,11 +104,10 @@ func NewClientWithAuth(httpClient auth.Client, config *ClientConfig) (Client, er
 	}
 
 	authOptions := &auth.Options{
-		IssuerURL:     info.TokenIssuerURL,
-		IssuerCertURL: info.TokenIssuerCertURL,
-		ClientID:      config.ClientID,
-		ClientSecret:  config.ClientSecret,
-		SSLDisabled:   config.SSLDisabled,
+		IssuerURL:    info.TokenIssuerURL,
+		ClientID:     config.ClientID,
+		ClientSecret: config.ClientSecret,
+		SSLDisabled:  config.SSLDisabled,
 	}
 	var authStrategy auth.Authenticator
 	authStrategy, authOptions, err = oidc.NewOpenIDStrategy(authOptions)

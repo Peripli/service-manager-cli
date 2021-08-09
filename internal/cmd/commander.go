@@ -118,7 +118,6 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 				ClientID:              settings.ClientID,
 				ClientSecret:          settings.ClientSecret,
 				IssuerURL:             settings.IssuerURL,
-				IssuerCertURL:         settings.IssuerCertURL,
 				SSLDisabled:           settings.SSLDisabled,
 				TokenBasicAuth:        settings.TokenBasicAuth,
 			}, &settings.Token)

@@ -123,14 +123,14 @@ func (lc *Cmd) Run() error {
 		lc.Client = smclient.NewClient(lc.Ctx, httpClient, lc.serviceManagerURL)
 	}
 
+	// todo - replace for tests after sm-sap code is merged
 	//info, err := lc.Client.GetInfo(&lc.Parameters)
 	//if err != nil {
 	//	return cliErr.New("Could not get Service Manager info", err)
 	//}
 	info := &types.Info{
-		TokenIssuerCertURL: "https://x509-test.authentication.cert.stagingaws.hanavlab.ondemand.com",
-		TokenIssuerURL:     "https://x509-test.authentication.stagingaws.hanavlab.ondemand.com",
-		TokenBasicAuth:     false,
+		TokenIssuerURL: "https://x509-test.authentication.stagingaws.hanavlab.ondemand.com",
+		TokenBasicAuth: false,
 	}
 
 	options := &auth.Options{
@@ -139,7 +139,6 @@ func (lc *Cmd) Run() error {
 		ClientID:       lc.clientID,
 		ClientSecret:   lc.clientSecret,
 		IssuerURL:      info.TokenIssuerURL,
-		IssuerCertURL:  info.TokenIssuerCertURL,
 		TokenBasicAuth: info.TokenBasicAuth,
 		SSLDisabled:    lc.sslDisabled,
 		Cert:           lc.cert,
@@ -164,7 +163,6 @@ func (lc *Cmd) Run() error {
 		Token: *token,
 
 		IssuerURL:             info.TokenIssuerURL,
-		IssuerCertURL:         info.TokenIssuerCertURL,
 		AuthorizationEndpoint: options.AuthorizationEndpoint,
 		TokenEndpoint:         options.TokenEndpoint,
 		TokenBasicAuth:        info.TokenBasicAuth,

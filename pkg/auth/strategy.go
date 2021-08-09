@@ -44,7 +44,6 @@ type Options struct {
 	AuthorizationEndpoint string `mapstructure:"authorization_endpoint"`
 	TokenEndpoint         string `mapstructure:"token_endpoint"`
 	IssuerURL             string `mapstructure:"issuer_url"`
-	IssuerCertURL         string `mapstructure:"issuer_certurl"`
 	AuthFlow              Flow   `mapstructure:"auth_flow"`
 
 	TokenBasicAuth bool `mapstructure:"token_basic_auth"`

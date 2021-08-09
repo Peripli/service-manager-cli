@@ -30,6 +30,12 @@ import (
 )
 
 type openIDConfiguration struct {
+	TokenEndpoint         string              `json:"token_endpoint"`
+	AuthorizationEndpoint string              `json:"authorization_endpoint"`
+	MTLSEndpointAliases   MTLSEndpointAliases `json:"mtls_endpoint_aliases"`
+}
+
+type MTLSEndpointAliases struct {
 	TokenEndpoint         string `json:"token_endpoint"`
 	AuthorizationEndpoint string `json:"authorization_endpoint"`
 }
@@ -54,14 +60,16 @@ func NewOpenIDStrategy(options *auth.Options) (*OpenIDStrategy, *auth.Options, e
 
 	var oauthConfig *oauth2.Config
 	var ccConfig *clientcredentials.Config
-	if options.Cert != "" && options.Key != "" {
-		options.AuthorizationEndpoint = "https://x509-test.authentication.cert.stagingaws.hanavlab.ondemand.com/oauth/authorize"
-		options.TokenEndpoint = "https://x509-test.authentication.cert.stagingaws.hanavlab.ondemand.com/oauth/token"
+
+	openIDConfig, err := fetchOpenidConfiguration(options.IssuerURL, httpClient.Do)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error occurred while fetching openid configuration: %s", err)
+	}
+
+	if len(options.Cert) > 0 && len(options.Key) > 0 {
+		options.AuthorizationEndpoint = openIDConfig.MTLSEndpointAliases.AuthorizationEndpoint
+		options.TokenEndpoint = openIDConfig.MTLSEndpointAliases.TokenEndpoint
 	} else {
-		openIDConfig, err := fetchOpenidConfiguration(options.IssuerURL, httpClient.Do)
-		if err != nil {
-			return nil, nil, fmt.Errorf("error occurred while fetching openid configuration: %s", err)
-		}
 		options.AuthorizationEndpoint = openIDConfig.AuthorizationEndpoint
 		options.TokenEndpoint = openIDConfig.TokenEndpoint
 	}

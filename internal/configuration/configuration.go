@@ -38,7 +38,6 @@ type Settings struct {
 	AuthorizationEndpoint string
 	TokenEndpoint         string
 	IssuerURL             string
-	IssuerCertURL         string
 	AuthFlow              auth.Flow
 
 	URL            string
@@ -109,7 +108,6 @@ func (smCfg *smConfiguration) Save(settings *Settings) error {
 	smCfg.viperEnv.Set("cert", settings.Cert)
 	smCfg.viperEnv.Set("key", settings.Key)
 	smCfg.viperEnv.Set("issuer_url", settings.IssuerURL)
-	smCfg.viperEnv.Set("issuer_certurl", settings.IssuerCertURL)
 	smCfg.viperEnv.Set("token_url", settings.TokenEndpoint)
 	smCfg.viperEnv.Set("auth_url", settings.AuthorizationEndpoint)
 	smCfg.viperEnv.Set("auth_flow", string(settings.AuthFlow))
@@ -146,7 +144,6 @@ func (smCfg *smConfiguration) Load() (*Settings, error) {
 	settings.AuthorizationEndpoint = smCfg.viperEnv.Get("auth_url").(string)
 	settings.AuthFlow = auth.Flow(smCfg.viperEnv.Get("auth_flow").(string))
 	settings.IssuerURL = smCfg.viperEnv.Get("issuer_url").(string)
-	settings.IssuerCertURL = smCfg.viperEnv.Get("issuer_certurl").(string)
 	settings.ClientID = smCfg.viperEnv.Get("client_id").(string)
 	settings.ClientSecret = smCfg.viperEnv.Get("client_secret").(string)
 	settings.Cert = smCfg.viperEnv.Get("cert").(string)
