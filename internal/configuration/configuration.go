@@ -33,8 +33,6 @@ type Settings struct {
 
 	ClientID              string
 	ClientSecret          string
-	Cert                  string
-	Key                   string
 	AuthorizationEndpoint string
 	TokenEndpoint         string
 	IssuerURL             string
@@ -144,8 +142,6 @@ func (smCfg *smConfiguration) Load() (*Settings, error) {
 	settings.IssuerURL = smCfg.viperEnv.Get("issuer_url").(string)
 	settings.ClientID = smCfg.viperEnv.Get("client_id").(string)
 	settings.ClientSecret = smCfg.viperEnv.Get("client_secret").(string)
-	settings.Cert = smCfg.viperEnv.Get("cert").(string)
-	settings.Key = smCfg.viperEnv.Get("key").(string)
 
 	if err := settings.Validate(); err != nil {
 		return settings, err
