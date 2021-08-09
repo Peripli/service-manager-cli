@@ -69,19 +69,18 @@ func BuildHTTPClient(sslDisabled bool) *http.Client {
 }
 
 // BuildHTTPClientWithCert builds https mTLS client
-func BuildHTTPClientWithCert(certPath, keyPath string) *http.Client {
+func BuildHTTPClientWithCert(certPath, keyPath string) (*http.Client, error) {
 	client := getClient()
 	cert, err := tls.LoadX509KeyPair(certPath, keyPath)
 	if err != nil {
-		// todo - define error
-		//log.Fatalf("Error creating x509 keypair from client cert file %s and client key file %s", *clientCertFile, *clientKeyFile)
+		return nil, MTLSKeyPairCreationError
 	}
 
 	client.Transport.(*http.Transport).TLSClientConfig = &tls.Config{
 		Certificates: []tls.Certificate{cert},
 	}
 
-	return client
+	return client, nil
 }
 
 func getClient() *http.Client {

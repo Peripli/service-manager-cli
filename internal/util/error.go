@@ -18,4 +18,7 @@ package util
 
 import "errors"
 
-var LoginValidationError = errors.New("when using client credentials flow, required either client_id & client_secret or client_id & cert & key")
+var (
+	LoginValidationError     = errors.New("when using client credentials flow, required either client_id & client_secret or client_id & cert & key")
+	MTLSKeyPairCreationError = errors.New("error creating x509 keypair from client cert file and client key file")
+)

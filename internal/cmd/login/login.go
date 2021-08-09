@@ -83,7 +83,7 @@ func (lc *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result.Flags().StringVarP(&lc.password, "password", "p", "", "Password")
 	result.Flags().StringVarP(&lc.clientID, "client-id", "", "", "Client id used for OAuth flow")
 	result.Flags().StringVarP(&lc.clientSecret, "client-secret", "", defaultClientSecret, "Client secret used for OAuth flow")
-	result.Flags().StringVarP(&lc.cert, "cert", "", "", "Client cert")
+	result.Flags().StringVarP(&lc.cert, "cert", "", "", "Client certificate")
 	result.Flags().StringVarP(&lc.key, "key", "", "", "Client private key")
 	result.Flags().BoolVarP(&lc.sslDisabled, "skip-ssl-validation", "", false, "Skip verification of the OAuth endpoint. Not recommended!")
 	result.Flags().StringVarP((*string)(&lc.authenticationFlow), "auth-flow", "", string(auth.PasswordGrant), `Authentication flow (grant type): "client-credentials" or "password-grant"`)

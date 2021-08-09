@@ -50,8 +50,12 @@ type OpenIDStrategy struct {
 // NewOpenIDStrategy returns OpenId auth strategy
 func NewOpenIDStrategy(options *auth.Options) (*OpenIDStrategy, *auth.Options, error) {
 	var httpClient *http.Client
+	var err error
 	if len(options.Cert) > 0 && len(options.Key) > 0 {
-		httpClient = util.BuildHTTPClientWithCert(options.Cert, options.Key)
+		httpClient, err = util.BuildHTTPClientWithCert(options.Cert, options.Key)
+		if err != nil {
+			return nil, nil, err
+		}
 	} else {
 		httpClient = util.BuildHTTPClient(options.SSLDisabled)
 	}
