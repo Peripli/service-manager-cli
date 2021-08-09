@@ -52,8 +52,7 @@ func NewOpenIDStrategy(options *auth.Options) (*OpenIDStrategy, *auth.Options, e
 	var httpClient *http.Client
 	var err error
 	if len(options.Cert) > 0 && len(options.Key) > 0 {
-		httpClient, err = util.BuildHTTPClientWithCert(options.Cert, options.Key)
-		if err != nil {
+		if httpClient, err = util.BuildHTTPClientWithCert(options.Cert, options.Key); err != nil {
 			return nil, nil, err
 		}
 	} else {

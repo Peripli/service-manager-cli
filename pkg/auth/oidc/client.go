@@ -166,7 +166,6 @@ func fetchOpenidConfiguration(issuerURL string, readConfigurationFunc DoRequestF
 	}
 
 	response, err := readConfigurationFunc(req)
-	// todo - fix error: x509: certificate signed by unknown authority
 	if err != nil {
 		return nil, err
 	}

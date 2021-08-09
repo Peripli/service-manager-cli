@@ -26,7 +26,7 @@ func TestLoginCmd(t *testing.T) {
 	RunSpecs(t, "")
 }
 
-var _ = FDescribe("Login Command test", func() {
+var _ = Describe("Login Command test", func() {
 
 	var command *Cmd
 	var credentialsBuffer, outputBuffer *bytes.Buffer
