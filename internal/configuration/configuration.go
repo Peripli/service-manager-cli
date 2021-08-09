@@ -105,8 +105,6 @@ func (smCfg *smConfiguration) Save(settings *Settings) error {
 
 	smCfg.viperEnv.Set("client_id", settings.ClientID)
 	smCfg.viperEnv.Set("client_secret", settings.ClientSecret)
-	smCfg.viperEnv.Set("cert", settings.Cert)
-	smCfg.viperEnv.Set("key", settings.Key)
 	smCfg.viperEnv.Set("issuer_url", settings.IssuerURL)
 	smCfg.viperEnv.Set("token_url", settings.TokenEndpoint)
 	smCfg.viperEnv.Set("auth_url", settings.AuthorizationEndpoint)

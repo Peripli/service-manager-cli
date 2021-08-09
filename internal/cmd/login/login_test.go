@@ -2,6 +2,7 @@ package login
 
 import (
 	"fmt"
+	"github.com/Peripli/service-manager-cli/internal/util"
 
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/auth/authfakes"
@@ -25,7 +26,7 @@ func TestLoginCmd(t *testing.T) {
 	RunSpecs(t, "")
 }
 
-var _ = Describe("Login Command test", func() {
+var _ = FDescribe("Login Command test", func() {
 
 	var command *Cmd
 	var credentialsBuffer, outputBuffer *bytes.Buffer
@@ -149,6 +150,19 @@ var _ = Describe("Login Command test", func() {
 					Expect(savedConfig.ClientSecret).To(Equal(""))
 				})
 			})
+			When("cert & key & client id are provided through flag", func() {
+				It("login successfully", func() {
+					lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=client-credentials", "--client-id=id", "--cert=cert.pem", "--key=key.pem"})
+
+					err := lc.Execute()
+
+					Expect(err).ShouldNot(HaveOccurred())
+					Expect(outputBuffer.String()).To(ContainSubstring("Logged in successfully.\n"))
+
+					savedConfig := config.SaveArgsForCall(0)
+					Expect(savedConfig.ClientID).To(Equal("id"))
+				})
+			})
 		})
 
 		Context("Use token_basic_auth returned by info endpoint", func() {
@@ -172,22 +186,6 @@ var _ = Describe("Login Command test", func() {
 			}
 		})
 
-		FContext("With mTLS, cert & key & client id are provided through flags", func() {
-			It("executes login and saved access token", func() {
-				lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=client-credentials", "--cert=cert.pem", "--key=key.pem", "--client-id=smctl"})
-
-				credentialsBuffer.WriteString("user\n")
-
-				err := lc.Execute()
-
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(outputBuffer.String()).To(ContainSubstring("Logged in successfully.\n"))
-
-				savedConfig := config.SaveArgsForCall(0)
-				Expect(savedConfig.ClientID).To(Equal(""))
-				Expect(savedConfig.ClientSecret).To(Equal(""))
-			})
-		})
 	})
 
 	Describe("Invalid request", func() {
@@ -259,7 +257,7 @@ var _ = Describe("Login Command test", func() {
 					err := lc.Execute()
 
 					Expect(err).Should(HaveOccurred())
-					Expect(err.Error()).To(Equal("clientID/clientSecret should not be empty when using client credentials flow"))
+					Expect(err).To(Equal(util.LoginValidationError))
 				})
 			})
 
@@ -270,7 +268,7 @@ var _ = Describe("Login Command test", func() {
 					err := lc.Execute()
 
 					Expect(err).Should(HaveOccurred())
-					Expect(err.Error()).To(Equal("clientID/clientSecret should not be empty when using client credentials flow"))
+					Expect(err).To(Equal(util.LoginValidationError))
 				})
 			})
 		})

@@ -20,7 +20,6 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/Peripli/service-manager-cli/pkg/types"
 	"io"
 	"syscall"
 
@@ -124,14 +123,14 @@ func (lc *Cmd) Run() error {
 	}
 
 	// todo - replace for tests after sm-sap code is merged
-	//info, err := lc.Client.GetInfo(&lc.Parameters)
-	//if err != nil {
-	//	return cliErr.New("Could not get Service Manager info", err)
-	//}
-	info := &types.Info{
-		TokenIssuerURL: "https://x509-test.authentication.stagingaws.hanavlab.ondemand.com",
-		TokenBasicAuth: false,
+	info, err := lc.Client.GetInfo(&lc.Parameters)
+	if err != nil {
+		return cliErr.New("Could not get Service Manager info", err)
 	}
+	//info := &types.Info{
+	//	TokenIssuerURL: "https://x509-test.authentication.stagingaws.hanavlab.ondemand.com",
+	//	TokenBasicAuth: false,
+	//}
 
 	options := &auth.Options{
 		User:           lc.user,
@@ -166,8 +165,6 @@ func (lc *Cmd) Run() error {
 		AuthorizationEndpoint: options.AuthorizationEndpoint,
 		TokenEndpoint:         options.TokenEndpoint,
 		TokenBasicAuth:        info.TokenBasicAuth,
-		Cert:                  options.Cert,
-		Key:                   options.Key,
 	}
 	if len(options.Cert) > 0 && len(options.Key) > 0 {
 		settings.ClientID = options.ClientID
@@ -203,11 +200,8 @@ func (lc *Cmd) getToken(authStrategy auth.Authenticator) (*auth.Token, error) {
 func (lc *Cmd) validateLoginFlow() error {
 	switch lc.authenticationFlow {
 	case auth.ClientCredentials:
-		if len(lc.clientID) == 0 && len(lc.clientSecret) == 0 {
-			return errors.New("clientID/clientSecret should not be empty when using client credentials flow")
-		}
-		if len(lc.clientID) == 0 && len(lc.cert) == 0 && len(lc.key) == 0 {
-			return errors.New("clientID/cert/key should not be empty when using mTLS credentials flow")
+		if len(lc.clientSecret) == 0 && len(lc.clientID) == 0 || len(lc.clientID) == 0 && len(lc.cert) == 0 && len(lc.key) == 0 {
+			return util.LoginValidationError
 		}
 	case auth.PasswordGrant:
 		return lc.validatePasswordGrant()
