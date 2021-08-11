@@ -40,6 +40,8 @@ const (
 	defaultClientSecret = ""
 )
 
+var validationError = errors.New("when using client credentials flow, required either client_id & client_secret or client_id & cert & key")
+
 // Cmd wraps the smctl login command
 type Cmd struct {
 	*cmd.Context
@@ -52,6 +54,8 @@ type Cmd struct {
 	sslDisabled        bool
 	clientID           string
 	clientSecret       string
+	cert               string
+	key                string
 	authenticationFlow auth.Flow
 
 	authBuilder authenticationBuilder
@@ -81,6 +85,8 @@ func (lc *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result.Flags().StringVarP(&lc.password, "password", "p", "", "Password")
 	result.Flags().StringVarP(&lc.clientID, "client-id", "", "", "Client id used for OAuth flow")
 	result.Flags().StringVarP(&lc.clientSecret, "client-secret", "", defaultClientSecret, "Client secret used for OAuth flow")
+	result.Flags().StringVarP(&lc.cert, "cert", "", "", "Client certificate")
+	result.Flags().StringVarP(&lc.key, "key", "", "", "Client private key")
 	result.Flags().BoolVarP(&lc.sslDisabled, "skip-ssl-validation", "", false, "Skip verification of the OAuth endpoint. Not recommended!")
 	result.Flags().StringVarP((*string)(&lc.authenticationFlow), "auth-flow", "", string(auth.PasswordGrant), `Authentication flow (grant type): "client-credentials" or "password-grant"`)
 	cmd.AddCommonQueryFlag(result.Flags(), &lc.Parameters)
@@ -131,6 +137,8 @@ func (lc *Cmd) Run() error {
 		IssuerURL:      info.TokenIssuerURL,
 		TokenBasicAuth: info.TokenBasicAuth,
 		SSLDisabled:    lc.sslDisabled,
+		Cert:           lc.cert,
+		Key:            lc.key,
 	}
 
 	authStrategy, options, err := lc.authBuilder(options)
@@ -186,8 +194,10 @@ func (lc *Cmd) getToken(authStrategy auth.Authenticator) (*auth.Token, error) {
 func (lc *Cmd) validateLoginFlow() error {
 	switch lc.authenticationFlow {
 	case auth.ClientCredentials:
-		if len(lc.clientID) == 0 || len(lc.clientSecret) == 0 {
-			return errors.New("clientID/clientSecret should not be empty when using client credentials flow")
+		validClientSecret := len(lc.clientID) > 0 && len(lc.clientSecret) > 0
+		validMTLS := len(lc.clientID) > 0 && len(lc.cert) > 0 && len(lc.key) > 0
+		if !validClientSecret && !validMTLS {
+			return validationError
 		}
 	case auth.PasswordGrant:
 		return lc.validatePasswordGrant()

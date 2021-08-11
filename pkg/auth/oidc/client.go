@@ -159,7 +159,8 @@ func (c *Client) Token() (*auth.Token, error) {
 type DoRequestFunc func(request *http.Request) (*http.Response, error)
 
 func fetchOpenidConfiguration(issuerURL string, readConfigurationFunc DoRequestFunc) (*openIDConfiguration, error) {
-	req, err := http.NewRequest(http.MethodGet, issuerURL+"/.well-known/openid-configuration", nil)
+	url := issuerURL + "/.well-known/openid-configuration"
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}

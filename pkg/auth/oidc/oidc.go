@@ -20,9 +20,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
-
 	"github.com/Peripli/service-manager/pkg/log"
+	"net/http"
 
 	"github.com/Peripli/service-manager-cli/internal/util"
 	"github.com/Peripli/service-manager-cli/pkg/auth"
@@ -31,6 +30,12 @@ import (
 )
 
 type openIDConfiguration struct {
+	TokenEndpoint         string              `json:"token_endpoint"`
+	AuthorizationEndpoint string              `json:"authorization_endpoint"`
+	MTLSEndpointAliases   MTLSEndpointAliases `json:"mtls_endpoint_aliases"`
+}
+
+type MTLSEndpointAliases struct {
 	TokenEndpoint         string `json:"token_endpoint"`
 	AuthorizationEndpoint string `json:"authorization_endpoint"`
 }
@@ -44,19 +49,39 @@ type OpenIDStrategy struct {
 
 // NewOpenIDStrategy returns OpenId auth strategy
 func NewOpenIDStrategy(options *auth.Options) (*OpenIDStrategy, *auth.Options, error) {
-	httpClient := util.BuildHTTPClient(options.SSLDisabled)
+	var httpClient *http.Client
+	var err error
+	mtlsEnabled := len(options.Cert) > 0 && len(options.Key) > 0
+
+	if mtlsEnabled {
+		if httpClient, err = util.BuildHTTPClientWithCert(options.Cert, options.Key); err != nil {
+			return nil, nil, err
+		}
+	} else {
+		httpClient = util.BuildHTTPClient(options.SSLDisabled)
+	}
+
 	httpClient.Timeout = options.Timeout
+
+	var oauthConfig *oauth2.Config
+	var ccConfig *clientcredentials.Config
 
 	openIDConfig, err := fetchOpenidConfiguration(options.IssuerURL, httpClient.Do)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error occurred while fetching openid configuration: %s", err)
 	}
-	options.AuthorizationEndpoint = openIDConfig.AuthorizationEndpoint
-	options.TokenEndpoint = openIDConfig.TokenEndpoint
 
-	oauthConfig := newOauth2Config(options)
+	if mtlsEnabled {
+		options.AuthorizationEndpoint = openIDConfig.MTLSEndpointAliases.AuthorizationEndpoint
+		options.TokenEndpoint = openIDConfig.MTLSEndpointAliases.TokenEndpoint
+	} else {
+		options.AuthorizationEndpoint = openIDConfig.AuthorizationEndpoint
+		options.TokenEndpoint = openIDConfig.TokenEndpoint
+	}
 
-	ccConfig := newClientCredentialsConfig(options)
+	oauthConfig = newOauth2Config(options)
+
+	ccConfig = newClientCredentialsConfig(options)
 
 	return &OpenIDStrategy{
 		oauth2Config: oauthConfig,

@@ -67,3 +67,35 @@ func BuildHTTPClient(sslDisabled bool) *http.Client {
 
 	return client
 }
+
+// BuildHTTPClientWithCert builds https mTLS client
+func BuildHTTPClientWithCert(certPath, keyPath string) (*http.Client, error) {
+	client := getClient()
+	cert, err := tls.LoadX509KeyPair(certPath, keyPath)
+	if err != nil {
+		return nil, err
+	}
+
+	client.Transport.(*http.Transport).TLSClientConfig = &tls.Config{
+		Certificates: []tls.Certificate{cert},
+	}
+
+	return client, nil
+}
+
+func getClient() *http.Client {
+	return &http.Client{
+		Timeout: time.Second * 10,
+		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+			DialContext: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).DialContext,
+			MaxIdleConns:          100,
+			IdleConnTimeout:       90 * time.Second,
+			TLSHandshakeTimeout:   10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+		},
+	}
+}

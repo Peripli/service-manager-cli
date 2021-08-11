@@ -218,7 +218,6 @@ func AddSupportedEnvironmentFlag(flags *pflag.FlagSet, parameters *query.Paramet
 	flags.StringVarP(&parameters.Environment, "environment", "e", "", description)
 }
 
-
 // AddModeFlag adds the --mode flag for SM calls.
 func AddModeFlag(flags *pflag.FlagSet, defValue string) {
 	flags.StringP("mode", "", defValue, "How calls to SM are performed sync or async")

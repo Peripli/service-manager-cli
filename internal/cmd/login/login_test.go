@@ -2,7 +2,6 @@ package login
 
 import (
 	"fmt"
-
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/auth/authfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
@@ -149,6 +148,16 @@ var _ = Describe("Login Command test", func() {
 					Expect(savedConfig.ClientSecret).To(Equal(""))
 				})
 			})
+			When("cert & key & client id are provided through flag", func() {
+				It("login successfully", func() {
+					lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=client-credentials", "--client-id=id", "--cert=cert.pem", "--key=key.pem"})
+
+					err := lc.Execute()
+
+					Expect(err).ShouldNot(HaveOccurred())
+					Expect(outputBuffer.String()).To(ContainSubstring("Logged in successfully.\n"))
+				})
+			})
 		})
 
 		Context("Use token_basic_auth returned by info endpoint", func() {
@@ -171,6 +180,7 @@ var _ = Describe("Login Command test", func() {
 				})
 			}
 		})
+
 	})
 
 	Describe("Invalid request", func() {
@@ -242,7 +252,7 @@ var _ = Describe("Login Command test", func() {
 					err := lc.Execute()
 
 					Expect(err).Should(HaveOccurred())
-					Expect(err.Error()).To(Equal("clientID/clientSecret should not be empty when using client credentials flow"))
+					Expect(err).To(Equal(validationError))
 				})
 			})
 
@@ -253,7 +263,34 @@ var _ = Describe("Login Command test", func() {
 					err := lc.Execute()
 
 					Expect(err).Should(HaveOccurred())
-					Expect(err.Error()).To(Equal("clientID/clientSecret should not be empty when using client credentials flow"))
+					Expect(err).To(Equal(validationError))
+				})
+			})
+
+			When("mtls parameters are missing", func() {
+				It("fails due to missing client id", func() {
+					lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=client-credentials", "--cert=cert.pem", "--key=key.pem"})
+
+					err := lc.Execute()
+
+					Expect(err).Should(HaveOccurred())
+					Expect(err).To(Equal(validationError))
+				})
+				It("fails due to missing cert", func() {
+					lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=client-credentials", "--client-id=id", "--key=key.pem"})
+
+					err := lc.Execute()
+
+					Expect(err).Should(HaveOccurred())
+					Expect(err).To(Equal(validationError))
+				})
+				It("fails due to missing key", func() {
+					lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=client-credentials", "--cert=cert.pem", "--key=key.pem"})
+
+					err := lc.Execute()
+
+					Expect(err).Should(HaveOccurred())
+					Expect(err).To(Equal(validationError))
 				})
 			})
 		})

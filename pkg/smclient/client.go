@@ -61,7 +61,7 @@ type Client interface {
 
 	ListOfferings(*query.Parameters) (*types.ServiceOfferings, error)
 	ListPlans(*query.Parameters) (*types.ServicePlans, error)
-	GetPlanByID(string,*query.Parameters) (*types.ServicePlan, error)
+	GetPlanByID(string, *query.Parameters) (*types.ServicePlan, error)
 	ListInstances(*query.Parameters) (*types.ServiceInstances, error)
 	GetInstanceByID(string, *query.Parameters) (*types.ServiceInstance, error)
 	GetInstanceParameters(string, *query.Parameters) (map[string]interface{}, error)
@@ -278,13 +278,15 @@ func (client *serviceManagerClient) ListInstances(q *query.Parameters) (*types.S
 
 	return instances, err
 }
+
 // GetInstanceParameters returns service instance configuration parameters
 func (client *serviceManagerClient) GetInstanceParameters(id string, q *query.Parameters) (map[string]interface{}, error) {
 	parameters := make(map[string]interface{})
-	err := client.get(&parameters, web.ServiceInstancesURL + "/" + id + web.ParametersURL, q)
+	err := client.get(&parameters, web.ServiceInstancesURL+"/"+id+web.ParametersURL, q)
 
 	return parameters, err
 }
+
 // GetPlanByID returns pla by id
 func (client *serviceManagerClient) GetPlanByID(id string, q *query.Parameters) (*types.ServicePlan, error) {
 	plan := &types.ServicePlan{}
@@ -316,7 +318,7 @@ func (client *serviceManagerClient) ListBindings(q *query.Parameters) (*types.Se
 // GetBindingParameters returns service binding configuration parameters
 func (client *serviceManagerClient) GetBindingParameters(id string, q *query.Parameters) (map[string]interface{}, error) {
 	parameters := make(map[string]interface{})
-	err := client.get(&parameters, web.ServiceBindingsURL + "/" + id + web.ParametersURL, q)
+	err := client.get(&parameters, web.ServiceBindingsURL+"/"+id+web.ParametersURL, q)
 
 	return parameters, err
 }
@@ -341,7 +343,7 @@ func (client *serviceManagerClient) Marketplace(q *query.Parameters) (*types.Mar
 	for i, so := range marketplace.ServiceOfferings {
 		plans := &types.ServicePlansForOffering{}
 		err := client.list(&plans.ServicePlans, web.ServicePlansURL, &query.Parameters{
-			Environment: q.Environment,
+			Environment:   q.Environment,
 			FieldQuery:    []string{fmt.Sprintf("service_offering_id eq '%s'", so.ID)},
 			GeneralParams: q.GeneralParams,
 		})
@@ -390,7 +392,7 @@ func (client *serviceManagerClient) DeletePlatforms(q *query.Parameters) error {
 }
 
 func (client *serviceManagerClient) DeletePlatform(id string, q *query.Parameters) (string, error) {
-	location, err := client.delete(web.PlatformsURL + "/" + id, q)
+	location, err := client.delete(web.PlatformsURL+"/"+id, q)
 	return location, err
 }
 
