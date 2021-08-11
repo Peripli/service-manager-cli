@@ -2,8 +2,6 @@ package login
 
 import (
 	"fmt"
-	"github.com/Peripli/service-manager-cli/internal/util"
-
 	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"github.com/Peripli/service-manager-cli/pkg/auth/authfakes"
 	"github.com/Peripli/service-manager-cli/pkg/types"
@@ -257,7 +255,7 @@ var _ = Describe("Login Command test", func() {
 					err := lc.Execute()
 
 					Expect(err).Should(HaveOccurred())
-					Expect(err).To(Equal(util.LoginValidationError))
+					Expect(err).To(Equal(validationError))
 				})
 			})
 
@@ -268,7 +266,7 @@ var _ = Describe("Login Command test", func() {
 					err := lc.Execute()
 
 					Expect(err).Should(HaveOccurred())
-					Expect(err).To(Equal(util.LoginValidationError))
+					Expect(err).To(Equal(validationError))
 				})
 			})
 
@@ -279,7 +277,7 @@ var _ = Describe("Login Command test", func() {
 					err := lc.Execute()
 
 					Expect(err).Should(HaveOccurred())
-					Expect(err).To(Equal(util.LoginValidationError))
+					Expect(err).To(Equal(validationError))
 				})
 				It("fails due to missing cert", func() {
 					lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=client-credentials", "--client-id=id", "--key=key.pem"})
@@ -287,7 +285,7 @@ var _ = Describe("Login Command test", func() {
 					err := lc.Execute()
 
 					Expect(err).Should(HaveOccurred())
-					Expect(err).To(Equal(util.LoginValidationError))
+					Expect(err).To(Equal(validationError))
 				})
 				It("fails due to missing key", func() {
 					lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=client-credentials", "--cert=cert.pem", "--key=key.pem"})
@@ -295,7 +293,7 @@ var _ = Describe("Login Command test", func() {
 					err := lc.Execute()
 
 					Expect(err).Should(HaveOccurred())
-					Expect(err).To(Equal(util.LoginValidationError))
+					Expect(err).To(Equal(validationError))
 				})
 			})
 		})

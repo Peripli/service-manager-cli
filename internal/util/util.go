@@ -73,7 +73,7 @@ func BuildHTTPClientWithCert(certPath, keyPath string) (*http.Client, error) {
 	client := getClient()
 	cert, err := tls.LoadX509KeyPair(certPath, keyPath)
 	if err != nil {
-		return nil, MTLSKeyPairCreationError
+		return nil, err
 	}
 
 	client.Transport.(*http.Transport).TLSClientConfig = &tls.Config{

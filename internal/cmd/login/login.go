@@ -40,6 +40,8 @@ const (
 	defaultClientSecret = ""
 )
 
+var validationError = errors.New("when using client credentials flow, required either client_id & client_secret or client_id & cert & key")
+
 // Cmd wraps the smctl login command
 type Cmd struct {
 	*cmd.Context
@@ -161,9 +163,6 @@ func (lc *Cmd) Run() error {
 		TokenEndpoint:         options.TokenEndpoint,
 		TokenBasicAuth:        info.TokenBasicAuth,
 	}
-	if len(options.Cert) > 0 && len(options.Key) > 0 {
-		settings.ClientID = options.ClientID
-	}
 	if options.ClientID == defaultClientID && options.ClientSecret == defaultClientSecret {
 		settings.ClientID = options.ClientID
 		settings.ClientSecret = options.ClientSecret
@@ -198,7 +197,7 @@ func (lc *Cmd) validateLoginFlow() error {
 		validClientSecret := len(lc.clientID) > 0 && len(lc.clientSecret) > 0
 		validMTLS := len(lc.clientID) > 0 && len(lc.cert) > 0 && len(lc.key) > 0
 		if !validClientSecret && !validMTLS {
-			return util.LoginValidationError
+			return validationError
 		}
 	case auth.PasswordGrant:
 		return lc.validatePasswordGrant()

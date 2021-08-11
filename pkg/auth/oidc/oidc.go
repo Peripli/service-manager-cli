@@ -51,7 +51,9 @@ type OpenIDStrategy struct {
 func NewOpenIDStrategy(options *auth.Options) (*OpenIDStrategy, *auth.Options, error) {
 	var httpClient *http.Client
 	var err error
-	if len(options.Cert) > 0 && len(options.Key) > 0 {
+	validMTLSParameters := len(options.Cert) > 0 && len(options.Key) > 0
+
+	if validMTLSParameters {
 		if httpClient, err = util.BuildHTTPClientWithCert(options.Cert, options.Key); err != nil {
 			return nil, nil, err
 		}
@@ -69,7 +71,7 @@ func NewOpenIDStrategy(options *auth.Options) (*OpenIDStrategy, *auth.Options, e
 		return nil, nil, fmt.Errorf("error occurred while fetching openid configuration: %s", err)
 	}
 
-	if len(options.Cert) > 0 && len(options.Key) > 0 {
+	if validMTLSParameters {
 		options.AuthorizationEndpoint = openIDConfig.MTLSEndpointAliases.AuthorizationEndpoint
 		options.TokenEndpoint = openIDConfig.MTLSEndpointAliases.TokenEndpoint
 	} else {
