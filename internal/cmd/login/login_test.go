@@ -156,9 +156,6 @@ var _ = Describe("Login Command test", func() {
 
 					Expect(err).ShouldNot(HaveOccurred())
 					Expect(outputBuffer.String()).To(ContainSubstring("Logged in successfully.\n"))
-
-					savedConfig := config.SaveArgsForCall(0)
-					Expect(savedConfig.ClientID).To(Equal("id"))
 				})
 			})
 		})
