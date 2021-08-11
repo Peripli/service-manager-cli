@@ -195,7 +195,9 @@ func (lc *Cmd) getToken(authStrategy auth.Authenticator) (*auth.Token, error) {
 func (lc *Cmd) validateLoginFlow() error {
 	switch lc.authenticationFlow {
 	case auth.ClientCredentials:
-		if len(lc.clientSecret) == 0 && len(lc.clientID) == 0 || len(lc.clientID) == 0 && len(lc.cert) == 0 && len(lc.key) == 0 {
+		missingClientID := len(lc.clientID) == 0
+		missingSecret := len(lc.clientSecret) == 0 || len(lc.cert) == 0 || len(lc.key) == 0
+		if missingClientID || (len(lc.clientID) > 0 && missingSecret) {
 			return util.LoginValidationError
 		}
 	case auth.PasswordGrant:
