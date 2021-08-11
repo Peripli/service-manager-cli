@@ -122,15 +122,10 @@ func (lc *Cmd) Run() error {
 		lc.Client = smclient.NewClient(lc.Ctx, httpClient, lc.serviceManagerURL)
 	}
 
-	// todo - replace for tests after sm-sap code is merged
 	info, err := lc.Client.GetInfo(&lc.Parameters)
 	if err != nil {
 		return cliErr.New("Could not get Service Manager info", err)
 	}
-	//info := &types.Info{
-	//	TokenIssuerURL: "https://x509-test.authentication.stagingaws.hanavlab.ondemand.com",
-	//	TokenBasicAuth: false,
-	//}
 
 	options := &auth.Options{
 		User:           lc.user,
