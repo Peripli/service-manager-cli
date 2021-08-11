@@ -40,7 +40,7 @@ const (
 	defaultClientSecret = ""
 )
 
-var validationError = errors.New("when using client credentials flow, required either client_id & client_secret or client_id & cert & key")
+var validationError = errors.New("Invalid credentials. In a Client Credentials authorization flow, use either the combination of a client_id and client_secret or client_id and client cert and key.")
 
 // Cmd wraps the smctl login command
 type Cmd struct {
