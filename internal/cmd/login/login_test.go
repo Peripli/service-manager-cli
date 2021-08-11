@@ -163,32 +163,6 @@ var _ = Describe("Login Command test", func() {
 					Expect(savedConfig.ClientID).To(Equal("id"))
 				})
 			})
-			When("mtls parameters are missing", func() {
-				It("fails due to missing client id", func() {
-					lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=client-credentials", "--cert=cert.pem", "--key=key.pem"})
-
-					err := lc.Execute()
-
-					Expect(err).Should(HaveOccurred())
-					Expect(err).To(Equal(util.LoginValidationError))
-				})
-				It("fails due to missing cert", func() {
-					lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=client-credentials", "--client-id=id", "--key=key.pem"})
-
-					err := lc.Execute()
-
-					Expect(err).Should(HaveOccurred())
-					Expect(err).To(Equal(util.LoginValidationError))
-				})
-				It("fails due to missing key", func() {
-					lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=client-credentials", "--cert=cert.pem", "--key=key.pem"})
-
-					err := lc.Execute()
-
-					Expect(err).Should(HaveOccurred())
-					Expect(err).To(Equal(util.LoginValidationError))
-				})
-			})
 		})
 
 		Context("Use token_basic_auth returned by info endpoint", func() {
@@ -290,6 +264,33 @@ var _ = Describe("Login Command test", func() {
 			When("client id is not provided", func() {
 				It("should return an error", func() {
 					lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=client-credentials", "--client-secret", "secret"})
+
+					err := lc.Execute()
+
+					Expect(err).Should(HaveOccurred())
+					Expect(err).To(Equal(util.LoginValidationError))
+				})
+			})
+
+			When("mtls parameters are missing", func() {
+				It("fails due to missing client id", func() {
+					lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=client-credentials", "--cert=cert.pem", "--key=key.pem"})
+
+					err := lc.Execute()
+
+					Expect(err).Should(HaveOccurred())
+					Expect(err).To(Equal(util.LoginValidationError))
+				})
+				It("fails due to missing cert", func() {
+					lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=client-credentials", "--client-id=id", "--key=key.pem"})
+
+					err := lc.Execute()
+
+					Expect(err).Should(HaveOccurred())
+					Expect(err).To(Equal(util.LoginValidationError))
+				})
+				It("fails due to missing key", func() {
+					lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=client-credentials", "--cert=cert.pem", "--key=key.pem"})
 
 					err := lc.Execute()
 
