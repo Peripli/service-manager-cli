@@ -104,6 +104,12 @@ func (lc *Cmd) Validate(args []string) error {
 	if lc.serviceManagerURL == "" {
 		return errors.New("URL flag must be provided")
 	}
+	userFlowEnabled := len(lc.user) > 0 && len(lc.password) > 0
+	mtlsEnabled := len(lc.cert) > 0 && len(lc.key) > 0 && len(lc.clientID) > 0
+	clientSecretEnabled := len(lc.clientID) > 0 && len(lc.clientSecret) > 0
+	if !userFlowEnabled && (mtlsEnabled || clientSecretEnabled) {
+		lc.authenticationFlow = auth.ClientCredentials
+	}
 
 	if err := util.ValidateURL(lc.serviceManagerURL); err != nil {
 		return fmt.Errorf("service manager URL is invalid: %v", err)
