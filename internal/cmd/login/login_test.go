@@ -168,7 +168,7 @@ var _ = Describe("Login Command test", func() {
 					Expect(outputBuffer.String()).To(ContainSubstring("Logged in successfully.\n"))
 				})
 			})
-			When("client id secret are provided through flag", func() {
+			When("auth-flow not provided and client id secret are provided through flag", func() {
 				It("login successfully and not save the client credentials", func() {
 					lc.SetArgs([]string{"--url=http://valid-url.com", "--client-id=id", "--client-secret=secret"})
 
