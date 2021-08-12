@@ -104,12 +104,6 @@ func (lc *Cmd) Validate(args []string) error {
 	if lc.serviceManagerURL == "" {
 		return errors.New("URL flag must be provided")
 	}
-	userFlowEnabled := len(lc.user) > 0 && len(lc.password) > 0
-	mtlsEnabled := len(lc.cert) > 0 && len(lc.key) > 0 && len(lc.clientID) > 0
-	clientSecretEnabled := len(lc.clientID) > 0 && len(lc.clientSecret) > 0
-	if !userFlowEnabled && (mtlsEnabled || clientSecretEnabled) {
-		lc.authenticationFlow = auth.ClientCredentials
-	}
 
 	if err := util.ValidateURL(lc.serviceManagerURL); err != nil {
 		return fmt.Errorf("service manager URL is invalid: %v", err)
@@ -198,11 +192,11 @@ func (lc *Cmd) getToken(authStrategy auth.Authenticator) (*auth.Token, error) {
 }
 
 func (lc *Cmd) validateLoginFlow() error {
+	validCredentialsFlow := lc.validateAndSetCredentialsFlow()
+
 	switch lc.authenticationFlow {
 	case auth.ClientCredentials:
-		validClientSecret := len(lc.clientID) > 0 && len(lc.clientSecret) > 0
-		validMTLS := len(lc.clientID) > 0 && len(lc.cert) > 0 && len(lc.key) > 0
-		if !validClientSecret && !validMTLS {
+		if !validCredentialsFlow {
 			return validationError
 		}
 	case auth.PasswordGrant:
@@ -212,6 +206,19 @@ func (lc *Cmd) validateLoginFlow() error {
 	}
 
 	return nil
+}
+
+func (lc *Cmd) validateAndSetCredentialsFlow() bool {
+	clientSecretEnabled := len(lc.clientID) > 0 && len(lc.clientSecret) > 0
+	mtlsEnabled := len(lc.clientID) > 0 && len(lc.cert) > 0 && len(lc.key) > 0
+	passwordEnabled := len(lc.user) > 0 && len(lc.password) > 0
+
+	// when mTLS/client-secret inputs provided correctly, assume auth-flow=client-credentials
+	if !passwordEnabled && (mtlsEnabled || clientSecretEnabled) {
+		lc.authenticationFlow = auth.ClientCredentials
+	}
+
+	return clientSecretEnabled || mtlsEnabled
 }
 
 func (lc *Cmd) validatePasswordGrant() error {
