@@ -158,8 +158,8 @@ var _ = Describe("Login Command test", func() {
 					Expect(outputBuffer.String()).To(ContainSubstring("Logged in successfully.\n"))
 				})
 			})
-			When("auth-flow not provided and cert & key & client id are provided through flag", func() {
-				It("login successfully", func() {
+			When("auth flow not provided", func() {
+				It("login successfully with mTLS", func() {
 					lc.SetArgs([]string{"--url=http://valid-url.com", "--client-id=id", "--cert=cert.pem", "--key=key.pem"})
 
 					err := lc.Execute()
@@ -167,9 +167,7 @@ var _ = Describe("Login Command test", func() {
 					Expect(err).ShouldNot(HaveOccurred())
 					Expect(outputBuffer.String()).To(ContainSubstring("Logged in successfully.\n"))
 				})
-			})
-			When("auth-flow not provided and client id secret are provided through flag", func() {
-				It("login successfully and not save the client credentials", func() {
+				It("login successfully with client id and client secret", func() {
 					lc.SetArgs([]string{"--url=http://valid-url.com", "--client-id=id", "--client-secret=secret"})
 
 					err := lc.Execute()
