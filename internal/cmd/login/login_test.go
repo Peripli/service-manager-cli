@@ -158,6 +158,30 @@ var _ = Describe("Login Command test", func() {
 					Expect(outputBuffer.String()).To(ContainSubstring("Logged in successfully.\n"))
 				})
 			})
+			When("auth-flow not provided and cert & key & client id are provided through flag", func() {
+				It("login successfully", func() {
+					lc.SetArgs([]string{"--url=http://valid-url.com", "--client-id=id", "--cert=cert.pem", "--key=key.pem"})
+
+					err := lc.Execute()
+
+					Expect(err).ShouldNot(HaveOccurred())
+					Expect(outputBuffer.String()).To(ContainSubstring("Logged in successfully.\n"))
+				})
+			})
+			When("client id secret are provided through flag", func() {
+				It("login successfully and not save the client credentials", func() {
+					lc.SetArgs([]string{"--url=http://valid-url.com", "--client-id=id", "--client-secret=secret"})
+
+					err := lc.Execute()
+
+					Expect(err).ShouldNot(HaveOccurred())
+					Expect(outputBuffer.String()).To(ContainSubstring("Logged in successfully.\n"))
+
+					savedConfig := config.SaveArgsForCall(0)
+					Expect(savedConfig.ClientID).To(Equal(""))
+					Expect(savedConfig.ClientSecret).To(Equal(""))
+				})
+			})
 		})
 
 		Context("Use token_basic_auth returned by info endpoint", func() {
