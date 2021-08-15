@@ -124,7 +124,7 @@ func (lc *Cmd) Run() error {
 		lc.Client = smclient.NewClient(lc.Ctx, httpClient, lc.serviceManagerURL)
 	}
 	
-	if lc.authenticationFlow == "client-credentials" {
+	if lc.authenticationFlow == auth.ClientCredentials {
 		lc.Parameters.GeneralParams = append(lc.Parameters.GeneralParams, "grant_type=client_credentials")
 	}
 	
