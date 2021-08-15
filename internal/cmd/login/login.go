@@ -123,7 +123,11 @@ func (lc *Cmd) Run() error {
 	if lc.Client == nil {
 		lc.Client = smclient.NewClient(lc.Ctx, httpClient, lc.serviceManagerURL)
 	}
-
+	
+	if lc.authenticationFlow == auth.ClientCredentials {
+		lc.Parameters.GeneralParams = append(lc.Parameters.GeneralParams, "grant_type=client_credentials")
+	}
+	
 	info, err := lc.Client.GetInfo(&lc.Parameters)
 	if err != nil {
 		return cliErr.New("Could not get Service Manager info", err)

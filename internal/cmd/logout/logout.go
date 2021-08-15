@@ -66,6 +66,7 @@ func (vc *Cmd) Run() error {
 	config.ExpiresIn = time.Time{}
 	config.AccessToken = ""
 	config.Scope = ""
+	config.User = ""
 
 	err = vc.Configuration.Save(config)
 	if err != nil {

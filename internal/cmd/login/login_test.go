@@ -134,6 +134,16 @@ var _ = Describe("Login Command test", func() {
 		})
 
 		Context("With client credentials flow", func() {
+			It("should add general param of grant_type=client_credentials", func() {
+				param := "grant_type=client_credentials"
+				lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=client-credentials", "--client-id=id", "--client-secret=secret"})
+
+				err := lc.Execute()
+				Expect(err).ToNot(HaveOccurred())
+
+				args := client.GetInfoArgsForCall(0)
+				Expect(args.GeneralParams).To(ConsistOf(param))
+			})
 			When("client id secret are provided through flag", func() {
 				It("login successfully and not save the client credentials", func() {
 					lc.SetArgs([]string{"--url=http://valid-url.com", "--auth-flow=client-credentials", "--client-id=id", "--client-secret=secret"})
