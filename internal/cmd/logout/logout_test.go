@@ -34,6 +34,7 @@ var _ = Describe("Logout Command test", func() {
 			ExpiresIn:    time.Time{},
 			Scope:        "",
 		},
+		User: "user",
 	}
 
 	BeforeEach(func() {
@@ -47,6 +48,7 @@ var _ = Describe("Logout Command test", func() {
 		Context("With logged user", func() {
 			It("should delete token details from settings", func() {
 				config.LoadReturns(settings, nil)
+				Expect(settings.User).To(Equal("user"))
 
 				ic := command.Prepare(cmd.CommonPrepare)
 				err := ic.Execute()
@@ -58,6 +60,7 @@ var _ = Describe("Logout Command test", func() {
 				Expect(settings.AccessToken).To(Equal(""))
 				Expect(settings.RefreshToken).To(Equal(""))
 				Expect(settings.ExpiresIn).To(Equal(time.Time{}))
+				Expect(settings.User).To(Equal(""))
 			})
 		})
 
