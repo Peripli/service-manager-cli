@@ -40,7 +40,7 @@ const (
 	defaultClientSecret = ""
 )
 
-var validationError = errors.New("when using client credentials flow, required either client_id & client_secret or client_id & cert & key")
+var validationError = errors.New("Invalid credentials. In a Client Credentials authorization flow, use either the combination of a client_id and client_secret or client_id and client cert and key.")
 
 // Cmd wraps the smctl login command
 type Cmd struct {
@@ -124,6 +124,10 @@ func (lc *Cmd) Run() error {
 		lc.Client = smclient.NewClient(lc.Ctx, httpClient, lc.serviceManagerURL)
 	}
 
+	mtlsEnabled := lc.authenticationFlow == "client-credentials" && len(lc.cert) > 0 && len(lc.key) > 0
+	if mtlsEnabled {
+		lc.Parameters.GeneralParams = append(lc.Parameters.GeneralParams, "grant_type=client_credentials")
+	}
 	info, err := lc.Client.GetInfo(&lc.Parameters)
 	if err != nil {
 		return cliErr.New("Could not get Service Manager info", err)
@@ -145,115 +149,4 @@ func (lc *Cmd) Run() error {
 	if err != nil {
 		return cliErr.New("Could not build authenticator", err)
 	}
-	token, err := lc.getToken(authStrategy)
-	if err != nil {
-		return cliErr.New("could not login", err)
-	}
-
-	settings := &configuration.Settings{
-		URL:         lc.serviceManagerURL,
-		User:        lc.user,
-		SSLDisabled: lc.sslDisabled,
-		AuthFlow:    lc.authenticationFlow,
-
-		Token: *token,
-
-		IssuerURL:             info.TokenIssuerURL,
-		AuthorizationEndpoint: options.AuthorizationEndpoint,
-		TokenEndpoint:         options.TokenEndpoint,
-		TokenBasicAuth:        info.TokenBasicAuth,
-	}
-	if options.ClientID == defaultClientID && options.ClientSecret == defaultClientSecret {
-		settings.ClientID = options.ClientID
-		settings.ClientSecret = options.ClientSecret
-	}
-	if settings.User == "" {
-		settings.User = options.ClientID
-	}
-	err = lc.Configuration.Save(settings)
-
-	if err != nil {
-		return err
-	}
-
-	output.PrintMessage(lc.Output, "Logged in successfully.\n")
-	return nil
-}
-
-func (lc *Cmd) getToken(authStrategy auth.Authenticator) (*auth.Token, error) {
-	switch lc.authenticationFlow {
-	case auth.ClientCredentials:
-		return authStrategy.ClientCredentials()
-	case auth.PasswordGrant:
-		return authStrategy.PasswordCredentials(lc.user, lc.password)
-	default:
-		return nil, fmt.Errorf("authentication flow %s not recognized", lc.authenticationFlow)
-	}
-}
-
-func (lc *Cmd) validateLoginFlow() error {
-	switch lc.authenticationFlow {
-	case auth.ClientCredentials:
-		validClientSecret := len(lc.clientID) > 0 && len(lc.clientSecret) > 0
-		validMTLS := len(lc.clientID) > 0 && len(lc.cert) > 0 && len(lc.key) > 0
-		if !validClientSecret && !validMTLS {
-			return validationError
-		}
-	case auth.PasswordGrant:
-		return lc.validatePasswordGrant()
-	default:
-		return fmt.Errorf("unknown authentication flow: %s", lc.authenticationFlow)
-	}
-
-	return nil
-}
-
-func (lc *Cmd) validatePasswordGrant() error {
-	if len(lc.clientID) == 0 {
-		lc.clientID = defaultClientID
-	}
-
-	if err := lc.readUser(); err != nil {
-		return err
-	}
-
-	if err := lc.readPassword(); err != nil {
-		return err
-	}
-
-	if len(lc.user) == 0 || len(lc.password) == 0 {
-		return errors.New("username/password should not be empty")
-	}
-	return nil
-}
-
-func (lc *Cmd) readUser() error {
-	if lc.user == "" {
-		output.PrintMessage(lc.Output, "User: ")
-		bufReader := bufio.NewReader(lc.input)
-		readUser, isPrefix, err := bufReader.ReadLine()
-		if isPrefix {
-			return errors.New("username too long")
-		}
-		if err != nil {
-			return err
-		}
-
-		lc.user = string(readUser)
-	}
-	return nil
-}
-
-func (lc *Cmd) readPassword() error {
-	if lc.password == "" {
-		output.PrintMessage(lc.Output, "Password: ")
-		password, err := terminal.ReadPassword((int)(syscall.Stdin))
-		output.Println(lc.Output)
-		if err != nil {
-			return err
-		}
-
-		lc.password = string(password)
-	}
-	return nil
-}
+	token, err :=
