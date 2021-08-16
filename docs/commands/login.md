@@ -74,7 +74,7 @@ login, l
     <code>--client-id</code>
   </p>
   <p>
-    The technical client-id provided on the binding creation, used for the <code>client-credentials</code> flow.
+    The technical client ID that was generated upon the creation of binding and that is used for the <code>client-credentials</code> authorization flow.
   </p>
 </details>
 <details>
@@ -83,7 +83,7 @@ login, l
     <code>--client-secret</code>
   </p>
   <p>
-    The technical client-secret provided on the binding creation, used for the <code>client-credentials</code> flow.
+    The technical client secret that was generated upon the creation of binding and that is used for the <code>client-credentials</code> authorization flow.
   </p>
 </details>
 <details>
@@ -92,7 +92,7 @@ login, l
     <code>--cert</code>
   </p>
   <p>
-    The path to the file which contains the <code>certificate</code> (public-key) provided on the binding creation, used for the <code>client-credentials</code> flow.
+    A path to the file that contains the public key <code>certificate</code> that was generated upon the creation of binding and that is used for the <code>client-credentials</code> authorization flow.
   </p>
 </details>
 <details>
@@ -101,7 +101,7 @@ login, l
     <code>--key</code>
   </p>
   <p>
-    The path to the file which contains the <code>key</code> (private-key) provided on the binding creation, used for the <code>client-credentials</code> flow.
+    A path to the file that contains the private <code>key</code> that was generated upon the creation of binding and that is used for the <code>client-credentials</code> authorization flow.
   </p>
 </details>
 
