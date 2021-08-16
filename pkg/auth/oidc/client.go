@@ -35,8 +35,12 @@ var ErrTokenExpired = errors.New("access token has expired")
 //
 // If token is provided will try to refresh the token if it has expired,
 // otherwise if token is not provided will do client_credentials flow and fetch token
-func NewClient(options *auth.Options, token *auth.Token) *Client {
-	httpClient := util.BuildHTTPClient(options.SSLDisabled)
+func NewClient(options *auth.Options, token *auth.Token) (*Client, error) {
+	httpClient, err := util.BuildHTTPClient(options)
+	if err != nil {
+		return nil, err
+	}
+
 	httpClient.Timeout = options.Timeout
 
 	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, httpClient)
@@ -73,7 +77,7 @@ func NewClient(options *auth.Options, token *auth.Token) *Client {
 	return &Client{
 		tokenSource: tokenSource,
 		httpClient:  oauthClient,
-	}
+	}, nil
 }
 
 type requireLoginTokenSource struct{}

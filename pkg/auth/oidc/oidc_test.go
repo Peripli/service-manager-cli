@@ -161,7 +161,9 @@ var _ = Describe("Service Manager Auth strategy test", func() {
 
 		DescribeTable("NewClient",
 			func(options *auth.Options, token *auth.Token, expectedErrMsg string, expetedToken *auth.Token) {
-				client := NewClient(options, token)
+				client, err := NewClient(options, token)
+				Expect(err).ToNot(HaveOccurred())
+
 				t, err := client.Token()
 				if expectedErrMsg == "" {
 					Expect(err).To(BeNil())

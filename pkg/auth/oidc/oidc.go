@@ -51,14 +51,10 @@ type OpenIDStrategy struct {
 func NewOpenIDStrategy(options *auth.Options) (*OpenIDStrategy, *auth.Options, error) {
 	var httpClient *http.Client
 	var err error
-	mtlsEnabled := len(options.Cert) > 0 && len(options.Key) > 0
 
-	if mtlsEnabled {
-		if httpClient, err = util.BuildHTTPClientWithCert(options.Cert, options.Key); err != nil {
-			return nil, nil, err
-		}
-	} else {
-		httpClient = util.BuildHTTPClient(options.SSLDisabled)
+	httpClient, err = util.BuildHTTPClient(options)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	httpClient.Timeout = options.Timeout
@@ -71,13 +67,7 @@ func NewOpenIDStrategy(options *auth.Options) (*OpenIDStrategy, *auth.Options, e
 		return nil, nil, fmt.Errorf("error occurred while fetching openid configuration: %s", err)
 	}
 
-	if mtlsEnabled {
-		options.AuthorizationEndpoint = openIDConfig.MTLSEndpointAliases.AuthorizationEndpoint
-		options.TokenEndpoint = openIDConfig.MTLSEndpointAliases.TokenEndpoint
-	} else {
-		options.AuthorizationEndpoint = openIDConfig.AuthorizationEndpoint
-		options.TokenEndpoint = openIDConfig.TokenEndpoint
-	}
+	options.AuthorizationEndpoint, options.TokenEndpoint = retrieveAuthEndpoints(openIDConfig, util.MtlsEnabled(options))
 
 	oauthConfig = newOauth2Config(options)
 
@@ -88,6 +78,19 @@ func NewOpenIDStrategy(options *auth.Options) (*OpenIDStrategy, *auth.Options, e
 		ccConfig:     ccConfig,
 		httpClient:   httpClient,
 	}, options, nil
+}
+
+func retrieveAuthEndpoints(openIDConfig *openIDConfiguration, mtlsEnabled bool) (string, string) {
+	var AuthorizationEndpoint string
+	var TokenEndpoint string
+	if mtlsEnabled {
+		AuthorizationEndpoint = openIDConfig.MTLSEndpointAliases.AuthorizationEndpoint
+		TokenEndpoint = openIDConfig.MTLSEndpointAliases.TokenEndpoint
+	} else {
+		AuthorizationEndpoint = openIDConfig.AuthorizationEndpoint
+		TokenEndpoint = openIDConfig.TokenEndpoint
+	}
+	return AuthorizationEndpoint, TokenEndpoint
 }
 
 // ClientCredentials is used to perform client credentials grant type flow

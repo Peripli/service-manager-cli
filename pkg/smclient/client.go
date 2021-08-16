@@ -120,7 +120,10 @@ func NewClientWithAuth(httpClient auth.Client, config *ClientConfig) (Client, er
 	if err != nil {
 		return nil, err
 	}
-	authClient := oidc.NewClient(authOptions, token)
+	authClient, err := oidc.NewClient(authOptions, token)
+	if err != nil {
+		return nil, err
+	}
 	client = &serviceManagerClient{ctx: context.Background(), config: config, httpClient: authClient}
 
 	return client, nil

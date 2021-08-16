@@ -20,6 +20,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"github.com/Peripli/service-manager-cli/pkg/auth"
 	"net"
 	"net/http"
 	"net/url"
@@ -44,43 +45,32 @@ func ValidateURL(URL string) error {
 	return nil
 }
 
-// BuildHTTPClient builds custom http client with configured ssl validation
-func BuildHTTPClient(sslDisabled bool) *http.Client {
-	client := &http.Client{
-		Timeout: time.Second * 10,
-		Transport: &http.Transport{
-			Proxy: http.ProxyFromEnvironment,
-			DialContext: (&net.Dialer{
-				Timeout:   30 * time.Second,
-				KeepAlive: 30 * time.Second,
-				DualStack: true,
-			}).DialContext,
-			MaxIdleConns:          100,
-			IdleConnTimeout:       90 * time.Second,
-			TLSHandshakeTimeout:   10 * time.Second,
-			ExpectContinueTimeout: 1 * time.Second,
-		},
-	}
-	if sslDisabled {
-		client.Transport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	}
-
-	return client
-}
-
-// BuildHTTPClientWithCert builds https mTLS client
-func BuildHTTPClientWithCert(certPath, keyPath string) (*http.Client, error) {
+// BuildHTTPClient builds custom http client with configured ssl validation / mtls
+func BuildHTTPClient(options *auth.Options) (*http.Client, error) {
 	client := getClient()
-	cert, err := tls.LoadX509KeyPair(certPath, keyPath)
-	if err != nil {
-		return nil, err
-	}
 
-	client.Transport.(*http.Transport).TLSClientConfig = &tls.Config{
-		Certificates: []tls.Certificate{cert},
+	if MtlsEnabled(options) {
+		cert, err := tls.LoadX509KeyPair(options.Cert, options.Key)
+		if err != nil {
+			return nil, err
+		}
+
+		client.Transport.(*http.Transport).TLSClientConfig = &tls.Config{
+			Certificates: []tls.Certificate{cert},
+		}
+
+		return client, nil
+	} else {
+		if options.SSLDisabled {
+			client.Transport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+		}
 	}
 
 	return client, nil
+}
+
+func MtlsEnabled(options *auth.Options) bool {
+	return len(options.Cert) > 0 && len(options.Key) > 0
 }
 
 func getClient() *http.Client {
