@@ -67,7 +67,7 @@ func NewOpenIDStrategy(options *auth.Options) (*OpenIDStrategy, *auth.Options, e
 		return nil, nil, fmt.Errorf("error occurred while fetching openid configuration: %s", err)
 	}
 
-	options.AuthorizationEndpoint, options.TokenEndpoint = retrieveAuthEndpoints(openIDConfig, util.MtlsEnabled(options))
+	options.AuthorizationEndpoint, options.TokenEndpoint = RetrieveAuthEndpoints(openIDConfig, util.MtlsEnabled(options))
 
 	oauthConfig = newOauth2Config(options)
 
@@ -80,7 +80,7 @@ func NewOpenIDStrategy(options *auth.Options) (*OpenIDStrategy, *auth.Options, e
 	}, options, nil
 }
 
-func retrieveAuthEndpoints(openIDConfig *openIDConfiguration, mtlsEnabled bool) (string, string) {
+func RetrieveAuthEndpoints(openIDConfig *openIDConfiguration, mtlsEnabled bool) (string, string) {
 	var AuthorizationEndpoint string
 	var TokenEndpoint string
 	if mtlsEnabled {
