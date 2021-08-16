@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Peripli/service-manager-cli/pkg/auth"
+	"github.com/Peripli/service-manager-cli/pkg/auth/oidc"
 	"net"
 	"net/http"
 	"net/url"
@@ -49,7 +50,7 @@ func ValidateURL(URL string) error {
 func BuildHTTPClient(options *auth.Options) (*http.Client, error) {
 	client := getClient()
 
-	if MtlsEnabled(options) {
+	if oidc.MtlsEnabled(options) {
 		cert, err := tls.LoadX509KeyPair(options.Cert, options.Key)
 		if err != nil {
 			return nil, err
@@ -67,10 +68,6 @@ func BuildHTTPClient(options *auth.Options) (*http.Client, error) {
 	}
 
 	return client, nil
-}
-
-func MtlsEnabled(options *auth.Options) bool {
-	return len(options.Cert) > 0 && len(options.Key) > 0
 }
 
 func getClient() *http.Client {
