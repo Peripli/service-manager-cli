@@ -59,6 +59,51 @@ login, l
     User ID.
   </p>
 </details>
+<details>
+  <summary>auth flow</summary>
+  <p>
+    <code>--auth-flow</code>
+  </p>
+  <p>
+    Options: <code>password</code> / <code>client-credentials</code> (default is <code>password</code> flow)
+  </p>
+</details>
+<details>
+  <summary>client id</summary>
+  <p>
+    <code>--client-id</code>
+  </p>
+  <p>
+    The technical client ID that was generated upon the creation of binding and that is used for the <code>client-credentials</code> authorization flow.
+  </p>
+</details>
+<details>
+  <summary>client secret</summary>
+  <p>
+    <code>--client-secret</code>
+  </p>
+  <p>
+    The technical client secret that was generated upon the creation of binding and that is used for the <code>client-credentials</code> authorization flow.
+  </p>
+</details>
+<details>
+  <summary>certificate</summary>
+  <p>
+    <code>--cert</code>
+  </p>
+  <p>
+    A path to the file that contains the public key <code>certificate</code> that was generated upon the creation of binding and that is used for the <code>client-credentials</code> authorization flow.
+  </p>
+</details>
+<details>
+  <summary>private key</summary>
+  <p>
+    <code>--key</code>
+  </p>
+  <p>
+    A path to the file that contains the private <code>key</code> that was generated upon the creation of binding and that is used for the <code>client-credentials</code> authorization flow.
+  </p>
+</details>
 
 ## Global Flags
 <details>
@@ -80,7 +125,7 @@ login, l
   </p>
 </details>
 
-## Example 1
+## Example 1 - password flow
 ```bash
 > smctl login -a https://service-manager-url.com
 
@@ -89,9 +134,26 @@ Password:                 # entering password (password visibility is disabled)
 Logged in successfully.
 ```
 
-## Example 2
+## Example 2 - password flow
 ```bash
 > smctl login -a https://service-manager-url.com -u user -p pass
+
+Logged in successfully.
+```
+
+
+## Example 3 - client id & secret
+Requires: client-id, client-secret
+```bash
+> smctl login -a https://service-manager-url.com --auth-flow=client-credentials --client-id=id --client-secret=secret
+
+Logged in successfully.
+```
+
+## Example 3 - mTLS (with a certificate)
+Requires: client-id, cert, key
+```bash
+> smctl login -a https://service-manager-url.com --auth-flow=client-credentials --client-id=id --cert=cert.pem --key=key.pem
 
 Logged in successfully.
 ```

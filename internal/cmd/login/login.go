@@ -40,7 +40,7 @@ const (
 	defaultClientSecret = ""
 )
 
-var validationError = errors.New("when using client credentials flow, required either client_id & client_secret or client_id & cert & key")
+var validationError = errors.New("Invalid credentials. In a Client Credentials authorization flow, use either the combination of a client_id and client_secret or client_id and client cert and key.")
 
 // Cmd wraps the smctl login command
 type Cmd struct {
@@ -85,8 +85,8 @@ func (lc *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result.Flags().StringVarP(&lc.password, "password", "p", "", "Password")
 	result.Flags().StringVarP(&lc.clientID, "client-id", "", "", "Client id used for OAuth flow")
 	result.Flags().StringVarP(&lc.clientSecret, "client-secret", "", defaultClientSecret, "Client secret used for OAuth flow")
-	result.Flags().StringVarP(&lc.cert, "cert", "", "", "Client certificate")
-	result.Flags().StringVarP(&lc.key, "key", "", "", "Client private key")
+	result.Flags().StringVarP(&lc.cert, "cert", "", "", "Path to the file which contains the certificate (public-key)")
+	result.Flags().StringVarP(&lc.key, "key", "", "", "Path to the file which contains the key (private-key)")
 	result.Flags().BoolVarP(&lc.sslDisabled, "skip-ssl-validation", "", false, "Skip verification of the OAuth endpoint. Not recommended!")
 	result.Flags().StringVarP((*string)(&lc.authenticationFlow), "auth-flow", "", string(auth.PasswordGrant), `Authentication flow (grant type): "client-credentials" or "password-grant"`)
 	cmd.AddCommonQueryFlag(result.Flags(), &lc.Parameters)
