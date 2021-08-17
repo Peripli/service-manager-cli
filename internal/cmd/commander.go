@@ -112,7 +112,7 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 				return newMissingLoginError()
 			}
 
-			oidcClient := oidc.NewClient(&auth.Options{
+			oidcClient, err := oidc.NewClient(&auth.Options{
 				AuthorizationEndpoint: settings.AuthorizationEndpoint,
 				TokenEndpoint:         settings.TokenEndpoint,
 				ClientID:              settings.ClientID,
@@ -121,6 +121,9 @@ func SmPrepare(cmd Command, ctx *Context) func(*cobra.Command, []string) error {
 				SSLDisabled:           settings.SSLDisabled,
 				TokenBasicAuth:        settings.TokenBasicAuth,
 			}, &settings.Token)
+			if err != nil {
+				return err
+			}
 
 			token, err := oidcClient.Token()
 			if err != nil {

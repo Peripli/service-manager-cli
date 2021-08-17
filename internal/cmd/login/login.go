@@ -118,16 +118,19 @@ func (lc *Cmd) Validate(args []string) error {
 
 // Run runs the logic of the command
 func (lc *Cmd) Run() error {
-	httpClient := util.BuildHTTPClient(lc.sslDisabled)
+	httpClient, err := util.BuildHTTPClient(&auth.Options{SSLDisabled: lc.sslDisabled})
+	if err != nil {
+		return err
+	}
 
 	if lc.Client == nil {
 		lc.Client = smclient.NewClient(lc.Ctx, httpClient, lc.serviceManagerURL)
 	}
-	
+
 	if lc.authenticationFlow == auth.ClientCredentials {
 		lc.Parameters.GeneralParams = append(lc.Parameters.GeneralParams, "grant_type=client_credentials")
 	}
-	
+
 	info, err := lc.Client.GetInfo(&lc.Parameters)
 	if err != nil {
 		return cliErr.New("Could not get Service Manager info", err)
