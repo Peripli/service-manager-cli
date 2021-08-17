@@ -39,7 +39,7 @@ type Options struct {
 	Password              string
 	ClientID              string `mapstructure:"client_id"`
 	ClientSecret          string `mapstructure:"client_secret"`
-	Cert                  string `mapstructure:"cert"`
+	Certificate           string `mapstructure:"cert"`
 	Key                   string `mapstructure:"key"`
 	AuthorizationEndpoint string `mapstructure:"authorization_endpoint"`
 	TokenEndpoint         string `mapstructure:"token_endpoint"`

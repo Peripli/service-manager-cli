@@ -50,7 +50,7 @@ func BuildHTTPClient(options *auth.Options) (*http.Client, error) {
 	client := getClient()
 
 	if MtlsEnabled(options) {
-		cert, err := tls.LoadX509KeyPair(options.Cert, options.Key)
+		cert, err := tls.LoadX509KeyPair(options.Certificate, options.Key)
 		if err != nil {
 			return nil, err
 		}
@@ -70,7 +70,7 @@ func BuildHTTPClient(options *auth.Options) (*http.Client, error) {
 }
 
 func MtlsEnabled(options *auth.Options) bool {
-	return len(options.Cert) > 0 && len(options.Key) > 0
+	return len(options.Certificate) > 0 && len(options.Key) > 0
 }
 
 func getClient() *http.Client {

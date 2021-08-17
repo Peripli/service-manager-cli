@@ -144,7 +144,7 @@ func (lc *Cmd) Run() error {
 		IssuerURL:      info.TokenIssuerURL,
 		TokenBasicAuth: info.TokenBasicAuth,
 		SSLDisabled:    lc.sslDisabled,
-		Cert:           lc.cert,
+		Certificate:    lc.cert,
 		Key:            lc.key,
 	}
 
