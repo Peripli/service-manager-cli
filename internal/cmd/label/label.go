@@ -30,8 +30,8 @@ func NewLabelCmd(context *cmd.Context) *Cmd {
 func (c *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
 		Use:   "label [resource] [id] [operation] [key] [--val value1 --val value2 ...]",
-		Short: "Label resource",
-		Long:  "Label resource",
+		Short: "Add, remove resource labels. Supported resources are: platform, broker, service-instance",
+		Long:  "Add, remove resource labels. Supported resources are: platform, broker, service-instance",
 
 		PreRunE: prepare(c, c.Context),
 		RunE:    cmd.RunE(c),
@@ -49,6 +49,7 @@ func (c *Cmd) Validate(args []string) error {
 	resources := map[string]string{
 		"platform": web.PlatformsURL,
 		"broker":   web.ServiceBrokersURL,
+		"service-instance":   web.ServiceInstancesURL,
 	}
 
 	operations := map[string]string{
