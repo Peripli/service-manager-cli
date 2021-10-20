@@ -30,8 +30,8 @@ func NewLabelCmd(context *cmd.Context) *Cmd {
 func (c *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
 		Use:   "label [resource] [id] [operation] [key] [--val value1 --val value2 ...]",
-		Short: "Add, remove resource labels. Supported resources are: platform, broker, service-instance",
-		Long:  "Add, remove resource labels. Supported resources are: platform, broker, service-instance",
+		Short: "Add or remove resource labels",
+		Long:  "Add or remove resource labels. Supported resources are platforms, brokers, and service instances",
 
 		PreRunE: prepare(c, c.Context),
 		RunE:    cmd.RunE(c),
