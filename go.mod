@@ -1,6 +1,6 @@
 module github.com/Peripli/service-manager-cli
 
-go 1.13
+go 1.15
 
 require (
 	github.com/InVisionApp/go-health v2.1.0+incompatible // indirect
