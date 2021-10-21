@@ -23,6 +23,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
-          goversion: "https://dl.google.com/go/go1.13.1.linux-amd64.tar.gz"          
+          goversion: "https://dl.google.com/go/go1.16.1.linux-amd64.tar.gz"          
           extra_files: LICENSE README.md
           ldflags: -X "github.com/Peripli/service-manager-cli/internal/cmd/version.GitCommit=${{ env.GIT_COMMIT }}" -X "github.com/Peripli/service-manager-cli/internal/cmd/version.Version=${{ env.APP_VERSION }}"
