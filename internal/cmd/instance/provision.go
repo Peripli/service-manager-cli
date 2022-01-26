@@ -40,6 +40,8 @@ type ProvisionCmd struct {
 	outputFormat output.Format
 }
 
+const FORMAT = "name eq '%s'"
+
 // NewProvisionCmd returns new provision command with context
 func NewProvisionCmd(context *cmd.Context) *ProvisionCmd {
 	return &ProvisionCmd{Context: context, instance: types.ServiceInstance{}}
@@ -82,7 +84,7 @@ func (pi *ProvisionCmd) Validate(args []string) error {
 func (pi *ProvisionCmd) Run() error {
 	offerings, err := pi.Client.ListOfferings(&query.Parameters{
 		FieldQuery: []string{
-			fmt.Sprintf("name eq '%s'", pi.offeringName),
+			fmt.Sprintf(FORMAT, pi.offeringName),
 		},
 		GeneralParams: pi.Parameters.GeneralParams,
 	})
@@ -102,7 +104,7 @@ func (pi *ProvisionCmd) Run() error {
 
 		brokers, err := pi.Client.ListBrokers(&query.Parameters{
 			FieldQuery: []string{
-				fmt.Sprintf("name eq '%s'", pi.brokerName),
+				fmt.Sprintf(FORMAT, pi.brokerName),
 			},
 			GeneralParams: pi.Parameters.GeneralParams,
 		})
@@ -122,7 +124,7 @@ func (pi *ProvisionCmd) Run() error {
 
 	plans, err := pi.Client.ListPlans(&query.Parameters{
 		FieldQuery: []string{
-			fmt.Sprintf("name eq '%s'", pi.planName),
+			fmt.Sprintf(FORMAT, pi.planName),
 			fmt.Sprintf("service_offering_id eq '%s'", pi.instance.ServiceID),
 		},
 		GeneralParams: pi.Parameters.GeneralParams,

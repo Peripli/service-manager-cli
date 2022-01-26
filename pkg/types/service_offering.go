@@ -52,6 +52,8 @@ type ServiceOffering struct {
 	Ready      bool          `json:"ready,omitempty" yaml:"ready,omitempty"`
 }
 
+const BROKER_ID = "BROKER ID"
+
 // Message title of the table
 func (so *ServiceOffering) Message() string {
 	return ""
@@ -65,7 +67,7 @@ func (so *ServiceOffering) IsEmpty() bool {
 // TableData returns the data to populate a table
 func (so *ServiceOffering) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"Name", "Plans", "Description", "Broker ID"}
+	result.Headers = []string{"Name", "Plans", "Description", BROKER_ID}
 
 	plans := make([]string, len(so.Plans))
 	for i, v := range so.Plans {
@@ -106,7 +108,7 @@ func (m *Marketplace) IsEmpty() bool {
 // TableData returns the data to populate a table
 func (m *Marketplace) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"Name", "Plans", "Description", "Broker ID"}
+	result.Headers = []string{"Name", "Plans", "Description", BROKER_ID}
 
 	for _, v := range m.ServiceOfferings {
 		plans := make([]string, len(v.Plans))
@@ -149,7 +151,7 @@ func (so *ServiceOfferings) IsEmpty() bool {
 // TableData returns the data to populate a table
 func (so *ServiceOfferings) TableData() *TableData {
 	result := &TableData{}
-	result.Headers = []string{"ID", "Name", "Description", "Broker ID", "Ready", "Labels"}
+	result.Headers = []string{"ID", "Name", "Description", BROKER_ID, "Ready", "Labels"}
 
 	for _, v := range so.ServiceOfferings {
 		row := []string{v.ID, v.Name, v.Description, v.BrokerID, strconv.FormatBool(v.Ready), formatLabels(v.Labels)}
