@@ -28,13 +28,12 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.8.0
 	github.com/subosito/gotenv v1.2.0 // indirect
-	github.com/tidwall/gjson v1.8.0
+	github.com/tidwall/gjson v1.9.3
 	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/tidwall/sjson v1.1.7 // indirect
 	github.com/ugorji/go v1.1.4 // indirect
 	github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77 // indirect
-	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
-	golang.org/x/net v0.0.0-20210614182718-04defd469f4e // indirect
+	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
 	golang.org/x/oauth2 v0.0.0-20210615190721-d04028783cf1
 	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22 // indirect
 	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b // indirect
