@@ -74,6 +74,7 @@ go-deps:
 # Run tests
 
 run-test: go-deps
+	@echo COVER_OUT
 	rm -rf reports
 	mkdir -p reports
 	gotestsum --junitfile reports/junit.xml -- -coverprofile=cover.out ./... -mod=mod
