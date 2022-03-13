@@ -17,8 +17,6 @@ all: build test
 TEST_PROFILE ?= $(CURDIR)/profile.cov
 COVERAGE ?= $(CURDIR)/coverage.html
 
-run echo $TEST_PROFILE
-
 PLATFORM ?= linux
 ARCH     ?= amd64
 
@@ -37,6 +35,7 @@ smcli:
 	$(GO_BUILD)
 
 test: build
+	@echo "test-profile" $TEST_PROFILE
 	@echo Running tests:
 	@go test -v ./... -p 1 -coverpkg $(shell go list ./... | egrep -v "fakes|test" | paste -sd "," -) -coverprofile=$(TEST_PROFILE)
 
