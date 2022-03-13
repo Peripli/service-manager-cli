@@ -20,11 +20,20 @@ COVERAGE ?= $(CURDIR)/coverage.html
 PLATFORM ?= linux
 ARCH     ?= amd64
 
+COVER_OUT			?= $(CURDIR)/cover.out
+
 BUILD_LDFLAGS =
 
 # GO_FLAGS - extra "go build" flags to use - e.g. -v (for verbose)
 GO_BUILD = env CGO_ENABLED=0 GOOS=$(PLATFORM) GOARCH=$(ARCH) \
            go build $(GO_FLAGS) -ldflags '-s -w $(BUILD_LDFLAGS)' ./...
+
+ifeq (,$(shell go env GOBIN))
+GOBIN=$(shell go env GOPATH)/bin
+else
+GOBIN=$(shell go env GOBIN)
+endif
+#TEST_PROFILE=cover.out
 
 build: smcli
 
@@ -52,4 +61,24 @@ clean-coverage:
 clean-vendor:
 	rm -rf vendor
 	@echo > go.sum
-	
+
+go-deps:
+	set GO111MODULE=off
+	go get gotest.tools/gotestsum
+	go get github.com/t-yuki/gocover-cobertura
+	go install github.com/axw/gocov/gocov@latest
+	go get github.com/AlekSi/gocov-xml
+	go get -u github.com/jstemmer/go-junit-report
+	set GO111MODULE=on
+	go mod tidy
+# Run tests
+
+run-test: go-deps
+	rm -rf reports
+	mkdir -p reports
+	gotestsum --junitfile reports/junit.xml -- -coverprofile=cover.out ./... -mod=mod
+	go tool cover -func $(COVER_OUT) | grep total
+	find . -name cover.out -execdir sh -c 'gocover-cobertura < cover.out > coverage.xml'  \; ;\
+	GO111MODULE=on
+
+
