@@ -5,7 +5,7 @@ go 1.13
 require (
 	github.com/InVisionApp/go-health v2.1.0+incompatible // indirect
 	github.com/InVisionApp/go-logger v1.0.1 // indirect
-	github.com/Peripli/service-manager v0.19.9
+	github.com/Peripli/service-manager v0.22.9
 	github.com/antlr/antlr4 v0.0.0-20210521184019-c5ad59b459ec // indirect
 	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20210521184019-c5ad59b459ec // indirect
 	github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6 // indirect
