@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/Peripli/service-manager v0.23.0
-	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20210521184019-c5ad59b459ec // indirect
+	//github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20210521184019-c5ad59b459ec // indirect
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/onrik/logrus v0.9.0 // indirect
 	github.com/onsi/ginkgo v1.16.4
