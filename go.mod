@@ -3,7 +3,7 @@ module github.com/Peripli/service-manager-cli
 go 1.13
 
 require (
-	github.com/Peripli/service-manager v0.23.0
+	github.com/Peripli/service-manager v0.23.2
 	//github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20210521184019-c5ad59b459ec // indirect
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/onrik/logrus v0.9.0 // indirect
@@ -16,7 +16,7 @@ require (
 	github.com/spf13/viper v1.8.0
 	github.com/tidwall/gjson v1.9.3
 	github.com/tidwall/sjson v1.1.7 // indirect
-	golang.org/x/crypto v0.0.0-20220321153916-2c7772ba3064
+	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 	golang.org/x/oauth2 v0.0.0-20210615190721-d04028783cf1
 	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22 // indirect
 	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b // indirect
