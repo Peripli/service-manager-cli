@@ -8,9 +8,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # build and publish in parallel: linux/amd64, windows/amd64, darwin/amd64
+        # build and publish in parallel: linux/amd64, windows/amd64, darwin/amd64, darwin/arm64
         goos: [linux, windows, darwin]
         goarch: [amd64]
+        include:
+          - goos: darwin
+            goarch: arm64
     steps:
       - uses: actions/checkout@v2
       - name: Set APP_VERSION env
