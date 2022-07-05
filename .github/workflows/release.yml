@@ -14,6 +14,8 @@ jobs:
         include:
           - goos: darwin
             goarch: arm64
+          - goos: linux
+            goarch: arm64
     steps:
       - uses: actions/checkout@v2
       - name: Set APP_VERSION env
