@@ -63,7 +63,8 @@ var (
 			},
 			TLS: &types.TLS{
 				SMProvidedCredentials: true,
-			}},
+			},
+		},
 	}
 
 	initialOffering = &types.ServiceOffering{
