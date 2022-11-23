@@ -53,10 +53,17 @@ var (
 	params         *cliquery.Parameters
 
 	broker = &types.Broker{
-		ID:          "broker-id",
-		Name:        "test-broker",
-		URL:         "http://test-url.com",
-		Credentials: &types.Credentials{Basic: &types.Basic{User: "test user", Password: "test password"}},
+		ID:   "broker-id",
+		Name: "test-broker",
+		URL:  "http://test-url.com",
+		Credentials: &types.Credentials{
+			Basic: &types.Basic{
+				User:     "test user",
+				Password: "test password",
+			},
+			TLS: &types.TLS{
+				SMProvidedCredentials: true,
+			}},
 	}
 
 	initialOffering = &types.ServiceOffering{
