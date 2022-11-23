@@ -119,7 +119,7 @@ func (rbc *RegisterBrokerCmd) parseCredentials() error {
 		user := splitBasicString[0]
 		password := splitBasicString[1]
 		basic := types.Basic{User: user, Password: password}
-		rbc.broker.Credentials = &types.Credentials{Basic: basic}
+		rbc.broker.Credentials = &types.Credentials{Basic: &basic}
 	}
 
 	return nil

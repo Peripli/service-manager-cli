@@ -56,7 +56,7 @@ var (
 		ID:          "broker-id",
 		Name:        "test-broker",
 		URL:         "http://test-url.com",
-		Credentials: &types.Credentials{Basic: types.Basic{User: "test user", Password: "test password"}},
+		Credentials: &types.Credentials{Basic: &types.Basic{User: "test user", Password: "test password"}},
 	}
 
 	initialOffering = &types.ServiceOffering{
@@ -89,8 +89,8 @@ var (
 		Context:       json.RawMessage("{}"),
 	}
 
-	instanceParameters = map[string]interface{}{"param1":"value1","param2":"value2"}
-	bindingParameters = map[string]interface{}{"param1":"value1","param2":"value2"}
+	instanceParameters = map[string]interface{}{"param1": "value1", "param2": "value2"}
+	bindingParameters  = map[string]interface{}{"param1": "value1", "param2": "value2"}
 
 	binding = &types.ServiceBinding{
 		ID:                "instanceID",
