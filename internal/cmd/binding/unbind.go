@@ -48,19 +48,19 @@ func NewUnbindCmd(context *cmd.Context, input io.Reader) *UnbindCmd {
 func (ubc *UnbindCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
 		Use:   "unbind [instance-name] [binding-name]",
-		Short: "Deletes a binding from SM",
-		Long:  `Deletes a binding from SM`,
+		Short: "Deletes a service binding.",
+		Long:  `Deletes a specified service binding.`,
 
 		PreRunE: prepare(ubc, ubc.Context),
 		RunE:    cmd.RunE(ubc),
 	}
 
-	forceUsage := "Use this parameter to delete a resource without raising a confirmation message."
-	forceDeleteUsage := "Delete the service binding and all of its associated resources from the database. Use this parameter if the service binding cannot be properly deleted. This parameter can only be used by operators with technical access."
+	forceUsage := "Deletes a resource without a preconditioning confirmation message."
+	forceDeleteUsage := "Deletes the service binding and all of its associated resources from the database. Use this parameter if the service binding cannot be properly deleted. This parameter can only be used by operators with technical access."
 
 	result.Flags().BoolVarP(&ubc.force, "force", "f", false, forceUsage)
 	result.Flags().BoolVarP(&ubc.forceDelete, "force-delete", "", false, forceDeleteUsage)
-	result.Flags().StringVarP(&ubc.bindingID, "id", "", "", "ID of the service binding. Required when name is ambiguous.")
+	result.Flags().StringVarP(&ubc.bindingID, "id", "", "", "ID of the service binding. Required when its name is ambiguous.")
 	cmd.AddCommonQueryFlag(result.Flags(), &ubc.Parameters)
 	cmd.AddModeFlag(result.Flags(), "async")
 
@@ -74,7 +74,7 @@ func (ubc *UnbindCmd) Validate(args []string) error {
 	}
 
 	if len(args) < 2 {
-		return fmt.Errorf("instance and binding names are required")
+		return fmt.Errorf("Service instance and binding names are required.")
 	}
 
 	ubc.instanceName = args[0]
@@ -95,10 +95,10 @@ func (ubc *UnbindCmd) Run() error {
 			return err
 		}
 		if len(instanceToUnbind.ServiceInstances) < 1 {
-			return fmt.Errorf("service instance with name %s not found", ubc.instanceName)
+			return fmt.Errorf("Service instance with name '%s' not found.", ubc.instanceName)
 		}
 		if len(instanceToUnbind.ServiceInstances) > 1 {
-			return fmt.Errorf("more than one service instance with name %s found. Use --id flag to specify id of the binding to be deleted", ubc.instanceName)
+			return fmt.Errorf("Found more than one service instance with name '%s'. Use --id flag to specify the ID of the binding you want to delete.", ubc.instanceName)
 		}
 
 		bindingsToDelete, err := ubc.Client.ListBindings(&query.Parameters{
@@ -112,7 +112,7 @@ func (ubc *UnbindCmd) Run() error {
 			return err
 		}
 		if len(bindingsToDelete.ServiceBindings) < 1 {
-			output.PrintMessage(ubc.Output, "Service Binding with name %s for instance with name %s not found", ubc.bindingName, ubc.instanceName)
+			output.PrintMessage(ubc.Output, "Service binding with name '%s' for the specified instance with name '%s' not found.", ubc.bindingName, ubc.instanceName)
 			return nil
 		}
 		ubc.bindingID = bindingsToDelete.ServiceBindings[0].ID
@@ -129,17 +129,17 @@ func (ubc *UnbindCmd) Run() error {
 		return err
 	}
 	if len(location) != 0 {
-		cmd.CommonHandleAsyncExecution(ubc.Context, location, fmt.Sprintf("Service Binding %s successfully scheduled for deletion. To see status of the operation use:\n", ubc.bindingName))
+		cmd.CommonHandleAsyncExecution(ubc.Context, location, fmt.Sprintf("Service binding '%s' successfully scheduled for deletion. To see the current status of your request, use:\n", ubc.bindingName))
 		return nil
 	}
-	output.PrintMessage(ubc.Output, "Service Binding successfully deleted.\n")
+	output.PrintMessage(ubc.Output, "Service binding successfully deleted.\n")
 	return nil
 }
 
 // AskForConfirmation asks the user to confirm deletion
 func (ubc *UnbindCmd) AskForConfirmation() (bool, error) {
 	if !ubc.force {
-		message := fmt.Sprintf("Do you really want to delete binding with name [%s] for instance with name %s (Y/n): ", ubc.bindingName, ubc.instanceName)
+		message := fmt.Sprintf("Do you really want to delete the service binding with name '%s' for specified instance with name '%s'? (y/n): ", ubc.bindingName, ubc.instanceName)
 		return cmd.CommonConfirmationPrompt(message, ubc.Context, ubc.input)
 	}
 	return true, nil
