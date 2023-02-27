@@ -41,8 +41,8 @@ func NewStatusCmd(context *cmd.Context) *Cmd {
 func (c *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
 		Use:   "status [operation URL path]",
-		Short: "Get asynchronous operation's status",
-		Long:  "Get asynchronous operation's status",
+		Short: "Get asynchronous operation's status.",
+		Long:  "Get asynchronous operation's current status.",
 
 		PreRunE: prepare(c, c.Context),
 		RunE:    cmd.RunE(c),
@@ -57,7 +57,7 @@ func (c *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 // Validate validates command's arguments
 func (c *Cmd) Validate(args []string) error {
 	if len(args) != 1 {
-		return fmt.Errorf("a path to operation is required")
+		return fmt.Errorf("Path to the requested operation is required.")
 	}
 	c.operationURL = args[0]
 	return nil
