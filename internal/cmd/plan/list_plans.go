@@ -61,8 +61,8 @@ func (lp *ListPlansCmd) HideUsage() bool {
 func (lp *ListPlansCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
 		Use:     "list-plans",
-		Short:   "List service-plans",
-		Long:    `List service-plans.`,
+		Short:   "List service plans",
+		Long:    `Lists all service plans available for the service instance.`,
 		PreRunE: prepare(lp, lp.Context),
 		RunE:    cmd.RunE(lp),
 	}
