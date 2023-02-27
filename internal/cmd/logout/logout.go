@@ -38,7 +38,7 @@ func NewLogoutCmd(context *cmd.Context) *Cmd {
 func (vc *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
 		Use:     "logout",
-		Short:   "Logs the user out",
+		Short:   "Logs the user out.",
 		Long:    `Logs the user out of the system and deletes the active client access token.`,
 		PreRunE: prepare(vc, vc.Context),
 		RunE:    cmd.RunE(vc),
