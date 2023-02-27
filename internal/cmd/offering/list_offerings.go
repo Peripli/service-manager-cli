@@ -61,8 +61,8 @@ func (lo *ListOfferingsCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
 		Use:     "list-offerings",
 		Aliases: []string{"lo"},
-		Short:   "List service-offerings",
-		Long:    `List service-offerings.`,
+		Short:   "List service offerings",
+		Long:    `Show all service offerings associated with the service instance.`,
 		PreRunE: prepare(lo, lo.Context),
 		RunE:    cmd.RunE(lo),
 	}
