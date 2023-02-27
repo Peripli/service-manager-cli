@@ -40,7 +40,7 @@ const (
 	defaultClientSecret = ""
 )
 
-var validationError = errors.New("Invalid credentials. In a Client Credentials authorization flow, use either the combination of a client_id and client_secret or client_id and client cert and key.")
+var validationError = errors.New("Invalid credentials. In the Client Credentials authorization flow, use either the combination of client_id and client_secret or client_id, client cert, and key.")
 
 // Cmd wraps the smctl login command
 type Cmd struct {
@@ -73,22 +73,22 @@ func (lc *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
 		Use:     "login",
 		Aliases: []string{"l"},
-		Short:   "Logs user in",
-		Long:    `Connects to a Service Manager and logs user in.`,
+		Short:   "Logs in users.",
+		Long:    `Use this command to log on to the Service Manager service.`,
 
 		PreRunE: prepare(lc, lc.Context),
 		RunE:    cmd.RunE(lc),
 	}
 
-	result.Flags().StringVarP(&lc.serviceManagerURL, "url", "a", "", "Base URL of the Service Manager")
+	result.Flags().StringVarP(&lc.serviceManagerURL, "url", "a", "", "Base URL of the Service Manager.")
 	result.Flags().StringVarP(&lc.user, "user", "u", "", "User ID")
 	result.Flags().StringVarP(&lc.password, "password", "p", "", "Password")
-	result.Flags().StringVarP(&lc.clientID, "client-id", "", "", "Client id used for OAuth flow")
-	result.Flags().StringVarP(&lc.clientSecret, "client-secret", "", defaultClientSecret, "Client secret used for OAuth flow")
-	result.Flags().StringVarP(&lc.cert, "cert", "", "", "Path to the file which contains the certificate (public-key)")
-	result.Flags().StringVarP(&lc.key, "key", "", "", "Path to the file which contains the key (private-key)")
-	result.Flags().BoolVarP(&lc.sslDisabled, "skip-ssl-validation", "", false, "Skip verification of the OAuth endpoint. Not recommended!")
-	result.Flags().StringVarP((*string)(&lc.authenticationFlow), "auth-flow", "", string(auth.PasswordGrant), `Authentication flow (grant type): "client-credentials" or "password-grant"`)
+	result.Flags().StringVarP(&lc.clientID, "client-id", "", "", "Client ID used for OAuth flow.")
+	result.Flags().StringVarP(&lc.clientSecret, "client-secret", "", defaultClientSecret, "Client secret used for OAuth flow.")
+	result.Flags().StringVarP(&lc.cert, "cert", "", "", "Path to file that contains the certificate (public-key).")
+	result.Flags().StringVarP(&lc.key, "key", "", "", "Path to file that contains the key (private-key).")
+	result.Flags().BoolVarP(&lc.sslDisabled, "skip-ssl-validation", "", false, "Skip verification of the OAuth endpoint. Not recommended.")
+	result.Flags().StringVarP((*string)(&lc.authenticationFlow), "auth-flow", "", string(auth.PasswordGrant), `Authentication flow (grant type). Possible options: 'client-credentials' or 'password-grant'."`)
 	cmd.AddCommonQueryFlag(result.Flags(), &lc.Parameters)
 
 	return result
@@ -102,11 +102,11 @@ func (lc *Cmd) HideUsage() bool {
 // Validate valides the command's arguments
 func (lc *Cmd) Validate(args []string) error {
 	if lc.serviceManagerURL == "" {
-		return errors.New("URL flag must be provided")
+		return errors.New("URL flag must be provided.")
 	}
 
 	if err := util.ValidateURL(lc.serviceManagerURL); err != nil {
-		return fmt.Errorf("service manager URL is invalid: %v", err)
+		return fmt.Errorf("The provided Service Manager URL is invalid: %v", err)
 	}
 
 	if err := lc.validateLoginFlow(); err != nil {
@@ -133,7 +133,7 @@ func (lc *Cmd) Run() error {
 
 	info, err := lc.Client.GetInfo(&lc.Parameters)
 	if err != nil {
-		return cliErr.New("Could not get Service Manager info", err)
+		return cliErr.New("Could not get Service Manager info.", err)
 	}
 
 	options := &auth.Options{
@@ -150,11 +150,11 @@ func (lc *Cmd) Run() error {
 
 	authStrategy, options, err := lc.authBuilder(options)
 	if err != nil {
-		return cliErr.New("Could not build authenticator", err)
+		return cliErr.New("Could not build the authenticator.", err)
 	}
 	token, err := lc.getToken(authStrategy)
 	if err != nil {
-		return cliErr.New("could not login", err)
+		return cliErr.New("Could not log in.", err)
 	}
 
 	settings := &configuration.Settings{
@@ -194,7 +194,7 @@ func (lc *Cmd) getToken(authStrategy auth.Authenticator) (*auth.Token, error) {
 	case auth.PasswordGrant:
 		return authStrategy.PasswordCredentials(lc.user, lc.password)
 	default:
-		return nil, fmt.Errorf("authentication flow %s not recognized", lc.authenticationFlow)
+		return nil, fmt.Errorf("The specified authentication flow '%s' is not recognized.", lc.authenticationFlow)
 	}
 }
 
@@ -209,7 +209,7 @@ func (lc *Cmd) validateLoginFlow() error {
 	case auth.PasswordGrant:
 		return lc.validatePasswordGrant()
 	default:
-		return fmt.Errorf("unknown authentication flow: %s", lc.authenticationFlow)
+		return fmt.Errorf("Unknown authentication flow: %s", lc.authenticationFlow)
 	}
 
 	return nil
@@ -229,7 +229,7 @@ func (lc *Cmd) validatePasswordGrant() error {
 	}
 
 	if len(lc.user) == 0 || len(lc.password) == 0 {
-		return errors.New("username/password should not be empty")
+		return errors.New("Username and password fields cannot be empty.")
 	}
 	return nil
 }
