@@ -44,8 +44,8 @@ func (vc *Cmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
 		Use:     "version",
 		Aliases: []string{"v"},
-		Short:   "Prints smctl version",
-		Long:    `Prints smctl version.`,
+		Short:   "Shows smctl version",
+		Long:    `Shows smctl version is used.`,
 
 		PreRunE: prepare(vc, vc.Context),
 		RunE:    cmd.RunE(vc),
