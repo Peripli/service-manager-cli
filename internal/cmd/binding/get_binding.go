@@ -54,7 +54,7 @@ func (gb *GetBindingCmd) Run() error {
 		return err
 	}
 	if len(bindings.ServiceBindings) < 1 {
-		output.PrintMessage(gb.Output, "No binding found with name: %s", gb.bindingName)
+		output.PrintMessage(gb.Output, "No binding with name '%s' found.", gb.bindingName)
 		return nil
 	}
 	if *gb.bindingParams {
@@ -80,7 +80,7 @@ func (gb *GetBindingCmd) Run() error {
 	}
 
 	if len(resultBindings.ServiceBindings) < 1 {
-		output.PrintMessage(gb.Output, "No binding found with name: %s", gb.bindingName)
+		output.PrintMessage(gb.Output, "No binding with name '%s' found.", gb.bindingName)
 		return nil
 	}
 
@@ -98,17 +98,16 @@ func (gb *GetBindingCmd) printParameters(bindings *types.ServiceBindings) error 
 			if strings.Contains(err.Error(), "StatusCode: 404") {
 				continue
 			}
-			output.PrintMessage(gb.Output, "Unable to show configuration parameters for service binding id: %s\n", binding.ID)
-			output.PrintMessage(gb.Output, "The error: %s\n\n", err)
+			output.PrintMessage(gb.Output, "Cannot show the configuration parameters for the service binding with ID %s\n", binding.ID)
+			output.PrintMessage(gb.Output, "Reason: %s\n\n", err)
 			continue
 		}
 		if len(parameters) == 0 {
-			output.PrintMessage(gb.Output, "No configuration parameters are set for service binding id: %s\n\n", binding.ID)
+			output.PrintMessage(gb.Output, "No configuration parameters are set for the service binding with ID %s\n\n", binding.ID)
 			continue
 		}
 
-		output.PrintMessage(gb.Output, "Showing configuration parameters for service binding id: %s \n", binding.ID)
-		output.PrintMessage(gb.Output, "The parameters: \n")
+		output.PrintMessage(gb.Output, "Showing configuration parameters for service binding with ID %s \n", binding.ID)
 		output.PrintMessage(gb.Output, "%s \n\n ", output.PrintParameters(parameters))
 	}
 
@@ -119,7 +118,7 @@ func (gb *GetBindingCmd) printParameters(bindings *types.ServiceBindings) error 
 // Validate validates command's arguments
 func (gb *GetBindingCmd) Validate(args []string) error {
 	if len(args) < 1 || len(args[0]) < 1 {
-		return fmt.Errorf("binding name is required")
+		return fmt.Errorf("Binding name is required.")
 	}
 
 	gb.bindingName = args[0]
@@ -142,12 +141,12 @@ func (gb *GetBindingCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
 		Use:     "get-binding [name]",
 		Aliases: []string{"gsb"},
-		Short:   "Get single binding",
-		Long:    `Get single binding by its name`,
+		Short:   "Get a service binding",
+		Long:    `Get details about a specific service binding by its name.`,
 		PreRunE: prepare(gb, gb.Context),
 		RunE:    cmd.RunE(gb),
 	}
-	gb.bindingParams = result.PersistentFlags().Bool("show-binding-params", false, "Show the service binding configuration parameters")
+	gb.bindingParams = result.PersistentFlags().Bool("show-binding-params", false, "Show the service binding configuration parameters.")
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddCommonQueryFlag(result.Flags(), &gb.Parameters)
 
