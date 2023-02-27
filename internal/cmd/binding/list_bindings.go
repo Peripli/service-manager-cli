@@ -70,8 +70,8 @@ func (li *ListBindingsCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
 		Use:     "list-bindings",
 		Aliases: []string{"lsb"},
-		Short:   "List service-bindings",
-		Long:    `List all service-bindings.`,
+		Short:   "List service bindings",
+		Long:    `Show all service bindings associated with a Service Manager instance.`,
 		PreRunE: prepare(li, li.Context),
 		RunE:    cmd.RunE(li),
 	}
