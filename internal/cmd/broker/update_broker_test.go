@@ -3,7 +3,7 @@ package broker
 import (
 	"encoding/json"
 	"errors"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 
 	"bytes"
 

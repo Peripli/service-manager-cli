@@ -9,7 +9,7 @@ import (
 	"github.com/Peripli/service-manager-cli/pkg/types"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 var _ = Describe("Update visibility command test", func() {

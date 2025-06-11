@@ -21,7 +21,7 @@ import (
 	"encoding/json"
 	"io"
 
-	yaml "gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v3"
 )
 
 // Printer should be implemented for different output formats
