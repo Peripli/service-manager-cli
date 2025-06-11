@@ -27,7 +27,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 var _ = Describe("Transfer Command test", func() {
@@ -120,7 +120,7 @@ var _ = Describe("Transfer Command test", func() {
 			Context("when no instance id is provided", func() {
 				It("should require flag for instance id", func() {
 					err := invalidTransferCommandExecution("instance-name", "--from", "from_platform", "--to", "to_platform")
-					Expect(err.Error()).To(Equal(fmt.Sprintf(cmd.FOUND_TOO_MANY_INSTANCES,"instance-name","transfer")))
+					Expect(err.Error()).To(Equal(fmt.Sprintf(cmd.FOUND_TOO_MANY_INSTANCES, "instance-name", "transfer")))
 				})
 			})
 
@@ -141,7 +141,7 @@ var _ = Describe("Transfer Command test", func() {
 
 			It("should fail to transfer", func() {
 				err := invalidTransferCommandExecution("no-instance", "--from", "from_platform", "--to", "to_platform")
-				message:=fmt.Sprintf(cmd.NO_INSTANCES_FOUND,"no-instance")
+				message := fmt.Sprintf(cmd.NO_INSTANCES_FOUND, "no-instance")
 				Expect(err.Error()).To(Equal(message))
 			})
 		})
