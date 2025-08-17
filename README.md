@@ -4,7 +4,7 @@
 
 <p align="center">
   <strong>The Service Manager Control (SMCTL) command-line tool is no longer in active maintenance.<br> Only critical security issues will be addressed going forward.<br>
-  The tool will be archived on <span style="color:red">September 30, 2025</span>. After this date, it will no longer be maintained or supported.<br>
+  The tool will be archived on <span style="color:red">September 30, 2025</span>.<br> After this date, it will no longer be maintained or supported.<br>
 </strong> 
 </p>
 
