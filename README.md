@@ -3,12 +3,12 @@
 <h1 align="center">⚠️ DEPRECATION NOTICE ⚠️</h1>
 
 <p align="center">
-  <strong>The Service Manager Control (SMCTL) command-line tool is no longer in active maintenance.<br> Only critical security issues will be addressed going forward.
-  The tool will be archived on <span style="color:red">September 30, 2025</span>.<br>After this date, it will no longer be maintained or supported.<br>
+  <strong>The Service Manager Control (SMCTL) command-line tool is no longer in active maintenance.<br> Only critical security issues will be addressed going forward.<br>
+  The tool will be archived on <span style="color:red">September 30, 2025</span>.<br> After this date, it will no longer be maintained or supported.<br>
 </strong> 
 </p>
 
-We recommend familiarizing yourself with Using the SAP BTP Command Line Interface (btp CLI), the closest replacement, or transitioning to other supported SAP Service Manager tools, such as Service Manager REST APIs, as soon as possible to ensure continued functionality and support.
+We recommend familiarizing yourself with Using the [SAP BTP Command Line Interface (btp CLI)](https://help.sap.com/docs/service-manager/sap-service-manager/working-with-sap-service-manager-resources-by-using-sap-btp-command-line-interface-btp-cli-feature-set-b?locale=en-US&state=DRAFT&version=Validation), the closest replacement, or transitioning to other supported SAP Service Manager tools, such as [Service Manager REST APIs](https://api.sap.com/api/APIServiceManager/resource/), as soon as possible to ensure continued functionality and support.
 
 
 # Service Manager CLI
