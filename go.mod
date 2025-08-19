@@ -1,6 +1,6 @@
 module github.com/Peripli/service-manager-cli
 
-go 1.25
+go 1.23.3
 
 require (
 	github.com/Peripli/service-manager v0.24.3-0.20250611140835-e06d0984b1db
