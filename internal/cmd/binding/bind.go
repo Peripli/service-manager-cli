@@ -47,15 +47,15 @@ func NewBindCmd(context *cmd.Context) *BindCmd {
 func (bc *BindCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
 		Use:   "bind [instance-name] [binding-name]",
-		Short: "Creates binding in SM",
-		Long:  `Creates binding in SM`,
+		Short: "Creates a service binding.",
+		Long:  `Creates a service binding for Service Manager.`,
 
 		PreRunE: prepare(bc, bc.Context),
 		RunE:    cmd.RunE(bc),
 	}
 
-	result.Flags().StringVarP(&bc.binding.ServiceInstanceID, "id", "", "", "ID of the service instance. Required when name is ambiguous")
-	result.Flags().StringVarP(&bc.parametersJSON, "parameters", "c", "", "Valid JSON object containing binding parameters")
+	result.Flags().StringVarP(&bc.binding.ServiceInstanceID, "id", "", "", "ID of the service instance for which the binding is created. Required when instance name is ambiguous")
+	result.Flags().StringVarP(&bc.parametersJSON, "parameters", "c", "", "A valid JSON object that contains binding parameters.")
 	cmd.AddFormatFlag(result.Flags())
 	cmd.AddCommonQueryFlag(result.Flags(), &bc.Parameters)
 	cmd.AddModeFlag(result.Flags(), "async")
@@ -66,7 +66,7 @@ func (bc *BindCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 // Validate validates command's arguments
 func (bc *BindCmd) Validate(args []string) error {
 	if len(args) < 2 {
-		return fmt.Errorf("instance and binding names are required")
+		return fmt.Errorf("Service instance and binding names are required.")
 	}
 
 	bc.instanceName = args[0]
@@ -87,10 +87,10 @@ func (bc *BindCmd) Run() error {
 			return err
 		}
 		if len(instanceToBind.ServiceInstances) < 1 {
-			return fmt.Errorf("service instance with name %s not found", bc.instanceName)
+			return fmt.Errorf("Service instance with name %s not found.", bc.instanceName)
 		}
 		if len(instanceToBind.ServiceInstances) > 1 {
-			return fmt.Errorf("more than one service instance with name %s found. Use --id flag to specify id of the instance to bind", bc.instanceName)
+			return fmt.Errorf("More than one service instance with the name %s was found. Use --id flag to specify the ID of the instance to bind.", bc.instanceName)
 		}
 		bc.binding.ServiceInstanceID = instanceToBind.ServiceInstances[0].ID
 	}
@@ -102,7 +102,7 @@ func (bc *BindCmd) Run() error {
 	}
 
 	if len(location) != 0 {
-		cmd.CommonHandleAsyncExecution(bc.Context, location, fmt.Sprintf("Service Binding %s successfully scheduled. To see status of the operation use:\n", bc.binding.Name))
+		cmd.CommonHandleAsyncExecution(bc.Context, location, fmt.Sprintf("Service binding creation %s successfully scheduled. To see the current status of your request, use:\n", bc.binding.Name))
 		return nil
 	}
 
