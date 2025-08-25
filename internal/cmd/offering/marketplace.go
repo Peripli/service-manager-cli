@@ -75,15 +75,15 @@ func (m *MarketplaceCmd) Prepare(prepare cmd.PrepareFunc) *cobra.Command {
 	result := &cobra.Command{
 		Use:     "marketplace",
 		Aliases: []string{"m"},
-		Short:   "Shows marketplace for the service-offerings",
-		Long:    `Shows marketplace for the service-offerings`,
+		Short:   "Shows marketplace for the service offerings.",
+		Long:    `Shows service marketplace for the specified service offerings.`,
 		PreRunE: m.prepare(m, m.Context),
 		RunE:    cmd.RunE(m),
 	}
 
 	cmd.AddFormatFlag(result.Flags())
-	cmd.AddSupportedEnvironmentFlag(result.Flags(), &m.Parameters, "Filters service offerings by supported environments")
-	result.Flags().StringVarP(&m.offering, "service", "s", "", "Plan details for a single service offering")
+	cmd.AddSupportedEnvironmentFlag(result.Flags(), &m.Parameters, "Filters service offerings by supported environments.")
+	result.Flags().StringVarP(&m.offering, "service", "s", "", "Plan details for an associated service offering.")
 	cmd.AddCommonQueryFlag(result.Flags(), &m.Parameters)
 
 	return result
